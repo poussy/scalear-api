@@ -1,0 +1,2 @@
+class TeacherEnrollment < ApplicationRecord
+end

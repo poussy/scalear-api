@@ -9,4 +9,8 @@ class Course < ApplicationRecord
 	
 	has_many :enrollments, :dependent => :destroy
 	has_many :users, :through => :enrollments, :uniq => true
+
+	has_many :teacher_enrollments, :dependent => :destroy
+	has_many :teachers, :source => :user, :through => :teacher_enrollments, :uniq => true
+
 end
