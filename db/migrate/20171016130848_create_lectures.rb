@@ -1,5 +1,5 @@
 class CreateLectures < ActiveRecord::Migration[5.1]
-  def change
+  def up
     create_table :lectures do |t|
 		t.string   :name
 		
@@ -39,5 +39,9 @@ class CreateLectures < ActiveRecord::Migration[5.1]
 
     add_column :courses, :parent_id, :integer
     add_column :groups, :parent_id, :integer
+  end
+
+  def down
+  	drop_table :lectures
   end
 end
