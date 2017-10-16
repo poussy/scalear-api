@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20171016112531) do
+ActiveRecord::Schema.define(version: 20171016130848) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -32,6 +32,7 @@ ActiveRecord::Schema.define(version: 20171016112531) do
     t.boolean "importing", default: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "parent_id"
     t.index ["guest_unique_identifier"], name: "index_courses_on_guest_unique_identifier", unique: true
     t.index ["unique_identifier"], name: "index_courses_on_unique_identifier", unique: true
     t.index ["user_id"], name: "index_courses_on_user_id"
@@ -48,9 +49,40 @@ ActiveRecord::Schema.define(version: 20171016112531) do
     t.text "description"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "parent_id"
     t.index ["course_id", "updated_at"], name: "index_groups_on_course_id_and_updated_at"
     t.index ["course_id"], name: "index_groups_on_course_id"
     t.index ["updated_at"], name: "index_groups_on_updated_at"
+  end
+
+  create_table "lectures", force: :cascade do |t|
+    t.string "name"
+    t.float "start_time"
+    t.float "end_time"
+    t.float "duration"
+    t.integer "group_id"
+    t.integer "course_id"
+    t.boolean "appearance_time_module"
+    t.datetime "appearance_time"
+    t.boolean "due_date_module"
+    t.datetime "due_date"
+    t.string "slides"
+    t.integer "position"
+    t.string "aspect_ratio", default: "widescreen"
+    t.boolean "required", default: true
+    t.boolean "inordered", default: true
+    t.boolean "required_module", default: true
+    t.boolean "inordered_module", default: true
+    t.string "type", default: "normal"
+    t.text "description"
+    t.string "url"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.integer "parent_id"
+    t.index ["course_id", "updated_at"], name: "index_lectures_on_course_id_and_updated_at"
+    t.index ["course_id"], name: "index_lectures_on_course_id"
+    t.index ["group_id"], name: "index_lectures_on_group_id"
+    t.index ["updated_at"], name: "index_lectures_on_updated_at"
   end
 
 end
