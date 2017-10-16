@@ -1,0 +1,2 @@
+class CustomLinksController < ApplicationController
+end
