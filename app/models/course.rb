@@ -3,6 +3,7 @@ class Course < ApplicationRecord
 	belongs_to :user
 	has_many :groups, :order => "position", :dependent => :destroy
 	has_many :lectures, :dependent => :destroy
+	has_many :quizzes,:order => :position, :dependent => :destroy 	
 	has_many :custom_links, :dependent => :destroy
 	has_many :announcements, :dependent => :destroy
 
