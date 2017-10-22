@@ -1,12 +1,12 @@
 class UsersController < ApplicationController
 
-  before_filter :authenticate_user!, :except => [:student, :teacher, :sign_angular_in, :take_angular_back]  #authenticate meaning is he signed in
-  before_filter :correct_user, :except => [:sign_angular_in, :get_current_user] #, :student, :teacher, :teacher_courses,
-  before_filter :already_signed_in, :only => [:student, :teacher]
-  skip_before_filter :authenticate_user!, :only =>[:get_current_user]
-  load_and_authorize_resource
-  load_and_authorize_resource :only => [:watched_intro]
-  skip_before_filter :check_user_signed_in?, :only => [:get_current_user, :sign_angular_in, :saml_signup, :user_exist]
+#   before_action :authenticate_user!, :except => [:student, :teacher, :sign_angular_in, :take_angular_back]  #authenticate meaning is he signed in
+#   before_action :correct_user, :except => [:sign_angular_in, :get_current_user] #, :student, :teacher, :teacher_courses,
+#   before_action :already_signed_in, :only => [:student, :teacher]
+#   skip_before_action :authenticate_user!, :only =>[:get_current_user]
+#   load_and_authorize_resource
+#   load_and_authorize_resource :only => [:watched_intro]
+#   skip_before_action :check_user_signed_in?, :only => [:get_current_user, :sign_angular_in, :saml_signup, :user_exist]
 
 
   def already_signed_in

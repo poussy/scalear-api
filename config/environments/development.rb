@@ -1,6 +1,14 @@
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
 
+  config.middleware.insert_before 0, Rack::Cors do
+      puts "in middleware"
+      allow do
+        origins 'http://localhost:9000' #'http://scalear-staging.s3-website-eu-west-1.amazonaws.com'  #* #angular-edu.herokuapp.com
+        resource '*', :headers => :any,:expose  => ['X-Flash-Notice','X-Flash-Error','X-Flash-Warning','X-Flash-Message'], :credentials => true, :methods => [:get, :post, :options, :put, :delete]
+      end
+  end
+
   # In the development environment your application's code is reloaded on
   # every request. This slows down response time but is perfect for development
   # since you don't have to restart the web server when you make code changes.
