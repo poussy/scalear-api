@@ -1,7 +1,10 @@
 Rails.application.routes.draw do
   # For details on the DSL available within this file, see http://guides.rubyonrails.org/routing.html
   scope "/en" do
-    mount_devise_token_auth_for 'User', at: 'users'
+    mount_devise_token_auth_for 'User', at: 'users', controllers: {
+      registrations: 'devise/registrations',
+      sessions: 'devise/sessions'
+    }
 
     resources :users, only: [] do
       member do

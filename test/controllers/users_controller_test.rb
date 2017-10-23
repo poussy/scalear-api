@@ -1,8 +1,10 @@
 require 'test_helper'
 
 class UsersControllerTest < ActionDispatch::IntegrationTest
+  # include Devise::Test::IntegrationHelpers
   # test 'signing in' do
-    # user = {password: "aa123456", email: "okashoon@gmail.com"}
-    # user.sign_in
+  #   @request.env['devise.mapping'] = Devise.mappings[:user]
+  #   user = {password: "aa123456", email: "okashoon@gmail.com"}
+  #   user.sign_in
   # end
 end

@@ -1,12 +1,13 @@
 class UsersController < ApplicationController
 
-#   before_action :authenticate_user!, :except => [:student, :teacher, :sign_angular_in, :take_angular_back]  #authenticate meaning is he signed in
-#   before_action :correct_user, :except => [:sign_angular_in, :get_current_user] #, :student, :teacher, :teacher_courses,
-#   before_action :already_signed_in, :only => [:student, :teacher]
-#   skip_before_action :authenticate_user!, :only =>[:get_current_user]
-#   load_and_authorize_resource
-#   load_and_authorize_resource :only => [:watched_intro]
-#   skip_before_action :check_user_signed_in?, :only => [:get_current_user, :sign_angular_in, :saml_signup, :user_exist]
+  before_action :authenticate_user!
+  # before_action :authenticate_user!, :except => [:student, :teacher, :sign_angular_in, :take_angular_back]  #authenticate meaning is he signed in
+  # before_action :correct_user, :except => [:sign_angular_in, :get_current_user] #, :student, :teacher, :teacher_courses,
+  # before_action :already_signed_in, :only => [:student, :teacher]
+  # skip_before_action :authenticate_user!, :only =>[:get_current_user]
+  # load_and_authorize_resource
+  # load_and_authorize_resource :only => [:watched_intro]
+  # skip_before_action :check_user_signed_in?, :only => [:get_current_user, :sign_angular_in, :saml_signup, :user_exist]
 
 
   def already_signed_in
@@ -92,15 +93,17 @@ class UsersController < ApplicationController
    #end
 
   def get_current_user
-    result = {:user => current_user.to_json(:include => {:roles=>{:only => :id}}, :methods => [:info_complete, :intro_watched]), :signed_in => user_signed_in?}
-    if user_signed_in?
-      result[:profile_image] = Digest::MD5.hexdigest(current_user.email);
-      if current_user.is_teacher_or_admin?
-        result[:invitations] = Invitation.where("lower(email) = ?", current_user.email.downcase).count
-        result[:shared] = current_user.shared_withs.where(:accept => false).count
-        result[:accepted_shared] = current_user.shared_withs.where(:accept => true).count
-      end
-    end
+    p current_user
+    result = {:user => current_user.to_json, :signed_in => user_signed_in?}
+    # result = {:user => current_user.to_json(:include => {:roles=>{:only => :id}}, :methods => [:info_complete, :intro_watched]), :signed_in => user_signed_in?}
+    # if user_signed_in?
+    #   result[:profile_image] = Digest::MD5.hexdigest(current_user.email);
+    #   if current_user.is_teacher_or_admin?
+    #     result[:invitations] = Invitation.where("lower(email) = ?", current_user.email.downcase).count
+    #     result[:shared] = current_user.shared_withs.where(:accept => false).count
+    #     result[:accepted_shared] = current_user.shared_withs.where(:accept => true).count
+    #   end
+    # end
     render :json => result
   end
 
