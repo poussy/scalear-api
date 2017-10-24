@@ -27,11 +27,8 @@ class Course < ApplicationRecord
 	validates_format_of :image_url, :with    => %r{\.(((g|G)(i|I)(f|F))|((j|J)(p|P)(e|E)?(g|G))|((p|P)(n|N)(g|G)))}i, :message => :must_be_image, :allow_blank => true
 
 
-	accepts_nested_attributes_for :users, :allow_destroy => true
-	accepts_nested_attributes_for :groups, :allow_destroy => true
-
-
-
+	# accepts_nested_attributes_for :users, :allow_destroy => true
+	# accepts_nested_attributes_for :groups, :allow_destroy => true
 	
 	private 
 		def validate_end_date_disable_regis_after_start_date
