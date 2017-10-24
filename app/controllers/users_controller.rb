@@ -1,6 +1,6 @@
 class UsersController < ApplicationController
 
-  before_action :authenticate_user!
+  # before_action :authenticate_user!
   # before_action :authenticate_user!, :except => [:student, :teacher, :sign_angular_in, :take_angular_back]  #authenticate meaning is he signed in
   # before_action :correct_user, :except => [:sign_angular_in, :get_current_user] #, :student, :teacher, :teacher_courses,
   # before_action :already_signed_in, :only => [:student, :teacher]
@@ -93,7 +93,10 @@ class UsersController < ApplicationController
    #end
 
   def get_current_user
-    p current_user
+
+   p client_id = request.headers['client']
+    p token = request.headers['access-token']
+
     result = {:user => current_user.to_json, :signed_in => user_signed_in?}
     # result = {:user => current_user.to_json(:include => {:roles=>{:only => :id}}, :methods => [:info_complete, :intro_watched]), :signed_in => user_signed_in?}
     # if user_signed_in?

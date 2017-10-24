@@ -76,27 +76,29 @@ class Devise::SessionsController < DeviseTokenAuth::SessionsController
   end
 
   def render_create_success
-      p "success login"
-      render json: {
-        data: resource_data(resource_json: @resource.token_validation_response)
-      }
-    end
+    p "success login"
+    
+    render json: {
+    data: resource_data(resource_json: @resource.token_validation_response)
+    }
+  end
 
-    def render_create_error_not_confirmed
-      p "not confirmed"
-        
-      render json: {
-        success: false,
-        errors: [ I18n.t("devise_token_auth.sessions.not_confirmed", email: @resource.email) ]
-      }, status: 401
-    end
+  def render_create_error_not_confirmed
+    p "not confirmed"
+    
+    render json: {
+    success: false,
+    errors: [ I18n.t("devise_token_auth.sessions.not_confirmed", email: @resource.email) ]
+    }, status: 401
+  end
 
-    def render_create_error_bad_credentials
-        p "bad credentials"
-      render json: {
-        errors: [I18n.t("devise_token_auth.sessions.bad_credentials")]
-      }, status: 401
-    end
+  def render_create_error_bad_credentials
+    p "bad credentials"
+    
+    render json: {
+    errors: [I18n.t("devise_token_auth.sessions.bad_credentials")]
+    }, status: 401
+  end
 
 end
 
