@@ -41,3 +41,4 @@ end
 gem 'tzinfo-data', platforms: [:mingw, :mswin, :x64_mingw, :jruby]
 gem 'devise_token_auth', '~> 0.1.42'
 gem 'rack-cors', ' ~> 1.0.1'
+gem 'cancancan', '~> 2.0'
