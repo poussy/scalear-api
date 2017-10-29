@@ -95,9 +95,10 @@ class UsersController < ApplicationController
   def get_current_user
 
    p client_id = request.headers['client']
-    p token = request.headers['access-token']
+  p token = request.headers['access-token']
 
-    result = {:user => current_user.to_json, :signed_in => user_signed_in?}
+    
+    result = {:user => current_user.to_json(:methods => [:info_complete, :roles, :completion_wizard, :intro_watched]), :signed_in => user_signed_in?  } 
     # result = {:user => current_user.to_json(:include => {:roles=>{:only => :id}}, :methods => [:info_complete, :intro_watched]), :signed_in => user_signed_in?}
     # if user_signed_in?
     #   result[:profile_image] = Digest::MD5.hexdigest(current_user.email);

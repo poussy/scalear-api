@@ -16,29 +16,32 @@ class Devise::SessionsController < DeviseTokenAuth::SessionsController
   def create
     puts "in create!!!!"
     super
+
   end
 
+  
+
+
   # DELETE /resource/sign_out
-  def destroy
-    redirect_path = after_sign_out_path_for(resource_name)
-    signed_out = (Devise.sign_out_all_scopes ? sign_out : sign_out(resource_name))
-    set_flash_message :notice, :signed_out if signed_out
-    puts "IN DESTROY!!!!!!"
-    # We actually need to hardcode this as Rails default responder doesn't
-    # support returning empty response on GET request
-    respond_to do |format|
-      format.json{
-        render :json => {:nothing => true}
-      }
-      format.html{
-        puts "in html"
-        redirect_to redirect_path }
-      format.all do
-        puts "in all"
-        head :no_content
-      end
-    end
-  end
+  # def destroy
+  #   redirect_path = after_sign_out_path_for(resource_name)
+  #   signed_out = (Devise.sign_out_all_scopes ? sign_out : sign_out(resource_name))
+  #   puts "IN DESTROY!!!!!!"
+  #   # We actually need to hardcode this as Rails default responder doesn't
+  #   # support returning empty response on GET request
+  #   respond_to do |format|
+  #     format.json{
+  #       render :json => {:nothing => true}
+  #     }
+  #     format.html{
+  #       puts "in html"
+  #       redirect_to redirect_path }
+  #     format.all do
+  #       puts "in all"
+  #       head :no_content
+  #     end
+  #   end
+  # end
 
   protected
 
@@ -78,10 +81,12 @@ class Devise::SessionsController < DeviseTokenAuth::SessionsController
   def render_create_success
     p "success login"
     
+    
     render json: {
     data: resource_data(resource_json: @resource.token_validation_response)
     }
   end
+
 
   def render_create_error_not_confirmed
     p "not confirmed"

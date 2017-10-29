@@ -1,4 +1,4 @@
-# class Devise::RegistrationsController < DeviseTokenAuth::RegistrationsController
+class Devise::RegistrationsController < DeviseTokenAuth::RegistrationsController
 #   # prepend_before_filter :require_no_authentication, :only => [ :new, :create, :cancel ]
 #   # prepend_before_filter :authenticate_scope!, :only => [:edit, :update, :destroy]
 
@@ -44,34 +44,37 @@
 #   # PUT /resource
 #   # We need to use a copy of the resource because we don't want to change
 #   # the current user in place.
-#   def update
-#     self.resource = resource_class.to_adapter.get!(send(:"current_#{resource_name}").to_key)
-#     p resource_params
-#     if ( resource_params[:saml] && resource.update_without_password(resource_params) ) || ( !resource_params[:saml] && resource.update_with_password(resource_params) )
-#       #if is_navigational_format?
-#         if resource.respond_to?(:pending_reconfirmation?) && resource.pending_reconfirmation?
-#           flash_key = :update_needs_confirmation
-#         end
-#         set_flash_message :notice, flash_key || :updated
-#       #end
-#       sign_in resource_name, resource, :bypass => true
-#         if resource_params["password"] != nil
-#           render json: {:password_confrimation => true}
-#           UserMailer.password_changed_email(current_user, I18n.locale).deliver
+  def update
+      p'--------------------------------------------'
+      p params 
+      super
+    # self.resource = resource_class.to_adapter.get!(send(:"current_#{resource_name}").to_key)
+    # p resource_params
+    # if ( resource_params[:saml] && resource.update_without_password(resource_params) ) || ( !resource_params[:saml] && resource.update_with_password(resource_params) )
+    #   #if is_navigational_format?
+    #     if resource.respond_to?(:pending_reconfirmation?) && resource.pending_reconfirmation?
+    #       flash_key = :update_needs_confirmation
+    #     end
+    #     set_flash_message :notice, flash_key || :updated
+    #   #end
+    #   sign_in resource_name, resource, :bypass => true
+    #     if resource_params["password"] != nil
+    #       render json: {:password_confrimation => true}
+    #       UserMailer.password_changed_email(current_user, I18n.locale).deliver
 
-#         else
-#           respond_with resource, :location => after_update_path_for(resource)
-#         end
+    #     else
+    #       respond_with resource, :location => after_update_path_for(resource)
+    #     end
 
-#     else
-#       clean_up_passwords resource
-#       # respond_with resource
-#       if resource.errors.messages.has_key?(:current_password)
-#         resource.errors.messages[:current_password] = [t("invalid_password")]
-#       end
-#       render json: {:errors => resource.errors}, :status => :unprocessable_entity
-#     end
-#   end
+    # else
+    #   clean_up_passwords resource
+    #   # respond_with resource
+    #   if resource.errors.messages.has_key?(:current_password)
+    #     resource.errors.messages[:current_password] = [t("invalid_password")]
+    #   end
+    #   render json: {:errors => resource.errors}, :status => :unprocessable_entity
+    # end
+  end
 
 #   # DELETE /resource
 #   def destroy
@@ -131,4 +134,10 @@
 #   def sign_up_params
 #       params.permit(:email, :password, :last_name, :registration)
 #   end
-# end
+
+def validate_account_update_params
+ params.permit(:user, :registratino)
+end
+
+
+end
