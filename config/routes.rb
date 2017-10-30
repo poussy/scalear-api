@@ -3,7 +3,8 @@ Rails.application.routes.draw do
   scope "/en" do
     mount_devise_token_auth_for 'User', at: 'users', controllers: {
       registrations: 'devise/registrations',
-      sessions: 'devise/sessions'
+      sessions: 'devise/sessions',
+      passwords: 'devise/passwords'
     }
 
     resources :users, only: [] do
