@@ -1,22 +1,20 @@
 class Group < ApplicationRecord
 	belongs_to :course, :touch => true
 	
-	has_many :lectures, -> { order('position') }, :dependent => :destroy 
+	has_many :lectures, -> { order('position') }, :dependent => :destroy
 	has_many :quizzes, -> { order('position') }, :dependent => :destroy 
 	has_many :custom_links, -> { order('position') }, :dependent => :destroy
 
 	after_destroy :clean_up
 
-	# accepts_nested_attributes_for :lectures, :allow_destroy => true
-	# accepts_nested_attributes_for :quizzes, :allow_destroy => true
-	validates :appearance_time, :course_id, :name, :due_date, :presence => true
+	validates :appearance_time, :course_id, :name, :due_date, :position , :presence => true
 	validates_inclusion_of :graded , :required, :in => [true, false] #not in presence because boolean false considered not present.
 
 	@quiz_not_empty = Proc.new{|f| !f.online_answers.empty? or f.question_type=="Free Text Question"}
 	
 	validate :appearance_date_must_be_before_items
 	validate :due_date_must_be_after_items
-	validate :validate_due_date_after_appearance_time ,on: [:create, :update]
+	validates_datetime :due_date, :on_or_after => lambda{|m| m.appearance_time}, :on_or_after_message => "group.errors.due_date_pass_after_appearance_date"
 
 	# def has_not_appeared
 	# end
@@ -144,11 +142,11 @@ class Group < ApplicationRecord
 
 	private
 
-		def validate_due_date_after_appearance_time
-			if due_date && appearance_time && due_date < appearance_time
-				errors.add(:due_date, "group.errors.due_date_pass")
-			end
-		end
+		# def validate_due_date_after_appearance_time
+		# 	if due_date && appearance_time && due_date < appearance_time
+		# 		errors.add(:due_date, "group.errors.due_date_pass")
+		# 	end
+		# end
 
 		def appearance_date_must_be_before_items
 			error=false
@@ -168,7 +166,7 @@ class Group < ApplicationRecord
 					error=true
 				end
 			end
-			errors.add(:due_date, "must be after items due date") if error
+			errors.add(:due_date, "group.errors.due_date_must_be_after_items") if error
 		end
 
 		def clean_up

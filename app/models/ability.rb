@@ -39,6 +39,19 @@ class Ability
                 group.course.correct_student(user)
             end
 
+      ## Lecture
+        can [:create, :index, :update, :destroy, :show, :new_lecture_angular, :get_old_data_angular, :get_html_data_angular, :new_quiz_angular, :new_marker,
+             :save_answers_angular, :add_answer_angular, :add_html_answer_angular, :remove_html_answer_angular, :remove_answer_angular, :sort, :validate_lecture_angular, 
+             :lecture_copy,  :create_or_update_survey_responses, :change_status_angular, :delete_response, :confused_show_inclass], Lecture do |lecture|
+                lecture.course.correct_teacher(user)
+            end
+        can [:show, :get_lecture_data_angular, :confused, :back, :pause, :confused_question, :save_online, :save_html, :save_note, :delete_note ,:load_note, :switch_quiz, 
+             :delete_confused, :export_notes, :update_percent_view, :log_video_event,:invite_student_distance_peer,:check_if_invited_distance_peer, 
+             :check_invited_student_accepted_distance_peer, :accept_invation_distance_peer, :cancel_session_distance_peer,:check_if_in_distance_peer_session, 
+             :change_status_distance_peer, :check_if_distance_peer_status_is_sync , :check_if_distance_peer_is_alive], Lecture do |lecture|
+                lecture.course.correct_student(user)
+            end
+
     end
     if !(user.has_role? 'User') && !(user.has_role? :admin) && !(user.has_role? :administrator)
       #can :index, Course  #so that people without role can live until they get a role.

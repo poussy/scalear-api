@@ -8,7 +8,7 @@ class GroupsController < ApplicationController
 	before_actions :set_zone
 
 	def set_zone
-		Time.zone= @group.time_zone
+		Time.zone= @group.course.time_zone
 	end
 	#
 	# # def getCourse

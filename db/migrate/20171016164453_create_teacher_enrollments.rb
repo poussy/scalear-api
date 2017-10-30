@@ -4,7 +4,7 @@ class CreateTeacherEnrollments < ActiveRecord::Migration[5.1]
 		t.integer  :user_id    	
 		t.integer  :course_id
 		t.integer  :role_id
-		t.boolean :email_discussion
+		t.boolean :email_discussion, :default => false
 
       t.timestamps
     end

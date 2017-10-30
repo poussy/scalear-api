@@ -27,51 +27,28 @@ class GroupsControllerTest < ActionDispatch::IntegrationTest
 
 		@user2 = User.create({ name: "ahmed", email: "a.hossamm.2010@gmail.com", last_name: "hossam", screen_name: "ahmed hossam", university: "nile",password:'password1234', password_confirmation:'password1234'})
 
-		@course1 = Course.new
-		@course1.name = 'name'
-		@course1.short_name = 'short_name'
-		@course1.user_id = @user1.id
-		@course1.time_zone = "time_zone"
-		@course1.start_date = '2017-9-9'.to_datetime
-		@course1.end_date = '2017-10-9'.to_datetime
-		@course1.valid?	   
-		@course1.image_url = 'https://pbs.twimg.com/profile_images/839721704163155970/LI_TRk1z_400x400.jpg'
+		@course1 = Course.new ({name: 'name' , short_name: 'short_name' , user_id: @user1.id , time_zone: "time_zone" , start_date: '2017-9-4'.to_datetime , end_date: '2017-10-9'.to_datetime , image_url: 'https://pbs.twimg.com/profile_images/839721704163155970/LI_TRk1z_400x400.jpg' })
 		assert @course1.valid?
+
 		@course1.save
 		@course1.add_professor(@user1 , false)
 
-		@course2 = Course.new
-		@course2.name = 'name'
-		@course2.short_name = 'short_name'
-		@course2.user_id = @user2.id
-		@course2.time_zone = "time_zone"
-		@course2.start_date = '2017-9-9'.to_datetime
-		@course2.end_date = '2017-10-9'.to_datetime
+		@course2 = Course.new ({name: 'name' , short_name: 'short_name' , user_id: @user2.id , time_zone: "time_zone" , start_date: '2017-9-4'.to_datetime , end_date: '2017-10-9'.to_datetime , image_url: 'https://pbs.twimg.com/profile_images/839721704163155970/LI_TRk1z_400x400.jpg' })
 		assert @course2.valid?
 		@course2.save
 		@course2.add_professor(@user2 , false)
 
-		@group1 = Group.new 
-		@group1.name = 'name'
-		@group1.course_id = @course1.id
-		@group1.appearance_time = '2017-9-9'.to_datetime
-		@group1.due_date = '2017-10-9'.to_datetime
-		@group1.graded = false
-		@group1.required = false
+		@group1 = Group.new({name: 'name',course_id: @course1.id,appearance_time: '2017-9-9'.to_datetime,due_date: '2017-10-9'.to_datetime,graded: false,required: false,position: 1})
+
 		assert @group1.valid?
 		@group1.save
 		assert Group.count == 1
 
-		@group2 = Group.new 
-		@group2.name = 'name'
-		@group2.course_id = @course2.id
-		@group2.appearance_time = '2017-9-9'.to_datetime
-		@group2.due_date = '2017-10-9'.to_datetime
-		@group2.graded = false
-		@group2.required = false
+		@group2 = Group.new({name: 'name',course_id: @course2.id,appearance_time: '2017-9-9'.to_datetime,due_date: '2017-10-9'.to_datetime,graded: false,required: false,position: 1})
 		assert @group2.valid?
 		@group2.save
 		assert Group.count == 2
+
 	end
 
 	test "Validate Cancancancan.. abilities" do
