@@ -5,7 +5,7 @@ class CreateGroups < ActiveRecord::Migration[5.1]
 	    t.integer  :course_id
 	    t.datetime :appearance_time
 	    t.datetime :due_date
-	    t.boolean  :inorder
+	    t.boolean  :graded
 	    t.boolean  :required
 	    t.integer :position
 	    t.text     :description

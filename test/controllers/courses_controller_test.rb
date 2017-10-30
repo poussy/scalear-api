@@ -72,7 +72,5 @@ class CoursesControllerTest < ActionDispatch::IntegrationTest
 		@course1.add_professor(@user2 , false)
 		assert ability2.can?(:destroy, @course1)
 		assert ability2.can?(:destroy, @course2)
-
-
 	end
 end

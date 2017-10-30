@@ -14,10 +14,10 @@ class CreateQuizzes < ActiveRecord::Migration[5.1]
 
 		t.integer  :position
 		t.boolean  :required, :default => true
-		t.boolean  :inordered, :default => true
+		t.boolean  :graded, :default => true
 
 		t.boolean  :required_module, :default => true
-		t.boolean  :inordered_module, :default => true
+		t.boolean  :graded_module, :default => true
 
 		t.boolean  :visible, :default => false
 		t.string  :type

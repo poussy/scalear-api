@@ -1,4 +1,10 @@
 class CoursesController < ApplicationController
+	load_and_authorize_resource   
+				#  @course is aready loaded  
+
+	# # # before_filter :correct_user, :except => [:index, :new, :create, :enroll_to_course, :course_copy_angular, :get_all_teachers, :current_courses, :send_system_announcement]
+	# before_action :importing?, :except => [:index, :new, :create, :enroll_to_course, :course_copy_angular, :get_all_teachers, :current_courses, :send_system_announcement, :get_role]
+	# before_action :set_zone , :except => [:index, :new, :create, :enroll_to_course, :course_copy_angular, :get_all_teachers, :current_courses, :send_system_announcement, :get_role]
 
 	def create
 		params[:course][:user_id]=current_user.id
@@ -28,12 +34,13 @@ class CoursesController < ApplicationController
 		end
 	end
 
-	# Removed to course model for cancancan
-	# def correct_user
-	# end  
+	# # Removed to course model for cancancan
+	# # def correct_user
+	# # end  
 
-	# def set_zone
-	# end  
+	def set_zone
+		Time.zone= @course.time_zone
+	end
 
 	# def importing?
 	# end  
