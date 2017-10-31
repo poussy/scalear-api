@@ -1,5 +1,8 @@
 class User < ActiveRecord::Base
 
+  include DeviseTokenAuth::Concerns::User
+  
+
   before_create :add_default_user_role_to_user
 
   # Include default devise modules.
@@ -7,7 +10,9 @@ class User < ActiveRecord::Base
           :recoverable, :rememberable, :trackable, :validatable,
           :confirmable
           # :omniauthable
-  include DeviseTokenAuth::Concerns::User
+
+  attr_accessor :info_complete
+
 
   has_many :enrollments, :dependent => :destroy
   has_many :subjects_to_study, -> { distinct }, :through => :enrollments, :source => :course  # to get this call user.subjects
@@ -31,6 +36,12 @@ class User < ActiveRecord::Base
     self.roles.pluck(:name).include?(role)      
   end
 
+   # override devise function, to include methods with response
+  def token_validation_response
+    self.as_json(:methods => [:info_complete, :intro_watched])
+  end
+
+
   private
       def add_default_user_role_to_user
         if !self.has_role?('User') 
@@ -38,4 +49,7 @@ class User < ActiveRecord::Base
         end
         return true
       end
+
+
+
 end
