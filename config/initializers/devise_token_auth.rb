@@ -4,9 +4,9 @@ DeviseTokenAuth.setup do |config|
   # this to false to prevent the Authorization header from changing after
   # each request.
   config.change_headers_on_each_request = false
-  config.default_confirm_success_url = 'http://localhost:9000/'
+  config.default_confirm_success_url = 'http://localhost:9000/#/users/login'
   config.default_password_reset_url = '/en/users/password/edit'
-  config.redirect_whitelist = ['localhost:9000']
+  config.redirect_whitelist = ['http://localhost:9000/#/users/password/edit','localhost:9000/#/users/password/edit']
   # By default, users will need to re-authenticate after 2 weeks. This setting
   # determines how long tokens will remain valid after they are issued.
   # config.token_lifespan = 2.weeks
