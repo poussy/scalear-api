@@ -14,7 +14,16 @@ pipelines:
           - bundle install
           - rails db:setup
           - rails test
+        services:
+          - postgres
 
 definitions:
   caches:
     bundler: ./vendor
+  services:
+    postgres:
+      image: postgres
+      environment:
+        POSTGRES_DB: 'scalear_api_test'
+        POSTGRES_USER: 'test'
+        POSTGRES_PASSWORD: 'password'
