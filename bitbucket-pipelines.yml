@@ -13,7 +13,6 @@ pipelines:
         script: # Modify the commands below to build your repository.
           - export DATABASE_URL=postgresql://test_user:test_user_password@localhost/scalear_api_test
           - bundle install
-          - rails db:test:prepare
           - rails test
         services:
           - postgres
