@@ -1,0 +1,27 @@
+lecture1:
+  name: 'name'
+  course: course1
+  group: group1
+  url: "http://www.youtube.com/watch?v=xGcG4cp2yzY"
+  start_time: 0
+  end_time: 240
+  duration: 240
+  appearance_time_module: true
+  due_date_module: true
+  position: 1
+  appearance_time: '2017-9-9'
+  due_date: '2017-10-9'
+
+lecture2:
+  name: 'name'
+  course: course2
+  group: group2
+  url: "http://www.youtube.com/watch?v=xGcG4cp2yzY"
+  start_time: 0
+  end_time: 240
+  duration: 240
+  appearance_time_module: true
+  due_date_module: true
+  position: 1
+  appearance_time: '2017-9-9'
+  due_date: '2017-10-9'

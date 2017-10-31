@@ -1,0 +1,11 @@
+teacher_enrollments1: 
+  user: user1
+  course: course1
+  role: role3
+  email_discussion: false
+
+teacher_enrollments2: 
+  user: user2
+  course: course2
+  role: role3
+  email_discussion: false

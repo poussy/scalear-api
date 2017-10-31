@@ -1,0 +1,21 @@
+role1 :
+  id: 1  
+  name: 'User'
+role2 :
+  id: 2  
+  name: 'Student'
+role3 :
+  id: 3  
+  name: 'Professor'
+role4 :
+  id: 4  
+  name: 'Teaching Assistant'
+role5 :
+  id: 5  
+  name: 'Administrator'
+role6 :
+  id: 6  
+  name: 'Preview'
+role9 :
+  id: 9  
+  name: 'School Administrator'
