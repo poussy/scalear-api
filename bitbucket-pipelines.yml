@@ -1,0 +1,30 @@
+# This is a sample build configuration for Ruby.
+# Check our guides at https://confluence.atlassian.com/x/8r-5Mw for more examples.
+# Only use spaces to indent your .yml configuration.
+# -----
+# You can specify a custom docker image from Docker Hub as your build environment.
+image: ruby:2.4.0
+
+pipelines:
+  default:
+    - step:
+        caches:
+          - bundler
+        script: # Modify the commands below to build your repository.
+          - export DATABASE_URL=postgresql://test_user:test_user_password@localhost/scalear_api_test
+          - bundle install
+          - rails db:migrate
+          - rails test
+        services:
+          - postgres
+
+definitions:
+  caches:
+    bundler: ./vendor
+  services:
+    postgres:
+      image: postgres
+      environment:
+        POSTGRES_DB: scalear_api_test
+        POSTGRES_USER: test_user
+        POSTGRES_PASSWORD: test_user_password
