@@ -11,7 +11,7 @@ pipelines:
         caches:
           - bundler
         script: # Modify the commands below to build your repository.
-          - export DATABASE_URL=postgresql://test_user:test_user_password@localhost/pipelines
+          - export DATABASE_URL=postgresql://test_user:test_user_password@localhost/scalear_api_test
           - bundle install
           - rails db:setup
           - rails db:test:prepare
@@ -26,6 +26,6 @@ definitions:
     postgres:
       image: postgres
       environment:
-        POSTGRES_DB: pipelines
+        POSTGRES_DB: scalear_api_test
         POSTGRES_USER: test_user
         POSTGRES_PASSWORD: test_user_password
