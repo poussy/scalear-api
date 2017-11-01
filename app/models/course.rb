@@ -17,6 +17,7 @@ class Course < ApplicationRecord
 	has_many :guest_enrollments, :dependent => :destroy
 	has_many :guests, :source => :user, :through => :guest_enrollments
 
+	has_many :course_domains, :dependent => :destroy
 
 	validates :name, :end_date, :short_name,:start_date, :user_id, :time_zone, :presence => true
 
@@ -27,8 +28,7 @@ class Course < ApplicationRecord
 
 	validate :validate_end_date_disable_regis_after_start_date ,on: [:create, :update]
 	validates_format_of :image_url, :with    => %r{\.(((g|G)(i|I)(f|F))|((j|J)(p|P)(e|E)?(g|G))|((p|P)(n|N)(g|G)))}i, :message => :must_be_image, :allow_blank => true
-
-
+	
 	def correct_teacher(user)
 		if !(self.teachers.include? user) && !user.has_role?('Administrator') && !(self.is_school_administrator(user))  
 			return false
@@ -65,26 +65,38 @@ class Course < ApplicationRecord
 	# def normal_quizzes
 	# end
 
-	# def ended
-	# end
+	def ended
+		self.end_date < DateTime.now
+	end
 
-	# def duration
-	# end
+	def duration
+		( self.end_date - self.start_date ).numerator / 7
+	end
 
-	# def is_school_administrator(current_user)
-	# end
+	def is_teacher(user)
+		self.teachers.where(:id => current.id).count>0
+	end
 
-	# def is_teacher(current)
-	# end
+	def is_student(user)
+		self.students.include? user
+	end
 
-	# def is_student(current)
-	# end
+	def is_guest(user)
+		self.guests.include? user
+	end
 
-	# def is_guest(current)
-	# end
-
-	# def get_role_user(user)
-	# end
+	def get_role_user(user)
+		# 1 teacher, 2 student, 3 prof, 4 TA, 5 Admin, 6 preview, 7 guest
+		role = 0
+		if self.correct_teacher(user) ## teacher && administrator && school_administrator
+			role = 1 
+		elsif self.is_student(user)
+			role = 2 
+		elsif  self.is_guest(user)
+			role = 7
+		end
+		return role
+	end
 
 	# def export_course(current_user)
 	# end
@@ -159,7 +171,7 @@ class Course < ApplicationRecord
 		end
 
 		def generate_random_unique_identifier
-		(0...5).map { [*('A'..'H'),*('J'..'N'), *('P'..'Z')].to_a[rand(24)] }.join + '-' + (0...5).map { (0..9).to_a[rand(10)] }.join
+			(0...5).map { [*('A'..'H'),*('J'..'N'), *('P'..'Z')].to_a[rand(24)] }.join + '-' + (0...5).map { (0..9).to_a[rand(10)] }.join
 		end
 
 end

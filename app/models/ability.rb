@@ -8,6 +8,7 @@ class Ability
       # else
       #   can :read, :all
       # end
+    can [:get_role], Course      
     if user.has_role? 'User'
         
       ##Course

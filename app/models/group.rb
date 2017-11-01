@@ -16,6 +16,16 @@ class Group < ApplicationRecord
 	validate :due_date_must_be_after_items
 	validates_datetime :due_date, :on_or_after => lambda{|m| m.appearance_time}, :on_or_after_message => "group.errors.due_date_pass_after_appearance_date"
 
+	attribute :total_time 
+	attribute :items
+	attribute :total_questions
+	attribute :total_quiz_questions
+	attribute :total_survey_questions
+	attribute :total_lectures
+	attribute :total_quizzes
+	attribute :total_surveys
+	attribute :total_links
+
 	# def has_not_appeared
 	# end
 
@@ -58,26 +68,57 @@ class Group < ApplicationRecord
 	# def get_checked_quizzes
 	# end
 
-	# def total_questions
-	# end
+	def total_questions
+		count =0
+		lectures.each do |l|
+			count+= l.online_quizzes.select(&@quiz_not_empty).size
+		end
+		return count
+	end
 
 	# def total_questions_display
 	# end
 
-	# def total_quiz_questions #doesn't count survey questions.
-	# end
+	def total_quiz_questions #doesn't count survey questions.
+		count=0;
+		quizzes.where("quiz_type!='survey'").each do |q|
+			headers_count = q.questions.where(:question_type => 'header').size
+			count+= (q.questions.count-headers_count)
+		end
+		return count
+	end
 
-	# def total_survey_questions #doesn't count survey questions.
-	# end
+	def total_survey_questions #doesn't count survey questions.
+		count=0;
+		quizzes.where("quiz_type!='quiz'").each do |q|
+			headers_count = q.questions.where(:question_type => 'header').size
+			count+= (q.questions.count-headers_count)
+		end
+		return count
+	end
 
-	# def total_time
-	# end
+	def total_time
+		count=0;
+		lectures.each do |l|
+			count+=l.duration if !l.duration.nil?
+		end
+		return count.floor		
+	end
 
 	# def get_items_json
 	# end
 
-	# def get_items
-	# end
+	def get_items
+		(quizzes+lectures+custom_links).sort{|a,b| a.position <=> b.position}
+	end
+
+	def items
+		all = self.get_items
+		all.each do |s|
+			s[:class_name]= s.class.name.downcase
+		end
+		return all
+	end
 
 	# def get_sub_items
 	# end
