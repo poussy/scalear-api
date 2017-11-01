@@ -32,6 +32,11 @@ class User < ActiveRecord::Base
 
   has_many :announcements
 
+  validates :name, :presence => true
+  validates :last_name, :presence => true
+  validates :screen_name, :presence => true, :uniqueness => true
+  validates :university, :presence => true
+
   serialize :completion_wizard
 
   def has_role?(role)
@@ -48,13 +53,8 @@ class User < ActiveRecord::Base
     return self.valid?
   end
 
- #only for testing
-  def roles
-    return [{id:3}]
-  end
-
+ 
   def intro_watched
-    p completion_wizard
     if self.completion_wizard
       return self.completion_wizard[:intro_watched]
     else

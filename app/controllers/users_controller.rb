@@ -10,7 +10,7 @@ class UsersController < ApplicationController
  
   def get_current_user
     
-    result = {:user => current_user.to_json(:methods => [:info_complete, :roles, :intro_watched]), :signed_in => user_signed_in?  } 
+    result = {:user => current_user.to_json(:include => {:roles=>{:only => :id}}, :methods => [:info_complete, :intro_watched]), :signed_in => user_signed_in?  } 
     render :json => result
   end
 
