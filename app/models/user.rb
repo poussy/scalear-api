@@ -32,6 +32,8 @@ class User < ActiveRecord::Base
 
   has_many :announcements
 
+  serialize :completion_wizard
+
   def has_role?(role)
     self.roles.pluck(:name).include?(role)      
   end
@@ -39,6 +41,25 @@ class User < ActiveRecord::Base
    # override devise function, to include methods with response
   def token_validation_response
     self.as_json(:methods => [:info_complete, :intro_watched])
+  end
+
+
+  def info_complete
+    return self.valid?
+  end
+
+ #only for testing
+  def roles
+    return [{id:3}]
+  end
+
+  def intro_watched
+    p completion_wizard
+    if self.completion_wizard
+      return self.completion_wizard[:intro_watched]
+    else
+      return false
+    end
   end
 
 
