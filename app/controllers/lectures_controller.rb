@@ -15,7 +15,7 @@ class LecturesController < ApplicationController
 	# # end
 
 	def set_zone
-		Time.zone= @lecture.course.time_zone
+		Time.zone= @course.time_zone
 	end
 
 	# def index
