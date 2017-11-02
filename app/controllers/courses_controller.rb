@@ -44,14 +44,12 @@ class CoursesController < ApplicationController
 
 	def importing?
 		if @course.importing==true
-			#redirect_to courses_path, :alert => t('controller_msg.importing-data')
-			p 'importingimporting'
 			render json: {:errors => [ t("controller_msg.you_are_not_authorized") ]}, status: 403
 		end		
 	end  
 
 	def index
-		if current_user.has_role?('School Administrator')
+		if current_user.has_role?('Administrator')
 			@total_teacher = Course.where("id is not null").count
 			teacher_courses= Course.where("id is not null").order("start_date DESC").limit(params[:limit]).offset(params[:offset]).includes([{:teacher_enrollments => [:user,:role]}, :enrollments, :lectures, :quizzes])#.all
 		elsif current_user.is_school_administrator?
@@ -105,7 +103,6 @@ class CoursesController < ApplicationController
 		if current_user.has_role?('Administrator')
 			@import= Course.all
 		elsif current_user.has_role?('School Administrator')
-			email = 
 			user_role = UsersRole.where(:user_id => user.id, :role_id => 9)[0]
 			if user_role
 				email = user_role.admin_school_domain || nil
