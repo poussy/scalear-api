@@ -31,14 +31,66 @@ class GroupsController < ApplicationController
 	# def new
 	# end
 
-	# def update
-	# end
+	def update
+		@group = @course.groups.find(params[:id])
+		if @group.update_attributes(group_params)
+		#	# waiting for event table
+		#   @group.events.where(quiz_id: nil, lecture_id: nil)[0].update_attributes(
+		# 	  name: "#{@group.name} due", 
+		#   	  start_at: params[:group][:due_date], 
+		# 	  end_at: params[:group][:due_date], 
+		# 	  all_day: false, 
+		# 	  color: 'red', 
+		# 	  course_id: @course.id) # its ok since I only have the due date.
 
-	# def destroy
-	# end
+		puts "group appearance time is #{@group.appearance_time}"
+		puts "lectures to update are #{@group.lectures}"
+		@group.lectures.each do |l|
+			l.appearance_time = @group.appearance_time if l.appearance_time_module
+			l.due_date = @group.due_date if l.due_date_module
+			l.required = @group.required if l.required_module
+			l.graded = @group.graded if l.graded_module
+			l.save
+		end
 
-	# def sort
-	# end
+		puts "lectures updated are #{@group.lectures.reload}"
+
+		@group.quizzes.each do |q|
+			# if q.appearance_time_module
+			#   q.appearance_time = @group.appearance_time
+			# end
+			q.due_date = @group.due_date if q.due_date_module
+			q.required = @group.required if q.required_module
+			q.graded = @group.graded if q.graded_module
+			q.save
+		end
+		render json: { notice: [I18n.t('groups.module_successfully_updated')] }
+		else
+		render json: { errors: @group.errors, appearance_time: @group.appearance_time.strftime('%Y-%m-%d') }, status: :unprocessable_entity
+		end
+  	end
+
+	def destroy
+		@group = @course.groups.find(params[:id])
+
+		if @group.destroy
+			## wating for shareditem table
+			# SharedItem.delete_dependent("modules", params[:id].to_i,current_user.id)
+			render json: {:notice => [I18n.t("groups.module_successfully_deleted")]}
+		else
+			render json: {:errors => [I18n.t("groups.could_not_delete_module")]}, :status => 400
+		end
+  	end
+
+	def sort
+		@groups = Group.where(:course_id => @course.id)
+		params['group'].each_with_index do |g,index|
+			group = @groups.select{|f| f.id==g['id']}[0] #find(g['id'])
+			group.position = index + 1
+			group.save
+		end
+		render json: {:notice => [I18n.t("controller_msg.modules_sorted")]}
+  	end
 
 	# def hide_invideo_quiz
 	# end
@@ -104,14 +156,34 @@ class GroupsController < ApplicationController
 		end
 	end
 	
-	# def new_link_angular
-	# end
+	def new_link_angular
+		@group= Group.find(params[:id])
+		position=1
+		position= @group.get_items.size+1 if @group.get_items.size > 0
+		@link = @group.custom_links.build(:name => "New Link", :url => "Empty", :course_id => params[:course_id], :position => @group.get_items.size+1)
+		if @link.save
+		render json: {link: @link, :notice => I18n.t("controller_msg.link_successfully_created")}
+		else
+		render json: {:errors => @link.errors}, status: 400
+		end
+	end
 
 	# def get_lecture_charts_angular
 	# end
 
-	# def validate_group_angular
-	# end
+	def validate_group_angular
+		@group= Group.find(params[:id])
+		params[:group].each do |key, value|
+			@group[key]=value
+		end
+		
+		if @group.valid?
+			head :ok
+		else
+			render json: {errors: @group.errors.full_messages}, status: :unprocessable_entity
+		end
+
+  	end
 
 	# def get_quiz_chart_angular
 	# end

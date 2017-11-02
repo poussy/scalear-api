@@ -157,5 +157,17 @@ Rails.application.routes.draw do
             end
         end
     end    
+
+    resources :custom_links do
+    collection do
+      post 'sort_course'
+      post 'link_copy'      
+    end
+    member do
+      put 'validate_custom_link'
+      post 'link_copy'
+    end
+  end
+
   end
 end

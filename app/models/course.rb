@@ -8,7 +8,7 @@ class Course < ApplicationRecord
 	
 	has_many :enrollments, :dependent => :destroy
 	# has_many :users, :through => :enrollments
-	has_many :students, :through => :enrollments, :source => :user
+	has_many :users, :through => :enrollments, :source => :user
 
 	has_many :teacher_enrollments, :dependent => :destroy
 	has_many :teachers, :through => :teacher_enrollments, :source => :user  # to get this call user.subjects
@@ -37,7 +37,7 @@ class Course < ApplicationRecord
 	end
 
 	def correct_student(user)
-		if !(self.students.include? user) && !(self.guests.include? user) 
+		if !(self.users.include? user) && !(self.guests.include? user) 
 			return false
 		end
 		return true
@@ -78,7 +78,7 @@ class Course < ApplicationRecord
 	end
 
 	def is_student(user)
-		self.students.include? user
+		self.users.include? user
 	end
 
 	def is_guest(user)

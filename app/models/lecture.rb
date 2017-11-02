@@ -13,6 +13,9 @@ class Lecture < ApplicationRecord
 	validate :due_before_module_due_date
 	validate :type_inclass_distance_peer
 
+	  attribute :class_name
+
+
 
 	# def has_not_appeared
 	# end

@@ -52,6 +52,10 @@ class Ability
              :change_status_distance_peer, :check_if_distance_peer_status_is_sync , :check_if_distance_peer_is_alive], Lecture do |lecture|
                 lecture.course.correct_student(user)
             end
+          
+        can :manage, CustomLink do |link|
+                link.course.correct_teacher(user)
+            end
 
     end
     if !(user.has_role? 'User') && !(user.has_role? :admin) && !(user.has_role? :administrator)
