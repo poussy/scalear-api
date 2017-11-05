@@ -78,7 +78,7 @@ class GroupsController < ApplicationController
 	def sort
 		@groups = Group.where(:course_id => @course.id)
 		params['group'].each_with_index do |g,index|
-			group = @groups.select{|f| f.id==g['id']}[0] #find(g['id'])
+			group = @groups.select{|f| f.id==g['id'].to_i}[0] #find(g['id'])
 			group.position = index + 1
 			group.save
 		end
