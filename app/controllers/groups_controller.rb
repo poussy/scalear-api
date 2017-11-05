@@ -34,39 +34,32 @@ class GroupsController < ApplicationController
 	def update
 		@group = @course.groups.find(params[:id])
 		if @group.update_attributes(group_params)
-		#	# waiting for event table
-		#   @group.events.where(quiz_id: nil, lecture_id: nil)[0].update_attributes(
-		# 	  name: "#{@group.name} due", 
-		#   	  start_at: params[:group][:due_date], 
-		# 	  end_at: params[:group][:due_date], 
-		# 	  all_day: false, 
-		# 	  color: 'red', 
-		# 	  course_id: @course.id) # its ok since I only have the due date.
+			#	# waiting for event table
+			#   @group.events.where(quiz_id: nil, lecture_id: nil)[0].update_attributes(
+			# 	  name: "#{@group.name} due", 
+			#   	  start_at: params[:group][:due_date], 
+			# 	  end_at: params[:group][:due_date], 
+			# 	  all_day: false, 
+			# 	  color: 'red', 
+			# 	  course_id: @course.id) # its ok since I only have the due date.
 
-		puts "group appearance time is #{@group.appearance_time}"
-		puts "lectures to update are #{@group.lectures}"
-		@group.lectures.each do |l|
-			l.appearance_time = @group.appearance_time if l.appearance_time_module
-			l.due_date = @group.due_date if l.due_date_module
-			l.required = @group.required if l.required_module
-			l.graded = @group.graded if l.graded_module
-			l.save
-		end
+			@group.lectures.each do |l|
+				l.appearance_time = @group.appearance_time if l.appearance_time_module
+				l.due_date = @group.due_date if l.due_date_module
+				l.required = @group.required if l.required_module
+				l.graded = @group.graded if l.graded_module
+				l.save
+			end
 
-		puts "lectures updated are #{@group.lectures.reload}"
-
-		@group.quizzes.each do |q|
-			# if q.appearance_time_module
-			#   q.appearance_time = @group.appearance_time
-			# end
-			q.due_date = @group.due_date if q.due_date_module
-			q.required = @group.required if q.required_module
-			q.graded = @group.graded if q.graded_module
-			q.save
-		end
-		render json: { notice: [I18n.t('groups.module_successfully_updated')] }
+			@group.quizzes.each do |q|
+				q.due_date = @group.due_date if q.due_date_module
+				q.required = @group.required if q.required_module
+				q.graded = @group.graded if q.graded_module
+				q.save
+			end
+			render json: { notice: [I18n.t('groups.module_successfully_updated')] }
 		else
-		render json: { errors: @group.errors, appearance_time: @group.appearance_time.strftime('%Y-%m-%d') }, status: :unprocessable_entity
+			render json: { errors: @group.errors, appearance_time: @group.appearance_time.strftime('%Y-%m-%d') }, status: :unprocessable_entity
 		end
   	end
 

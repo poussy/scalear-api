@@ -81,10 +81,11 @@ class Group < ApplicationRecord
 
 	def total_quiz_questions #doesn't count survey questions.
 		count=0;
-		quizzes.where("quiz_type!='survey'").each do |q|
-			headers_count = q.questions.where(:question_type => 'header').size
-			count+= (q.questions.count-headers_count)
-		end
+		## waiting for questions table
+		# quizzes.where("quiz_type!='survey'").each do |q|
+		# 	headers_count = q.questions.where(:question_type => 'header').size
+		# 	count+= (q.questions.count-headers_count)
+		# end
 		return count
 	end
 

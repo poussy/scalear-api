@@ -1,0 +1,18 @@
+quizz1:
+  id: 1
+  name: 'quiz1'
+  retries: 2
+  group_id: 3 
+  course_id: 1
+  appearance_time_module: true
+  appearance_time: '2017-9-9'
+  due_date_module: true
+  due_date: '2017-10-9'
+  position: 3
+  required: true
+  graded: true
+  required_module: true
+  graded_module: true
+  visible: true
+  quiz_type: 'quiz'
+  instructions: "Please choose the correct answer(s)"
