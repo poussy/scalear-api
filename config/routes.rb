@@ -156,6 +156,33 @@ Rails.application.routes.draw do
                 post 'module_copy'
             end
         end
+        resources :quizzes do
+          member do
+            get 'middle'
+            get 'details'
+            get 'get_questions_angular'
+            put 'update_questions'
+            post 'create_or_update_survey_responses'
+            post 'hide_responses'
+            post 'hide_response_student'
+            post 'delete_response'
+            post 'make_visible'
+            post 'show_question_inclass'
+            post 'show_question_student'
+            put 'update_questions_angular'
+            put 'validate_quiz_angular'
+            post 'save_student_quiz_angular'
+            post 'quiz_copy'
+            post 'update_grade'
+            post 'change_status_angular'
+          end
+          collection do
+            post 'sort'
+            post 'new_or_edit'
+            post 'quiz_copy'
+          end
+        end
+
     end    
 
     resources :custom_links do

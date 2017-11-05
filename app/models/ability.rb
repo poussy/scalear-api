@@ -57,6 +57,17 @@ class Ability
                 link.course.correct_teacher(user)
             end
 
+        ## Quiz
+        can [:new_or_edit, :create, :index, :update, :destroy, :show, :get_questions_angular, :update_questions_angular, :validate_quiz_angular, 
+             :make_visible, :hide_responses, :hide_response_student, :create_or_update_survey_responses, :delete_response, :show_question_inclass,
+             :show_question_student,:quiz_copy,  :change_status_angular, :update_grade], Quiz do |quiz|
+                quiz.course.correct_teacher(user)
+            end
+        can [:show, :get_questions_angular, :save_student_quiz_angular], Quiz do |quiz|
+                quiz.course.correct_student(user)
+            end
+
+
     end
     if !(user.has_role? 'User') && !(user.has_role? :admin) && !(user.has_role? :administrator)
       #can :index, Course  #so that people without role can live until they get a role.

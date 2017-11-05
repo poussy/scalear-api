@@ -19,11 +19,20 @@ class CustomLinksController < ApplicationController
       @link[key]=value
     end
     if @link.valid?
-    head :ok
+      head :ok
     else
       frender json: {errors:@link.errors.full_messages}, status: :unprocessable_entity
     end
     
+  end
+
+  def destroy
+    if @custom_link.destroy
+
+      render json: {:notice => [I18n.t("controller_msg.link_successfully_deleted")]}
+    else 
+      render jason: {errors:@link.errors.full_messages}, status: :unprocessable_entity  
+    end
   end
 
 
