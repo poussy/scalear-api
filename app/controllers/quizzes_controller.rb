@@ -215,10 +215,25 @@ class QuizzesController < ApplicationController
 
   end
 
+  def destroy
+    quiz_type=@quiz.quiz_type
+    @course = params[:course_id]
+
+    if @quiz.destroy
+      ##waiting for sharedItem table
+      # SharedItem.delete_dependent("quiz", params[:id].to_i, current_user.id)
+      render json: {:notice => [I18n.t("controller_msg.#{quiz_type}_successfully_deleted")]}
+    else
+      render json: {:errors => [I18n.t("quizzes.could_not_delete_quiz")]}, :status => 400
+    end
+  end
+
 
 private
 
   def quiz_params
-    params.require(:quiz).permit(:course_id, :instructions, :name, :questions_attributes, :group_id, :due_date, :appearance_time,:appearance_time_module, :due_date_module, :required_module , :inordered_module,:position, :type, :visible, :required, :retries, :current_user, :inordered)
+    params.require(:quiz).permit(:course_id, :instructions, :name, :questions_attributes, :group_id, :due_date, 
+        :appearance_time,:appearance_time_module, :due_date_module, :required_module , :inordered_module,:position, 
+        :type, :visible, :required, :retries, :current_user, :inordered, :graded, :graded_module, :quiz_type, :parent_id, :requirements)
   end
 end
