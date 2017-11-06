@@ -8,6 +8,8 @@ Rails.application.routes.draw do
       confirmations: 'devise/confirmations'
     }
 
+    root :to => "home#index"
+
     resources :users, only: [] do
       member do
         get "enroll"
@@ -91,6 +93,7 @@ Rails.application.routes.draw do
             get 'current_courses'
             post 'send_system_announcement'
         end
+        
         resources :groups do #at first had it over quizzes and lectures, but then a lecture/quiz might not be part of a module! so shouldn't need module to access lecture.. could create lectures and then put them part of a group.
             member do
                 get 'group_editor'
@@ -156,6 +159,8 @@ Rails.application.routes.draw do
                 post 'module_copy'
             end
         end
+
+        resources :announcements
     end    
   end
 end

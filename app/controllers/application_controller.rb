@@ -13,6 +13,6 @@ class ApplicationController < ActionController::API
 
 
 	rescue_from CanCan::AccessDenied do |exception|
-		render json: {:errors=>[ "controller_msg.you_are_not_authorized" ]}, status: 403
+		render json: {:errors=>[ I18n.t("controller_msg.you_are_not_authorized") ]}, status: 403
 	end
 end

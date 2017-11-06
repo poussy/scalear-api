@@ -1,9 +1,6 @@
 require 'test_helper'
 
 class CoursesControllerTest <  ActionController::TestCase
-  # test "the truth" do
-  #   assert true
-  # end
 	include Devise::Test::ControllerHelpers
 	def setup
 		@user1 = users(:user1)

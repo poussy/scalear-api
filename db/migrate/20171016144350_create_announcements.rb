@@ -1,7 +1,7 @@
 class CreateAnnouncements < ActiveRecord::Migration[5.1]
   def up
     create_table :announcements do |t|
-		t.string   :name
+		t.string   :announcement
 		t.integer  :course_id
 		t.integer  :user_id
 		t.datetime   :date

@@ -1,0 +1,11 @@
+announcement1:
+  announcement: 'announcement'
+  course: course1
+  user: user1 
+  date: '2017-9-9'
+
+announcement2:
+  announcement: 'announcement'
+  course: course2
+  user: user2
+  date: '2017-9-9'  
