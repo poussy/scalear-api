@@ -44,7 +44,7 @@ class QuizzesController < ApplicationController
     questions= quiz.questions
 
 
-    questions.sort!{|x,y| ( x.position and y.position ) ? x.position <=> y.position : ( x.position ? -1 : 1 )  }
+    questions.sort {|x,y| ( x.position and y.position ) ? x.position <=> y.position : ( x.position ? -1 : 1 )  }
     answers=[]
     s_grades={}
     status=""
