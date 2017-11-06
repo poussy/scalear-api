@@ -172,6 +172,49 @@ class QuizzesController < ApplicationController
     return @alert_messages
   end
 
+  def update
+    @quiz = Quiz.find(params[:id])
+    group = @quiz.group
+    @course = Course.find(params[:course_id])
+    if params[:quiz][:due_date_module] == true
+       params[:quiz][:due_date]=group.due_date
+    end
+    if params[:quiz][:appearance_time_module]==true
+      params[:quiz][:appearance_time]=group.appearance_time
+    end
+    if params[:quiz][:required_module]== true
+      params[:quiz][:required]=group.required
+    end
+    if params[:quiz][:graded_module]== true
+      params[:quiz][:graded]=group.graded
+    end
+
+    if @quiz.update_attributes(quiz_params)
+      ### waiting for events table
+      #  @quiz.events.where(:lecture_id => nil, :group_id => group.id).destroy_all
+      #  if @quiz.due_date.to_formatted_s(:long) != group.due_date.to_formatted_s(:long)
+      #      @quiz.events << Event.new(:name => "#{@quiz.name} "+t('controller_msg.due'), :start_at => params[:quiz][:due_date], :end_at => params[:quiz][:due_date], :all_day => false, :color => "red", :course_id => @course.id, :group_id => group.id)
+      #  end
+       render json: {quiz: @quiz, :notice => [I18n.t("controller_msg.#{@quiz.quiz_type}_successfully_updated")] }
+    else
+      render json: {:errors => @quiz.errors , :appearance_time =>@quiz.appearance_time.strftime('%Y-%m-%d') }, :status => :unprocessable_entity
+    end
+  end
+
+  def validate_quiz_angular
+    @quiz= Quiz.find(params[:id])
+    params[:quiz].each do |key, value|
+      @quiz[key]=value
+    end
+    
+    if @quiz.valid?
+      head :ok
+    else
+      render json: {errors:@quiz.errors.full_messages}, status: :unprocessable_entity 
+    end
+
+  end
+
 
 private
 
