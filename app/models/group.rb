@@ -4,6 +4,9 @@ class Group < ApplicationRecord
 	has_many :lectures, -> { order('position') }, :dependent => :destroy
 	has_many :quizzes, -> { order('position') }, :dependent => :destroy 
 	has_many :custom_links, -> { order('position') }, :dependent => :destroy
+	has_many :quiz_statuses
+	has_many :assignment_statuses, :dependent => :destroy
+  	has_many :assignment_item_statuses, :dependent => :destroy
 
 	after_destroy :clean_up
 

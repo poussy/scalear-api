@@ -1,6 +1,7 @@
 class Lecture < ApplicationRecord
 	belongs_to :course, :touch => true
 	belongs_to :group, :touch => true
+	has_many :assignment_item_statuses, :dependent => :destroy
 
 	validates :name, :url,:appearance_time, :due_date,:course_id, :group_id, :start_time, :end_time, :duration, :position, :presence => true
 	validates_inclusion_of :appearance_time_module, :due_date_module,:required_module , :graded_module, :inclass, :distance_peer, :in => [true, false] #not in presence because boolean false considered not present.

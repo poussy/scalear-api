@@ -32,6 +32,9 @@ class User < ActiveRecord::Base
   # has_and_belongs_to_many :roles, -> {uniq} ,:join_table => :users_roles  
 
   has_many :announcements
+  has_many :quiz_statuses, :dependent => :destroy
+  has_many :assignment_statuses, :dependent => :destroy
+  has_many :assignment_item_statuses, :dependent => :destroy
 
   validates :name, :presence => true
   validates :last_name, :presence => true
@@ -85,6 +88,14 @@ class User < ActiveRecord::Base
     else
       return false
     end
+  end
+
+  def get_assignment_status(item)
+    return self.assignment_statuses.select{|a| a.group_id == item.group_id}.first
+  end
+  
+  def get_quiz_status(item)
+    return self.assignment_item_statuses.select{|a| a.group_id == item.group_id && a.quiz_id == item.id && !a.lecture_id}.first
   end
 
 

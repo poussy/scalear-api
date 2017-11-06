@@ -160,6 +160,18 @@ class QuizzesController < ApplicationController
       :explanation => explanation , :alert_messages=>@alert_messages}
   end
 
+  def get_alert_messages(quiz,status)
+    @alert_messages={}
+    day2='day'.pluralize((Time.zone.now.to_date - quiz.due_date.to_date).to_i)
+    if quiz.due_date < Time.zone.now #if due date 5 april (night) then i have until 6 april..
+      @alert_messages['due']= [I18n.localize(quiz.due_date, :format => '%d %b'), (Time.zone.now.to_date - quiz.due_date.to_date).to_i, t("controller_msg.#{day2}")]
+    elsif  quiz.due_date.to_date == Time.zone.today && Time.zone.now.hour <= quiz.due_date.hour
+      @alert_messages['today'] = quiz.due_date
+    end
+    @alert_messages['submit']= true if !status.nil? and status.status=="Submitted" and status.attempts==quiz.retries+1#"You've submitted the "+" #{quiz.quiz_type.capitalize} " + t('controller_msg.no_more_attempts')
+    return @alert_messages
+  end
+
 
 private
 
