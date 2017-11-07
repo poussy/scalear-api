@@ -128,9 +128,8 @@ class Lecture < ApplicationRecord
 	end
 
 	def clean_up
-			### change after add events to the 
+			### waiting for add events table 
 			# self.events.where(:quiz_id => nil).destroy_all
-			p "Events destroyed"
 	end
 
 end

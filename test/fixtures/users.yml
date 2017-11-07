@@ -8,7 +8,7 @@ user1:
 
 user2:
   name: "ahmedd"
-  email: "a.hossam.2012@gmail.com"
+  email: "a.hossam.2012@gmailll.com"
   last_name: "hossamm"
   screen_name: "ahmedd hossam,"
   university: "nilee"
@@ -22,3 +22,11 @@ user3:
   screen_name: "a.okasha"
   university: "helwan"
   uid: "okasha@gmail.com"
+  
+admin_user:
+  name: "admin"
+  email: "admin@gmailll.com"
+  last_name: "hossam"
+  screen_name: "ahmed hossam,"
+  university: "nilee"
+  uid: "admin@gmailll.com"

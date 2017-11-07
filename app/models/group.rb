@@ -73,9 +73,10 @@ class Group < ApplicationRecord
 
 	def total_questions
 		count =0
-		lectures.each do |l|
-			count+= l.online_quizzes.select(&@quiz_not_empty).size
-		end
+		# waiting for online quiz table
+		# lectures.each do |l|
+			# count+= l.online_quizzes.select(&@quiz_not_empty).size
+		# end
 		return count
 	end
 
@@ -172,7 +173,6 @@ class Group < ApplicationRecord
 	# def get_online_quiz_summary_teacher
 	# end
 
-
 	# def get_discussion_summary_teacher
 	# end
 
@@ -186,12 +186,6 @@ class Group < ApplicationRecord
 	# end
 
 	private
-
-		# def validate_due_date_after_appearance_time
-		# 	if due_date && appearance_time && due_date < appearance_time
-		# 		errors.add(:due_date, "group.errors.due_date_pass")
-		# 	end
-		# end
 
 		def appearance_date_must_be_before_items
 			error=false
@@ -215,8 +209,8 @@ class Group < ApplicationRecord
 		end
 
 		def clean_up
-			### change after add events to the 
+			### waiting for add events table
 			# self.events.where(:lecture_id => nil, :quiz_id => nil).destroy_all
-			p "Events destroyed"
+			
 		end
 end
