@@ -15,6 +15,7 @@ class LecturesController < ApplicationController
 	# # end
 
 	def set_zone
+		@course=Course.find(params[:course_id])
 		Time.zone= @course.time_zone
 	end
 
@@ -57,8 +58,25 @@ class LecturesController < ApplicationController
 	# def destroy
 	# end
 
-	# def sort #called from module_editor to sort the lectures (by dragging)
-	# end
+	def sort #called from module_editor to sort the lectures (by dragging)
+		group = Group.find(params[:group])
+		@lectures = group.lectures#.where(:group_id => params[:group])
+		@quizzes = group.quizzes#.where(:group_id => params[:group])
+		@links = group.custom_links#.where(:group_id => params[:group])
+		params['items'].each_with_index do |it,index|
+			if it['class_name'] == 'lecture'
+				item = @lectures.find(it['id'])#(it['id'])
+			elsif it['class_name'] == 'customlink'
+				item = @links.find(it['id'])
+			else
+				item = @quizzes.find(it['id'])
+			end
+			item.position = index + 1
+			item.save
+		end
+
+		render json: {:notice => [I18n.t("controller_msg.module_items_sorted")]}
+  	end
 
 	# def new_lecture_angular #called from course_editor / module editor to add a new lecture
 	# end

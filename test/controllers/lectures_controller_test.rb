@@ -41,4 +41,38 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 		assert ability2.can?(:new_quiz_angular, @lecture2)
 	end
 
+	
+	test "sort action should sort items" do
+		user = users(:user3)
+
+		user.roles << Role.find(1)
+	
+		course = courses(:course3)
+
+		group = course.groups.find(3)
+		
+		assert_equal group.custom_links.find(1).position,1
+		assert_equal group.custom_links.find(2).position,2
+		assert_equal group.quizzes.find(1).position,3
+		assert_equal group.lectures.find(353640512).position,4
+		
+
+		course.teacher_enrollments.create(:user_id => 3, :role_id => 1, :email_discussion => false)
+
+		post '/en/courses/3/lectures/sort', params: {items:
+			[
+				{id: 1 , "class_name": "quiz"},{id: 1, class_name: "customlink"},
+				{id: 2, class_name: "customlink"}, {id: 353640512, class_name: "lecture"}
+			], 
+			group: 3}, headers: user.create_new_auth_token
+		
+		group.reload
+
+		assert_equal group.custom_links.find(1).position,2
+		assert_equal group.custom_links.find(2).position,3
+		assert_equal group.quizzes.find(1).position,1
+		assert_equal group.lectures.find(353640512).position,4
+		
+	end
+
 end
