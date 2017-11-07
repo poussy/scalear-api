@@ -25,3 +25,5 @@
 /doc/app/
 /doc/features.html
 /doc/specs.html
+
+coverage/
