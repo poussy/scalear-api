@@ -68,4 +68,5 @@ Rails.application.configure do
   config.file_watcher = ActiveSupport::EventedFileUpdateChecker
 
   config.frontend_host = "http://localhost:9000/#/"
+  config.action_mailer.asset_host = 'http://localhost:3000'
 end

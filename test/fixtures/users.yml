@@ -14,6 +14,15 @@ user2:
   university: "nilee"
   uid: "a.hossam.2012@gmail.com"
 
+user3:
+  id: 3
+  name: "ahmed"
+  email: "okasha@gmail.com"
+  last_name: "okasha"
+  screen_name: "a.okasha"
+  university: "helwan"
+  uid: "okasha@gmail.com"
+  
 admin_user:
   name: "admin"
   email: "admin@gmailll.com"

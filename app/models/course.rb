@@ -18,6 +18,8 @@ class Course < ApplicationRecord
 	has_many :guests, :source => :user, :through => :guest_enrollments
 
 	has_many :course_domains, :dependent => :destroy
+	has_many :assignment_statuses, :dependent => :destroy
+  	has_many :assignment_item_statuses, :dependent => :destroy
 
 	validates :name, :end_date, :short_name,:start_date, :user_id, :time_zone, :presence => true
 
@@ -78,7 +80,7 @@ class Course < ApplicationRecord
 	end
 
 	def is_student(user)
-		self.user.include? user
+		self.users.include? user
 	end
 
 	def is_guest(user)

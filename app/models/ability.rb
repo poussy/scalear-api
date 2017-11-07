@@ -51,7 +51,23 @@ class Ability
              :check_invited_student_accepted_distance_peer, :accept_invation_distance_peer, :cancel_session_distance_peer,:check_if_in_distance_peer_session, 
              :change_status_distance_peer, :check_if_distance_peer_status_is_sync , :check_if_distance_peer_is_alive], Lecture do |lecture|
                 lecture.course.correct_student(user)
-        end
+            end
+          
+        can :manage, CustomLink do |link|
+                link.course.correct_teacher(user)
+            end
+
+        ## Quiz
+        can [:new_or_edit, :create, :index, :update, :destroy, :show, :get_questions_angular, :update_questions_angular, :validate_quiz_angular, 
+             :make_visible, :hide_responses, :hide_response_student, :create_or_update_survey_responses, :delete_response, :show_question_inclass,
+             :show_question_student,:quiz_copy,  :change_status_angular, :update_grade], Quiz do |quiz|
+                quiz.course.correct_teacher(user)
+            end
+        can [:show, :get_questions_angular, :save_student_quiz_angular], Quiz do |quiz|
+                quiz.course.correct_student(user)
+            end
+
+      
 
       ## Announcement
         can :manage, Announcement do |announcement|

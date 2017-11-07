@@ -4,6 +4,9 @@ class Group < ApplicationRecord
 	has_many :lectures, -> { order('position') }, :dependent => :destroy
 	has_many :quizzes, -> { order('position') }, :dependent => :destroy 
 	has_many :custom_links, -> { order('position') }, :dependent => :destroy
+	has_many :quiz_statuses
+	has_many :assignment_statuses, :dependent => :destroy
+  	has_many :assignment_item_statuses, :dependent => :destroy
 
 	after_destroy :clean_up
 
@@ -82,10 +85,11 @@ class Group < ApplicationRecord
 
 	def total_quiz_questions #doesn't count survey questions.
 		count=0;
-		quizzes.where("quiz_type!='survey'").each do |q|
-			headers_count = q.questions.where(:question_type => 'header').size
-			count+= (q.questions.count-headers_count)
-		end
+		## waiting for questions table
+		# quizzes.where("quiz_type!='survey'").each do |q|
+		# 	headers_count = q.questions.where(:question_type => 'header').size
+		# 	count+= (q.questions.count-headers_count)
+		# end
 		return count
 	end
 
@@ -205,8 +209,8 @@ class Group < ApplicationRecord
 		end
 
 		def clean_up
-			### change after add events to the 
+			### waiting for add events table
 			# self.events.where(:lecture_id => nil, :quiz_id => nil).destroy_all
-			p "Events destroyed"
+			
 		end
 end

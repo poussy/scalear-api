@@ -67,7 +67,7 @@ class CoursesControllerTest <  ActionController::TestCase
 		sign_in admin_user
 		get :index
 		resp =  JSON.parse response.body
-		assert_equal resp['total'] , 2
+		assert_equal resp['total'] , 3
 	end		
 
 	test 'validate new method for teacher' do
@@ -90,7 +90,7 @@ class CoursesControllerTest <  ActionController::TestCase
 		sign_in admin_user
 		get :new
 		resp =  JSON.parse response.body
-		assert_equal resp['importing'].count , 2
+		assert_equal resp['importing'].count , 3
 	end		
 
 	test 'validate Teachers method for user1 for course1' do

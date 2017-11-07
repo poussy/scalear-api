@@ -2,6 +2,8 @@ class ApplicationController < ActionController::API
   include DeviseTokenAuth::Concerns::SetUserByToken
   include CanCan::ControllerAdditions
 
+  include CanCan::ControllerAdditions
+
   before_action :configure_permitted_parameters, if: :devise_controller?
 
 
@@ -15,4 +17,5 @@ class ApplicationController < ActionController::API
 	rescue_from CanCan::AccessDenied do |exception|
 		render json: {:errors=>[ I18n.t("controller_msg.you_are_not_authorized") ]}, status: 403
 	end
+
 end

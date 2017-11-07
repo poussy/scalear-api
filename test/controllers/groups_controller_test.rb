@@ -37,4 +37,104 @@ class GroupsControllerTest < ActionDispatch::IntegrationTest
 		assert ability2.can?(:get_module_charts_angular, @group1)
 		assert ability2.can?(:get_module_charts_angular, @group2)
 	end
+
+	test "update groups action should update group" do
+		user = users(:user1)
+		##give user administrator role
+		user.roles << Role.find(5)
+		group = groups(:group3)
+
+		assert_equal group.graded, false
+		
+		put '/en/courses/3/groups/3/', params: {group: {graded: true}}, headers: user.create_new_auth_token
+		
+		group.reload
+
+		assert_equal group.graded, true
+	end
+
+	
+	test "user should be able only to update a group in a course he is a teacher in" do
+		user = users(:user3)
+
+		user.roles << Role.find(1)
+	
+		course = courses(:course3)
+
+		##here user is not a teacher in course
+		put '/en/courses/3/groups/3/', params: {group: {graded: true}}, headers: user.create_new_auth_token
+
+		assert_response :forbidden
+		
+		## here we assign the user a teacher to that course
+		course.teacher_enrollments.create(:user_id => 3, :role_id => 1, :email_discussion => false)
+		
+		put '/en/courses/3/groups/3/', params: {group: {graded: true}}, headers: user.create_new_auth_token
+
+		assert_response :success
+		
+	end
+	
+	test "user should be able delete a group in a course he is a teacher in" do
+		user = users(:user3)
+
+		user.roles << Role.find(1)
+	
+		course = courses(:course3)
+
+		##here user is not a teacher in course
+		delete '/en/courses/3/groups/3/', headers: user.create_new_auth_token
+
+		assert_response :forbidden
+		
+		## here we assign the user a teacher to that course
+		course.teacher_enrollments.create(:user_id => 3, :role_id => 1, :email_discussion => false)
+		
+		delete '/en/courses/3/groups/3/', headers: user.create_new_auth_token
+
+		assert_response :success
+		
+	end
+
+	test "sort action should sort groups" do
+		user = users(:user3)
+
+		user.roles << Role.find(1)
+	
+		course = courses(:course3)
+
+		course.teacher_enrollments.create(:user_id => 3, :role_id => 1, :email_discussion => false)
+
+		assert_equal course.groups.find(3).position, 3
+		assert_equal course.groups.find(4).position, 1
+		assert_equal course.groups.find(5).position, 2
+		
+		post '/en/courses/3/groups/sort', params: {group:[{id: 3, course_id: 3},{id: 4, course_id: 3},{id: 5, course_id: 3}]},headers: user.create_new_auth_token
+		
+		assert_equal course.groups.find(3).position, 1
+		assert_equal course.groups.find(4).position, 2
+		assert_equal course.groups.find(5).position, 3
+		
+	end
+
+	test "should create new link" do
+		user = users(:user3)
+
+		user.roles << Role.find(1)
+	
+		course = courses(:course3)
+
+		course.teacher_enrollments.create(:user_id => 3, :role_id => 1, :email_discussion => false)
+
+		group = groups(:group3)
+
+		assert_equal group.custom_links.count, 2
+
+		post '/en/courses/3/groups/3/new_link_angular', headers: user.create_new_auth_token
+
+		assert_equal group.custom_links.count, 3
+		
+	end
+
+
 end
