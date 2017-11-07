@@ -10,6 +10,10 @@ class QuizzesControllerTest < ActionDispatch::IntegrationTest
 		@course = courses(:course3)
 
 		@course.teacher_enrollments.create(:user_id => 3, :role_id => 1, :email_discussion => false)
+
+    ## necessary to send as json, so true and false wouldn't convert to strings
+    @headers = @user.create_new_auth_token
+    @headers['content-type']="application/json"
     
   end
 
@@ -57,12 +61,10 @@ class QuizzesControllerTest < ActionDispatch::IntegrationTest
 
     assert quiz.required
     assert quiz.graded
-    ## necessary to send as json, so true and false wouldn't convert to strings
-    headers = @user.create_new_auth_token
-    headers['content-type']="application/json"
+    
    
    ## parent module has required ==false and graded ==false
-		put '/en/courses/3/quizzes/1', params: {:quiz => {required_module: true, graded_module: true}}, headers: headers, as: :json
+		put '/en/courses/3/quizzes/1', params: {:quiz => {required_module: true, graded_module: true}}, headers: @headers, as: :json
     
     quiz.reload
     assert_not quiz.required

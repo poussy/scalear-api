@@ -27,8 +27,9 @@ lecture2:
   due_date: '2017-10-9'
 
 lecture3:
+  id: 3
   name: 'lecture3'
-  course: course2
+  course_id: 3
   group_id: 3
   url: "http://www.youtube.com/watch?v=xGcG4cp2yzY"
   start_time: 0
@@ -38,4 +39,4 @@ lecture3:
   due_date_module: true
   position: 4
   appearance_time: '2017-9-9'
-  due_date: '2017-10-9'
+  due_date: '2017-10-8'

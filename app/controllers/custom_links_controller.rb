@@ -21,7 +21,7 @@ class CustomLinksController < ApplicationController
     if @link.valid?
       head :ok
     else
-      frender json: {errors:@link.errors.full_messages}, status: :unprocessable_entity
+      render json: {errors:@link.errors.full_messages}, status: :unprocessable_entity
     end
     
   end
@@ -31,7 +31,7 @@ class CustomLinksController < ApplicationController
 
       render json: {:notice => [I18n.t("controller_msg.link_successfully_deleted")]}
     else 
-      render jason: {errors:@link.errors.full_messages}, status: :unprocessable_entity  
+      render json: {errors:@link.errors.full_messages}, status: :unprocessable_entity  
     end
   end
 

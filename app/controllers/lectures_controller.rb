@@ -30,16 +30,16 @@ class LecturesController < ApplicationController
 	def update
 		@lecture = Lecture.find(params[:id])
 		@course= Course.find(params[:course_id])
-		if params[:lecture][:due_date_module]==true #and params[:lecture][:due_date_module]=="true"
+		if params[:lecture][:due_date_module]==true 
 			params[:lecture][:due_date]=@lecture.group.due_date
 		end
-		if params[:lecture][:appearance_time_module]== true #and params[:lecture][:appearance_time_module]=="true"
+		if params[:lecture][:appearance_time_module]== true 
 			params[:lecture][:appearance_time]=@lecture.group.appearance_time
 		end
-		if params[:lecture][:required_module]== true #and params[:lecture][:required_module]=="true"
+		if params[:lecture][:required_module]== true 
 			params[:lecture][:required]=@lecture.group.required
 		end
-		if params[:lecture][:graded_module]== true #and params[:lecture][:graded_module]=="true"
+		if params[:lecture][:graded_module]== true 
 			params[:lecture][:graded]=@lecture.group.graded
 		end
 		did_he_change_lecture_type = @lecture.inclass != params[:lecture][:inclass]

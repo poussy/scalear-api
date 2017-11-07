@@ -14,7 +14,7 @@ class LectureTest < ActiveSupport::TestCase
 	test "Validate model validation" do
 		lecture1 = Lecture.new 
 		assert_not lecture1.valid?
-		assert_equal [:course, :group, :name, :url, :appearance_time, :due_date, :course_id, :group_id, :start_time, :end_time, :duration, :position ], lecture1.errors.keys
+		assert_equal [:course, :group, :name, :url, :appearance_time, :due_date, :course_id, :group_id, :start_time, :end_time, :position ], lecture1.errors.keys
 		lecture1.name = 'name'
 		lecture1.course_id = @course1.id
 		lecture1.group_id = @group1.id
