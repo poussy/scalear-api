@@ -18,6 +18,7 @@ class Course < ApplicationRecord
 	has_many :guests, :source => :user, :through => :guest_enrollments
 
 	has_many :course_domains, :dependent => :destroy
+	has_many :invitations, :dependent => :destroy
 	has_many :assignment_statuses, :dependent => :destroy
   	has_many :assignment_item_statuses, :dependent => :destroy
 

@@ -220,8 +220,7 @@ class QuizzesController < ApplicationController
     @course = params[:course_id]
 
     if @quiz.destroy
-      ##waiting for sharedItem table
-      # SharedItem.delete_dependent("quiz", params[:id].to_i, current_user.id)
+      SharedItem.delete_dependent("quiz", params[:id].to_i, current_user.id)
       render json: {:notice => [I18n.t("controller_msg.#{quiz_type}_successfully_deleted")]}
     else
       render json: {:errors => [I18n.t("quizzes.could_not_delete_quiz")]}, :status => 400
