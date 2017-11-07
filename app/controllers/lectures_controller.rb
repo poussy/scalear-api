@@ -27,10 +27,64 @@ class LecturesController < ApplicationController
 
 	# def new
 	# end
+	def update
+		@lecture = Lecture.find(params[:id])
+		@course= Course.find(params[:course_id])
+		if params[:lecture][:due_date_module]==true #and params[:lecture][:due_date_module]=="true"
+			params[:lecture][:due_date]=@lecture.group.due_date
+		end
+		if params[:lecture][:appearance_time_module]== true #and params[:lecture][:appearance_time_module]=="true"
+			params[:lecture][:appearance_time]=@lecture.group.appearance_time
+		end
+		if params[:lecture][:required_module]== true #and params[:lecture][:required_module]=="true"
+			params[:lecture][:required]=@lecture.group.required
+		end
+		if params[:lecture][:graded_module]== true #and params[:lecture][:graded_module]=="true"
+			params[:lecture][:graded]=@lecture.group.graded
+		end
+		did_he_change_lecture_type = @lecture.inclass != params[:lecture][:inclass]
 
-	# def update
-	# end
+		if @lecture.update_attributes(lecture_params)
+			## waiting for events table
+			##### remove all onlinequiz.inclass_session and check added it if type isdistance peer
+			# @lecture.events.where(:quiz_id => nil, :group_id => @lecture.group.id).destroy_all
+			# if @lecture.due_date.to_formatted_s(:long) != @lecture.group.due_date.to_formatted_s(:long)
+			# 	@lecture.events << Event.new(:name => "#{@lecture.name} due", :start_at => params[:lecture][:due_date], :end_at => params[:lecture][:due_date], :all_day => false, :color => "red", :course_id => @course.id, :group_id => @lecture.group.id)
+			# end
 
+
+			## update online_quiz.inclass  to be the same as lecture.inclass untill to remove online_quiz.inclass
+			# if did_he_change_lecture_type
+			# 	if @lecture.inclass
+			# 	# create inclass session
+			# 	@lecture.online_quizzes.each do |online_quiz|
+			# 		online_quiz.update_attributes(:hide => false)
+			# 		if online_quiz.inclass_session.nil?
+			# 		online_quiz.create_inclass_session(:status => 0, :lecture_id => online_quiz.lecture_id, :group_id => online_quiz.group_id, :course_id => online_quiz.course_id)
+			# 		end
+			# 	end
+			# 	else
+			# 	# delete inclass session
+			# 	@lecture.online_quizzes.each do |online_quiz|
+			# 		online_quiz.update_attributes(:hide => true)
+			# 		session = online_quiz.inclass_session
+			# 		if !session.nil?
+			# 		session.destroy
+			# 		end
+			# 	end
+			# 	end
+
+			# end
+			# @lecture.online_quizzes.each do |online_quiz|
+			# 	online_quiz.update_attributes(:inclass => @lecture.inclass)
+			# end
+
+			render json: {lecture: @lecture, :notice => [I18n.t("controller_msg.lecture_successfully_updated")] }
+		else
+			render json: {:errors => @lecture.errors , :appearance_time =>@lecture.appearance_time.strftime('%Y-%m-%d')}, :status => :unprocessable_entity
+		end
+
+	end
 	# def update_percent_view
 	# end
 
@@ -78,8 +132,25 @@ class LecturesController < ApplicationController
 		render json: {:notice => [I18n.t("controller_msg.module_items_sorted")]}
   	end
 
-	# def new_lecture_angular #called from course_editor / module editor to add a new lecture
-	# end
+	def new_lecture_angular #called from course_editor / module editor to add a new lecture
+		group = Group.find(params[:group])
+		items = group.get_items
+		position = 1
+		if !items.empty?
+			position = items.last.position + 1
+		end
+		@lecture = @course.lectures.build(:name => "New Lecture", :appearance_time => group.appearance_time, 
+			:due_date => group.due_date, :appearance_time_module => true, :due_date_module => true, 
+			:required_module => true, :graded_module => true,:url => "none", :group_id => params[:group], 
+			:slides => "none", :position => position, :start_time => 0, :end_time => 0, :inclass => params[:inclass] ,
+			:distance_peer => params[:distance_peer] , :required=>group.required , :graded=>group.graded )
+		@lecture['className']='lecture'
+		if @lecture.save
+			render json:{lecture: @lecture, :notice => [I18n.t("controller_msg.lecture_successfully_created")]}
+		else
+			render json: {:errors => @lecture.errors}, status: 400
+		end
+  	end
 
 	# def get_lecture_angular
 	# end
@@ -126,8 +197,20 @@ class LecturesController < ApplicationController
 	# def online_quizzes_solved
 	# end
 
-	# def validate_lecture_angular
-	# end
+	
+  	def validate_lecture_angular
+		params[:lecture].each do |key, value|
+			@lecture[key]=value
+		end
+		
+		if @lecture.valid?
+			head :ok
+		else
+			render json: {errors:@lecture.errors.full_messages}, status: :unprocessable_entity
+		end
+
+   	end
+
 
 	# def create_or_update_survey_responses
 	# end
@@ -195,6 +278,8 @@ class LecturesController < ApplicationController
 private
 
   def lecture_params
-    params.require(:lecture).permit(:course_id, :description, :name, :url, :group_id, :appearance_time, :due_date, :duration,:aspect_ratio, :slides, :appearance_time_module, :due_date_module,:required_module , :inordered_module, :position, :required, :inordered, :start_time, :end_time, :type )
+    params.require(:lecture).permit(:course_id, :description, :name, :url, :group_id, :appearance_time, :due_date, :duration,
+		:aspect_ratio, :slides, :appearance_time_module, :due_date_module,:required_module , :inordered_module, 
+		:position, :required, :inordered, :start_time, :end_time, :type, :graded, :graded_module, :inclass, :distance_peer, :parent_id )
   end
 end
