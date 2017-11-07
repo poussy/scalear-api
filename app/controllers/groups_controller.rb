@@ -2,17 +2,18 @@ class GroupsController < ApplicationController
 	load_and_authorize_resource
 		#  @group is already loaded
 
-	# # before_actions :getCourse
-	# # before_actions :correct_user
-	# # before_actions :correct_id
-	before_actions :set_zone
+	before_action :getCourse
+	# # before_action :correct_user
+	# # before_action :correct_id
+	before_action :set_zone
+
+	def getCourse
+		@course= Course.find(params[:course_id])
+	end
 
 	def set_zone
-		Time.zone= @group.course.time_zone
+		Time.zone= @course.time_zone
 	end
-	#
-	# # def getCourse
-	# # end
 
 	# # Removed to course model correct student && teacher
 	# # def correct_user
@@ -63,12 +64,46 @@ class GroupsController < ApplicationController
 	# def get_surveys_progress_angular
 	# end
 
-	# def new_module_angular
-	# end
+	def new_module_angular
+		if @course.start_date > Time.zone.now.to_date
+			app= @course.start_date.midnight.beginning_of_hour
+		else
+			app= Time.zone.now.midnight.beginning_of_hour#Time.zone.now.to_date
+		end
+		due= app + 1.week
 
-	# def get_group_statistics
-	# end
+		@group = @course.groups.build(:name => "New Module", :appearance_time => app, :due_date => due, :position => @course.groups.size+1) #added to_date so it won't have time.
+		## waiting for events table 
+		# @group.events << Event.new(:name => "#{@group.name} "+ t('controller_msg.due'), :start_at => due, :end_at => due, :all_day => false, :color => "red", :course_id => @course.id)
 
+		if @group.save
+			render json:{group: @group, :notice => ["groups.module_successfully_created"]}
+		else
+			render json: {:errors => @group.errors}, status: 400
+		end
+	end
+
+	def get_group_statistics
+		# @group = Group.where(:id => params[:id], :course_id => params[:course_id]).includes(:online_quizzes => :online_answers)
+		## waiting for online_quizzes table
+		@group = Group.where(:id => params[:id], :course_id => params[:course_id])
+		if @group.empty?
+			render json: {:errors => ["controller_msg.no_such_module"]}, status: 404 and return
+		else
+			@group=@group.first
+			@group['total_time'] = @group.total_time
+			@group['total_questions'] = @group.total_questions
+			@group['total_quiz_questions'] = @group.total_quiz_questions
+			@group['total_survey_questions'] = @group.total_survey_questions
+			@group['total_lectures'] = @group.lectures.count
+			@group['total_quizzes'] = @group.quizzes.where(:quiz_type => "quiz").count
+			@group['total_surveys'] = @group.quizzes.where(:quiz_type => "survey").count
+			@group['total_links'] = @group.custom_links.count
+			# @group['custom_links'] = @group.custom_links.sort!{|x,y| ( x.group_position and y.group_position ) ? x.group_position <=> y.group_position : ( x.group_position ? -1 : 1 )  }
+			render json: @group
+		end
+	end
+	
 	# def new_link_angular
 	# end
 
@@ -148,6 +183,6 @@ class GroupsController < ApplicationController
 
 private
 	def group_params
-		params.require(:group).permit(:course_id, :description, :name, :appearance_time, :position, :due_date, :graded ,:required)
+		params.require(:group).permit(:course_id, :description, :name, :appearance_time, :position, :due_date, :graded ,:required )
 	end
 end

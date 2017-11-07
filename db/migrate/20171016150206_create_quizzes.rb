@@ -20,7 +20,7 @@ class CreateQuizzes < ActiveRecord::Migration[5.1]
 		t.boolean  :graded_module, :default => true
 
 		t.boolean  :visible, :default => false
-		t.string  :type
+		t.string  :quiz_type
 		
 		t.text     :instructions
 

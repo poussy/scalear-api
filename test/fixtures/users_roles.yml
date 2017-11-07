@@ -5,3 +5,11 @@ user_role1:
 user_role2:
   user: user2
   role_id: 1  
+
+admin_user_role_1:
+  user: admin_user
+  role_id: 1
+
+admin_user_role_5:
+  user: admin_user
+  role_id: 5

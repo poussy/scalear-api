@@ -13,9 +13,10 @@ class User < ActiveRecord::Base
 
   attr_accessor :info_complete
 
+  has_many :subjects, :class_name => "Course", :dependent => :destroy  # to get this call user.subjects
 
   has_many :enrollments, :dependent => :destroy
-  has_many :subjects_to_study, -> { distinct }, :through => :enrollments, :source => :course  # to get this call user.subjects
+  has_many :courses, -> { distinct }, :through => :enrollments, :source => :course  # to get this call user.subjects
 
 
   has_many :teacher_enrollments, :dependent => :destroy
@@ -36,11 +37,35 @@ class User < ActiveRecord::Base
     self.roles.pluck(:name).include?(role)      
   end
 
+  def info_complete
+   return true
+  end
+
+   def intro_watched
+     return true
+   end
+
+   def completion_wizard
+     return {intro_watched: true}
+   end
    # override devise function, to include methods with response
   def token_validation_response
     self.as_json(:methods => [:info_complete, :intro_watched])
   end
+    
+  def get_subdomains(email)
+    subdomains = []
+    subdomains = User.select(:email)
+      .where("email like ? ", "%#{email}%")
+      .map{|u| u.email.split('@')[1]}
+      .uniq
+      .select{|e| e != email }
+    return subdomains
+  end
 
+  def is_school_administrator?
+    role_ids.include?(9)
+  end
 
   private
       def add_default_user_role_to_user
