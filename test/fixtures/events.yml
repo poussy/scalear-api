@@ -1,0 +1,44 @@
+event1:
+  name: "New Module due"
+  start_at: "2017-9-9 00:00:00"
+  end_at: "2017-9-9 00:00:00"
+  color: "red"
+  all_day: false
+  group: group1
+  course: course1
+
+event2:
+  name: "New Module due"
+  start_at: "2017-9-9 00:00:00"
+  end_at: "2017-9-9 00:00:00"
+  color: "red"
+  all_day: false
+  group: group2
+  course: course2
+
+event3:
+  name: "New Module due"
+  start_at: "2017-9-9 00:00:00"
+  end_at: "2017-9-9 00:00:00"
+  color: "red"
+  all_day: false
+  group_id: 3
+  course_id: 3
+
+event4:
+  name: "New Module due"
+  start_at: "2017-9-9 00:00:00"
+  end_at: "2017-9-9 00:00:00"
+  color: "red"
+  all_day: false
+  group_id: 4
+  course_id: 3
+
+event5:
+  name: "New Module due"
+  start_at: "2017-9-9 00:00:00"
+  end_at: "2017-9-9 00:00:00"
+  color: "red"
+  all_day: false
+  group_id: 5
+  course_id: 3

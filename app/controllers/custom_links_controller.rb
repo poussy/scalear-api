@@ -2,7 +2,6 @@ class CustomLinksController < ApplicationController
   load_and_authorize_resource
   
   
-
   def update
     @link = CustomLink.find(params[:id])
     if @link.update_attributes(custom_link_params)
@@ -35,7 +34,9 @@ class CustomLinksController < ApplicationController
     end
   end
 
-
+  # def link_copy
+  # end
+  
 private
 
   def custom_link_params

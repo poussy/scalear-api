@@ -55,7 +55,7 @@ class UsersControllerTest < ActionController::TestCase
 
     user = (JSON.parse response.body)["user"]
 
-    assert_equal (JSON.parse user)["completion_wizard"], {"intro_watched" => true}
+    assert_equal (JSON.parse user)["completion_wizard"], {"intro_watched" => 'true'}
 
 
   end
