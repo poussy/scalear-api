@@ -106,8 +106,125 @@ class Course < ApplicationRecord
 	# def export_student_csv(current_user)
 	# end
 
-	# def import_course(import_from)
-	# end
+	def import_course(import_from)
+		importing_will_change!
+		
+		from=Course.find(import_from)
+		
+		addition_days = ((self.start_date.to_date - from.start_date.to_date) .to_i).days
+
+		new_course=self
+		
+		from.groups.each do |g|
+			new_group= g.dup
+			new_group.course_id = new_course.id
+			new_group.appearance_time = g.appearance_time + addition_days
+			new_group.due_date = g.due_date + addition_days
+			new_group.save(:validate => false)
+			g.lectures.each do |l|
+				new_lecture= l.dup
+				new_lecture.course_id = new_course.id
+				new_lecture.group_id = new_group.id
+				new_lecture.appearance_time = l.appearance_time + addition_days
+				new_lecture.due_date = l.due_date + addition_days
+				new_lecture.save(:validate => false)
+				### waiting for online markers table
+				# l.online_markers.each do |marker|
+				# 	new_online_marker = marker.dup
+				# 	new_online_marker.lecture_id = new_lecture.id
+				# 	new_online_marker.group_id = new_group.id
+				# 	new_online_marker.course_id = new_course.id
+				# 	new_online_marker.hide = false
+				# 	new_online_marker.save(:validate => false)
+				# end
+				# l.online_quizzes.each do |quiz|
+				# 	new_online_quiz = quiz.dup
+				# 	new_online_quiz.lecture_id = new_lecture.id
+				# 	new_online_quiz.group_id = new_group.id
+				# 	new_online_quiz.course_id = new_course.id
+				# 	new_online_quiz.hide = true
+				# 	new_online_quiz.save(:validate => false)
+				# 	if new_online_quiz.inclass
+				# 		new_online_quiz.create_inclass_session(:status => 0, :lecture_id => new_online_quiz.lecture_id, :group_id => new_online_quiz.group_id, :course_id => new_online_quiz.course_id)
+				# 	end
+				# 	quiz.online_answers.each do |answer|
+				# 		new_answer = answer.dup
+				# 		new_answer.online_quiz_id = new_online_quiz.id
+				# 		new_answer.save(:validate => false)
+				# 	end
+				# end
+				### waiting for events table
+				# Event.where(:quiz_id => nil, :lecture_id => l.id).each do |e|
+				# 	new_event= e.dup
+				# 	new_event.lecture_id = new_lecture.id
+				# 	new_event.course_id = new_course.id
+				# 	new_event.group_id = new_group.id
+				# 	new_event.start_at = e.start_at + addition_days
+				# 	new_event.end_at = e.end_at + addition_days
+				# 	new_event.save(:validate => false)
+				# end
+
+			end
+			g.quizzes.each do |q|
+				new_quiz= q.dup
+				new_quiz.course_id = new_course.id
+				new_quiz.group_id = new_group.id
+				new_quiz.visible= false
+				if from.end_date.to_time < q.appearance_time 
+					new_quiz.appearance_time =  Date.today + 200.years
+				else
+					new_quiz.appearance_time =  new_group.appearance_time
+				end
+				new_quiz.due_date = new_quiz.due_date + addition_days
+				new_quiz.save(:validate => false)
+
+				### waiting for events table
+				# Event.where(:quiz_id => q.id, :lecture_id => nil).each do |e|
+				# 	new_event= e.dup
+				# 	new_event.quiz_id = new_quiz.id
+				# 	new_event.course_id = new_course.id
+				# 	new_event.group_id = new_group.id
+				# 	new_event.start_at = Date.today + 200.years
+				# 	new_event.end_at = Date.today + 200.years
+				# 	new_event.save(:validate => false)
+				# end
+
+				q.questions.each do |question|
+					new_question = question.dup
+					new_question.quiz_id = new_quiz.id
+					new_question.show = false
+					new_question.student_show = false
+					new_question.save(:validate => false)
+
+					question.answers.each do |answer|
+						new_answer = answer.dup
+						new_answer.question_id = new_question.id
+						new_answer.save(:validate => false)
+					end
+				end
+			end
+			g.custom_links.each do |d|
+				new_link= d.dup
+				new_link.course_id = new_course.id
+				new_link.group_id = new_group.id
+				new_link.save(:validate => false)
+			end
+
+			### waiting for events table
+			# g.events.where(:quiz_id => nil, :lecture_id => nil).each do |e|
+			# 	new_event= e.dup
+			# 	new_event.course_id = new_course.id
+			# 	new_event.group_id = new_group.id
+			# 	new_event.save(:validate => false)
+			# 	new_event.start_at = e.start_at + addition_days
+			# 	new_event.end_at = e.end_at + addition_days
+			# end
+		end
+		self.importing = false
+		self.save!
+
+  	end
+  	handle_asynchronously :import_course, :run_at => Proc.new { 15.seconds.from_now }
 
 
 	# def self.our(user)
