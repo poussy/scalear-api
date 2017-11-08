@@ -109,8 +109,22 @@ class LecturesController < ApplicationController
 	# def confused_question
 	# end
 
-	# def destroy
-	# end
+	def destroy
+		@lecture = Lecture.find(params[:id])
+		@course= params[:course_id]
+		lec_destory = false
+		ActiveRecord::Base.transaction do
+			lec_destory = @lecture.destroy
+		end
+		if lec_destory
+			## waitin for shared item table
+			# SharedItem.delete_dependent("lecture",params[:id].to_i, current_user.id)
+			# Post.delete("destroy_all_by_lecture", {:lecture_id => params[:id]})
+			render json: {:notice => [I18n.t("controller_msg.lecture_successfully_deleted")]}
+		else
+			render json: {:errors => [I18n.t("lectures.could_not_delete_lecture")]}, :status => 400
+		end
+  	end
 
 	def sort #called from module_editor to sort the lectures (by dragging)
 		group = Group.find(params[:group])

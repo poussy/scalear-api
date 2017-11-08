@@ -24,3 +24,20 @@ course3:
   start_date: '2017-9-4' 
   end_date: '2017-10-9' 
   image_url: 'https://pbs.twimg.com/profile_images/839721704163155970/LI_TRk1z_400x400.jpg'
+
+course4:
+  id: 4
+  name: 'course4'
+  short_name: 'c4' 
+  user_id: 3
+  start_date: '2017-9-4' 
+  end_date: '2017-10-9' 
+  image_url: 'https://pbs.twimg.com/profile_images/839721704163155970/LI_TRk1z_400x400.jpg'
+
+course5:
+  id: 5
+  name: 'course5'
+  short_name: 'c5' 
+  start_date: '2017-9-4' 
+  end_date: '2017-10-9' 
+  image_url: 'https://pbs.twimg.com/profile_images/839721704163155970/LI_TRk1z_400x400.jpg'

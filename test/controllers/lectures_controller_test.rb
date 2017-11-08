@@ -94,7 +94,7 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 		lecture = lectures(:lecture3)
 
 		assert lecture.required
-		assert_equal lecture.appearance_time, '2017-9-9'
+		assert_equal lecture.appearance_time, '2017-9-8'
 		assert lecture.due_date_module
 		assert_equal lecture.due_date, '2017-10-8'
 		assert_equal lecture.position, 4
@@ -112,4 +112,36 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 		assert_not lecture.graded
 		
 	end
+
+	test "should be able to delete lecture" do
+
+		assert @course3.lectures.where(id: 3).present?
+
+			delete '/en/courses/3/lectures/3', headers: @user3.create_new_auth_token
+		
+		assert @course3.lectures.where(id: 3).empty?
+	end
+
+	test "should update graded, required, appearance_time and due_date according to parent module's" do
+
+		lecture =lectures(:lecture3)
+
+		assert lecture.required
+		assert lecture.graded
+		assert_equal lecture.appearance_time, '2017-9-8'
+		assert_equal lecture.due_date, '2017-10-8'
+		
+	
+		## parent module has required ==false and graded ==false
+		put '/en/courses/3/lectures/3', params: {:lecture => {required_module: true, graded_module: true, appearance_time_module: true, due_date_module: true}}, headers: @headers, as: :json
+		
+		lecture.reload
+		assert_not lecture.required
+		assert_not lecture.graded
+		assert_equal lecture.appearance_time, '2017-9-9'
+		assert_equal lecture.due_date, '2017-10-9'
+		
+	end
+
+	
 end

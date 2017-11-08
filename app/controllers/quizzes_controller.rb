@@ -14,7 +14,7 @@ class QuizzesController < ApplicationController
     if params[:id]
       @quiz = Quiz.where(:id => params[:id], :course_id => params[:course_id])[0]
       if @quiz.nil?
-        render json: {:errors => [t("controller_msg.no_such_quiz")]}, :status => 404
+        render json: {:errors => [I18n.t("controller_msg.no_such_quiz")]}, :status => 404
       end
     end
   end
