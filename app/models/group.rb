@@ -83,7 +83,9 @@ class Group < ApplicationRecord
 	def total_questions
 		count =0
 		lectures.each do |l|
-			count+= l.online_quizzes.select(&@quiz_not_empty).size
+			if l.online_quizzes.count != 0
+				count+= l.online_quizzes.select(&@quiz_not_empty).size
+			end
 		end
 		return count
 	end
