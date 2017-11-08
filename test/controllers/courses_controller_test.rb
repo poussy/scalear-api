@@ -1,10 +1,11 @@
 require 'test_helper'
 
-class CoursesControllerTest <  ActionController::TestCase
-	include Devise::Test::ControllerHelpers
+class CoursesControllerTest <  ActionDispatch::IntegrationTest 
 	def setup
 		@user1 = users(:user1)
 		@user2 = users(:user2)
+		@admin_user = users(:admin_user)
+		@invitated_user = users(:invitated_user)
 
 		@course1 = courses(:course1)
 		@course2 = courses(:course2)
@@ -22,7 +23,7 @@ class CoursesControllerTest <  ActionController::TestCase
 		assert ability1.can?(:teachers, @course1)
 		assert ability1.cannot?(:getCourse, @course1)
 	end
-
+	
 	test "Validate abilities for user2" do
 		ability2 = Ability.new(@user2)
 		assert ability2.can?(:create, Course)
@@ -38,169 +39,160 @@ class CoursesControllerTest <  ActionController::TestCase
 		assert ability2.can?(:destroy, @course2)
 	end
 
-	test 'user should be able to sign in' do
-		user = users(:user1)
-		request.headers.merge! user.create_new_auth_token
-		sign_in user
-		assert_response :success
-	end
-
 	test 'validate index method for teacher' do
-		user = users(:user1)
-		request.headers.merge! user.create_new_auth_token
-		sign_in user
-		get :index
+		url = '/en/courses'
+		get  url ,headers: @user1.create_new_auth_token 
 		resp =  JSON.parse response.body
 		assert_equal resp['total'] , 1
 		
 		@course2.add_professor(@user1,false)
-		request.headers.merge! user.create_new_auth_token
-		sign_in user
-		get :index
+		get  url ,headers: @user1.create_new_auth_token 
 		resp =  JSON.parse response.body
 		assert_equal resp['total'] , 2
 	end
 
 	test 'validate index method for Admin' do
-		admin_user = users(:admin_user)
-		request.headers.merge! admin_user.create_new_auth_token
-		sign_in admin_user
-		get :index
+		url = '/en/courses'
+		get  url ,headers: @admin_user.create_new_auth_token 
 		resp =  JSON.parse response.body
 		assert_equal resp['total'] , 3
-	end		
+	end			
 
 	test 'validate new method for teacher' do
-		user = users(:user1)
-		request.headers.merge! user.create_new_auth_token
-		sign_in user
-		get :new
+		url = '/en/courses/new'
+		get  url ,headers: @user1.create_new_auth_token 
 		resp =  JSON.parse response.body
 		assert_equal resp['importing'].count , 1
 		
 		@course2.add_professor(@user1,false)
-		get :new
+		get  url ,headers: @user1.create_new_auth_token 
 		resp =  JSON.parse response.body
 		assert_equal resp['importing'].count , 2
 	end
 
 	test 'validate new method for Admin' do
-		admin_user = users(:admin_user)
-		request.headers.merge! admin_user.create_new_auth_token
-		sign_in admin_user
-		get :new
+		url = '/en/courses/new'
+		get  url ,headers: @admin_user.create_new_auth_token 
 		resp =  JSON.parse response.body
 		assert_equal resp['importing'].count , 3
 	end		
 
 	test 'validate Teachers method for user1 for course1' do
-		user = users(:user1)
-		request.headers.merge! user.create_new_auth_token
-		sign_in user
-		get :teachers , { params: {id: @course1.id} }
-		resp =  JSON.parse response.body
-		assert_equal resp['data'].count , 1
-		assert_equal resp['data'][0]['owner'] , true
-		assert_equal resp['data'][0]['email'] , 'a.hossam.2010@gmail.com'
-	end
-	test 'validate Teachers method for user1 for course1 count = 2' do		
-		@course1.add_professor(@user2,false)
-		user = users(:user1)
-		request.headers.merge! user.create_new_auth_token
-		sign_in user
-		get :teachers , { params: {id: @course1.id} }
+		url = '/en/courses/'+ @course1.id.to_s+'/teachers/'
+		get  url ,headers: @user1.create_new_auth_token 
 		resp =  JSON.parse response.body
 		assert_equal resp['data'].count , 2
+		assert_equal resp['data'][0]['owner'] , true
+		assert_equal resp['data'][0]['email'] , 'a.hossam.2010@gmail.com'
+		## pending invitations student
+		assert_equal resp['data'][1]['status'] , 'Pending'
+		assert_equal resp['data'][1]['email'] , 'a.hossam.2011@gmail.com'
+	end
+	
+	test 'validate Teachers method for user1 for course1 count = 2' do
+		@course1.add_professor(@user2,false)
+		url = '/en/courses/'+ @course1.id.to_s+'/teachers/'
+		get  url ,headers: @user1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_equal resp['data'].count , 3
 	end
 
 	test 'validate Teachers method for user1 for course2s' do
-		user = users(:user1)
-		request.headers.merge! user.create_new_auth_token
-		sign_in user
-		get :teachers , { params: {id: @course2.id} }
+		url = '/en/courses/'+ @course2.id.to_s+'/teachers/'
+		get  url ,headers: @user1.create_new_auth_token 
 		resp =  JSON.parse response.body
 		assert_response 403
 	end
 
-
 	test 'validate get_selected_subdomains method for user1 for course1' do
-		user = users(:user1)
-		request.headers.merge! user.create_new_auth_token
-		sign_in user
-		get :get_selected_subdomains , { params: {id: @course1.id} }
+		url = '/en/courses/'+ @course1.id.to_s+'/get_selected_subdomains/'
+		get  url ,headers: @user1.create_new_auth_token 
 		resp =  JSON.parse response.body
 		assert_equal resp['subdomains'].count , 1
 		assert_equal resp['selected_domain']['gmail.com'] , true
 	end
-	test 'validate get_selected_subdomains method for user1 for course1 after deleteing @course_domain1' do		
+	
+	test 'validate get_selected_subdomains method for user1 for course1 after deleteing @course_domain1' do	
 		@course_domain1.destroy
-		user = users(:user1)
-		request.headers.merge! user.create_new_auth_token
-		sign_in user
-		get :get_selected_subdomains , { params: {id: @course1.id} }
+		url = '/en/courses/'+ @course1.id.to_s+'/get_selected_subdomains/'
+		get  url ,headers: @user1.create_new_auth_token 
 		resp =  JSON.parse response.body
 		assert_equal resp['subdomains'].count , 1
 		assert_equal resp['selected_domain']['All'] , true
 	end
-	test 'validate get_selected_subdomains method after cahnging email to un.se' do		
+	
+	test 'validate get_selected_subdomains method after cahnging email to un.se' do	
 		@course1.add_professor(@user2 , false)		
-		user = users(:user1)
-		request.headers.merge! user.create_new_auth_token
-		sign_in user
-		get :get_selected_subdomains , { params: {id: @course1.id} }
+		url = '/en/courses/'+ @course1.id.to_s+'/get_selected_subdomains/'
+		get  url ,headers: @user1.create_new_auth_token 
 		resp =  JSON.parse response.body
 		assert_equal resp['subdomains'].count , 2
 		assert_equal resp['selected_domain']['gmail.com'] , true
 	end
 
-
-
-	test 'validate validate_course_angular method ' do		
-		user = users(:user1)
-		request.headers.merge! user.create_new_auth_token
-		sign_in user
-		get :validate_course_angular , { params: {id: @course1.id , course: { name:'toto' } } }
+	test 'validate validate_course_angular method ' do
+		url = '/en/courses/'+ @course1.id.to_s+'/validate_course_angular/'
+		put  url , params: {course: { name:'toto' } } ,headers: @user1.create_new_auth_token 
 		assert_response :success
 		resp =  JSON.parse response.body
 		assert_equal resp['nothing'] , true
 	end
-	test 'validate validate_course_angular method and respone 422' do		
-		user = users(:user1)
-		request.headers.merge! user.create_new_auth_token
-		sign_in user
-		get :validate_course_angular , { params: {id: @course1.id , course: { start_date:DateTime.now + 3.months } } }
+	test 'validate validate_course_angular method and respone 422' do
+		url = '/en/courses/'+ @course1.id.to_s+'/validate_course_angular/'
+		put  url , params: {course: { start_date:DateTime.now + 3.months } } ,headers: @user1.create_new_auth_token 
 		assert_response 422
 		resp =  JSON.parse response.body
 		assert_equal resp['errors'].count , 1
 		assert_equal resp['errors'][0] , "End date courses.errors.end_date_pass"
 	end
 
-	test 'validate update method ' do		
-		user = users(:user1)
-		request.headers.merge! user.create_new_auth_token
-		sign_in user
-		get :update , { params: {id: @course1.id , course: {"course"=>{"user_id"=>1, "short_name"=>"a", "name"=>"aa", "time_zone"=>"UTC", "start_date"=>"2017-11-01", "end_date"=>"2018-01-10", "disable_registration"=>nil, "description"=>"", "prerequisites"=>"", "discussion_link"=>"", "image_url"=>nil, "importing"=>false, "parent_id"=>nil}, "id"=>"1"} } }
+	test 'validate create method ' do
+		assert_equal @user1.reload.subjects_to_teach.count , 1
+		url = '/en/courses/'
+		post  url , params: {"course"=>{"time_zone"=>"UTC", "start_date"=>"2017-11-07T16:24:19.495Z", "end_date"=>"2018-01-16T14:24:19.495Z", 
+			"short_name"=>"aaa", "name"=>"qaaaw"}, "import"=>nil, "subdomains"=>{"All"=>true}, "email_discussion"=>false} ,
+			headers: @user1.create_new_auth_token 
+		assert_response :success
+		resp =  JSON.parse response.body
+		assert_equal @user1.reload.subjects_to_teach.count , 2
+		assert_equal Course.last.reload.course_domains.count , 0
+		assert_equal resp['notice'][0] , "Course was successfully created."
+	end
+	test 'validate create method with course domain' do
+		assert_equal @user1.reload.subjects_to_teach.count , 1
+		url = '/en/courses/'
+		post  url , params: {"course"=>{"time_zone"=>"UTC", "start_date"=>"2017-11-07T16:24:19.495Z", "end_date"=>"2018-01-16T14:24:19.495Z", 
+			"short_name"=>"aaa", "name"=>"qaaaw"}, "import"=>nil, "subdomains"=>{"gmail"=>true}, "email_discussion"=>false} ,
+			headers: @user1.create_new_auth_token 
+		assert_response :success
+		resp =  JSON.parse response.body
+		assert_equal @user1.reload.subjects_to_teach.count , 2
+		assert_equal Course.last.reload.course_domains.count , 1
+		assert_equal resp['notice'][0] , "Course was successfully created."
+	end
+
+	test 'validate update method ' do
+		url = '/en/courses/'+ @course1.id.to_s+'/'
+		put  url , params: {"course"=>{"user_id"=> @user1.id , "short_name"=>"aa", "name"=>"a", "time_zone"=>"UTC", "start_date"=>"2017-11-05", "end_date"=>"2018-01-14", 
+			"disable_registration"=>"2018-01-14", "description"=>nil, "prerequisites"=>nil, "discussion_link"=>"", "image_url"=>nil, "importing"=>false, "parent_id"=>nil}, "id"=>"1"} ,
+			headers: @user1.create_new_auth_token 
 		assert_response :success
 		resp =  JSON.parse response.body
 		assert_equal resp['notice'][0] , "controller_msg.course_successfully_updated"
 	end
 
-	test 'validate update method and respone 422' do		
-		user = users(:user1)
-		request.headers.merge! user.create_new_auth_token
-		sign_in user
-		get :update , { params: {id: @course1.id , course: { start_date:DateTime.now + 3.months } } }
+	test 'validate update method and respone 422' do
+		url = '/en/courses/'+ @course1.id.to_s+'/'
+		put  url , params: {course: { start_date:DateTime.now + 3.months } } ,headers: @user1.create_new_auth_token 
 		assert_response 422
 		resp =  JSON.parse response.body
 		assert_equal resp['errors'].count , 1
 		assert_equal resp['errors']['end_date'][0] , "courses.errors.end_date_pass"
 	end
 
-	test 'validate course_editor_angular method ' do		
-		user = users(:user1)
-		request.headers.merge! user.create_new_auth_token
-		sign_in user
-		get :course_editor_angular , { params: {id: @course1.id} }
+	test 'validate course_editor_angular method ' do
+		url = '/en/courses/'+ @course1.id.to_s+'/course_editor_angular'
+		get  url  ,headers: @user1.create_new_auth_token 
 		resp =  JSON.parse response.body
 		assert_equal resp['course']['duration'] , 5
 		assert_equal resp['groups'].count , 1
@@ -209,13 +201,148 @@ class CoursesControllerTest <  ActionController::TestCase
 	test 'validate course_editor_angular method after added group2 to course1' do		
 		@group2.course  = @course1
 		@group2.save
-		user = users(:user1)
-		request.headers.merge! user.create_new_auth_token
-		sign_in user
-		get :course_editor_angular , { params: {id: @course1.id} }
+		url = '/en/courses/'+ @course1.id.to_s+'/course_editor_angular'
+		get  url  ,headers: @user1.create_new_auth_token 
 		resp =  JSON.parse response.body
 		assert_equal resp['course']['duration'] , 5
 		assert_equal resp['groups'].count , 2
+	end
+
+	test 'validate save_teachers method for empty invitations' do
+		url = '/en/courses/'+ @course1.id.to_s+'/save_teachers/'
+		post url ,params: {new_teacher: { email: "a", role: "10"}},headers: @user1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_equal resp['errors']['email'] , "Email is invalid,Role must exist"
+	end	
+	
+	test 'validate save_teachers method for already_enrolled_in_course teacher' do
+		url = '/en/courses/'+ @course1.id.to_s+'/save_teachers/'
+		post url ,params: {new_teacher: { email: @user1.email, role: "4"} },headers: @user1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_equal resp['errors']['email'] , "already enrolled in this course"
+	end	
+	
+	test 'validate save_teachers method for new teacher' do
+		url = '/en/courses/'+ @course1.id.to_s+'/save_teachers/'
+		post url ,params: {new_teacher: { email: @admin_user.email, role: "3"} },headers: @user1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_equal resp['nothing'] , true
+		assert_equal resp['notice'][0] , 'Saved'
+	end	
+
+	test 'validate delete_teacher method invalid email' do
+		url = '/en/courses/'+ @course1.id.to_s+'/delete_teacher/'
+		delete url ,params: {email: "a"},headers: @user1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_equal resp['errors'][0] , "Enter a valid email address"
+	end		
+
+	test 'validate delete_teacher method owner can not delete himself' do
+		url = '/en/courses/'+ @course1.id.to_s+'/delete_teacher/'
+		delete url ,params: {email: @user1.email},headers: @user1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_equal resp['errors'][0] , "You cannot delete the course owner"
+	end		
+
+	test 'validate delete_teacher method owner delete another teacher' do
+		@course1.add_professor(@user2 , false)
+		url = '/en/courses/'+ @course1.id.to_s+'/delete_teacher/'
+		delete url ,params: {email: @user2.email},headers: @user1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_equal resp['notice'][0] , "Teacher successfully removed from course"
+	end
+
+	test 'validate delete_teacher method not owner delete himself' do
+		@course1.add_professor(@user2 , false)
+		url = '/en/courses/'+ @course1.id.to_s+'/delete_teacher/'
+		delete url ,params: {email: @user2.email},headers: @user2.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_equal resp['notice'][0] , "Teacher successfully removed from course"
+		assert_equal resp['remove_your_self'] , true
+	end
+
+	test 'validate delete_teacher method owner delete teacher has no account' do
+		@invitation_2 = invitations(:invitation_2)
+		@course1.add_professor(@user2 , false)
+		url = '/en/courses/'+ @course1.id.to_s+'/delete_teacher/'
+		delete url ,params: {email: @invitation_2.email},headers: @user1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_equal resp['notice'][0] , "Teacher successfully removed from course"
+	end
+
+	test 'validate update_teacher method owner update teacher has no account' do
+		url = '/en/courses/'+ @course1.id.to_s+'/update_teacher/'
+		post url ,params: {"email"=>"a.hossam.2011@gmail.com", "role"=>4, "status"=>"Pending", "name"=>"Ahmed", "last_name"=>"Hossam", "course"=>{"name"=>"Ahmed"}} , headers: @user1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_equal resp['notice'][0] , "Saved"
+	end
+
+	test 'validate current_courses method ' do
+		@course1.end_date = DateTime.now + 1.months
+		@course1.save
+		url = '/en/courses/current_courses'
+		get  url , headers: @user1.create_new_auth_token 
+		assert_response :success
+		resp =  JSON.parse response.body
+		assert_equal resp['teacher_courses'].count , 1
+		assert_equal resp['student_courses'].count , 0
+	end
+
+	test 'validate current_courses method for admin_user' do
+		@course1.end_date = DateTime.now + 1.months
+		@course1.save
+		url = '/en/courses/current_courses'
+		get  url , headers: @admin_user.create_new_auth_token 
+		assert_response :success
+		resp =  JSON.parse response.body
+		assert_equal resp['teacher_courses'].count , 1
+		assert_equal resp['student_courses'].count , 0
+		@course2.end_date = DateTime.now + 1.months
+		@course2.save
+		url = '/en/courses/current_courses'
+		get  url , headers: @admin_user.create_new_auth_token 
+		assert_response :success
+		resp =  JSON.parse response.body
+		assert_equal resp['teacher_courses'].count , 2
+	end
+
+	test 'validate get_role method for teacher' do
+		url = '/en/courses/'+ @course1.id.to_s+'/get_role/'
+		get  url , headers: @user1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_equal resp['role'] , 1
+	end
+	
+	test 'validate get_role method for admin_user' do
+		url = '/en/courses/'+ @course1.id.to_s+'/get_role/'
+		get  url , headers: @admin_user.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_equal resp['role'] , 1
+	end
+
+	test 'validate update_teacher_discussion_email method for teacher' do
+		assert_equal TeacherEnrollment.where( user_id: @user1.id , course_id: @course1.id)[0].email_discussion , false
+		url = '/en/courses/'+ @course1.id.to_s+'/update_teacher_discussion_email/'
+		post  url , params:{email_discussion: true} , headers: @user1.create_new_auth_token , as: :json
+		resp =  JSON.parse response.body
+		assert_response :success
+		assert_equal TeacherEnrollment.where( user_id: @user1.id , course_id: @course1.id)[0].email_discussion , true
+	end
+
+	test 'validate set_selected_subdomains method for teacher' do
+		assert_equal @course1.reload.course_domains.count , 1
+		url = '/en/courses/'+ @course1.id.to_s+'/set_selected_subdomains/'
+		post  url , params: {selected_subdomains: {'All': true},} , headers: @user1.create_new_auth_token , as: :json
+		resp =  JSON.parse response.body
+		assert_response :success
+		assert_equal @course1.reload.course_domains.count , 0		
+		assert_equal resp['subdomains'] , true
+
+		url = '/en/courses/'+ @course1.id.to_s+'/set_selected_subdomains/'
+		post  url , params: {selected_subdomains: {'gmail': true},} , headers: @user1.create_new_auth_token , as: :json
+		resp =  JSON.parse response.body
+		assert_response :success
+		assert_equal @course1.reload.course_domains.count , 1
 	end
 
 end

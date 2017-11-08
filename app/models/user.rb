@@ -30,8 +30,11 @@ class User < ActiveRecord::Base
   has_many :roles, -> { distinct }, :through => :users_roles
 
   # has_and_belongs_to_many :roles, -> {uniq} ,:join_table => :users_roles  
+  has_many :shared_bys, :class_name => "SharedItem", :foreign_key => 'shared_by_id', :dependent => :destroy
+  has_many :shared_withs, :class_name => "SharedItem", :foreign_key => 'shared_with_id', :dependent => :destroy
 
   has_many :announcements
+  has_many :invitations, :dependent => :destroy
   has_many :quiz_statuses, :dependent => :destroy
   has_many :assignment_statuses, :dependent => :destroy
   has_many :assignment_item_statuses, :dependent => :destroy

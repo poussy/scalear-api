@@ -67,8 +67,7 @@ class GroupsController < ApplicationController
 		@group = @course.groups.find(params[:id])
 
 		if @group.destroy
-			## wating for shareditem table
-			# SharedItem.delete_dependent("modules", params[:id].to_i,current_user.id)
+			SharedItem.delete_dependent("modules", params[:id].to_i,current_user.id)
 			render json: {:notice => [I18n.t("groups.module_successfully_deleted")]}
 		else
 			render json: {:errors => [I18n.t("groups.could_not_delete_module")]}, :status => 400
