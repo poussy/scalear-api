@@ -452,13 +452,12 @@ class CoursesControllerTest <  ActionDispatch::IntegrationTest
 	end	
 
 	test 'validate send_batch_email_through method for teacher' do
-		assert_equal Delayed::Job.count , 0
+		Delayed::Worker.delay_jobs = false
 		url = '/en/courses/'+ @course1.id.to_s+'/send_batch_email_through'
 		post url, params: {emails:["a.hossam.2011@gmail.com"], subject:"aa", message:"aa" } ,headers: @user1.create_new_auth_token 
 		resp =  JSON.parse response.body
 		assert_equal resp['nothing'] , true
 		assert_equal resp['notice'][0] , "Email will be sent shortly"
-		assert_equal Delayed::Job.count , 1
 	end	
 
 end
