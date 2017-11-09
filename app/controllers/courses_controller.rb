@@ -312,7 +312,7 @@ class CoursesController < ApplicationController
 
 	def update
 		if @course.update_attributes(course_params)
-			render json: {course:@course, :notice => ["controller_msg.course_successfully_updated"]}
+			render json: {course:@course, :notice => [I18n.t("controller_msg.course_successfully_updated") ]}
 		else
 			render json: {errors:@course.errors}, status: :unprocessable_entity
 		end		
@@ -321,14 +321,26 @@ class CoursesController < ApplicationController
 	# def destroy
 	# end  
 
-	# def remove_student
-	# end  
+	def remove_student
+		@student=User.find(params[:student])
+		@student_name=@student.name
+		if @course.correct_student(@student)  && @student.remove_student(@course.id)
+			render json: {:deleted => true, :notice =>["#{@student_name} #{I18n.t('controller_msg.was_removed_from')} #{I18n.t('groups.course')}"]}
+		else
+			render json: {:deleted => false, :errors => [I18n.t("controller_msg.could_not_remove_from_course", {student: @student_name})]}, :status => 400
+		end
+	end  
 
 	# def unenroll
 	# end  
 
-	# def enrolled_students
-	# end  
+	def enrolled_students
+		@students = @course.enrolled_students.select("users.*, LOWER(users.name)").order("LOWER(users.name)") #enrolled
+		@students.each do |s|
+			s[:full_name] = s.full_name
+		end
+		render json: @students
+	end  
 
 	# def send_email
 	# end  
@@ -336,8 +348,13 @@ class CoursesController < ApplicationController
 	# def send_batch_email
 	# end  
 
-	# def send_batch_email_through
-	# end  
+	def send_batch_email_through
+		students = params[:emails]
+		students.each_slice(50).to_a.each do |m|
+			UserMailer.delay.student_batch_email(@course,m, params[:subject],params[:message], @course.user.email, I18n.locale)#.deliver
+		end
+		render json: {:nothing => true, :notice => [ I18n.t("controller_msg.email_sent_shortly")]}		
+	end  
 
 	# def send_email_through
 	# end  
@@ -383,8 +400,29 @@ class CoursesController < ApplicationController
 	# def get_total_chart_angular
 	# end  
 
-	# def enroll_to_course
-	# end  
+	def enroll_to_course
+		key = params[:unique_identifier]
+		key = key.upcase if key.size==11
+		@course = Course.find_by_unique_identifier(key) || Course.find_by_guest_unique_identifier(key)
+		if @course.nil?
+			render :json => {:errors => [I18n.t('controller_msg.course_does_not_exist')], course: @course}, :status => :unprocessable_entity
+		elsif current_user.courses.include?(@course)
+			render :json => {:errors => [I18n.t('controller_msg.already_enrolled')], course: @course}, :status => :unprocessable_entity
+		elsif current_user.subjects_to_teach.include?(@course)
+			render :json => {:errors => [I18n.t('controller_msg.already_enrolled')], course: @course}, :status => :unprocessable_entity
+		elsif @course.disable_registration && @course.disable_registration < DateTime.now.to_date
+			render :json => {:errors => [I18n.t('controller_msg.after_registration')], course: @course}, :status => :unprocessable_entity
+		elsif (@course.course_domains.count !=0) && (@course.course_domains.select{|c|( current_user.email.include?(c.domain) )  }.size == 0)
+			render :json => {:errors => [I18n.t('controller_msg.course_domain_not_included')], course: @course}, :status => :unprocessable_entity
+		else
+			if @course.unique_identifier == key
+				@course.users<<current_user
+			elsif @course.guest_unique_identifier == key
+				@course.guest_enrollments.create(:user_id => current_user.id)
+			end
+			render :json => {:notice => [I18n.t('controller_msg.already_enrolled_in', course: @course.name )], course: @course}
+		end		
+	end  
 
 	# def courseware_angular
 	# end  

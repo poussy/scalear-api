@@ -30,6 +30,15 @@ user3:
   screen_name: "a.okasha"
   university: "helwan"
   uid: "okasha@gmail.com"
+
+user4:
+  id: 4
+  name: "ahmed"
+  email: "okashaaa@gmail.com"
+  last_name: "okashaaa"
+  screen_name: "a.okashaaa"
+  university: "helwan"
+  uid: "okashaaa@gmail.com"
   
 admin_user:
   name: "admin"

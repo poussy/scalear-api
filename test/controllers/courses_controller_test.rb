@@ -4,6 +4,7 @@ class CoursesControllerTest <  ActionDispatch::IntegrationTest
 	def setup
 		@user1 = users(:user1)
 		@user2 = users(:user2)
+		@user4 = users(:user4)
 		@admin_user = users(:admin_user)
 		@invitated_user = users(:invitated_user)
 
@@ -143,7 +144,7 @@ class CoursesControllerTest <  ActionDispatch::IntegrationTest
 		assert_response 422
 		resp =  JSON.parse response.body
 		assert_equal resp['errors'].count , 1
-		assert_equal resp['errors'][0] , "End date courses.errors.end_date_pass"
+		assert_equal resp['errors'][0] , "End date must be after the start date"
 	end
 
 	test 'validate create method ' do
@@ -158,6 +159,7 @@ class CoursesControllerTest <  ActionDispatch::IntegrationTest
 		assert_equal Course.last.reload.course_domains.count , 0
 		assert_equal resp['notice'][0] , "Course was successfully created."
 	end
+
 	test 'validate create method with course domain' do
 		assert_equal @user1.reload.subjects_to_teach.count , 1
 		url = '/en/courses/'
@@ -178,7 +180,7 @@ class CoursesControllerTest <  ActionDispatch::IntegrationTest
 			headers: @user1.create_new_auth_token 
 		assert_response :success
 		resp =  JSON.parse response.body
-		assert_equal resp['notice'][0] , "controller_msg.course_successfully_updated"
+		assert_equal resp['notice'][0] , "Course was successfully updated."
 	end
 
 	test 'validate update method and respone 422' do
@@ -187,7 +189,7 @@ class CoursesControllerTest <  ActionDispatch::IntegrationTest
 		assert_response 422
 		resp =  JSON.parse response.body
 		assert_equal resp['errors'].count , 1
-		assert_equal resp['errors']['end_date'][0] , "courses.errors.end_date_pass"
+		assert_equal resp['errors']['end_date'][0] , "must be after the start date"
 	end
 
 	test 'validate course_editor_angular method ' do
@@ -337,12 +339,126 @@ class CoursesControllerTest <  ActionDispatch::IntegrationTest
 		assert_response :success
 		assert_equal @course1.reload.course_domains.count , 0		
 		assert_equal resp['subdomains'] , true
-
 		url = '/en/courses/'+ @course1.id.to_s+'/set_selected_subdomains/'
 		post  url , params: {selected_subdomains: {'gmail': true},} , headers: @user1.create_new_auth_token , as: :json
 		resp =  JSON.parse response.body
 		assert_response :success
 		assert_equal @course1.reload.course_domains.count , 1
 	end
+
+	test 'validate enroll_to_course method Enter wrong unique_identifier' do
+		url = '/en/courses/enroll_to_course/'
+		post url ,params: {unique_identifier: "FDVSE-44759", course:{unique_identifier:"FDVSE-44759"}},headers: @user1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_equal resp['errors'][0] , "Course does not exist"
+	end	
+
+	test 'validate enroll_to_course method user enter unique_identifier for already enroll_to_course' do
+		url = '/en/courses/enroll_to_course/'
+		post url ,params: {unique_identifier: @course1.unique_identifier, course:{unique_identifier:@course1.unique_identifier}},headers: @user1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_equal resp['errors'][0] , "You are already enrolled in this course."
+	end	
+
+	test 'validate enroll_to_course method user enter unique_identifier for correct user' do
+		assert_equal @user4.reload.courses.count , 0 
+		url = '/en/courses/enroll_to_course/'
+		post url ,params: {unique_identifier: @course1.unique_identifier, course:{unique_identifier:@course1.unique_identifier}},headers: @user4.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_equal resp['notice'][0] , "You are now enrolled in name"
+		assert_equal @user4.reload.courses.count , 1 
+	end
+
+	test 'validate enroll_to_course method user enter unique_identifier for correct user twice' do
+		assert_equal @user4.reload.courses.count , 0 
+		url = '/en/courses/enroll_to_course/'
+		post url ,params: {unique_identifier: @course1.unique_identifier, course:{unique_identifier:@course1.unique_identifier}},headers: @user4.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_equal resp['notice'][0] , "You are now enrolled in name"
+		assert_equal @user4.reload.courses.count , 1 
+		post url ,params: {unique_identifier: @course1.unique_identifier, course:{unique_identifier:@course1.unique_identifier}},headers: @user4.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_equal resp['errors'][0] , "You are already enrolled in this course."		
+	end	
+
+	test 'validate enroll_to_course method user enter unique_identifier for correct user after disable_registration' do
+		@course1.disable_registration = DateTime.now - 3.days
+		@course1.save
+		assert_equal @user4.reload.courses.count , 0 
+		url = '/en/courses/enroll_to_course/'
+		post url ,params: {unique_identifier: @course1.unique_identifier, course:{unique_identifier:@course1.unique_identifier}},headers: @user4.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_equal resp['errors'][0] , "Registration is disabled for this course, contact your teacher to enable registration."
+		assert_equal @user4.reload.courses.count , 0 
+	end	
+
+	test 'validate enroll_to_course method user enter unique_identifier for correct user course domain enabled' do
+		@user4.skip_reconfirmation!
+		@user4.email = 'hossam@outlook.com'
+		@user4.save(:validate => false)
+		assert_equal @user4.reload.courses.count , 0 
+		url = '/en/courses/enroll_to_course/'
+		post url ,params: {unique_identifier: @course1.unique_identifier, course:{unique_identifier:@course1.unique_identifier}},headers: @user4.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_equal resp['errors'][0] , "Your school domain is not allowed to register for this course."
+		assert_equal @user4.reload.courses.count , 0
+	end	
+
+	test 'validate enroll_to_course method user enter guest unique_identifier for correct user' do
+		assert_equal @user4.reload.courses.count , 0 
+		assert_equal @user4.reload.guest_courses.count , 0 
+		url = '/en/courses/enroll_to_course/'
+		post url ,params: {unique_identifier: @course1.guest_unique_identifier, course:{unique_identifier:@course1.guest_unique_identifier}},headers: @user4.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_equal resp['notice'][0] , "You are now enrolled in name"
+		assert_equal @user4.reload.courses.count , 0
+		assert_equal @user4.reload.guest_courses.count , 1
+	end
+
+	test 'validate enrolled_students method for empty course ' do
+		url = '/en/courses/'+ @course1.id.to_s+'/enrolled_students/'
+		get url ,headers: @user1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_equal resp.count , 0
+	end
+
+	test 'validate enrolled_students method for course with 1 student' do
+		url = '/en/courses/enroll_to_course/'
+		post url ,params: {unique_identifier: @course1.unique_identifier, course:{unique_identifier:@course1.unique_identifier}},headers: @user4.create_new_auth_token 
+		url = '/en/courses/'+ @course1.id.to_s+'/enrolled_students/'
+		get url ,headers: @user1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_equal resp.count , 1
+	end
+
+	test 'validate remove_student method for enrolled_student' do
+		url = '/en/courses/enroll_to_course/'
+		post url ,params: {unique_identifier: @course1.unique_identifier, course:{unique_identifier:@course1.unique_identifier}},headers: @user4.create_new_auth_token 		
+		assert_equal @user4.reload.courses.count , 1 
+
+		url = '/en/courses/'+ @course1.id.to_s+'/remove_student?student='+@user4.id.to_s
+		post url ,headers: @user1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_equal resp['deleted'] , true
+		assert_equal @user4.reload.courses.count , 0
+	end	
+
+	test 'validate remove_student method for teacher' do
+		url = '/en/courses/'+ @course1.id.to_s+'/remove_student?student='+@user1.id.to_s
+		post url ,headers: @user1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_equal resp['deleted'] , false
+		assert_equal resp['errors'][0] , "Could not remove "+@user4.name+" from course"
+	end	
+
+	test 'validate send_batch_email_through method for teacher' do
+		assert_equal Delayed::Job.count , 0
+		url = '/en/courses/'+ @course1.id.to_s+'/send_batch_email_through'
+		post url, params: {emails:["a.hossam.2011@gmail.com"], subject:"aa", message:"aa" } ,headers: @user1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_equal resp['nothing'] , true
+		assert_equal resp['notice'][0] , "Email will be sent shortly"
+		assert_equal Delayed::Job.count , 1
+	end	
 
 end

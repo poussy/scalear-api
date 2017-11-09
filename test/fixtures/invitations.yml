@@ -3,6 +3,7 @@ invitation1:
   course: course1
   user: user1
   email: 'a.hossam.2011@gmail.com'
+  
 invitation_2: 
   role_id: 3
   course: course2
