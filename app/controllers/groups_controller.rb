@@ -34,14 +34,13 @@ class GroupsController < ApplicationController
 	def update
 		@group = @course.groups.find(params[:id])
 		if @group.update_attributes(group_params)
-			#	# waiting for event table
-			#   @group.events.where(quiz_id: nil, lecture_id: nil)[0].update_attributes(
-			# 	  name: "#{@group.name} due", 
-			#   	  start_at: params[:group][:due_date], 
-			# 	  end_at: params[:group][:due_date], 
-			# 	  all_day: false, 
-			# 	  color: 'red', 
-			# 	  course_id: @course.id) # its ok since I only have the due date.
+			@group.events.where(quiz_id: nil, lecture_id: nil)[0].update_attributes(
+				name: "#{@group.name} due", 
+				start_at: params[:group][:due_date], 
+				end_at: params[:group][:due_date], 
+				all_day: false, 
+				color: 'red', 
+				course_id: @course.id) # its ok since I only have the due date.
 
 			@group.lectures.each do |l|
 				l.appearance_time = @group.appearance_time if l.appearance_time_module
@@ -61,19 +60,18 @@ class GroupsController < ApplicationController
 		else
 			render json: { errors: @group.errors, appearance_time: @group.appearance_time.strftime('%Y-%m-%d') }, status: :unprocessable_entity
 		end
-  	end
+	end
 
 	def destroy
 		@group = @course.groups.find(params[:id])
 
 		if @group.destroy
-			## wating for shareditem table
-			# SharedItem.delete_dependent("modules", params[:id].to_i,current_user.id)
+			SharedItem.delete_dependent("modules", params[:id].to_i,current_user.id)
 			render json: {:notice => [I18n.t("groups.module_successfully_deleted")]}
 		else
 			render json: {:errors => [I18n.t("groups.could_not_delete_module")]}, :status => 400
 		end
-  	end
+	end
 
 	def sort
 		@groups = Group.where(:course_id => @course.id)
@@ -83,7 +81,7 @@ class GroupsController < ApplicationController
 			group.save
 		end
 		render json: {:notice => [I18n.t("controller_msg.modules_sorted")]}
-  	end
+	end
 
 	# def hide_invideo_quiz
 	# end
@@ -118,8 +116,7 @@ class GroupsController < ApplicationController
 		due= app + 1.week
 
 		@group = @course.groups.build(:name => "New Module", :appearance_time => app, :due_date => due, :position => @course.groups.size+1) #added to_date so it won't have time.
-		## waiting for events table 
-		# @group.events << Event.new(:name => "#{@group.name} "+ t('controller_msg.due'), :start_at => due, :end_at => due, :all_day => false, :color => "red", :course_id => @course.id)
+		@group.events << Event.new(:name => "#{@group.name} "+ I18n.t('controller_msg.due'), :start_at => due, :end_at => due, :all_day => false, :color => "red", :course_id => @course.id)
 
 		if @group.save
 			render json:{group: @group, :notice => ["groups.module_successfully_created"]}
@@ -129,9 +126,7 @@ class GroupsController < ApplicationController
 	end
 
 	def get_group_statistics
-		# @group = Group.where(:id => params[:id], :course_id => params[:course_id]).includes(:online_quizzes => :online_answers)
-		## waiting for online_quizzes table
-		@group = Group.where(:id => params[:id], :course_id => params[:course_id])
+		@group = Group.where(:id => params[:id], :course_id => params[:course_id]).includes(:online_quizzes => :online_answers)
 		if @group.empty?
 			render json: {:errors => ["controller_msg.no_such_module"]}, status: 404 and return
 		else
@@ -257,8 +252,8 @@ class GroupsController < ApplicationController
 
 
 
-private
-	def group_params
-		params.require(:group).permit(:course_id, :description, :name, :appearance_time, :position, :due_date, :graded ,:required )
-	end
+	private
+		def group_params
+			params.require(:group).permit(:course_id, :description, :name, :appearance_time, :position, :due_date, :graded ,:required )
+		end
 end

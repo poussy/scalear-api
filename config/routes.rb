@@ -9,7 +9,17 @@ Rails.application.routes.draw do
     }
 
     root :to => "home#index"
+    get "/home/index"
+    get "/home/test"
+    get "home/technical_problem"
+    get "home/contact_us"
+    get "home/privacy"
+    get "home/about"
+    get "home/notifications"
+    post "home/accept_course"
+    post "home/reject_course"    
 
+    # devise_for :users 
     resources :users, only: [] do
       member do
         get "enroll"

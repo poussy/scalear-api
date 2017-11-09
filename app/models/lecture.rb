@@ -2,6 +2,18 @@ class Lecture < ApplicationRecord
 	belongs_to :course, :touch => true
 	belongs_to :group, :touch => true
 	has_many :assignment_item_statuses, :dependent => :destroy
+	has_many :confuseds, :dependent => :destroy
+	has_many :distance_peers
+	has_many :events
+	has_many :free_online_quiz_grades
+	has_many :inclass_sessions, :dependent => :destroy
+	has_many :lecture_views, :dependent => :destroy
+	has_many :online_markers, -> { order('time') }, :dependent => :destroy
+	has_many :online_quiz_grades, :dependent => :destroy
+	has_many :online_quizzes, -> { order('time') }, :dependent => :destroy
+	has_many :video_events, :dependent => :destroy
+	has_many :video_notes, :dependent => :destroy
+		
 
 	validates :name, :url,:appearance_time, :due_date,:course_id, :group_id, :start_time, :end_time, :position, :presence => true
 	validates_inclusion_of :appearance_time_module, :due_date_module,:required_module , :graded_module, :inclass, :distance_peer, :in => [true, false] #not in presence because boolean false considered not present.
@@ -15,7 +27,6 @@ class Lecture < ApplicationRecord
 	validate :type_inclass_distance_peer
 
 	attribute :class_name
-	attribute :className
 
 
 
@@ -129,8 +140,7 @@ class Lecture < ApplicationRecord
 	end
 
 	def clean_up
-			### waiting for add events table 
-			# self.events.where(:quiz_id => nil).destroy_all
+		self.events.where(:quiz_id => nil).destroy_all
 	end
 
 end

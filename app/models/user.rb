@@ -30,11 +30,28 @@ class User < ActiveRecord::Base
   has_many :roles, -> { distinct }, :through => :users_roles
 
   # has_and_belongs_to_many :roles, -> {uniq} ,:join_table => :users_roles  
+  has_many :shared_bys, :class_name => "SharedItem", :foreign_key => 'shared_by_id', :dependent => :destroy
+  has_many :shared_withs, :class_name => "SharedItem", :foreign_key => 'shared_with_id', :dependent => :destroy
 
   has_many :announcements
+  has_many :invitations, :dependent => :destroy
   has_many :quiz_statuses, :dependent => :destroy
   has_many :assignment_statuses, :dependent => :destroy
   has_many :assignment_item_statuses, :dependent => :destroy
+  has_many :confuseds, :dependent => :destroy
+  has_many :distance_peers, :dependent => :destroy
+  has_many :free_answers, :dependent => :destroy
+  has_many :free_online_quiz_grades, :dependent => :destroy
+  has_many :lecture_views, :dependent => :destroy
+  has_many :online_quiz_grades, :dependent => :destroy
+  has_many :quiz_grades, :dependent=> :destroy#, :conditions => :user kda its like im defining a method called quiz grades, which returns something when user = ... not what i want.
+  has_many :user_distance_peers, :dependent => :destroy
+  has_many :video_events, :dependent => :destroy
+  has_many :video_notes, :dependent => :destroy
+
+
+  has_one :lti_key, :dependent => :destroy
+
 
   validates :name, :presence => true
   validates :last_name, :presence => true
@@ -47,17 +64,6 @@ class User < ActiveRecord::Base
     self.roles.pluck(:name).include?(role)      
   end
 
-  def info_complete
-   return true
-  end
-
-   def intro_watched
-     return true
-   end
-
-   def completion_wizard
-     return {intro_watched: true}
-   end
    # override devise function, to include methods with response
   def token_validation_response
     self.as_json(:methods => [:info_complete, :intro_watched])
@@ -81,7 +87,6 @@ class User < ActiveRecord::Base
     return self.valid?
   end
 
- 
   def intro_watched
     if self.completion_wizard
       return self.completion_wizard[:intro_watched]
@@ -98,6 +103,258 @@ class User < ActiveRecord::Base
     return self.assignment_item_statuses.select{|a| a.group_id == item.group_id && a.quiz_id == item.id && !a.lecture_id}.first
   end
 
+  # def password_complexity
+  # end
+
+  # def self.teachers
+  # end
+
+  # def self.find_or_create_for_doorkeeper_oauth(oauth_data)
+  # end
+
+  # def update_doorkeeper_credentials(oauth_data)
+  # end
+
+  # def is_student?
+  # end
+
+  # def is_teacher?
+  # end
+
+  # def is_teacher_or_admin?
+  # end
+
+  # def is_prof?(course)
+  # end
+
+  # def is_ta?(course)
+  # end
+
+  # def is_administrator?
+  # end
+
+  # def is_preview?
+  # end
+
+  # def tutorials_taken
+  # end
+
+  # def add_admin_school_domain(domain)
+  # end
+
+  # def get_exact_stats(group)
+  # end
+
+  # def get_online_quizzes_solved(lecture)
+  # end
+
+  # def get_summary_table_online_quizzes_solved(lecture)
+  # end
+
+  
+  # def get_lecture_status(item)
+  # end
+  
+  # def count_online_quizzes_solved(group)
+  # end
+
+  # def get_lectures_viewed(lecture)
+  # end
+
+  # def grades(course)          #
+  # end
+
+  # def quiz_grades2(group)           #
+  # end
+
+  # def group_quiz_grades(group)           #
+  # end
+
+  # def course_late_days(course)    #THIS HERE IS VERY SLOW!!!
+  # end
+
+  # def late_days(group)          #
+  # end
+
+  # def quiz_late_days(group)     #
+  # end
+
+  # def calculate_lectures_late_days(lectures)    #
+  # end
+
+  # def calculate_quizzes_late_days(quizzes)     #
+  # end  
+
+  # def calculate_late_days(lecture)
+  # end
+
+  # def calculate_quiz_late_days(quiz)
+  # end
+
+  # def finished_lecture_group?(lecture)
+  # end
+
+  # def finished_lecture_group_stats?(lecture)
+  # end
+
+  # def finished_quiz_group?(quiz)
+  # end
+
+  # def finished_group_boolean(group)
+  # end
+
+  # def finished_group?(group)
+  # end  
+
+  # def finished_group_stats?(group)
+  # end
+
+  # def finished_quizzes(quizzes)
+  # end
+
+  # def finished_surveys(surveys)
+  # end
+
+  # def finished_quiz(quiz)
+  # end
+
+  # def finished_survey(quiz) #done when just saved.
+  # end
+
+  # def finished_quizzes_on_time(quizzes)
+  # end  
+
+  # def finished_quiz_on_time(quiz)
+  # end
+
+  # def finished_lectures(lectures)  #if finished all online_quizzes AND opened the lecture
+  # end
+
+  # def finished_lectures_on_time(lectures)
+  # end
+
+  # def finished_lecture(lecture)
+  # end
+
+  # def finished_lecture_on_time(lecture)
+  # end
+
+  # def get_statistics(course, quiz_total, online_total)
+  # end
+
+  # def quizzes_percent(course, quiz_total)
+  # end
+
+  # def online_quizzes_percent(course, online_total) #old
+  # end
+
+  # def total_online_quiz(course)
+  # end
+
+  # def total_online_quiz_lecture(lecture)
+  # end
+
+  # def get_lecture_grade(lecture)
+  # end
+
+  # def total_online_quiz_quiz(quiz)
+  # end
+
+  # def total_quiz(course)
+  # end
+
+  # def get_quiz_grade(quiz)
+  # end
+
+  # def get_detailed_quiz_grade(quiz)  #
+  # end
+
+  # def get_detailed_lecture_grade(lecture)  #old
+  # end  
+
+  # def grades_angular_quiz_test(group)           #
+  # end
+
+  # def grades_angular_survey_test(group)           #
+  # end
+
+  # def grades_angular_lecture_test(group)
+  # end
+
+  # def grades_angular_all_items(group)
+  # end
+
+  # def finished_quiz_test?(quiz)
+  # end
+
+  # def finished_quiz_test_with_correct_question_count?(quiz)
+  # end
+
+  # def finished_survey_test?(survey)
+  # end
+
+  # def finished_survey_test_with_completed_question_count?(survey)
+  # end
+
+  # def finished_lecture_test?(lecture)
+  # end
+
+  # def get_finished_lecture_quizzes_count(lecture)
+  # end
+
+  # def grades_angular_test(item)
+  # end
+
+  # def group_grades_test(course)
+  # end
+
+  # def finished_group_test?(group)
+  # end
+
+  # def finished_quizzes_test(group)
+  # end
+
+  # def finished_lectures_test_percent(group) #called per student
+  # end
+
+  # def finished_group_percent(group) #called per student
+  # end
+
+  # def grades_module_before_due_date(group)
+  # end
+
+  # def finished_lectures_test(group)
+  # end
+
+  # def grades_angular(item)          #
+  # end      
+
+  # def self.delete_demo_users(course) #change according to course.
+  # end
+
+  # def self.students
+  # end
+
+  # def remove_student(course_id)   #should i add them as associations (belong to/ has_many) ?
+  # end
+
+  # def self.search(search)
+  # end
+
+  # def full_name
+  # end
+
+  # def full_name_reverse
+  # end
+
+  # def reset_password!(new_password, new_password_confirmation)
+  # end
+
+  # def async_destroy
+  # end
+
+  # def delete_student_data
+  # end  
 
   private
       def add_default_user_role_to_user
@@ -106,7 +363,5 @@ class User < ActiveRecord::Base
         end
         return true
       end
-
-
 
 end

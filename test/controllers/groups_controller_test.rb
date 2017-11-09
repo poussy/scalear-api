@@ -143,8 +143,6 @@ class GroupsControllerTest < ActionDispatch::IntegrationTest
 	
 		post '/en/courses/3/groups/module_copy', params: {module_id: 3}, headers: user.create_new_auth_token
 
-		p response.body
-
 		group_from = Group.find(3)
 		new_group = Group.last
 

@@ -5,6 +5,7 @@ class Course < ApplicationRecord
 	has_many :quizzes, -> { order('position') }
 	has_many :custom_links, -> { order('position') }
 	has_many :announcements, :dependent => :destroy
+	has_many :confuseds
 	
 	has_many :enrollments, :dependent => :destroy
 	# has_many :users, :through => :enrollments
@@ -18,8 +19,18 @@ class Course < ApplicationRecord
 	has_many :guests, :source => :user, :through => :guest_enrollments
 
 	has_many :course_domains, :dependent => :destroy
+	has_many :invitations, :dependent => :destroy
 	has_many :assignment_statuses, :dependent => :destroy
-  	has_many :assignment_item_statuses, :dependent => :destroy
+	has_many :assignment_item_statuses, :dependent => :destroy
+	has_many :distance_peers
+	has_many :events, :dependent => :destroy
+	has_many :free_online_quiz_grades
+	has_many :inclass_sessions
+	has_many :lecture_views
+	has_many :online_markers
+	has_many :online_quiz_grades
+	has_many :online_quizzes
+	has_many :video_events
 
 	validates :name, :end_date, :short_name,:start_date, :user_id, :time_zone, :presence => true
 

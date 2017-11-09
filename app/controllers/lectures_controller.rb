@@ -158,7 +158,7 @@ class LecturesController < ApplicationController
 			:required_module => true, :graded_module => true,:url => "none", :group_id => params[:group], 
 			:slides => "none", :position => position, :start_time => 0, :end_time => 0, :inclass => params[:inclass] ,
 			:distance_peer => params[:distance_peer] , :required=>group.required , :graded=>group.graded )
-		@lecture['className']='lecture'
+		@lecture['class_name']='lecture'
 		if @lecture.save
 			render json:{lecture: @lecture, :notice => [I18n.t("controller_msg.lecture_successfully_created")]}
 		else

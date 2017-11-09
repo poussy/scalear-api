@@ -6,7 +6,16 @@ class Group < ApplicationRecord
 	has_many :custom_links, -> { order('position') }, :dependent => :destroy
 	has_many :quiz_statuses
 	has_many :assignment_statuses, :dependent => :destroy
-  	has_many :assignment_item_statuses, :dependent => :destroy
+	has_many :assignment_item_statuses, :dependent => :destroy
+	has_many :distance_peers, :dependent => :destroy
+	has_many :events
+	has_many :free_online_quiz_grades
+	has_many :inclass_sessions
+	has_many :lecture_views
+	has_many :online_markers
+	has_many :online_quiz_grades
+	has_many :online_quizzes
+	has_many :video_events
 
 	after_destroy :clean_up
 
@@ -166,10 +175,11 @@ class Group < ApplicationRecord
 
 	def total_questions
 		count =0
-		# waiting for online quiz table
-		# lectures.each do |l|
-			# count+= l.online_quizzes.select(&@quiz_not_empty).size
-		# end
+		lectures.each do |l|
+			if l.online_quizzes.count != 0
+				count+= l.online_quizzes.select(&@quiz_not_empty).size
+			end
+		end
 		return count
 	end
 
@@ -178,11 +188,10 @@ class Group < ApplicationRecord
 
 	def total_quiz_questions #doesn't count survey questions.
 		count=0;
-		## waiting for questions table
-		# quizzes.where("quiz_type!='survey'").each do |q|
-		# 	headers_count = q.questions.where(:question_type => 'header').size
-		# 	count+= (q.questions.count-headers_count)
-		# end
+		quizzes.where("quiz_type!='survey'").each do |q|
+			headers_count = q.questions.where(:question_type => 'header').size
+			count+= (q.questions.count-headers_count)
+		end
 		return count
 	end
 
@@ -302,8 +311,6 @@ class Group < ApplicationRecord
 		end
 
 		def clean_up
-			### waiting for add events table
-			# self.events.where(:lecture_id => nil, :quiz_id => nil).destroy_all
-			
+			self.events.where(:lecture_id => nil, :quiz_id => nil).destroy_all			
 		end
 end

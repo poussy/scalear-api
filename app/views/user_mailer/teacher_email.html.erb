@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
+  </head>
+  <body>
+  	<%= t('Hello')%>!
+    <br />
+    <br />
+    <%= t('user_mailer.you_been_invited', name: @inviter.name, role: @role_name, course: @course.name ) %>.
+    <%= t('user_mailer.to_join_course') %>
+    <%= link_to root_url+"/users/teacher", root_url+"/users/teacher", :target => '_blank' %>
+    <%= t('user_mailer.to_join_course2') %>
+    <br />
+    <br />
+    <%= t('user_mailer.contact_us_teacher', name: @inviter.name, email: @inviter.email) %>
+    <br />
+    <br />
+    - ScalableLearning
+
+
+  </body>
+</html>

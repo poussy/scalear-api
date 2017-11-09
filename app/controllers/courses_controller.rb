@@ -10,12 +10,11 @@ class CoursesController < ApplicationController
 		params[:course][:user_id]=current_user.id
 		import_from= params[:import]
 		@course = Course.new(course_params)
-		# respond_to do |format|
 		if @course.save
 			@course.add_professor(current_user , params[:email_discussion])
-			params[:subdomains].each do |subdomain|
-				if subdomain[0] != "All" && subdomain[1]
-					@course.course_domains.create(:domain => subdomain[0])
+			params[:subdomains].each do |subdomain_key, subdomain_boolean|
+				if subdomain_key != "All" && subdomain_boolean
+					@course.course_domains.create(:domain => subdomain_key)
 				end
 			end
 			if !import_from.blank?
@@ -23,15 +22,14 @@ class CoursesController < ApplicationController
 				@course.import_course(import_from)
 				#Delayed::Job.enqueue @course.import_course(import_from)
 				# check user enter Description or Prerequisites
-				render json: {course:@course, :notice => ["controller_msg.importing_course_data"], :importing => true}, status: :created
+				render json: {course:@course, :notice => [ I18n.t("controller_msg.importing_course_data") ], :importing => true}, status: :created
 			else
-				render json: {course:@course, :notice => ['controller_msg.course_successfully_created'], :importing => false}, status: :created
+				render json: {course:@course, :notice => [ I18n.t("controller_msg.course_successfully_created") ], :importing => false}, status: :created
 			end
 		else
 			@import = current_user.subjects
 			render json: {errors: @course.errors}, status: :unprocessable_entity 
 		end
-		# end
 	end
 
 	# # Removed to course model for cancancan
@@ -53,7 +51,6 @@ class CoursesController < ApplicationController
 			@total_teacher = Course.where("id is not null").count
 			teacher_courses= Course.where("id is not null").order("start_date DESC").limit(params[:limit]).offset(params[:offset]).includes([{:teacher_enrollments => [:user,:role]}, :enrollments, :lectures, :quizzes])#.all
 		elsif current_user.is_school_administrator?
-		# teacher_courses=Course.where("id is not null").includes([{:teacher_enrollments => [:user,:role]}, :enrollments, :lectures, :quizzes])
 			email = UsersRole.where(:user_id => current_user.id, :role_id => 9)[0].admin_school_domain
 			if email.blank?
 				@total_teacher = 0
@@ -66,7 +63,6 @@ class CoursesController < ApplicationController
 			@total_teacher = current_user.subjects_to_teach.count
 			teacher_courses = current_user.subjects_to_teach.order("start_date DESC").limit(params[:limit]).offset(params[:offset]).includes([{:teacher_enrollments => [:user,:role]}, :enrollments, :lectures, :quizzes])
 		end
-		# @total_teacher = teacher_courses.count
 		teacher_courses = teacher_courses.map do|c|
 			{
 				"end_date"=>c.end_date,"id"=>c.id,"importing"=>c.importing,"image_url"=>c.image_url,"name"=>c.name,"short_name"=>c.short_name,
@@ -75,7 +71,6 @@ class CoursesController < ApplicationController
 				"teacher_enrollments"=> c.teacher_enrollments.map { |u| { "user" => { "name" => u.user.name , "email" => u.user.email } } }
 			}
 		end
-		#student
 		@total_student = (current_user.courses + current_user.guest_courses).count
 		student_courses = (current_user.courses.order("start_date DESC").limit(params[:limit]).offset(params[:offset]) + current_user.guest_courses.order("start_date DESC").limit(params[:limit]).offset(params[:offset])).map do|c|
 			{
@@ -88,8 +83,20 @@ class CoursesController < ApplicationController
 		render json: {:total => @total, :teacher_courses => teacher_courses, :student_courses => student_courses}
 	end  
 
-	# def current_courses
-	# end  
+	def current_courses
+		email = current_user.email.split('@')[1]
+		if current_user.has_role?('Administrator')
+			teacher_courses = Course.select([:start_date, :end_date, :name, :short_name, :id]).where("end_date > ?", Time.now)
+		elsif current_user.is_school_administrator?
+			email = UsersRole.where(:user_id => current_user.id, :role_id => 9)[0].admin_school_domain
+			teacher_courses = Course.includes([:user,:teachers]).select([:start_date, :end_date, :name, :short_name, :id,:user_id]).select{|c| ( c.teachers.select{|t| t.email.include?(email) }.size>0 ) && (c.end_date > Date.today) }
+		else
+			teacher_courses=current_user.subjects_to_teach.where("end_date > ?", Time.now)
+		end
+		student_courses=current_user.courses.where("end_date > ?", Time.now)
+		guest_courses  =current_user.guest_courses.where("end_date > ?", Time.now)
+		render json: {:teacher_courses => teacher_courses, :student_courses => (student_courses+ guest_courses) }
+	end  
 
 	def get_role
 		# # 1 teacher, 2 student, 3 prof, 4 TA, 5 Admin, 6 preview, 7 guest
@@ -142,21 +149,19 @@ class CoursesController < ApplicationController
 		end
 		@teachers = @teachers.sort_by {|h| [h[:owner] ? 0 : 1,h[:id]]}
 
-		### Waiting for invatation table
-		# @course.invitations.each do |e|
-		# 	invited_user = User.find_by_email(e.email)
-		# 	teacher_rec = {:email => e.email, :role => e.role_id, :status => 'Pending'}
-		# 	if invited_user
-		# 		teacher_rec[:name] = invited_user.name
-		# 		teacher_rec[:last_name] = invited_user.last_name
-		# 	end
-		# 	@teachers << teacher_rec
-		# end
+		@course.invitations.each do |e|
+			invited_user = User.find_by_email(e.email)
+			teacher_rec = {:email => e.email, :role => e.role_id, :status => 'Pending'}
+			if invited_user
+				teacher_rec[:name] = invited_user.name
+				teacher_rec[:last_name] = invited_user.last_name
+			end
+			@teachers << teacher_rec
+		end
 		render json: {:data => @teachers}
 	end  
 
 	def get_selected_subdomains
-		# course = Course.find_by_id(params[:id])
 		course_domain = @course.course_domains.pluck(:domain)
 		domains = []
 		selected_domain = {}
@@ -176,26 +181,117 @@ class CoursesController < ApplicationController
 		render json: {:subdomains => domains , :selected_domain => selected_domain}		
 	end  
 
-	# def set_selected_subdomains
-	# end  
+	def set_selected_subdomains
+		course = Course.find_by_id(params[:id])
+		database_domain = course.course_domains.pluck(:domain)
+		if params[:selected_subdomains]['All']
+			course.course_domains.destroy_all
+		else
+			## loop params domain and add domains(values is true and is not in database) and remove(values is false and in the database)
+			params[:selected_subdomains].each  do |domain,value|
+				if value && !database_domain.include?(domain)
+					course.course_domains.create(:domain => domain)
+				elsif !value && database_domain.include?(domain)
+					course.course_domains.destroy(course.course_domains.find_by_domain(domain))
+				end
+			end
+			## loop on database domain and delete the domain that are not in params
+			database_domain.each do |database_domain|
+				if !(params[:selected_subdomains].include?(database_domain))
+					course.course_domains.destroy(course.course_domains.find_by_domain(database_domain))
+				end
+			end
+		end
+		render json: {:subdomains => true }
+	end
 
-	# def update_teacher
-	# end  
+	def update_teacher
+		#update_all doesn't call validations.
+		email=params[:email].downcase
+		user = User.find_by_email(email)
+		Invitation.where(:email => email, :course_id => @course.id).update_all(:role_id => params[:role]) #invited only - not yet created an account
+		if !user.nil?
+			@course.teacher_enrollments.where(:user_id =>user.id).update_all(:role_id => params[:role], :email_discussion => params[:email_discussion])
+		end
+		render json: {:notice => [ I18n.t("groups.saved")]}
+	end
 
 	# def update_student_duedate_email
 	# end  
 
-	# def update_teacher_discussion_email
-	# end  
+	def update_teacher_discussion_email
+		enrolled_teacher = TeacherEnrollment.where(:course_id => params[:id] , :user_id => current_user.id)
+		enrolled_teacher.update_all(:email_discussion => params[:"email_discussion"])  unless enrolled_teacher.nil?
+		render json: {}
+	end  
 
 	# def get_student_duedate_email
 	# end  
 
-	# def save_teachers
-	# end  
+	def save_teachers
+		teacher = params[:new_teacher]
+		@errors={:email => [], :role => []}
+		@errors[:role]<<[  I18n.t("controller_msg.must_have_role")] if teacher.nil? || teacher[:role].nil?
+		@errors[:email]<<[  I18n.t("courses.enter_valid_email")] if teacher.nil? || teacher[:email].nil?
+		if !teacher.nil? && !teacher[:role].nil? && !teacher[:email].nil?
+			enrollments = @course.teacher_enrollments
+			this_teacher = User.find_by_email(teacher[:email].downcase)
 
-	# def delete_teacher
-	# end  
+			if this_teacher.nil?  || !enrollments.any?{|a| a.user_id == this_teacher.id}
+				if !this_teacher.nil? && @course.get_role_user(this_teacher) == 2
+					@errors[:email]<<[ I18n.t("controller_msg.student_cannot_be_ta")]
+				else
+					a = Invitation.create(:user_id => current_user.id, :course_id => @course.id, :role_id => teacher[:role], :email => teacher[:email])
+					if !a.errors.empty?
+						@errors[:email]<<a.errors.full_messages
+					else
+						UserMailer.delay.teacher_email(@course, teacher[:email], teacher[:role], I18n.locale)
+					end
+				end
+			else
+				@errors[:email] << [ I18n.t("controller_msg.already_enrolled_in_course") ]
+			end
+		end
+
+		@errors[:email].flatten!.uniq! if !@errors[:email].empty?
+		@errors[:role].flatten!.uniq! if !@errors[:role].empty?
+		@errors.each{|k,v| @errors[k]=v.join(",")}
+		@errors.delete_if { |k, v| v.empty? }
+		if @errors.empty?
+			render json: {:nothing => true, :notice => [ I18n.t("groups.saved") ]}
+		else
+			render json: {errors: @errors}, :status => :unprocessable_entity #422
+		end
+	end
+
+	def delete_teacher
+		email=params[:email]
+		@errors=[]
+
+		if ( email =~ Devise.email_regexp ) == nil
+		 	@errors <<   I18n.t("courses.enter_valid_email")
+		elsif User.find_by_email(email.downcase).nil? #invited only - not yet created an account
+			Invitation.where(:email => email, :course_id => @course.id).destroy_all
+		else
+			Invitation.where(:email => email, :course_id => @course.id).destroy_all
+			if(@course.user == User.find_by_email(email.downcase)) #course owner
+				@errors<< I18n.t("controller_msg.cannot_delete_course_owner")
+			else
+				@course.teacher_enrollments.where(:user_id => User.find_by_email(email.downcase).id).destroy_all
+			end
+		end
+
+		@errors.flatten!
+		if @errors.empty?
+			if User.find_by_email(email.downcase) == current_user
+				render json: {:remove_your_self => true , :notice => [ I18n.t("controller_msg.teacher_successfully_removed")] }
+			else
+				render json: {:notice => [ I18n.t("controller_msg.teacher_successfully_removed")]}
+			end
+		else
+			render json: {errors: @errors}, :status => 400
+		end
+	end  
 
 	# def get_all_teachers
 	# end  

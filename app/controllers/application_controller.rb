@@ -5,6 +5,7 @@ class ApplicationController < ActionController::API
   include CanCan::ControllerAdditions
 
   before_action :configure_permitted_parameters, if: :devise_controller?
+  rescue_from ActiveRecord::RecordNotFound, :with => :record_not_found
 
 
   def configure_permitted_parameters
@@ -13,8 +14,13 @@ class ApplicationController < ActionController::API
       [:last_name, :university, :user, :name, :screen_name, :registration, :link, :bio, :first_day])
   end
 
-
-	rescue_from CanCan::AccessDenied do |exception|
+  def check_user_signed_in? #401 not authenticated(devise) #403 not authorized/not allowed (cancan)
+    if !user_signed_in?
+       render json:{:errors=>[t("controller_msg.not_logged_in")]}, status: 401
+    end
+  end
+	
+  rescue_from CanCan::AccessDenied do |exception|
 		render json: {:errors=>[ I18n.t("controller_msg.you_are_not_authorized") ]}, status: 403
 	end
 
