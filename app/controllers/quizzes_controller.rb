@@ -14,7 +14,7 @@ class QuizzesController < ApplicationController
     if params[:id]
       @quiz = Quiz.where(:id => params[:id], :course_id => params[:course_id])[0]
       if @quiz.nil?
-        render json: {:errors => [t("controller_msg.no_such_quiz")]}, :status => 404
+        render json: {:errors => [I18n.t("controller_msg.no_such_quiz")]}, :status => 404
       end
     end
   end
@@ -199,6 +199,47 @@ class QuizzesController < ApplicationController
       render json: {:errors => @quiz.errors , :appearance_time =>@quiz.appearance_time.strftime('%Y-%m-%d') }, :status => :unprocessable_entity
     end
   end
+
+  def quiz_copy
+    id = params[:id] || params[:quiz_id]
+    old_quiz = Quiz.find(id)
+    new_group = Group.find(params[:module_id])
+    copy_quiz= old_quiz.dup
+    copy_quiz.course_id= params[:course_id]
+    copy_quiz.group_id = params[:module_id]
+    copy_quiz.position = new_group.get_items.size+1
+    copy_quiz.save(:validate => false)
+
+    copy_quiz.appearance_time = new_group.appearance_time
+    copy_quiz.due_date = new_group.due_date
+    copy_quiz.appearance_time_module = true
+    copy_quiz.due_date_module = true
+    copy_quiz.required_module = true
+    copy_quiz.graded_module = true
+    ## waiting for events table
+    # Event.where(:quiz_id => old_quiz.id, :lecture_id => nil).each do |e|
+    #   new_event= e.dup
+    #   new_event.quiz_id = copy_quiz.id
+    #   new_event.course_id = copy_quiz.course_id
+    #   new_event.group_id = copy_quiz.group_id
+    #   new_event.save(:validate => false)
+    # end
+
+    old_quiz.questions.each do |question|
+      new_question = question.dup
+      new_question.quiz_id = copy_quiz.id
+      new_question.save(:validate => false)
+      ## waiting for answers table
+      # question.answers.each do |answer|
+      #   new_answer = answer.dup
+      #   new_answer.question_id = new_question.id
+      #   new_answer.save(:validate => false)
+      # end
+    end
+
+    render json:{quiz: copy_quiz, :notice => [I18n.t("controller_msg.#{copy_quiz.quiz_type}_successfully_created")]}
+  end
+
 
   def validate_quiz_angular
     @quiz= Quiz.find(params[:id])

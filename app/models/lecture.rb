@@ -15,7 +15,7 @@ class Lecture < ApplicationRecord
 	has_many :video_notes, :dependent => :destroy
 		
 
-	validates :name, :url,:appearance_time, :due_date,:course_id, :group_id, :start_time, :end_time, :duration, :position, :presence => true
+	validates :name, :url,:appearance_time, :due_date,:course_id, :group_id, :start_time, :end_time, :position, :presence => true
 	validates_inclusion_of :appearance_time_module, :due_date_module,:required_module , :graded_module, :inclass, :distance_peer, :in => [true, false] #not in presence because boolean false considered not present.
 
 	validates_datetime :appearance_time, :on_or_after => lambda{|m| m.group.appearance_time}, :on_or_after_message => "lecture.errors.appearance time_after_module_appearance_time"

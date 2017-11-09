@@ -20,9 +20,22 @@ class CustomLinksController < ApplicationController
     if @link.valid?
       head :ok
     else
-      frender json: {errors:@link.errors.full_messages}, status: :unprocessable_entity
+      render json: {errors:@link.errors.full_messages}, status: :unprocessable_entity
     end
     
+  end
+
+  def link_copy
+    id = params[:id] || params[:link_id]
+    old_link = CustomLink.find(id)
+    new_group = Group.find(params[:module_id])
+    copy_link= old_link.dup
+    copy_link.course_id = params[:course_id]
+    copy_link.group_id  = params[:module_id]
+    copy_link.position = new_group.get_items.size+1
+    copy_link.save(:validate => false)
+    
+    render json:{link: copy_link, :notice => [I18n.t("controller_msg.link_successfully_updated")]} 
   end
 
   def destroy
@@ -30,7 +43,7 @@ class CustomLinksController < ApplicationController
 
       render json: {:notice => [I18n.t("controller_msg.link_successfully_deleted")]}
     else 
-      render jason: {errors:@link.errors.full_messages}, status: :unprocessable_entity  
+      render json: {errors:@link.errors.full_messages}, status: :unprocessable_entity  
     end
   end
 

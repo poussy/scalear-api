@@ -55,8 +55,8 @@ class CoursesControllerTest <  ActionDispatch::IntegrationTest
 		url = '/en/courses'
 		get  url ,headers: @admin_user.create_new_auth_token 
 		resp =  JSON.parse response.body
-		assert_equal resp['total'] , 3
-	end			
+		assert_equal resp['total'] , 5
+	end		
 
 	test 'validate new method for teacher' do
 		url = '/en/courses/new'
@@ -74,7 +74,7 @@ class CoursesControllerTest <  ActionDispatch::IntegrationTest
 		url = '/en/courses/new'
 		get  url ,headers: @admin_user.create_new_auth_token 
 		resp =  JSON.parse response.body
-		assert_equal resp['importing'].count , 3
+		assert_equal resp['importing'].count , 5
 	end		
 
 	test 'validate Teachers method for user1 for course1' do
@@ -208,6 +208,53 @@ class CoursesControllerTest <  ActionDispatch::IntegrationTest
 		assert_equal resp['groups'].count , 2
 	end
 
+	test "should import course" do
+		user = users(:user3)
+		user.roles << Role.find(1)
+		
+		initial_course_count = Course.count
+		
+		assert Course.find_by_name("import_test").nil?
+		## to invoke delayed jobs synchrously
+		Delayed::Worker.delay_jobs = false
+		post '/en/courses' ,  params: {
+					course:{time_zone: "UTC",start_date:"2017-11-08T12:25:14.079Z",end_date:"2018-01-17T10:25:14.079Z",short_name:"test",name:"import_test"},
+					import:3,
+					subdomains:{All:true},
+					email_discussion:false
+				}, headers: user.create_new_auth_token
+		
+		## new course is created
+		assert_equal Course.count, initial_course_count + 1
+		assert Course.find_by_name("import_test").present?
+		
+		course_from = Course.find(3)
+		new_course =  Course.last
+		# compare new and imported groups
+		new_course.groups.each_with_index do |new_group, i|
+			assert_equal  course_from.groups[i].name, new_group.name
+			# compare new and imported lectures
+			lectures_from = course_from.groups[i].lectures
+			new_group.lectures.each_with_index do |new_lecture, j|
+				assert_equal lectures_from[j].name, new_lecture.name
+				## difference between courses start_date is 65 days
+				assert_equal lectures_from[j].appearance_time.to_date + 65.days, new_lecture.appearance_time.to_date
+			end
+			# compare quizzes
+			quizzes_from = course_from.groups[i].quizzes
+			new_group.quizzes.each_with_index do |new_quiz, k|
+				assert_equal quizzes_from[k].name, new_quiz.name
+			end
+			#compare custom_links
+			links_from = course_from.groups[i].custom_links
+			new_group.custom_links.each_with_index do |new_link, m|
+				assert_equal links_from[m].name, new_link.name
+			end
+			
+		end
+	end
+	
+		
 	test 'validate save_teachers method for empty invitations' do
 		url = '/en/courses/'+ @course1.id.to_s+'/save_teachers/'
 		post url ,params: {new_teacher: { email: "a", role: "10"}},headers: @user1.create_new_auth_token 
