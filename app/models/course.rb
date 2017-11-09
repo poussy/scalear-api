@@ -241,8 +241,9 @@ class Course < ApplicationRecord
 	# def self.our(user)
 	# end
 
-	# def enrolled_students #returns scope (relation)
-	# end
+	def enrolled_students #returns scope (relation)
+		return users
+	end
 
 	# def not_enrolled_students #returns scope (relation)
 	# end
@@ -272,19 +273,19 @@ class Course < ApplicationRecord
 		# def validate_end_date_after_start_date
 		def validate_end_date_disable_regis_after_start_date
 			if end_date && start_date && end_date < start_date
-				errors.add(:end_date, "courses.errors.end_date_pass")
+				errors.add(:end_date, I18n.t("courses.errors.end_date_pass") )
 			end
 			if disable_registration && disable_registration < start_date
-				errors.add(:disable_registration, "courses.errors.end_date_pass")
+				errors.add(:disable_registration, I18n.t("courses.errors.end_date_pass") )
 			end
 		end
 
 		def unique_identifier_guest_unique_identifier_not_changed
 			if unique_identifier_changed?  && self.persisted?
-				errors.add(:unique_identifier, "courses.errors.unique_identifier_changed")
+				errors.add(:unique_identifier, I18n.t("courses.errors.unique_identifier_changed")  )
 			end
 			if guest_unique_identifier_changed? && self.persisted?
-				errors.add(:guest_unique_identifier, "courses.errors.guest_unique_identifier_changed")
+				errors.add(:guest_unique_identifier, I18n.t("courses.errors.guest_unique_identifier_changed") )
 			end
 		end
 

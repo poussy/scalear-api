@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
+  </head>
+  <body>
+    
+    <%= raw @message %>
+    <br />
+    <% if @course.discussion_link!=""%>
+    <p>
+      <%= t('user_mailer.to_contact_use') %> <%= link_to t('user_mailer.online_course_forum'), url_with_protocol(@course.discussion_link), :target => '_blank' %>
+    </p>
+    <% end %>
+  </body>
+</html>

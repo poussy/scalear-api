@@ -60,6 +60,8 @@ class User < ActiveRecord::Base
 
   serialize :completion_wizard
 
+  attribute :full_name
+
   def has_role?(role)
     self.roles.pluck(:name).include?(role)      
   end
@@ -335,14 +337,24 @@ class User < ActiveRecord::Base
   # def self.students
   # end
 
-  # def remove_student(course_id)   #should i add them as associations (belong to/ has_many) ?
-  # end
+  def remove_student(course_id)   #should i add them as associations (belong to/ has_many) ?
+    if enrollments.where(:course_id => course_id).destroy_all
+      return true
+    else
+      return false
+    end
+  end
 
   # def self.search(search)
   # end
 
-  # def full_name
-  # end
+  def full_name
+    if !self.last_name.nil?
+      return self.name + ' ' + self.last_name
+    else
+      return self.name
+    end    
+  end
 
   # def full_name_reverse
   # end
@@ -353,8 +365,26 @@ class User < ActiveRecord::Base
   # def async_destroy
   # end
 
-  # def delete_student_data
-  # end  
+  def delete_student_data(course_id)
+    ActiveRecord::Base.transaction do
+      Confused.where(:user_id => id, :course_id => course_id).destroy_all
+      LectureView.where(:user_id => id, :course_id => course_id).destroy_all
+      QuizStatus.where(:user_id => id, :course_id => course_id).destroy_all
+      VideoEvent.where(:user_id => id, :course_id => course_id).destroy_all
+      course=Course.find(course_id)
+      course.quizzes.each do |quiz|
+        QuizGrade.where(:user_id => id, :quiz_id => quiz.id).destroy_all
+        FreeAnswer.where(:user_id => id, :quiz_id => quiz.id).destroy_all
+      end
+      course.lectures.each do |lecture|
+        VideoNote.where(:user_id => id, :lecture_id => lecture.id).destroy_all
+        OnlineQuizGrade.where(:user_id => id, :lecture_id => lecture.id).destroy_all
+        FreeOnlineQuizGrade.where(:user_id => id, :lecture_id => lecture.id).destroy_all
+        # waiting for post table
+        # Post.delete('destroy_all_by_user', {:user_id => id, :lecture_id => lecture.id} )
+      end
+    end
+  end  
 
   private
       def add_default_user_role_to_user
