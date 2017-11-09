@@ -247,8 +247,65 @@ class LecturesController < ApplicationController
 	# def load_note
 	# end
 
-	# def lecture_copy
-	# end
+	def lecture_copy
+		id = params[:id] || params[:lecture_id]
+		old_lecture = Lecture.find(id)
+		new_group = Group.find(params[:module_id])
+		copy_lecture= old_lecture.dup
+		copy_lecture.course_id = params[:course_id]
+		copy_lecture.group_id  = params[:module_id]
+		copy_lecture.position = new_group.get_items.size+1
+		copy_lecture.appearance_time = new_group.appearance_time
+		copy_lecture.due_date = new_group.due_date
+		copy_lecture.appearance_time_module = true
+		copy_lecture.due_date_module = true
+		copy_lecture.required_module = true
+		copy_lecture.graded_module = true
+
+
+		copy_lecture.save(:validate => false)
+		## waiting for online quizzes table
+		# old_lecture.online_quizzes.each do |quiz|
+		# 	new_online_quiz = quiz.dup
+		# 	new_online_quiz.lecture_id= copy_lecture.id
+		# 	new_online_quiz.group_id  = copy_lecture.group_id
+		# 	new_online_quiz.course_id = copy_lecture.course_id
+		# 	new_online_quiz.save(:validate => false)
+		# 	quiz.online_answers.each do |answer|
+		# 		new_answer = answer.dup
+		# 		new_answer.online_quiz_id = new_online_quiz.id
+		# 		new_answer.save(:validate => false)
+		# 	end
+		# 	quiz_session = quiz.inclass_session
+		# 	if !quiz_session.nil?
+		# 		new_session = quiz_session.dup
+		# 		new_session.online_quiz_id= new_online_quiz.id
+		# 		new_session.lecture_id= copy_lecture.id
+		# 		new_session.group_id  = copy_lecture.group_id
+		# 		new_session.course_id = copy_lecture.course_id
+		# 		new_session.save(:validate => false)
+		# 	end
+		# end
+		## waiting for online markers
+		# old_lecture.online_markers.each do |marker|
+		# 	new_online_marker = marker.dup
+		# 	new_online_marker.lecture_id= copy_lecture.id
+		# 	new_online_marker.group_id  = copy_lecture.group_id
+		# 	new_online_marker.course_id = copy_lecture.course_id
+		# 	new_online_marker.save(:validate => false)
+		# end
+		## waiting for events
+		# Event.where(:quiz_id => nil,:lecture_id => old_lecture.id).each do |e|
+		# 	new_event= e.dup
+		# 	new_event.lecture_id = copy_lecture.id
+		# 	new_event.course_id = copy_lecture.course_id
+		# 	new_event.group_id = copy_lecture.group_id
+		# 	new_event.save(:validate => false)
+		# end
+
+		render json:{lecture: copy_lecture, :notice => [I18n.t("controller_msg.lecture_successfully_updated")]}
+  	end
+
 
 	# def export_notes
 	# end

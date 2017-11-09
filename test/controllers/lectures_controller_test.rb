@@ -143,5 +143,51 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 		
 	end
 
+	test "should copy lecture to same group" do
+
+		group = Group.find(3)
+
+		assert_equal group.lectures.size, 1
+
+		post '/en/courses/3/lectures/lecture_copy', params: {lecture_id: 3, module_id: 3}, headers: @headers, as: :json
+
+		assert_equal group.lectures.size, 2
+		
+		
+		lecture_from = Lecture.find(3)
+		new_lecture = Lecture.last
+
+		assert_equal lecture_from.name, new_lecture.name
+		assert_equal lecture_from.url, new_lecture.url
+		## due_date and appearance_time is copied from parent group
+		assert_equal group.due_date, new_lecture.due_date
+		assert_equal group.appearance_time, new_lecture.appearance_time
+
+		
+	end
+
+	test "should copy lecture to other group" do
+
+		group = Group.find(4)
+
+		assert_equal group.lectures.size, 0
+
+		post '/en/courses/3/lectures/lecture_copy', params: {lecture_id: 3, module_id: 4}, headers: @headers, as: :json
+
+		group.reload
+		assert_equal group.lectures.size, 1
+		
+		lecture_from = Lecture.find(3)
+		new_lecture = Lecture.last
+
+		assert_equal lecture_from.name, new_lecture.name
+		assert_equal lecture_from.url, new_lecture.url
+		## due_date and appearance_time is copied from parent group
+		assert_equal group.due_date, new_lecture.due_date
+		assert_equal group.appearance_time, new_lecture.appearance_time
+
+		
+	end
+
 	
 end
