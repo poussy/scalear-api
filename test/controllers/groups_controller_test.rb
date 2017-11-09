@@ -141,8 +141,6 @@ class GroupsControllerTest < ActionDispatch::IntegrationTest
 
 		user.roles << Role.find(1)
 	
-		group = groups(:group3)
-
 		post '/en/courses/3/groups/module_copy', params: {module_id: 3}, headers: user.create_new_auth_token
 
 		p response.body

@@ -37,4 +37,19 @@ class CustomLinksControllerTest < ActionDispatch::IntegrationTest
 		
 		assert_not CustomLink.exists?(1)
 	end
+
+  test "should copy link" do
+
+   
+		post '/en/custom_links/2/link_copy',params: {course_id: 3, module_id: 3}, headers: @user.create_new_auth_token
+
+		link_from = CustomLink.find(2)
+    new_link = CustomLink.last
+
+    assert_equal link_from.name, new_link.name
+    assert_equal link_from.url, new_link.url
+
+    assert_not_equal link_from.id, new_link.id
+		
+	end
 end
