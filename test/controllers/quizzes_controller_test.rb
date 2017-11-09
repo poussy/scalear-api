@@ -126,6 +126,27 @@ class QuizzesControllerTest < ActionDispatch::IntegrationTest
     
 	end
 
+  test "should copy quiz" do
+
+    assert_equal Quiz.count, 2
+	
+		post '/en/courses/3/quizzes/quiz_copy', params: {module_id: 3, quiz_id: 1}, headers: @headers, as: :json
+
+    assert_equal Quiz.count, 3
+
+    	quiz_from = Quiz.find(1)
+    new_quiz = Quiz.last
+
+    assert_equal quiz_from.name, new_quiz.name
+    assert_equal quiz_from.retries, new_quiz.retries
+    assert_equal quiz_from.instructions, new_quiz.instructions
+    assert_equal quiz_from.required, new_quiz.required
+    assert_equal quiz_from.graded, new_quiz.graded
+
+    assert_not_equal quiz_from.id, new_quiz.id
+
+	end
+
 
 
 
