@@ -136,5 +136,43 @@ class GroupsControllerTest < ActionDispatch::IntegrationTest
 		
 	end
 
+	test "should copy/paste group" do
+		user = users(:user3)
+
+		user.roles << Role.find(1)
+	
+		group = groups(:group3)
+
+		post '/en/courses/3/groups/module_copy', params: {module_id: 3}, headers: user.create_new_auth_token
+
+		p response.body
+
+		group_from = Group.find(3)
+		new_group = Group.last
+
+		assert group_from.name == new_group.name
+
+		new_group.lectures.each_with_index do |new_lecture, i|
+			assert_equal group_from.lectures[i].name, new_lecture.name
+			assert_equal group_from.lectures[i].url, new_lecture.url
+			assert_equal group_from.lectures[i].duration, new_lecture.duration
+		end
+
+		new_group.quizzes.each_with_index do |new_quiz, i|
+			assert_equal group_from.quizzes[i].name, new_quiz.name
+			assert_equal group_from.quizzes[i].retries, new_quiz.retries
+			assert_equal group_from.quizzes[i].required, new_quiz.required
+			assert_equal group_from.quizzes[i].graded, new_quiz.graded
+		end
+		
+		new_group.custom_links.each_with_index do |new_link, i|
+			assert_equal group_from.custom_links[i].name, new_link.name
+			assert_equal group_from.custom_links[i].url, new_link.url
+		end
+		
+		
+		
+	end
+
 
 end

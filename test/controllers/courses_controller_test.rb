@@ -218,14 +218,13 @@ class CoursesControllerTest <  ActionController::TestCase
 		assert_equal resp['groups'].count , 2
 	end
 
-	test "user should be able to import course" do
+	test "should import course" do
 		user = users(:user3)
 		user.roles << Role.find(1)
 		request.headers.merge! user.create_new_auth_token
 		sign_in user
 		initial_course_count = Course.count
 		
-		assert_equal Course.count, initial_course_count
 		assert Course.find_by_name("import_test").nil?
 		## to invoke delayed jobs synchrously
 		Delayed::Worker.delay_jobs = false
@@ -244,23 +243,23 @@ class CoursesControllerTest <  ActionController::TestCase
 		new_course =  Course.last
 		# compare new and imported groups
 		new_course.groups.each_with_index do |new_group, i|
-			assert  course_from.groups[i].name == new_group.name
+			assert_equal  course_from.groups[i].name, new_group.name
 			# compare new and imported lectures
 			lectures_from = course_from.groups[i].lectures
 			new_group.lectures.each_with_index do |new_lecture, j|
-				assert lectures_from[j].name == new_lecture.name
+				assert_equal lectures_from[j].name, new_lecture.name
 				## difference between courses start_date is 65 days
 				assert_equal lectures_from[j].appearance_time.to_date + 65.days, new_lecture.appearance_time.to_date
 			end
 			# compare quizzes
 			quizzes_from = course_from.groups[i].quizzes
 			new_group.quizzes.each_with_index do |new_quiz, k|
-				assert quizzes_from[k].name == new_quiz.name
+				assert_equal quizzes_from[k].name, new_quiz.name
 			end
 			#compare custom_links
 			links_from = course_from.groups[i].custom_links
 			new_group.custom_links.each_with_index do |new_link, m|
-				assert links_from[m].name = new_link.name
+				assert_equal links_from[m].name, new_link.name
 			end
 			
 		end

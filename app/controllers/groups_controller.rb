@@ -208,8 +208,19 @@ class GroupsController < ApplicationController
 	# def get_module_data_angular
 	# end
 
-	# def module_copy
-	# end
+	def module_copy
+		id = params[:id] || params[:module_id]
+		copy_module= Group.find(id).copy_group(@course)
+		copy_module.position = @course.groups.size
+		copy_module.save(:validate => false)
+
+		all = copy_module.get_items
+		all.each do |s|
+			s[:class_name]= s.class.name.downcase
+		end
+		copy_module[:items] = all
+		render json:{group: copy_module, :notice => [I18n.t("groups.module_successfully_created")]}
+   	end
 
 	# def get_module_inclass
 	# end
