@@ -190,11 +190,10 @@ class QuizzesController < ApplicationController
     end
 
     if @quiz.update_attributes(quiz_params)
-      ### waiting for events table
-      #  @quiz.events.where(:lecture_id => nil, :group_id => group.id).destroy_all
-      #  if @quiz.due_date.to_formatted_s(:long) != group.due_date.to_formatted_s(:long)
-      #      @quiz.events << Event.new(:name => "#{@quiz.name} "+t('controller_msg.due'), :start_at => params[:quiz][:due_date], :end_at => params[:quiz][:due_date], :all_day => false, :color => "red", :course_id => @course.id, :group_id => group.id)
-      #  end
+       @quiz.events.where(:lecture_id => nil, :group_id => group.id).destroy_all
+       if @quiz.due_date.to_formatted_s(:long) != group.due_date.to_formatted_s(:long)
+           @quiz.events << Event.new(:name => "#{@quiz.name} "+I18n.t('controller_msg.due'), :start_at => params[:quiz][:due_date], :end_at => params[:quiz][:due_date], :all_day => false, :color => "red", :course_id => @course.id, :group_id => group.id)
+       end
        render json: {quiz: @quiz, :notice => [I18n.t("controller_msg.#{@quiz.quiz_type}_successfully_updated")] }
     else
       render json: {:errors => @quiz.errors , :appearance_time =>@quiz.appearance_time.strftime('%Y-%m-%d') }, :status => :unprocessable_entity
@@ -227,6 +226,60 @@ class QuizzesController < ApplicationController
     end
   end
 
+  # def handle_exception(exception)
+  # end
+  
+  # def correct_user
+  # end
+  
+  # def set_zone
+  # end
+  
+  # def index
+  # end
+  
+  # def show
+  # end
+  
+  # def new
+  # end
+  
+  # def show_question_inclass  #updating a survey question (hidden or not)
+  # end
+  
+  # def show_question_student  #updating a survey question (hidden or not)
+  # end
+  
+  # def create_or_update_survey_responses
+  # end
+  
+  # def hide_responses
+  # end
+  
+  # def hide_response_student
+  # end
+  
+  # def delete_response
+  # end
+  
+  # def make_visible
+  # end
+  
+  # def update_questions_angular
+  # end
+  
+  # def save_student_quiz_angular
+  # end
+  
+  # def update_grade
+  # end
+  
+  # def quiz_copy
+  # end
+  
+  # def change_status_angular
+  # end
+  
 
 private
 
@@ -235,4 +288,4 @@ private
         :appearance_time,:appearance_time_module, :due_date_module, :required_module , :inordered_module,:position, 
         :type, :visible, :required, :retries, :current_user, :inordered, :graded, :graded_module, :quiz_type, :parent_id, :requirements)
   end
-end
+end 

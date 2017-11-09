@@ -1,15 +1,12 @@
 class UsersController < ApplicationController
 
-
   def already_signed_in
     if current_user
       redirect_to root_url, :alert => I18n.t('controller_msg.you_are_signed_in')
     end
   end
 
- 
   def get_current_user    
-
     result = {:user => current_user.to_json(:include => {:roles=>{:only => :id}}, :methods => [:info_complete, :intro_watched]), :signed_in => user_signed_in?}
     if user_signed_in?
       result[:profile_image] = Digest::MD5.hexdigest(current_user.email);
@@ -19,8 +16,6 @@ class UsersController < ApplicationController
     end
     render :json => result    
   end
-
-  
 
   def user_exist
     if User.find_by_email(params[:email]).nil?
@@ -37,7 +32,20 @@ class UsersController < ApplicationController
       render json: {}
     end
   end
-
   
+  # def sign_angular_in
+  # end
+
+  # def get_user_angular
+  # end
+
+  # def alter_pref
+  # end
+
+  # def saml_signup
+  # end
+
+  # def get_subdomains
+  # end
 
 end

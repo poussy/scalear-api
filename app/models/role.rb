@@ -6,4 +6,7 @@ class Role < ApplicationRecord
 		name
 	end
 
+	# def to_s
+	# end
+
 end
