@@ -1,0 +1,49 @@
+user1:
+  name: "ahmed"
+  email: "a.hossam.2010@gmail.com"
+  last_name: "hossam"
+  screen_name: "ahmed hossam"
+  university: "nile"
+  uid: "a.hossam.2010@gmail.com"
+
+user2:
+  name: "ahmedd"
+  email: "a.hossam.2012@gmailll.com"
+  last_name: "hossamm"
+  screen_name: "user2"
+  university: "nilee"
+  uid: "a.hossam.2012@gmail.com"
+
+invitated_user:
+  name: "ahmedd"
+  email: "a.hossam.2011@gmail.com"
+  last_name: "hossamm"
+  screen_name: "invitated_user,"
+  university: "nilee"
+  uid: "a.hossam.2011@gmail.com"
+
+user3:
+  id: 3
+  name: "ahmed"
+  email: "okasha@gmail.com"
+  last_name: "okasha"
+  screen_name: "a.okasha"
+  university: "helwan"
+  uid: "okasha@gmail.com"
+
+user4:
+  id: 4
+  name: "ahmed"
+  email: "okashaaa@gmail.com"
+  last_name: "okashaaa"
+  screen_name: "a.okashaaa"
+  university: "helwan"
+  uid: "okashaaa@gmail.com"
+  
+admin_user:
+  name: "admin"
+  email: "admin@gmailll.com"
+  last_name: "hossam"
+  screen_name: "admin,"
+  university: "nilee"
+  uid: "admin@gmailll.com"

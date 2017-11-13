@@ -1,11 +1,47 @@
-# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+group1:
+  name: 'name'
+  course: course1
+  appearance_time: '2017-9-9'
+  due_date: '2017-10-9'
+  graded: false
+  required: false
+  position: 1
 
-# This model initially had no columns defined. If you add columns to the
-# model remove the '{}' from the fixture names and add the columns immediately
-# below each fixture, per the syntax in the comments below
-#
-one: {}
-# column: value
-#
-two: {}
-# column: value
+group2:
+  name: 'name'
+  course: course2
+  appearance_time: '2017-9-9'
+  due_date: '2017-10-9'
+  graded: false
+  required: false
+  position: 1
+
+group3:
+  id: 3
+  name: 'group3'
+  course_id: 3
+  appearance_time: '2017-9-9'
+  due_date: '2017-10-9'
+  graded: false
+  required: false
+  position: 3
+
+group4:
+  id: 4
+  name: 'group4'
+  course_id: 3
+  appearance_time: '2017-9-9'
+  due_date: '2017-10-9'
+  graded: false
+  required: false
+  position: 1
+
+group5:
+  id: 5
+  name: 'group5'
+  course_id: 3
+  appearance_time: '2017-9-9'
+  due_date: '2017-10-9'
+  graded: false
+  required: false
+  position: 2

@@ -1,3 +1,5 @@
+require 'simplecov'
+SimpleCov.start 'rails'
 require File.expand_path('../../config/environment', __FILE__)
 require 'rails/test_help'
 
@@ -6,4 +8,8 @@ class ActiveSupport::TestCase
   fixtures :all
 
   # Add more helper methods to be used by all tests here...
+
+  def decode_json_response_body
+    ActiveSupport::JSON.decode @response.body
+  end
 end

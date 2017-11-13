@@ -1,11 +1,24 @@
-# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+user_role1:
+  user: user1
+  role_id: 1
 
-# This model initially had no columns defined. If you add columns to the
-# model remove the '{}' from the fixture names and add the columns immediately
-# below each fixture, per the syntax in the comments below
-#
-one: {}
-# column: value
-#
-two: {}
-# column: value
+user_role2:
+  user: user2
+  role_id: 1  
+
+user_role4:
+  user_id: 4
+  role_id: 1  
+
+
+invitated_user_role:
+  user: inviated_user
+  role_id: 1  
+
+admin_user_role_1:
+  user: admin_user
+  role_id: 1
+
+admin_user_role_5:
+  user: admin_user
+  role_id: 5

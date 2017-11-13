@@ -1,11 +1,45 @@
-# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+course1:
+  name: 'name'
+  short_name: 'short_name' 
+  user: user1 
+  time_zone: "Cairo" 
+  start_date: '2017-9-4'
+  end_date: '2017-10-9' 
+  image_url: 'https://pbs.twimg.com/profile_images/839721704163155970/LI_TRk1z_400x400.jpg'
+  unique_identifier: "FDVSE-44758"
+  guest_unique_identifier: "FDVSE-44757"
 
-# This model initially had no columns defined. If you add columns to the
-# model remove the '{}' from the fixture names and add the columns immediately
-# below each fixture, per the syntax in the comments below
-#
-one: {}
-# column: value
-#
-two: {}
-# column: value
+course2:
+  name: 'name'
+  short_name: 'short_name' 
+  user: user2 
+  time_zone: "Cairo" 
+  start_date: '2017-9-4' 
+  end_date: '2017-10-9' 
+  image_url: 'https://pbs.twimg.com/profile_images/839721704163155970/LI_TRk1z_400x400.jpg'
+
+course3:
+  id: 3
+  name: 'course3'
+  short_name: 'c3' 
+  user_id: 3
+  start_date: '2017-9-4' 
+  end_date: '2017-10-9' 
+  image_url: 'https://pbs.twimg.com/profile_images/839721704163155970/LI_TRk1z_400x400.jpg'
+
+course4:
+  id: 4
+  name: 'course4'
+  short_name: 'c4' 
+  user_id: 3
+  start_date: '2017-9-4' 
+  end_date: '2017-10-9' 
+  image_url: 'https://pbs.twimg.com/profile_images/839721704163155970/LI_TRk1z_400x400.jpg'
+
+course5:
+  id: 5
+  name: 'course5'
+  short_name: 'c5' 
+  start_date: '2017-9-4' 
+  end_date: '2017-10-9' 
+  image_url: 'https://pbs.twimg.com/profile_images/839721704163155970/LI_TRk1z_400x400.jpg'

@@ -3,10 +3,10 @@ class CreateGroups < ActiveRecord::Migration[5.1]
     create_table :groups do |t|
 	    t.string   :name
 	    t.integer  :course_id
-	    t.date :appearance_time
-	    t.date :due_date
-	    t.boolean  :inorder
-	    t.boolean  :required
+	    t.datetime :appearance_time
+	    t.datetime :due_date
+	    t.boolean  :graded, :default => true
+	    t.boolean  :required, :default => true
 	    t.integer :position
 	    t.text     :description
 	    

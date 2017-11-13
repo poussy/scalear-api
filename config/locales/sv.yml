@@ -1,0 +1,861 @@
+sv:
+  mailer:
+    thanks_sign_up: "tack för att du registrerar dig en"
+    open_confirmation_link: "Klicka på länken nedan för att bekräfta din registrering - eller kopiera den och klistra in den i din webbläsare."
+    click_here_confirm: "Klicka här för att bekräfta ditt nya konto"
+    copy_paste_link: "Eller kopiera och klistra in länken i din webbläsare"
+    contact_us: "Om du har frågor eller synpunkter så tveka inte att kontakta oss genom att använda återkopplings länken i menyn Hjälp"
+    note_ie_incompatible: "Observera: Internet Explorer stöder för närvarande inte alla de avancerade webbfunktioner Scalable Learning använder. Vi rekommenderar att använda"
+    we_recommend_use: "Vi rekommenderar att du använder"
+    browser: "webbläsare"
+    other_browsers: "Andra webbläsare har varit kända för att ha kompatibilitetsproblem med de avancerade webbfunktioner vi använder"
+    sincerely: "Vänliga hälsningar"
+    mail_sent_to: "Denna email skickades till"
+    to_confirm: "för att bekräfta ditt konto registrering"
+    ignore_email: "Om du inte registrerade ett konto helt enkelt ignorera detta mail"
+  notes:
+    successfully_saved: "Note har sparats"
+    successfully_deleted: "Note har tagits bort"
+    could_not_delete_note: "Det gick inte att ta bort note"
+  welcome: "Välkommen till"
+  agent: "Medel"
+  version: "Version(t)"
+  invalid_password: "Felaktigt lösenord"
+  hello: "Hallå"
+  thank_you_for_feedback: "Tack, din respons kommer att ses"
+  response_to: "svar på"
+  sending: "Skickar"
+  quiz: "Quiz"
+  survey: "Enkät"
+  name: "Namn"
+  email: "E-post"
+  password: "Lösenord"
+  password_confirmation: "Bekräfta lösenord"
+  current_password: "Aktuellt lösenord"
+  role: "Roll"
+  sign_up: "Registrera dig"
+  sign_in: "Logga in"
+  remember_me: "Kom ihåg mig"
+  sign_in_with: "Logga in med"
+  submit: "Framlägga"
+  at: "vid"
+  save: "Spara"
+  now: "nu"
+  hidden: "gömd"
+  visible: "synlig"
+  character_exceed_limit: "Den inmatade texten var för lång."
+  errors_messages:
+    the_form_contains: "Formuläret innehåller"
+    error: "fel"
+  navigation:
+    sign_in_as: "Du är inloggad som "
+    logout: "Utloggning"
+    login: "Inloggning"
+    edit_account: "Redigera konto"
+    courses: "Kurser"
+    notifications: "Anmälningar"
+    admin: "Admin"
+  head:
+    progress: "Framsteg"
+    in_class: "I-klassen"
+    calendar: "Kalender"
+    announcements: "Meddelanden"
+    content: "Innehåll"
+    information: "Information"
+    course_information: "Kursinformation"
+    enrolled_students: "Inskrivna studenter"
+    teachers: "Lärare"
+  head2:
+    lectures: "Föreläsningar"
+    calendar: "Kalender"
+    discussion_forum: "Diskussionsforum"
+    course_information: "Kursinformation"
+  footer:
+    about: "Om "
+    privacy: "Sekretessregler"
+  feedback:
+    report_technical: "Rapportera ett tekniskt problem"
+    send: "Skicka"
+    close: "Stänga"
+  announcement_form:
+    post_announcement: "Skicka Meddelande"
+    confirm_delete: "Är du säker på att du vill radera detta meddelande?"
+    sending_email: "Skickar e-post"
+  answer:
+    show: "Visa"
+    back: "Tillbaka"
+    listing_answers: "Listar svar"
+    question: "Fråga"
+    content: "Innehåll"
+    correct: "Korrigera"
+    edit: "Redigera"
+    destroy: "Ta bort"
+    you_sure: "Är du säker?"
+    new_answer: "Nytt Svar"
+  password_edit:
+    change_password: "Ändra ditt lösenord"
+    change_password2: "Ändra mitt lösenord"
+    new_password: "Nytt lösenord"
+    confirm_password: "Bekräfta nytt lösenord"
+    forgot_password: "Har du glömt ditt lösenord?"
+    send_reset: "Skicka mig instruktioner för att återställa lösenordet"
+    didnt_receive_confirmation: "Fick inte någon bekräftelse ännu?"
+    didnt_receive_unlock: "Fick inte instruktioner för upplåsning ännu?"
+  account_edit:
+    edit_account: "Redigera konto"
+    leave_blank: "Lämna det tomt om du inte vill ändra det"
+    need_password: "Vi behöver ditt nuvarande lösenord för att bekräfta dina ändringar"
+    update: "Uppdatera"
+    cancel_account: "Ta bort mitt konto"
+    unhappy: "Olycklig"
+    you_sure: "Är du säker?"
+    back: "Tillbaka"
+  events:
+    deadline_msg: "Alla deadlines är vid midnatt den angivna dagen"
+    done: "Gjort"
+    save: "Spara"
+    exit: "Avsluta"
+    not_done: "Inte gjort"
+    not_done_due: "Inte gjort eller skall vara färdigt inom 2 dagar"
+  notification:
+    invited: "Du har blivit inbjuden till kursen %{course} av %{user} som %{role}"
+    accept: "Acceptera"
+    reject: "Avböj"
+    accept_invitation: "Du har accepterat inbjudan till kursen %{course}"
+    reject_invitation: "Du har avvisat inbjudan till kursen %{course}"
+  privacy:
+    policy: "Sekretesspolicy"
+    information_collect: " Information som vi samlar in "
+    information_collect_details: "Vi samlar in information om hur du använder webbplatsen och interagerar med det pedagogiska innehållet. Detta inkluderar studenters svar på quiz-frågor, vilka videor som spelas, pauser, tillbakaspolning, frågor som ställs, klick på förvirrad-knappen, svar på enkäter och allmän navigering inom webbplatsen. Vi samlar också in information om hur lärare använder webbplatsen, inklusive användning av verktygen för att skapa kurser, för att visualisera framsteg, för klassrummet och allmän navigering inom webbplatsen. Denna information inkluderar tiden, typen av åtgärd, eventuell respons och kontot associerat med åtgärden."
+    information_use: "Hur vi använder informationen"
+    information_use_details: "Vi använder denna information för att förbättra webbplatsen och för att lära oss hur vi kan förbättra undervisningen och lärandet. Till exempel används informationen om studenterna för att hjälpa lärare att förstå hur deras studenter lär sig (svar på quiz-frågor), var studenterna har svårigheter i sina kurser (föreläsningsstatistik) och vilka typer av frågor de har (enkäter och anonyma enkäter). Studenter som svarar anonymt på enkäter är alltid anonyma för lärarna. Informationen om lärarna används för att utveckla bättre gränssnitt och för att identifiera hur vi bättre kan visa var eleverna behöver mer hjälp."
+    information_use_details2: "Vi använder även denna information för forskning på bättre undervisningsmetoder och på de verktyg vi tillhandahåller. All information som används för forskning anonymiseras genom att ta bort studenternas namn och e-postadresser"
+    confidentiality_and_security: "Sekretess och säkerhet"
+    confidentiality_and_security_details: "Vi tar din integritet och säkerhet på allvar. Vi lovar att aldrig ge din personliga information till tredje part utan ditt medgivande. Dina uppgifter kommer att lagras och skyddas enligt branschens normer."
+    use_of_cookies: "Användning av cookies"
+    use_of_cookies_details: "Cookies används på denna webbplats för att komma ihåg dina inloggningsuppgifter. Medan du är inloggad används en cookie för att spåra din inloggningssession. Denna cookie upphör när du stänger webbläsaren eller loggar ut. Om du väljer “Kom ihåg mig” när du loggar in så finns cookien kvar i två veckor."
+    identifiable_information: "Personligt identifierbar information"
+    identifiable_information_details: "Den personligt identifierbara informationen för ditt konto består av ditt namn och den e-postadress du anger när du registrerar ett konto på webbplatsen. Denna information knyts till din aktivitet på sajten."
+    deleting_profile: "Ta bort din profil"
+    deleting_profile_details: "Om du raderar ditt konto på denna webbplats kommer all din personliga information  att tas bort från vårt system. Observera att det kan ta tid för informationen att tas bort från backup-systemet. Anonymiserad information kan behållas för forskning."
+    policy_changes: "Förändringar av sekretesspolicyn "
+    policy_changes_details: "Den aktuella sekretesspolicyn kommer alltid att finnas på denna sida och vi uppmanar dig att besöka denna sida för att granska ändringar. Alla väsentliga förändringar i vår integritetspolicy kommer att skickas med e-post till alla aktiva konton. Ändringar av sekretesspolicyn börjar gälla när de postats här."
+    last_update: "Senast uppdaterad: 10-apr-2013"
+  lectures:
+    could_not_delete_lecture: "Kunde inte radera föreläsning"
+    duration: "Tidsutsträckning"
+    details: "Detaljer"
+    lecture_title: "Föreläsningstitel"
+    url: "Föreläsnings-URL"
+    thumbnail: "Thumbnail"
+    author: "Författare"
+    aspect_ratio: "Bildförhållande"
+    detected_aspect_ratio: "Upptäcka bildförhållande"
+    title: "Titel"
+    appearance_date: "Använd modulens publiceringsdatum?"
+    due_date: "Använd modulens färdigdatum?"
+    slides: "Presentation/slides"
+    description: "Beskrivning"
+    save_lecture: "Spara Föreläsning"
+    module: "Modul"
+    appearance_time: "Publiceringstid"
+    lecture_questions: "Föreläsningsfrågor"
+    next_lecture: "Nästa Föreläsning"
+    previous_lecture: "Föregående Föreläsning"
+    thanks: "Tack"
+    click_tell_confused: "Klicka för att berätta för läraren du är förvirrad."
+    click_ask_questiion: "Klicka här för att ställa en fråga."
+    correct: "Korrigera"
+    incorrect: "Felaktig"
+    keyboard_controls: "Tangentbordskontroller"
+    back_10s: "Tillbaka 10 sekunder"
+    play_pause: "paus/spela"
+    ask_question: "Ställ en fråga"
+    confused: "Förvirrad"
+    evaluate_lecture: "Utvärdera Föreläsning"
+    your_evaluation: "Din Utvärdering"
+    you_sure: "Är du säker?"
+    save: "Spara"
+    drag_button: "Dra knappen"
+    save_exit: "Spara och Avsluta"
+    explanation: "Förklaring"
+    cancel: "Avbryt"
+    remove: "Ta bort"
+    editing_lecture: "Redigera Föreläsning"
+    listing_lectures: "Listar föreläsningar"
+    insert_quiz: "Infoga Quiz"
+    insert_invideo_quiz: "infoga Quiz (över video)"
+    insert_html_quiz: "infoga frågesport (text)"
+    insert_mcq: "Flervalsfråga - Flera korrekta svar"
+    insert_ocq: "Flervalsfråga - Ett rätt svar"
+    insert_drag: "Dra i rätt ordning"
+    new_lecture: "Ny Föreläsning"
+    choose_place_quiz: "Välj plats att infoga Quiz och klicka på knappen nedan"
+    add_quiz: "Lägg till Quiz"
+    coordinates: "Koordinater"
+    teacher_view: "Gå till lärarens vy"
+    student_view: "Gå till studentens vy"
+    instructions: "Instruktioner"
+    update: "Uppdatera"
+    click_if_confused: "Klicka om Förvirrad"
+    click_to_ask_question: "Klicka för att ställa en fråga"
+    click_for_shortcuts: "Klicka för Genvägar"
+    please_enter_question: "Skriv din Fråga"
+    ask: "Fråga"
+    please_choose_one_answer: "Välj minst ett svar"
+    hover_for_details: "Peka för mer information"
+  online_quiz:
+    you_sure_delete_quiz: "Är du säker på att du vill radera Quiz'en"
+    change_time: "ändra tid"
+    Drag_change_time: "Dra till ny plats för att ändra tid"
+    save_changes: "Spara ändringar"
+    editing_quiz: "Redigerar Quiz"
+    double_click_new_answer: "Dubbelklicka på videon för att lägga till ett nytt svar"
+    incorrect_format_time: "Felaktigt format på tiden"
+    time: "Tid"
+    time_outside_range: "Tid utanför videons speltid"
+  questions:
+    answers: "Svar"
+    questions: "Frågor"
+  quizzes:
+    could_not_update_response: "Kunde inte uppdatera gensvar"
+    could_not_update_question: "Kunde inte uppdatera fråga"
+    could_not_delete_quiz: "Det gick inte att ta bort frågesporter"
+    could_not_delete_marker: "Det gick inte att ta bort markering"
+    survey_results: "Enkätresultat"
+    number_of_students: "Antal studenter"
+    used_up_all: "Använt upp alla"
+    attempts: "försök"
+    attempt_number: "Försök nummer"
+    quiz_title: "Quiz Titel"
+  user_mailer:
+    added_to_course: "Du har lagt till en ny kurs"
+    new_announcement: "Nytt meddelande"
+    to_contact_use: "För att kontakta lärarna använd"
+    online_course_forum: "online-kurs-forum."
+    check_course_website: "För att kontrollera kursens hemsida, följ"
+    dear: "Hej"
+    recently_submitted: "Du lämnade nyligen"
+    and_answered: "och svarade"
+    with: "med"
+    teacher_responded: "Läraren har svarat på din feedback"
+    surveys_anonymous: "Observera att alla enkäter är anonyma, så om du vill följa upp kontakta din lärare direkt."
+    added_you_as: "%{name} har lagt till dig som %{role} till kursen %{course}."
+    you_been_invited: "Du har blivit inbjuden att delta i kursen %{course} som %{role} av %{name}"
+    sign_up_or_sign_in: "Vänligen logga in på %{url2} för att acceptera inbjudan."
+    to_join_course: "Att gå med i en kurs som lärare måste du logga in eller registrera dig som lärare på"
+    to_join_course2: "med din e-post och acceptera inbjudan i menyn Meddelanden på toppen"
+    contact_us_teacher: "Tveka inte att kontakta %{name} på %{email} om du har några frågor"
+    when_you_login: "När du loggar in , kommer du sedan se din inbjudan att gå kursen."
+    technical_problem: "Tekniskt problem"
+    problem_reported: "Ett tekniskt problem rapporterades av %{name}, email: %{email} från sidan: %{url}."
+    welcome_to: "Välkommen till scalable-learning.com"
+    succefully_signed_up: "Du har nu registrerat dig för"
+    username_is: "ditt användarnamn är"
+    to_login: "För att logga in på webbplatsen, följ denna länk"
+    thanks_for_joining: "Tack för att du deltar och ha en bra dag"
+    issue: "Problem är med"
+    system: "systemet"
+    student_comment: "Student Comment(t)"
+    technical_details: "Technical details(t)"
+  users:
+    change_role: "Ändra Roll"
+    close: "Stäng"
+    enter_enrollment: "Ange kursnyckel"
+    enroll: "Skriva in"
+    users: "Användare"
+    username: "Användarnamn"
+    registered: "Registrerad"
+    delete_user: "Radera användare"
+    user: "Användare"
+    sign_up_student: "Registrera dig som student"
+    sign_up_teacher: "Registrera dig som lärare"
+  groups:
+    could_not_delete_module: "Kunde inte radera modul"
+    module_successfully_deleted: "Modul har tagits bort."
+    module_successfully_created: "Modul har skapats."
+    module_successfully_updated: "Modulen har uppdaterats"
+    module_name: "Modulnamn"
+    appearance_date: "Publiceringsdatum"
+    appearance_time: "Publiceringstid"
+    due_date: "Färdigdatum"
+    description: "Beskrivning"
+    save_module: "Spara modul"
+    external_link: "Externa Länka"
+    you_sure_delete_link: "Är du säker på att du vill ta bort länken"
+    must_answer_atleast: "Du måste markera minst ett svar som korrekt för varje flervalsfråga."
+    add_link: "Lägg till länka"
+    please_wait: "Var god vänta"
+    lectures: "Föreläsningar"
+    quizzes: "Quiz-frågor"
+    new_quiz: "Ny Quiz"
+    choose_correct_answer: "Välj det rätta svaret"
+    fill_in_survey: "Vänligen fyll i enkäten."
+    expanded_click_collapse: "expanderade, klicka för att stänga"
+    add_invideo_quiz: "Lägg till en i-videon Quiz"
+    enter_details_onright: "Ange detaljer på höger sida."
+    add_a_survey: "Lägg till en enkät"
+    add_a_quiz: "Lägg till en Quiz"
+    add_a_lecture: "Lägg till en föreläsning"
+    groups: "Grupper"
+    answer: "Svar"
+    multiple_choice_question: "Flervalsfråga"
+    free_text_question: "Fri-text-fråga"
+    remove_question: "Ta bort Fråga"
+    remove_answer: "Ta bort Svar"
+    add_answer: "Lägg till Svar"
+    add_question: "Lägg till Fråga"
+    hide: "Dölj"
+    make_visible: "Synliggör"
+    saved: "Sparad"
+    delete: "Radera"
+    total_time: "Total Tid"
+    total_number_lec_qustions: "Totalt antal föreläsningsfrågor"
+    total_number_quiz_questions: "Totalt antal Quiz-frågor"
+    no_questions: "Det finns inga frågor."
+    no_quizzes: "Det finns inga Quiz-frågor."
+    exit: "Exit"
+    new_module: "Ny Modul"
+    editing_module: "Redigerar Modul"
+    listing_modules: "Listar Moduler"
+    no_delete_msg: "Tyvärr måste du ta bort alla objekt i modulen innan du tar bort själva modulen."
+    review_student_question: "Granska Student-Frågor om"
+    lecture: "Föreläsning"
+    skip: "hoppa över"
+    course: "Curs"
+    question_type: "Typ av Fråga"
+    drag: "Dra"
+    exit_fullscreen: "Avsluta helskärmsläge"
+    edit_fullscreen: "Redigera i helskärmsläge"
+    correct_because: "Korrekt eftersom"
+    incorrect_because: "Felaktigt eftersom"
+    enter_explanation: "Ange förklaring"
+  courses:
+    could_not_delete_course: "Kunde inte radera kurs"
+    lecture_quizzes: "Föreläsnings-Quiz-frågor"
+    lecture_statistics: "Föreläsningsstatistik"
+    surveys: "Enkäter"
+    export_all: "Exportera alla"
+    quiz: "Quiz"
+    survey: "Enkät"
+    weeks: "Veckor"
+    skip_to_question: "Gå till Fråga"
+    loading: "Laddar"
+    studen_statistics: "Studentstatistik"
+    not_started_watching: "Inte börjat titta"
+    watched: "Sett"
+    completed_on_time: "Avslutade i tid"
+    completed_late: "Avslutade sent"
+    complete: "slutföra"
+    pauses: "Pauser"
+    student_question: "Studentfrågor"
+    module_progress_charts: "Modulframsteg, Diagram"
+    change_status: "Ändra Status"
+    status_successfully_changed: "Status framgångsrikt bytt"
+    original: "Original"
+    on_time: "I Tid"
+    not_done: "Ej utfört"
+    finished_on_time: "Klart i tid"
+    finished_late: "Klart, Sent"
+    not_finished: "Inte Klar"
+    loading_more_data: "Laddar mer data"
+    correct_answers_are: "Rätt svar är"
+    drag_to_reorder_module: "Dra för att ordna om moduler"
+    drag_to_reorder_item: "Dra för att ordna om objekt"
+    you_sure_delete_group: "Är du säker på att du vill radera %{name} och allt dess innehåll?"
+    add_lecture: "Lägg till Föreläsning"
+    add_survey: "Lägg till Enkät"
+    add_module: "Lägg till Modul"
+    confusing_points: "Förvirrande platser"
+    number_students_with_answer: "antalet studenter med svar"
+    email_all: "Maila Alla"
+    search: "Sök"
+    student_name: "Studentnamn"
+    student_email: "Studentepost"
+    deadline: "Deadline"
+    add_teacher: "Lägg till Lärare"
+    save_all: "Spara allt"
+    enter_valid_email: "Ange en giltig e-postadress"
+    professor: "Lärare"
+    ta: "Lärarassistent"
+    student_grades: "Studentbetyg"
+    grades: "Betyg"
+    select_module: "Välj en Modul"
+    select_lecture: "Välj ett Föreläsning"
+    select_quiz: "Välj en Quiz"
+    total_progress: "Totala framsteg"
+    progress_chart: "Framsteg, diagram"
+    modules: "Moduler"
+    start_date: "Startdatum"
+    duration: "Tidsutsträckning"
+    prerequisites: "Förutsättningar"
+    overall_statistics: "övergripande statistik"
+    total_quiz_grade: "Quiz-resultat, totalt"
+    total_invideo_quiz_grade: "I-videon Quiz-resultat, totalt"
+    quiz_grades: "Quiz-resultat"
+    quizzes_done: "Besvarade Quiz-frågor"
+    invideo_quizzes_done: "Besvarade Quiz-frågor i videon"
+    progress_matrix: "Framsteg, tabell"
+    short_name: "Kortnamn"
+    discussion_forum_link: "Länk till Diskussionsforum"
+    quiz_progress_chart: "Quiz-framsteg, Diagram"
+    lecture_progress_chart: "Föreläsningsframsteg, Diagram"
+    course_enrollment_key: "Kursnyckel för inskrivning"
+    time_zone: "Tidszon"
+    you_sure_remove_teacher: "Är du säker på att du vill ta bort den här läraren?"
+    all_students: "Alla studenter"
+    courseware: "Courseware"
+    course_material: "Kursmaterial"
+    my_courses: "Mina kurser"
+    new_course: "Ny Kurs"
+    add_course: "Lägg till Kurs"
+    enrolled: "Inskrivna"
+    display_lecture_results: "Visa Föreläsningsresultat"
+    display_quizzes: "Visa Quiz-frågor"
+    display_questions: "Visa Student-frågor"
+    display_surveys: "Visa Enkäter"
+    review_lecture_results: "Gå igenom Föreläsningsresultat"
+    review_quizzes: "Gå igenom Quiz-frågor"
+    review_questions: "Gå igenom student-frågor"
+    review_surveys: "Gå igenom enkäter"
+    select_a_quiz: "Välj en quiz"
+    confused_at: "var förvirrad vid tidpunkten"
+    question_student_asked: "Frågor ställda av studenter"
+    at_time: "vid tidpunkten"
+    to: "TILL"
+    send: "Skicka"
+    subject: "Ämne"
+    all_students_in: "Alla studenter i"
+    number_of_questions: "Antal frågor"
+    lecture_evaluations: "Föreläsningsutvärderingar"
+    editing_course: "Redigera Kurs"
+    edit_quiz: "Redigera Quiz"
+    edit_course_information: "Redigera Kursinformation"
+    remove_from_course: "Ta bort från kurs"
+    you_sure_delete_student: "Är du vill radera %{name} och alla hans uppgifter?"
+    required: "Nödvändig"
+    empty: "Tomma"
+    retries: "återförsök"
+    delete_course: "Radera Kurs"
+    no_lectures: "Inga Föreläsningar"
+    no_lecture_quizzes: "Inga föreläsnings-Quiz-frågor"
+    import_data: "Importera data från"
+    optional: "Valfri"
+    no_quizzes: "Inga Quiz-frågor"
+    no_surveys: "Ingen Enkäter"
+    no_questions: "Inga Student-frågor"
+    students: "studenter"
+    teachers: "Lärare"
+    teacher_email: "Lärare Email"
+    all_courses: "Alla kurser"
+    course_code: "Kurs kod"
+    course_name: "Kurs namn"
+    errors:
+        end_date_pass: "must be after the start date(t)"
+        disable_registration_date: "can't be blank(t)"
+  controller_msg:
+    after_registration: "Registration is disabled for this course, contact your teacher to enable registration.(t)"
+    grade_updated: "Grade uppdaterats"
+    grade_update_fail: "Grad kunde inte uppdateras"
+    authorization_failed: "Bemyndigande misslyckades."
+    record_not_found: "rekord hittades inte"
+    not_logged_in: "Du är inte inloggad"
+    teacher_successfully_removed: "Läraren har tagits bort från kurs"
+    response_is_now: "Gensvar är nu"
+    survey_is_now: "Undersökningen är nu"
+    quiz_is_now: "Quiz är nu"
+    question_is_now: "Fråga är nu"
+    course_domain_not_included: "Skolans domän är inte tillåtet att registrera sig för denna kurs."
+    response_saved: "Gensvar Sparas"
+    response_successfully_deleted: "Svar har tagits bort."
+    could_not_delete_response: "Det gick inte att ta bort svaret"
+    could_not_update_survey: "Kunde inte uppdatera undersökning"
+    could_not_save_quiz: "Kunde inte spara frågesport"
+    could_not_delete_answer: "Det gick inte att ta bort svaret"
+    could_not_update_quiz: "Kunde inte uppdatera frågesport"
+    could_not_update_question: "Kunde inte uppdatera fråga"
+    could_not_create_answer: "Det gick inte att skapa svar"
+    could_not_remove_from_course: "Det gick inte att ta bort %{student} ur kurs"
+    announcement_successfully_created: "Meddelande har skapats."
+    announcement_successfully_updated: "Meddelande har uppdaterats."
+    announcement_successfully_deleted: "Meddelande har tagits bort."
+    data_successfully_shared: "Uppgifter har delats med %{person}."
+    successfully_deleted: "Tagits bort"
+    deletion_failed: "Radering misslyckades"
+    link_successfully_created: "Länka har skapats."
+    link_successfully_updated: "Länka har uppdaterats."
+    link_successfully_deleted: "Länka har tagits bort."
+    answer_successfully_created: "Svar har skapats."
+    answer_successfully_updated: "Svar har uppdaterats."
+    question_successfully_created: "Fråga har skapats."
+    question_successfully_updated: "Fråga har uppdaterats"
+    quiz_successfully_created: "Frågesport har skapats."
+    quiz_successfully_updated: "Frågesport har uppdaterats."
+    online_answer_successfully_created: "Online-svaret har skapats."
+    online_answer_successfully_updated: "Online-svaret har uppdaterats."
+    course_successfully_created: "Kurs har skapats."
+    course_successfully_updated: "Kurs har uppdaterats."
+    course_successfully_deleted: "Kurs har tagits bort."
+    could_not_delete_post: "Det gick inte att ta bort inlägget."
+    could_not_delete_comment: "Det gick inte att ta bort kommentarer"
+    could_not_delete_flags: "Det gick inte att ta bort flaggor"
+    flags_removed: "Flaggor tagits bort"
+    you_are_signed_in: "Du är redan inloggad"
+    you_are_not_authorized: "Du har inte behörighet att visa den begärda sidan"
+    not_authorized_as_admin: "Ej rättigheter som administratör."
+    user_updated: "Användare uppdaterad."
+    unable_update_user: "Kunde inte uppdatera användare."
+    user_deleted: "Användaren borttagen."
+    cannot_delete_course_owner: "Du kan inte ta bort kursens ägare"
+    cant_delete_yourself: "Du kan inte ta bort dig själv."
+    course_does_not_exist: "Kurs existerar inte"
+    already_enrolled: "Du är redan inskriven i den här kursen."
+    already_enrolled_in_course: "redan inskrivna i kursen"
+    already_enrolled_in: "Du är nu inskriven i %{course}"
+    online_quiz_successfully_created: "Online-quiz har skapats."
+    online_quiz_successfully_updated: "Online-enkät har uppdaterats."
+    quiz_successfully_created: "Quiz har skapats."
+    quiz_successfully_updated: "Quiz har uppdaterats."
+    quiz_successfully_deleted: "Quiz har tagits bort"
+    quiz_successfully_saved: "Quiz har sparats"
+    survey_successfully_created: "Enkät har skapats."
+    survey_successfully_updated: "Enkät har uppdaterats."
+    survey_successfully_deleted: "Enkät har tagits bort"
+    survey_successfully_saved: "Enkät har sparats"
+    lecture_successfully_created: "Föreläsning har skapats."
+    lecture_successfully_updated: "Föreläsning har uppdaterats."
+    lecture_successfully_deleted: "Föreläsning har tagits bort."
+    no_such_quiz: "Ingen sådan quiz"
+    no_such_lecture: "Ingen sådan föreläsning"
+    requested_quiz_not_exist: "Begärd quiz existerar inte"
+    succefully_submitted: "Inskickat"
+    already_answered_question: "Du har redan besvarat denna fråga"
+    really_confused_use_question: "Om du är mycket förvirrad, använd fråge-knappen för att ställa en fråga så att läraren kan hjälpa dig."
+    group_not_found: "Gruppen inte hittad."
+    group_successfully_created: "Gruppen har skapats."
+    group_successfully_updated: "Gruppen har uppdaterats."
+    no_surveys: "Inga enkäter"
+    no_quizzes_in_module: "Det finns inga quiz-frågor i denna modul"
+    no_student_questions_in_module: "Det finns inga student-frågor i denna modul"
+    email_already_enrolled: "%{this_email} är redan inskriven"
+    cant_submit_no_more_attempts: "Kan inte Submit - Du har inga fler försök kvar"
+    cant_save_already_submitted: "Det går inte att spara - redan Inlagd Quiz"
+    pending: "Pågående"
+    delete_all_modules_before_course: "Du måste ta bort alla moduler i kursen innan du tar bort själva kursen."
+    due_date_passed: "Färdigdatum har passerats"
+    ago: "sedan"
+    already_submitted: "Du har redan skickat in"
+    day: "dag"
+    days: "dagar"
+    no_such_module: "Ingen sådan modul"
+    email_send: "Epost Skickat"
+    email_sent_shortly: "E-post kommer att skickas inom kort"
+    unanswered_questions: "Det finns obesvarade frågor"
+    successfully_submitted: "har lämnats in"
+    successfully_saved: "har sparats"
+    no_more_attempts: "och har inga fler försök kvar"
+    importing_data: "Importera Data"
+    importing_course_data: "Importera Kurs Data"
+    due: "due"
+    was_removed_from: "togs bort från"
+    successful: "Framgångsrik"
+    failed: "Misslyckades"
+    answered: "Besvarade"
+    not_answered: "Obesvarade"
+    no_explanation: "Ingen Förklaring Finns"
+    no_quizzes: "Inga quiz-Frågor"
+    in_correct_place: "på rätt plats"
+    another_quiz_consider_shifting: "Det finns en annan quiz-fråga inom fem sekunder från det denna - överväg att flytta den."
+    transaction_rolled_back: "Transaktionen har backats"
+    module_items_sorted: "Modul sorteras objekten"
+    wrong_credentials: "Felaktiga credentials"
+    modules_sorted: "Moduler Sorterat"
+    teacher_not_exist: "Lärare finns inte"
+    problem_updating_shared: "Det var ett problem att uppdatera delade objekt"
+    accept_shared: "Godkända delad Föremål"
+    cannot_accept: "Det gick inte att acceptera delat objekt"
+    reject_shared: "Förkastade delad Föremål"
+    cannot_be_student: "Email kan inte tillhöra en elev"
+    student_cannot_be_ta: "You cannot add someone who is a student in this course. Please remove them from the student list and try again.(t)"
+    links_sorted: "Länkar sorterade"
+    must_have_role: "Måste ha roll"
+  youtube:
+    click_tell_confused: "Klicka här för att berätta för läraren du är förvirrad."
+    click_ask_question: "Klicka här för att ställa en fråga."
+    click_video_shortcuts: "Klicka här för video-genvägar"
+    enter_question: "Ange Fråga"
+    ask: "Fråga"
+    check_answer: "Kontrollera Svaret"
+  devise:
+    failure:
+      already_authenticated: 'Du har redan loggat in.'
+      unauthenticated: 'Du måste logga in eller skapa ett konto innan du kan fortsätta.'
+      unconfirmed: 'Du måste bekräfta ditt konto innan du kan fortsätta.'
+      locked: 'Your account has been locked due to too many failed logins. Please wait 10 minutes and try again. If you have forgotten your password click Reset Password.(t)'
+      invalid: 'Ogiltig epost eller lösenord.'
+      invalid_token: 'Ogiltig token för autentisering.'
+      timeout: 'Din session är inte längre giltig, vänligen logga in igen för att fortsätta.'
+      inactive: 'Ditt konto har inte aktiverats ännu.'
+      user:
+        unauthenticated: "Du måste logga in eller registrera dig innan du fortsätter."
+    sessions:
+      signed_in: 'Loggade in.'
+      signed_out: 'Loggade ut.'
+      user:
+        signed_in: "Har loggat in."
+    passwords:
+      ignore: "Om du inte har begärt detta, vänligen bortse från detta mail."
+      no_change: "Ditt lösenord kommer inte att förändras förrän du tillgång till länken ovan och skapa en ny."
+      change: 'Ändra mitt lösenord'
+      link_change_password: 'Någon har begärt en länk för att ändra ditt lösenord. Du kan göra detta via länken nedan.'
+      send_instructions: 'Du kommer få epost med instruktioner om hur du kan återställa ditt lösenord inom några minuter.'
+      updated: 'Ditt lösenord har uppdaterats. Du är nu inloggad.'
+      send_paranoid_instructions: "Om din email är i vår databas, kommer du att få en lösenordslänk till din mail."
+    confirmations:
+      resend_instructions: "Skicka om bekräftelse än"
+      confirm_account: "Bekräfta mitt konto"
+      confirm_through_link: "Du kan bekräfta ditt konto e-post via länken nedan"
+      send_instructions: 'Du kommer att få epost med instruktioner om hur du kan bekräfta ditt konto inom några minuter.'
+      send_paranoid_instructions: 'Om din email är i vår databas, kommer du att få ett mail med instruktioner om hur du ska aktivera ditt konto inom några minuter.'
+      confirmed: 'Ditt konto har bekräftats. Du är nu inloggad.'
+    registrations:
+      signed_up: 'Ett nytt konto har skapats. En bekräftelse har skickats till din epost.'
+      signed_up_but_unconfirmed: 'Ett meddelande med en bekräftelselänk har skickats till din e-postadress. Vänligen öppna länken för att aktivera ditt konto.'
+      signed_up_but_inactive: 'Du har registrerat dig framgång. Men vi kunde inte logga in dig eftersom ditt konto ännu inte är aktiverat.'
+      inactive_signed_up: 'Ett nytt konto har skapats. Du kunde inte logga in, för ditt konto är %{reason}.'
+      updated: 'Ditt konto har uppdaterats.'
+      user:
+        updated: "Du har uppdaterat ditt konto framgångsrikt."
+        signed_up_but_unconfirmed: 'Ett meddelande med en bekräftelselänk har skickats till din e-postadress. Vänligen öppna länken för att aktivera ditt konto.'
+      destroyed: 'Hej då! Ditt konto har avregistrerats. Vi hoppas få se dig snart igen.'
+      reasons:
+        inactive: 'inaktivt'
+        unconfirmed: 'inte aktiverat'
+        locked: 'låst'
+    unlocks:
+      send_instructions: 'Du kommer få epost med instruktioner om hur du kan låsa upp ditt konto inom några minuter.'
+      unlocked: 'Ditt konto har låsts upp. Du är nu inloggad.'
+      send_paranoid_instructions: 'Om ditt konto finns, kommer du att få ett email med instruktioner om hur du låser upp det inom några minuter.'
+    omniauth_callbacks:
+      success: 'Autentiserat med %{kind}-konto.'
+      failure: 'Kunde inte autentisera dig med %{kind} för "%{reason}".'
+    mailer:
+      confirmation_instructions:
+        subject: 'Bekräfta ditt nya Scalable-Learning-konto!'
+      reset_password_instructions:
+        subject: 'Instrukionter om återställning av lösenord'
+      unlock_instructions:
+        subject: 'Instruktioner om upplåsning av konto'
+  date:
+    abbr_day_names:
+    - Sön
+    - Mån
+    - Tis
+    - Ons
+    - Tor
+    - Fre
+    - Lör
+    abbr_month_names:
+    -
+    - jan
+    - feb
+    - mar
+    - apr
+    - maj
+    - jun
+    - jul
+    - aug
+    - sep
+    - okt
+    - nov
+    - dec
+    day_names:
+    - Söndag
+    - Måndag
+    - Tisdag
+    - Onsdag
+    - Torsdag
+    - Fredag
+    - Lördag
+    formats:
+      default: ! '%Y-%m-%d'
+      long: ! '%e %B %Y'
+      short: ! '%e %b'
+    month_names:
+    -
+    - Januari
+    - Februari
+    - Mars
+    - April
+    - Maj
+    - Juni
+    - Juli
+    - Augusti
+    - September
+    - Oktober
+    - November
+    - December
+    order:
+    - :day
+    - :month
+    - :year
+  datetime:
+    distance_in_words:
+      about_x_hours:
+        one: ungefär en timme
+        other: ungefär %{count} timmar
+      about_x_months:
+        one: ungefär en månad
+        other: ungefär %{count} månader
+      about_x_years:
+        one: ungefär ett år
+        other: ungefär %{count} år
+      almost_x_years:
+        one: nästan ett år
+        other: nästan %{count} år
+      half_a_minute: en halv minut
+      less_than_x_minutes:
+        one: mindre än en minut
+        other: mindre än %{count} minuter
+      less_than_x_seconds:
+        one: mindre än en sekund
+        other: mindre än %{count} sekunder
+      over_x_years:
+        one: mer än ett år
+        other: mer än %{count} år
+      x_days:
+        one: en dag
+        other: ! '%{count} dagar'
+      x_minutes:
+        one: en minut
+        other: ! '%{count} minuter'
+      x_months:
+        one: en månad
+        other: ! '%{count} månader'
+      x_seconds:
+        one: en sekund
+        other: ! '%{count} sekunder'
+    prompts:
+      day: Dag
+      hour: Timme
+      minute: Minut
+      month: Månad
+      second: Sekund
+      year: År
+  errors: &errors
+    format: ! '%{attribute} %{message}'
+    messages:
+      expired: "har löpt ut, var god begär en ny"
+      not_found: "hittades inte"
+      already_confirmed: "är redan bekräftad, vänligen logga in igen"
+      not_locked: "var inte låst"
+      not_saved:
+        one: "1 fel hindrade denna %{resource} från att sparas:"
+        other: "%{count} fel hindrade denna %{resource} från att sparas:"
+      accepted: måste vara accepterad
+      blank: måste anges
+      confirmation: stämmer inte överens
+      empty: får ej vara tom
+      equal_to: måste vara samma som
+      even: måste vara jämnt
+      exclusion: är reserverat
+      greater_than: måste vara större än %{count}
+      greater_than_or_equal_to: måste vara större än eller lika med %{count}
+      inclusion: finns inte i listan
+      invalid: har fel format
+      less_than: måste vara mindre än %{count}
+      less_than_or_equal_to: måste vara mindre än eller lika med %{count}
+      not_a_number: är inte ett nummer
+      not_an_integer: måste vara ett heltal
+      odd: måste vara udda
+      record_invalid: ! 'Ett fel uppstod: %{errors}'
+      taken: har redan tagits
+      too_long: är för lång (maximum är %{count} tecken)
+      too_short: är för kort (minimum är %{count} tecken)
+      wrong_length: har fel längd (ska vara %{count} tecken)
+    template:
+      body: ! 'Det var problem med följande fält:'
+      header:
+        one: Ett fel förhindrade denna %{model} från att sparas
+        other: ! '%{count} fel förhindrade denna %{model} från att sparas'
+  helpers:
+    select:
+      prompt: Välj
+    submit:
+      create: Skapa %{model}
+      submit: Spara %{model}
+      update: Ändra %{model}
+  number:
+    currency:
+      format:
+        delimiter:
+        format: ! '%n %u'
+        precision: 2
+        separator: ! ','
+        significant: false
+        strip_insignificant_zeros: false
+        unit: kr
+    format:
+      delimiter:
+      precision: 2
+      separator: ! ','
+      significant: false
+      strip_insignificant_zeros: false
+    human:
+      decimal_units:
+        format: ! '%n %u'
+        units:
+          billion: Miljard
+          million: Miljon
+          quadrillion: Biljard
+          thousand: Tusen
+          trillion: Biljon
+          unit: ''
+      format:
+        delimiter: ''
+        precision: 1
+        significant: true
+        strip_insignificant_zeros: true
+      storage_units:
+        format: ! '%n %u'
+        units:
+          byte:
+            one: Byte
+            other: Bytes
+          gb: GB
+          kb: KB
+          mb: MB
+          tb: TB
+    percentage:
+      format:
+        delimiter: ''
+    precision:
+      format:
+        delimiter: ''
+  support:
+    array:
+      last_word_connector: ! ' och '
+      two_words_connector: ! ' och '
+      words_connector: ! ', '
+  time:
+    am: ''
+    formats:
+      default: ! '%a, %e %b %Y %H:%M:%S %z'
+      long: ! '%e %B %Y %H:%M'
+      short: ! '%e %b %H:%M'
+      custom: '%d %b (%a)'
+    pm: ''
+  # remove these aliases after 'activemodel' and 'activerecord' namespaces are removed from Rails repository
+  activemodel:
+    errors:
+      <<: *errors
+  activerecord:
+    errors:
+      <<: *errors
+      models:
+        invitation:
+          attributes:
+            email:
+              already_invited: 'redan uppmanat'
+        course:
+          must_be_image: 'måste ha en av dessa förlängningar (.jpe - .jpg - .png - .gif)'

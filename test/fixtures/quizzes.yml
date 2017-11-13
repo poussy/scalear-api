@@ -1,11 +1,36 @@
-# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+quiz1:
+  id: 1
+  name: 'quiz1'
+  retries: 2
+  group_id: 3 
+  course_id: 3
+  appearance_time_module: true
+  appearance_time: '2017-9-10'
+  due_date_module: true
+  due_date: '2017-9-11'
+  position: 3
+  required: true
+  required_module: false
+  graded: true
+  graded_module: false
+  visible: true
+  quiz_type: 'quiz'
+  instructions: "Please choose the correct answer(s)"
 
-# This model initially had no columns defined. If you add columns to the
-# model remove the '{}' from the fixture names and add the columns immediately
-# below each fixture, per the syntax in the comments below
-#
-one: {}
-# column: value
-#
-two: {}
-# column: value
+quiz2:
+  id: 2
+  name: 'quiz2'
+  retries: 2
+  course_id: 4
+  appearance_time_module: true
+  appearance_time: '2017-9-9'
+  due_date_module: true
+  due_date: '2017-10-9'
+  position: 3
+  required: true
+  required_module: false
+  graded: true
+  graded_module: false
+  visible: true
+  quiz_type: 'quiz'
+  instructions: "Please choose the correct answer(s)"

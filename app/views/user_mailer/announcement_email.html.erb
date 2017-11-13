@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
+  </head>
+  <body>
+  	
+    <h3><%= t('user_mailer.new_announcement') %> - <%= "#{@course.short_name} - #{@course.name}" %> </h3>
+    <p>
+      <%= raw @announcement.announcement %>
+    </p>
+    <% if @course.discussion_link!=""%>
+    <p>
+      <%= t('user_mailer.to_contact_use') %> <%= link_to t('user_mailer.online_course_forum'), url_with_protocol(@course.discussion_link), :target => '_blank' %>
+    </p>
+    <% end %>
+    <p>
+       <%= link_to t('user_mailer.check_course_website'), root_url+@url, :target => '_blank' %>
+    </p>
+    
+  </body>
+</html>

@@ -1,11 +1,15 @@
-# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+custom_link1:
+  id: 1
+  name: link1
+  group_id: 3 
+  course_id: 3
+  position: 1
+  url: http://www.youtube.com
 
-# This model initially had no columns defined. If you add columns to the
-# model remove the '{}' from the fixture names and add the columns immediately
-# below each fixture, per the syntax in the comments below
-#
-one: {}
-# column: value
-#
-two: {}
-# column: value
+custom_link2:
+  id: 2
+  name: link1
+  group_id: 3 
+  course_id: 3
+  position: 2
+  url: http://www.youtube.com
