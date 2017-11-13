@@ -172,14 +172,58 @@ class LecturesController < ApplicationController
 	# def get_quiz_list_angular
 	# end
 
-	# def new_quiz_angular
-	# end
+	def new_quiz_angular
+		lecture= Lecture.find(params[:id])
+		alert=""
+		
+		if params[:quiz_type] == 'survey' || params[:quiz_type] == "html_survey"
+			title = "New Survey"
+		else
+			title = "New Quiz"
+		end
+		quiz = lecture.online_quizzes.build(:group_id => lecture.group_id, :course_id => params[:course_id], :question => title, :time => params[:time], :start_time => params[:start_time], :end_time => params[:end_time], :question_type => params[:ques_type], :quiz_type => params[:quiz_type], :inclass => params[:inclass])
+		if quiz.save
+			render json: {quiz: quiz, notice: "#{I18n.t('controller_msg.quiz_successfully_created')} - #{alert}", alert: alert}
+		else
+			render json: {errors:quiz.errors}, status: 400
+		end
+  	end
 
 	# def new_marker
 	# end
 
-	# def save_answers_angular
-	# end
+	def save_answers_angular
+		OnlineQuiz.transaction do
+			@online_quiz= OnlineQuiz.find(params[:online_quiz_id])
+			old_answers=[]
+			params[:answer].each do |k|
+				if !k["id"].nil? #old one
+					old_answers<<k["id"].to_i
+					answer = OnlineAnswer.where(:id => k["id"].to_i).first
+					if answer
+						answer.update_attributes!(:explanation => k['explanation'], :answer => k['answer'], :correct => k['correct'] , :ycoor => k['ycoor'], :xcoor => k['xcoor'], :width => k['width'], :height => k['height'], :sub_ycoor => k['sub_ycoor'], :sub_xcoor => k['sub_xcoor'])
+					end
+				else  #new one
+					y=@online_quiz.online_answers.create!(:pos => k['pos']||0, :explanation => k['explanation'], :answer => k['answer'], :correct => k['correct'] , :ycoor => k['ycoor'], :xcoor => k['xcoor'], :width => k['width'], :height => k['height'], :sub_ycoor => k['sub_ycoor'], :sub_xcoor => k['sub_xcoor'])
+					old_answers<<y.id.to_i
+				end
+			end
+			#delete old answers
+			to_delete_a=@online_quiz.online_answers.pluck(:id)
+			to_delete_a = to_delete_a - old_answers
+			to_delete_a.each do |d|
+				OnlineAnswer.find(d).destroy
+			end
+			if (@online_quiz.question_type=="Free Text Question" && @online_quiz.quiz_type=="html" && params[:match_type]=="Free Text") && @online_quiz.online_answers.count>0
+				@online_quiz.online_answers.each do |ans|
+					# ans.destroy
+					ans.update_attributes!(:answer => '')
+				end
+			end
+			render json: {:done => I18n.t('events.done'), :notice=>I18n.t("controller_msg.quiz_successfully_saved")} and return
+		end
+		render json: {:done => I18n.t('events.done'), :errors => [I18n.t("controller_msg.could_not_save_quiz")]}, :status => 400
+  	end
 
 	# def add_html_answer_angular #not used anymore
 	# end
@@ -196,8 +240,14 @@ class LecturesController < ApplicationController
 	# def remove_answer_angular  #remove online answer from an online_quiz
 	# end
 
-	# def get_old_data_angular
-	# end
+	def get_old_data_angular
+		quiz= OnlineQuiz.find(params[:quiz])
+		answers= quiz.online_answers
+		num=[]
+		num= answers.map{|n| n.pos} if !answers.empty?
+
+		render json: {:answers => answers, :other_nums => num}
+  	end
 
 	# def get_html_data_angular
 	# end
