@@ -1,5 +1,5 @@
 class OnlineQuizzesController < ApplicationController
-	# load_and_authorize_resource
+	load_and_authorize_resource
 
 	def validate_name
 		@online_quiz= OnlineQuiz.find(params[:id])
@@ -18,35 +18,32 @@ class OnlineQuizzesController < ApplicationController
 	def update
 		@online_quiz = OnlineQuiz.find(params[:id])
 		@lecture= @online_quiz.lecture
-		p params[:online_quiz]
+		
 		if online_quiz_params
 			if online_quiz_params[:inclass]
-				p "I got in?!"
-				online_quiz_params[:hide]= false
+				@online_quiz[:hide] = false
 				if @online_quiz.inclass_session.nil?
-				@online_quiz.create_inclass_session(:status => 0, :lecture_id => @online_quiz.lecture_id, :group_id => @online_quiz.group_id, :course_id => @online_quiz.course_id)
+					@online_quiz.create_inclass_session(:status => 0, :lecture_id => @online_quiz.lecture_id, :group_id => @online_quiz.group_id, :course_id => @online_quiz.course_id)
 				end
-			elsif @online_quiz.inclass
-				online_quiz_params[:hide]= true
+			elsif @online_quiz.inclass ## in case online_quiz_params[:inclass] == false
+				@online_quiz[:hide] = true
 				session = @online_quiz.inclass_session
 				if !session.nil?
-				session.destroy
+					session.destroy
 				end
 			end
 		end
-		p params
-		p online_quiz_params
+		
 		if @online_quiz.update_attributes(online_quiz_params)
+			
 			@alert=""
-				@quiz_times= @lecture.online_quizzes.where("id != ?", @online_quiz.id).pluck(:time)
-				time=@online_quiz.time
-				@quiz_times.each do |t|
-					print "t is #{t}"
-					print "time is #{time}"
-					if (time-t<=5 and time-t>=0) or (t-time<=5 and t-time>=0) #another quiz within 5 seconds
-						@alert = I18n.t('controller_msg.another_quiz_consider_shifting')
-					end
+			@quiz_times= @lecture.online_quizzes.where("id != ?", @online_quiz.id).pluck(:time)
+			time=@online_quiz.time
+			@quiz_times.each do |t|
+				if (time-t<=5 and time-t>=0) or (t-time<=5 and t-time>=0) #another quiz within 5 seconds
+					@alert = I18n.t('controller_msg.another_quiz_consider_shifting')
 				end
+			end
 
 			render json: {notice: "#{I18n.t('controller_msg.quiz_successfully_updated')} - #{@alert}", alert: @alert}
 		else

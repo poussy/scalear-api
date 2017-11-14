@@ -181,7 +181,9 @@ class LecturesController < ApplicationController
 		else
 			title = "New Quiz"
 		end
-		quiz = lecture.online_quizzes.build(:group_id => lecture.group_id, :course_id => params[:course_id], :question => title, :time => params[:time], :start_time => params[:start_time], :end_time => params[:end_time], :question_type => params[:ques_type], :quiz_type => params[:quiz_type], :inclass => params[:inclass])
+		quiz = lecture.online_quizzes.build(:group_id => lecture.group_id, :course_id => params[:course_id], :question => title, 
+				:time => params[:time], :start_time => params[:start_time], :end_time => params[:end_time], 
+				:question_type => params[:ques_type], :quiz_type => params[:quiz_type], :inclass => params[:inclass])
 		if quiz.save
 			render json: {quiz: quiz, notice: "#{I18n.t('controller_msg.quiz_successfully_created')} - #{alert}", alert: alert}
 		else

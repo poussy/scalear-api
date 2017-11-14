@@ -66,8 +66,17 @@ class Ability
         can [:show, :get_questions_angular, :save_student_quiz_angular], Quiz do |quiz|
                 quiz.course.correct_student(user)
             end
-
-      
+        
+        ## OnlineQuiz
+        can [:create, :index, :update, :destroy, :show, :get_quiz_list_angular, :validate_name,:hide_responses, 
+              :update_inclass_session, :get_chart_data, :get_inclass_session_votes , :update_grade], OnlineQuiz do |online_quiz|
+                online_quiz.course.correct_teacher(user)
+              end
+              
+        can [:vote_for_review,:unvote_for_review], OnlineQuiz do |online_quiz|
+          online_quiz.course.correct_student(user)
+        end
+        
 
       ## Announcement
         can :manage, Announcement do |announcement|

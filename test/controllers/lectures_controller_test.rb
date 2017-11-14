@@ -189,5 +189,48 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 		
 	end
 
+	test "should create online quiz" do
+		lecture = lectures(:lecture3)
+		initial_count =  lecture.online_quizzes.size
+
+		get '/en/courses/3/lectures/3/new_quiz_angular', params:{end_time:28, inclass:false,ques_type:"OCQ",quiz_type:"survey",start_time:28,time:28}, headers: @headers
+
+		lecture.reload
+		assert_equal lecture.online_quizzes.size, initial_count+1
+
+	end
+
+	test "should create quiz with question according to quiz_type param" do
+		lecture = lectures(:lecture3)
+		
+		get '/en/courses/3/lectures/3/new_quiz_angular', params:{end_time:28, inclass:false,ques_type:"OCQ",quiz_type:"survey",start_time:28,time:28}, headers: @headers
+		lecture.reload
+		assert_equal lecture.online_quizzes.last_created_record.question, "New Survey"
+		
+		
+		get '/en/courses/3/lectures/3/new_quiz_angular', params:{end_time:28, inclass:false,ques_type:"OCQ",quiz_type:"html_survey",start_time:28,time:28}, headers: @headers
+		lecture.reload
+		assert_equal lecture.online_quizzes.last_created_record.question, "New Survey"
+		
+		get '/en/courses/3/lectures/3/new_quiz_angular', params:{end_time:28, inclass:false,ques_type:"OCQ",quiz_type:"invideo",start_time:28,time:28}, headers: @headers
+		lecture.reload
+		assert_equal lecture.online_quizzes.last_created_record.question, "New Quiz"
+	end
+	
+	test "should create quiz with right params" do
+		lecture = lectures(:lecture3)
+		
+		get '/en/courses/3/lectures/3/new_quiz_angular', params:{end_time:50, inclass:false, ques_type:"OCQ",quiz_type:"invideo",start_time:10,time:15}, headers: @headers
+		
+		lecture.reload
+		
+		assert_equal lecture.online_quizzes.last_created_record.question_type, "OCQ"
+		assert_equal lecture.online_quizzes.last_created_record.quiz_type, "invideo"
+		assert_equal lecture.online_quizzes.last_created_record.inclass, false
+		assert_equal lecture.online_quizzes.last_created_record.start_time, 10
+		assert_equal lecture.online_quizzes.last_created_record.time, 15
+		assert_equal lecture.online_quizzes.last_created_record.end_time, 50
+		
+	end
 	
 end
