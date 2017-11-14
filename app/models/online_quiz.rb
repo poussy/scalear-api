@@ -12,7 +12,7 @@ class OnlineQuiz < ApplicationRecord
 
 	validates :time,:start_time, :end_time,:lecture_id,:question,  :intro, :self, :in_group, :discussion, :presence => true
 
-
+	attribute :match_type
 	# def formatted_time
 	# end
 
