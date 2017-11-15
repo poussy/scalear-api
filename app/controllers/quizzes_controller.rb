@@ -95,7 +95,6 @@ class QuizzesController < ApplicationController
           end
           s_grades[q.id]=grades2[0].answer
           correct[q.id]=grades2[0].grade
-          puts "a.content issssss #{exp}"
         end
         if quiz.course.is_student(current_user) || quiz.course.is_guest(current_user)
           if q.question_type.upcase=="DRAG"
@@ -326,19 +325,15 @@ class QuizzesController < ApplicationController
 
             z= @current_q.update_attributes!(:content => new_q["content"], :question_type => new_q["question_type"], :position => index+1)
             if !new_q["answers"].nil?
-              p @current_q.question_type
-              p new_q["match_type"]
+             
               if(@current_q.question_type == "Free Text Question" && new_q["match_type"] =='Free Text')
                   @current_q.answers.each do |ans|
                     ans.destroy
                   end
-                  puts "answeeeeeeeeeee"
-                  puts new_q["answers"]
-                  puts "answeeeeeeeeeee"
+                  
                   new_q["answers"].each do |new_ans|
                     y = @current_q.answers.create(:content =>"" , :correct => new_ans["correct"],:explanation => new_ans["explanation"])
                     old_answers<<y.id.to_i
-                    puts y.id
                   end
               else
                 new_q["answers"].each do |new_ans| ######### ANSWERS #########
