@@ -251,8 +251,11 @@ class LecturesController < ApplicationController
 		render json: {:answers => answers, :other_nums => num}
   	end
 
-	# def get_html_data_angular
-	# end
+	def get_html_data_angular
+		quiz= OnlineQuiz.find(params[:quiz])
+		answers= quiz.online_answers
+		render json: {:answers => answers}
+  	end
 
 	# def get_lecture_data_angular
 	# end

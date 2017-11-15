@@ -147,6 +147,88 @@ class QuizzesControllerTest < ActionDispatch::IntegrationTest
 
 	end
 
+  test "should add question if sent with no id and delete other questions from database" do
+    ## array of old questions ids
+    old_questions = Question.all.each.map {|q| q.id}
+    ## question sent in params doesnt have an id
+		put '/en/courses/3/quizzes/1/update_questions_angular', params: {questions: [{ content: '<p class="medium-editor-p">new mcq</p>', match_type: "Free Text", question_type: "MCQ", quiz_id: 1}]}, headers: @headers, as: :json
+    
+    assert_equal Question.count, 1
+    assert_equal Question.first.content, '<p class="medium-editor-p">new mcq</p>'
+    assert_equal Question.first.question_type, 'MCQ'
+    ## assert that it is a newly created question with new id
+    assert_not old_questions.include? Question.first.id
+
+
+	end
+
+  test "should add question if sent with no id and add its answers" do
+   
+		put '/en/courses/3/quizzes/1/update_questions_angular', params: {questions: [{ answers: [{id: 1, content:"a1", correct: true, explanation: "answer explanation" }], content: '<p class="medium-editor-p">new mcq</p>', match_type: "Free Text", question_type: "MCQ", quiz_id: 1}]}, headers: @headers, as: :json
+    
+    assert_equal Question.first.answers.count, 1
+    assert_equal Question.first.answers.first.content, 'a1'
+    
+    
+
+
+	end
+
+  test "should edit question if sent with id and delete other questions from database" do
+    
+		put '/en/courses/3/quizzes/1/update_questions_angular', params: {questions: [{id: 1, content: '<p class="medium-editor-p">new mcq</p>', match_type: "Free Text", question_type: "MCQ", quiz_id: 1}]}, headers: @headers, as: :json
+    
+    assert_equal Question.count, 1
+    assert_equal Question.first.content, '<p class="medium-editor-p">new mcq</p>'
+    ## same old question
+    assert Question.first.id, 1
+    assert_equal Question.first.content, '<p class="medium-editor-p">new mcq</p>'
+    assert_equal Question.first.question_type, 'MCQ'
+
+	end
+
+  test "should update old answers if sent with id" do
+    
+		put '/en/courses/3/quizzes/1/update_questions_angular', params: {questions: [{answers: [{id: 1, content:"a1", correct: true, explanation: "answer explanation" }],id: 1, content: '<p class="medium-editor-p">new mcq</p>', match_type: "Free Text", question_type: "MCQ", quiz_id: 1}]}, headers: @headers, as: :json
+    
+    answer = Question.first.answers.find(1)
+    assert answer.correct
+    assert_equal answer.content, "a1"
+    assert_equal answer.explanation, "answer explanation"
+    assert_equal answer.explanation, "answer explanation"
+   
+	end
+
+  test "should create new answers if sent with no id" do
+    
+		put '/en/courses/3/quizzes/1/update_questions_angular', params: {questions: [{answers: [{content:"a1", correct: true, explanation: "answer explanation" }],id: 1, content: '<p class="medium-editor-p">new mcq</p>', match_type: "Free Text", question_type: "MCQ", quiz_id: 1}]}, headers: @headers, as: :json
+    
+    answer = Question.first.answers.first
+    assert answer.correct
+    assert_equal answer.content, "a1"
+    assert_equal answer.explanation, "answer explanation"
+    assert_equal answer.explanation, "answer explanation"
+   
+	end
+
+  test "should delete old answers and put new ones with no content" do ## if the question_type == 'Free Text Question && match_type == 'Free Text'
+
+    old_answers = Answer.all.each.map {|a| a.id}
+    
+		put '/en/courses/3/quizzes/1/update_questions_angular', params: {questions: [{answers: [{id: 1,content:"a3", correct: true, explanation: "answer explanation" }],id: 1, content: '<p class="medium-editor-p">new mcq</p>', match_type: "Free Text", question_type: "Free Text Question", quiz_id: 1}]}, headers: @headers, as: :json
+    
+    ## not the same old answer, old one is deleted and this is a new one
+    assert_not_equal Question.first.answers.first.id, 1
+
+    answer = Question.first.answers.first
+    assert answer.correct
+    assert_equal answer.content, ""
+    assert_equal answer.explanation, "answer explanation"
+    
+   
+	end
+
+
 
 
 

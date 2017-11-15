@@ -95,7 +95,6 @@ class QuizzesController < ApplicationController
           end
           s_grades[q.id]=grades2[0].answer
           correct[q.id]=grades2[0].grade
-          puts "a.content issssss #{exp}"
         end
         if quiz.course.is_student(current_user) || quiz.course.is_guest(current_user)
           if q.question_type.upcase=="DRAG"
@@ -306,8 +305,80 @@ class QuizzesController < ApplicationController
   # def make_visible
   # end
   
-  # def update_questions_angular
-  # end
+  def update_questions_angular
+
+    @questions = params[:questions]
+
+    Quiz.transaction do
+      #want to update existing records. (for questions and answers)
+      # want to create new ones //
+      # want to delete ones no longer there.//
+      old_questions=[]
+      old_answers=[]
+      if !@questions.nil?
+
+        @questions.each_with_index do |new_q, index|
+          if !new_q["id"].nil? #old one
+            
+            old_questions<<new_q["id"].to_i
+            @current_q=Question.find(new_q["id"])
+
+            z= @current_q.update_attributes!(:content => new_q["content"], :question_type => new_q["question_type"], :position => index+1)
+            if !new_q["answers"].nil?
+             
+              if(@current_q.question_type == "Free Text Question" && new_q["match_type"] =='Free Text')
+                  @current_q.answers.each do |ans|
+                    ans.destroy
+                  end
+                  
+                  new_q["answers"].each do |new_ans|
+                    y = @current_q.answers.create(:content =>"" , :correct => new_ans["correct"],:explanation => new_ans["explanation"])
+                    old_answers<<y.id.to_i
+                  end
+              else
+                new_q["answers"].each do |new_ans| ######### ANSWERS #########
+                  if !new_ans["id"].nil? #old one
+                    old_answers<<new_ans["id"].to_i
+                    Answer.find(new_ans["id"]).update_attributes!(:content => new_ans["content"], :correct => new_ans["correct"],:explanation => new_ans["explanation"])
+                  else
+                    y=@current_q.answers.create(:content => new_ans["content"], :correct => new_ans["correct"],:explanation => new_ans["explanation"])
+                    old_answers<<y.id.to_i
+                  end
+                end
+              end
+            end
+          else #new one
+            x=@quiz.questions.create(:content => new_q["content"], :question_type =>new_q["question_type"], :position => index+1)
+            old_questions<<x.id.to_i
+            if !new_q["answers"].nil?
+              new_q["answers"].each do |new_ans|
+                y=x.answers.create(:content => new_ans["content"], :correct => new_ans["correct"],:explanation => new_ans["explanation"])
+                old_answers<<y.id.to_i
+              end
+            end
+          end
+        end
+      else
+        old_questions=[]
+        old_answers=[]
+      end
+      to_delete_a=[]
+      @quiz.questions.each do |q|
+        to_delete_a<<q.answers.pluck(:id)
+      end
+      to_delete_a.flatten!
+      to_delete_a = to_delete_a - old_answers
+      to_delete_a.each do |d|
+        Answer.find(d).destroy
+      end
+      to_delete= @quiz.questions.pluck(:id) - old_questions
+      to_delete.each do |d|
+        Question.find(d).destroy
+      end
+      render :json => {:message => "success", :notice => [I18n.t("controller_msg.#{@quiz.quiz_type}_successfully_saved")]} and return
+    end
+    render :json => {:errors => [I18n.t("controller_msg.transaction_rolled_back")]}, :status => 400
+  end
   
   # def save_student_quiz_angular
   # end

@@ -87,7 +87,7 @@ class Course < ApplicationRecord
 	end
 
 	def is_teacher(user)
-		self.teachers.where(:id => current.id).count>0
+		self.teachers.where(:id => user.id).count>0
 	end
 
 	def is_student(user)
