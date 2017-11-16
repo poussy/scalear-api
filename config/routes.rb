@@ -296,7 +296,18 @@ Rails.application.routes.draw do
         get 'get_inclass_session_votes'
         post 'update_grade'
       end
-  end
+    end
+
+    resources :shared_items do
+      member do
+        post 'accept_shared'
+        post 'update_shared_data'
+        post 'reject_shared'
+      end
+      collection do
+        get 'show_shared'
+      end
+    end
 
   end
 end

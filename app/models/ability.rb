@@ -86,6 +86,11 @@ class Ability
               announcement.course.correct_student(user)
         end
 
+        ##SharedItem
+        can [:create], SharedItem
+        can [:update], SharedItem, :shared_by_id => user.id
+        can [:show, :show_shared, :accept_shared, :reject_shared, :update_shared_data, :destroy], SharedItem, :shared_with_id => user.id
+
     end
     if !(user.has_role? 'User') && !(user.has_role? :admin) && !(user.has_role? :administrator)
       #can :index, Course  #so that people without role can live until they get a role.
