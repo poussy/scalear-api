@@ -9,8 +9,7 @@ class SharedItemsController < ApplicationController
 		shared_with= User.find_by_email(params[:shared_with])
 		if !shared_with.nil?
 			accept = shared_with.id == current_user.id
-			@shared_item = SharedItem.new({:data => params[:data], :shared_by_id => current_user.id, :shared_with_id  => shared_with.id, :accept => accept})
-		
+			@shared_item = SharedItem.new({:data => shared_item_params[:data], :shared_by_id => current_user.id, :shared_with_id  => shared_with.id, :accept => accept})
 			if @shared_item.save
 				render json: {shared_item:@shared_item, :notice => [I18n.t('controller_msg.data_successfully_shared',person: shared_with.email)]}, status: :created
 			else
@@ -87,10 +86,10 @@ class SharedItemsController < ApplicationController
 	# end
 
 	def accept_shared
-		s= SharedItem.find(params[:id])
-		if(s.shared_with_id == current_user.id)
-			s.accept = true
-			if s.save
+		
+		if(@shared_item.shared_with_id == current_user.id)
+			@shared_item.accept = true
+			if @shared_item.save
 				shared =current_user.shared_withs.where(:accept => false).size
 				render json: {:notice => [I18n.t("controller_msg.accept_shared")], :shared_items => shared}
 			else
@@ -114,6 +113,6 @@ class SharedItemsController < ApplicationController
   	end
 	private
 		def shared_item_params
-			params.require(:shared_item).permit(:data, :shared_by_id, :shared_with_id, :accept)
+			params.require(:shared_item).permit(:data => {modules: [], lectures: [], quizzes: [], customlinks:[]})
 		end
 end
