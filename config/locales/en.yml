@@ -507,6 +507,7 @@ en:
     link_successfully_created: "Link was successfully created."
     link_successfully_updated: "Link was successfully updated."
     link_successfully_deleted: "Link was successfully deleted."
+    marker_successfully_deleted: "Note was successfully deleted."
     answer_successfully_created: "Answer was successfully created."
     answer_successfully_updated: "Answer was successfully updated."
     question_successfully_created: "Question was successfully created."
