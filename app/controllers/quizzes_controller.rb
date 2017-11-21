@@ -163,7 +163,7 @@ class QuizzesController < ApplicationController
     @alert_messages={}
     day2='day'.pluralize((Time.zone.now.to_date - quiz.due_date.to_date).to_i)
     if quiz.due_date < Time.zone.now #if due date 5 april (night) then i have until 6 april..
-      @alert_messages['due']= [I18n.localize(quiz.due_date, :format => '%d %b'), (Time.zone.now.to_date - quiz.due_date.to_date).to_i, t("controller_msg.#{day2}")]
+      @alert_messages['due']= [I18n.localize(quiz.due_date, :format => '%d %b'), (Time.zone.now.to_date - quiz.due_date.to_date).to_i, I18n.t("controller_msg.#{day2}")]
     elsif  quiz.due_date.to_date == Time.zone.today && Time.zone.now.hour <= quiz.due_date.hour
       @alert_messages['today'] = quiz.due_date
     end
@@ -215,25 +215,23 @@ class QuizzesController < ApplicationController
     copy_quiz.due_date_module = true
     copy_quiz.required_module = true
     copy_quiz.graded_module = true
-    ## waiting for events table
-    # Event.where(:quiz_id => old_quiz.id, :lecture_id => nil).each do |e|
-    #   new_event= e.dup
-    #   new_event.quiz_id = copy_quiz.id
-    #   new_event.course_id = copy_quiz.course_id
-    #   new_event.group_id = copy_quiz.group_id
-    #   new_event.save(:validate => false)
-    # end
+    Event.where(:quiz_id => old_quiz.id, :lecture_id => nil).each do |e|
+      new_event= e.dup
+      new_event.quiz_id = copy_quiz.id
+      new_event.course_id = copy_quiz.course_id
+      new_event.group_id = copy_quiz.group_id
+      new_event.save(:validate => false)
+    end
 
     old_quiz.questions.each do |question|
       new_question = question.dup
       new_question.quiz_id = copy_quiz.id
       new_question.save(:validate => false)
-      ## waiting for answers table
-      # question.answers.each do |answer|
-      #   new_answer = answer.dup
-      #   new_answer.question_id = new_question.id
-      #   new_answer.save(:validate => false)
-      # end
+      question.answers.each do |answer|
+        new_answer = answer.dup
+        new_answer.question_id = new_question.id
+        new_answer.save(:validate => false)
+      end
     end
 
     render json:{quiz: copy_quiz, :notice => [I18n.t("controller_msg.#{copy_quiz.quiz_type}_successfully_created")]}

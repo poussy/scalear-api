@@ -45,39 +45,38 @@ class LecturesController < ApplicationController
 		did_he_change_lecture_type = @lecture.inclass != params[:lecture][:inclass]
 
 		if @lecture.update_attributes(lecture_params)
-			## waiting for events table
 			##### remove all onlinequiz.inclass_session and check added it if type isdistance peer
-			# @lecture.events.where(:quiz_id => nil, :group_id => @lecture.group.id).destroy_all
-			# if @lecture.due_date.to_formatted_s(:long) != @lecture.group.due_date.to_formatted_s(:long)
-			# 	@lecture.events << Event.new(:name => "#{@lecture.name} due", :start_at => params[:lecture][:due_date], :end_at => params[:lecture][:due_date], :all_day => false, :color => "red", :course_id => @course.id, :group_id => @lecture.group.id)
-			# end
+			@lecture.events.where(:quiz_id => nil, :group_id => @lecture.group.id).destroy_all
+			if @lecture.due_date.to_formatted_s(:long) != @lecture.group.due_date.to_formatted_s(:long)
+				@lecture.events << Event.new(:name => "#{@lecture.name} due", :start_at => params[:lecture][:due_date], :end_at => params[:lecture][:due_date], :all_day => false, :color => "red", :course_id => @course.id, :group_id => @lecture.group.id)
+			end
 
 
 			## update online_quiz.inclass  to be the same as lecture.inclass untill to remove online_quiz.inclass
-			# if did_he_change_lecture_type
-			# 	if @lecture.inclass
-			# 	# create inclass session
-			# 	@lecture.online_quizzes.each do |online_quiz|
-			# 		online_quiz.update_attributes(:hide => false)
-			# 		if online_quiz.inclass_session.nil?
-			# 		online_quiz.create_inclass_session(:status => 0, :lecture_id => online_quiz.lecture_id, :group_id => online_quiz.group_id, :course_id => online_quiz.course_id)
-			# 		end
-			# 	end
-			# 	else
-			# 	# delete inclass session
-			# 	@lecture.online_quizzes.each do |online_quiz|
-			# 		online_quiz.update_attributes(:hide => true)
-			# 		session = online_quiz.inclass_session
-			# 		if !session.nil?
-			# 		session.destroy
-			# 		end
-			# 	end
-			# 	end
+			if did_he_change_lecture_type
+				if @lecture.inclass
+				# create inclass session
+				@lecture.online_quizzes.each do |online_quiz|
+					online_quiz.update_attributes(:hide => false)
+					if online_quiz.inclass_session.nil?
+					online_quiz.create_inclass_session(:status => 0, :lecture_id => online_quiz.lecture_id, :group_id => online_quiz.group_id, :course_id => online_quiz.course_id)
+					end
+				end
+				else
+				# delete inclass session
+				@lecture.online_quizzes.each do |online_quiz|
+					online_quiz.update_attributes(:hide => true)
+					session = online_quiz.inclass_session
+					if !session.nil?
+					session.destroy
+					end
+				end
+				end
 
-			# end
-			# @lecture.online_quizzes.each do |online_quiz|
-			# 	online_quiz.update_attributes(:inclass => @lecture.inclass)
-			# end
+			end
+			@lecture.online_quizzes.each do |online_quiz|
+				online_quiz.update_attributes(:inclass => @lecture.inclass)
+			end
 
 			render json: {lecture: @lecture, :notice => [I18n.t("controller_msg.lecture_successfully_updated")] }
 		else
@@ -319,44 +318,41 @@ class LecturesController < ApplicationController
 
 
 		copy_lecture.save(:validate => false)
-		## waiting for online quizzes table
-		# old_lecture.online_quizzes.each do |quiz|
-		# 	new_online_quiz = quiz.dup
-		# 	new_online_quiz.lecture_id= copy_lecture.id
-		# 	new_online_quiz.group_id  = copy_lecture.group_id
-		# 	new_online_quiz.course_id = copy_lecture.course_id
-		# 	new_online_quiz.save(:validate => false)
-		# 	quiz.online_answers.each do |answer|
-		# 		new_answer = answer.dup
-		# 		new_answer.online_quiz_id = new_online_quiz.id
-		# 		new_answer.save(:validate => false)
-		# 	end
-		# 	quiz_session = quiz.inclass_session
-		# 	if !quiz_session.nil?
-		# 		new_session = quiz_session.dup
-		# 		new_session.online_quiz_id= new_online_quiz.id
-		# 		new_session.lecture_id= copy_lecture.id
-		# 		new_session.group_id  = copy_lecture.group_id
-		# 		new_session.course_id = copy_lecture.course_id
-		# 		new_session.save(:validate => false)
-		# 	end
-		# end
-		## waiting for online markers
-		# old_lecture.online_markers.each do |marker|
-		# 	new_online_marker = marker.dup
-		# 	new_online_marker.lecture_id= copy_lecture.id
-		# 	new_online_marker.group_id  = copy_lecture.group_id
-		# 	new_online_marker.course_id = copy_lecture.course_id
-		# 	new_online_marker.save(:validate => false)
-		# end
-		## waiting for events
-		# Event.where(:quiz_id => nil,:lecture_id => old_lecture.id).each do |e|
-		# 	new_event= e.dup
-		# 	new_event.lecture_id = copy_lecture.id
-		# 	new_event.course_id = copy_lecture.course_id
-		# 	new_event.group_id = copy_lecture.group_id
-		# 	new_event.save(:validate => false)
-		# end
+		old_lecture.online_quizzes.each do |quiz|
+			new_online_quiz = quiz.dup
+			new_online_quiz.lecture_id= copy_lecture.id
+			new_online_quiz.group_id  = copy_lecture.group_id
+			new_online_quiz.course_id = copy_lecture.course_id
+			new_online_quiz.save(:validate => false)
+			quiz.online_answers.each do |answer|
+				new_answer = answer.dup
+				new_answer.online_quiz_id = new_online_quiz.id
+				new_answer.save(:validate => false)
+			end
+			quiz_session = quiz.inclass_session
+			if !quiz_session.nil?
+				new_session = quiz_session.dup
+				new_session.online_quiz_id= new_online_quiz.id
+				new_session.lecture_id= copy_lecture.id
+				new_session.group_id  = copy_lecture.group_id
+				new_session.course_id = copy_lecture.course_id
+				new_session.save(:validate => false)
+			end
+		end
+		old_lecture.online_markers.each do |marker|
+			new_online_marker = marker.dup
+			new_online_marker.lecture_id= copy_lecture.id
+			new_online_marker.group_id  = copy_lecture.group_id
+			new_online_marker.course_id = copy_lecture.course_id
+			new_online_marker.save(:validate => false)
+		end
+		Event.where(:quiz_id => nil,:lecture_id => old_lecture.id).each do |e|
+			new_event= e.dup
+			new_event.lecture_id = copy_lecture.id
+			new_event.course_id = copy_lecture.course_id
+			new_event.group_id = copy_lecture.group_id
+			new_event.save(:validate => false)
+		end
 
 		render json:{lecture: copy_lecture, :notice => [I18n.t("controller_msg.lecture_successfully_updated")]}
   	end

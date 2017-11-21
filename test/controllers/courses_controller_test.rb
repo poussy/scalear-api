@@ -13,7 +13,15 @@ class CoursesControllerTest <  ActionDispatch::IntegrationTest
 
 		@course_domain1 = course_domains(:course_domain_1)
 
+		@group1 = groups(:group1)
 		@group2 = groups(:group2)
+
+		@lecture1 =  lectures(:lecture1) 
+
+		@student1 = users(:student1)
+		@lecture_view_1 = lecture_views(:lecture_view_1)
+		@online_quiz_grade1 = online_quiz_grades(:online_quiz_grade1)
+		@quiz_status1_course1 = quiz_statuses(:quiz_status1_course1) 
 	end
 
 	test "Validate abilities for user1" do
@@ -197,17 +205,17 @@ class CoursesControllerTest <  ActionDispatch::IntegrationTest
 		get  url  ,headers: @user1.create_new_auth_token 
 		resp =  JSON.parse response.body
 		assert_equal resp['course']['duration'] , 5
-		assert_equal resp['groups'].count , 1
+		assert_equal resp['groups'].count , 3
 	end
 
-	test 'validate course_editor_angular method after added group2 to course1' do		
+	test 'validate course_editor_angular method after added group3 to course1' do		
 		@group2.course  = @course1
 		@group2.save
 		url = '/en/courses/'+ @course1.id.to_s+'/course_editor_angular'
 		get  url  ,headers: @user1.create_new_auth_token 
 		resp =  JSON.parse response.body
 		assert_equal resp['course']['duration'] , 5
-		assert_equal resp['groups'].count , 2
+		assert_equal resp['groups'].count , 4
 	end
 
 	test "should import course" do
@@ -463,15 +471,15 @@ class CoursesControllerTest <  ActionDispatch::IntegrationTest
 	end
 
 	test 'validate enrolled_students method for empty course ' do
-		url = '/en/courses/'+ @course1.id.to_s+'/enrolled_students/'
-		get url ,headers: @user1.create_new_auth_token 
+		url = '/en/courses/'+ @course2.id.to_s+'/enrolled_students/'
+		get url ,headers: @user2.create_new_auth_token 
 		resp =  JSON.parse response.body
 		assert_equal resp.count , 0
 	end
 
 	test 'validate enrolled_students method for course with 1 student' do
-		url = '/en/courses/enroll_to_course/'
-		post url ,params: {unique_identifier: @course1.unique_identifier, course:{unique_identifier:@course1.unique_identifier}},headers: @user4.create_new_auth_token 
+		# url = '/en/courses/enroll_to_course/'
+		# post url ,params: {unique_identifier: @course1.unique_identifier, course:{unique_identifier:@course1.unique_identifier}},headers: @user4.create_new_auth_token 
 		url = '/en/courses/'+ @course1.id.to_s+'/enrolled_students/'
 		get url ,headers: @user1.create_new_auth_token 
 		resp =  JSON.parse response.body
@@ -506,5 +514,133 @@ class CoursesControllerTest <  ActionDispatch::IntegrationTest
 		assert_equal resp['nothing'] , true
 		assert_equal resp['notice'][0] , "Email will be sent shortly"
 	end	
+
+	test 'validate module_progress_angular' do
+		url = '/en/courses/'+ @course1.id.to_s+'/module_progress_angular'
+		get url, params: {} ,headers: @user1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_equal resp['module_status'].count , 1
+		assert_equal resp['module_status'][@student1.id.to_s].count ,3
+		assert_equal resp['module_status'][@student1.id.to_s][0][0] , @group1.id
+		assert_equal resp['module_status'][@student1.id.to_s][0][1] , 0
+	end
+	test 'update lecture view && validate module_progress_angular is updated' do
+		url = '/en/courses/'+ @course1.id.to_s+'/module_progress_angular'
+
+		@lecture_view_1.update_attribute( :percent , 25)
+		get url, params: {} ,headers: @user1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_equal resp['module_status'][@student1.id.to_s][0][1] , -1
+
+		@lecture_view_1.update_attributes( :percent => 100 , :created_at => @lecture_view_1.created_at + 5.days , :updated_at => @lecture_view_1.updated_at + 5.days  )
+		get url, params: {} ,headers: @user1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_equal resp['module_status'][@student1.id.to_s][0][1] , 5
+
+		@lecture_view_1.update_attributes( :created_at => @lecture_view_1.created_at - 5.days , :updated_at => @lecture_view_1.updated_at - 5.days  )
+		get url, params: {} ,headers: @user1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_equal resp['module_status'][@student1.id.to_s][0][1] , 0
+	end
+	test 'update optional online_quiz_grade && validate module_progress_angular is updated' do
+		url = '/en/courses/'+ @course1.id.to_s+'/module_progress_angular'
+
+		@online_quiz_grade1.update_attributes( :user_id => @user2.id )
+		get url, params: {} ,headers: @user1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_equal resp['module_status'][@student1.id.to_s][0][1] , 0
+
+		@online_quiz_grade1.update_attributes( :user_id => @student1.id , :created_at => @online_quiz_grade1.created_at + 10.days , :updated_at => @online_quiz_grade1.updated_at + 10.days  )
+		get url, params: {} ,headers: @user1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_equal resp['module_status'][@student1.id.to_s][0][1] , 0
+		
+		@online_quiz_grade1.update_attributes( :created_at => @online_quiz_grade1.created_at - 10.days , :updated_at => @online_quiz_grade1.updated_at - 10.days  )
+		get url, params: {} ,headers: @user1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_equal resp['module_status'][@student1.id.to_s][0][1] , 0		
+	end	
+	test 'update graded online_quiz_grade && validate module_progress_angular is updated' do
+		@online_quiz_grade1.online_quiz.update_attributes(graded: true)
+
+		url = '/en/courses/'+ @course1.id.to_s+'/module_progress_angular'
+		@online_quiz_grade1.update_attributes( :user_id => @user2.id )
+		get url, params: {} ,headers: @user1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_equal resp['module_status'][@student1.id.to_s][0][1] , -1
+
+		@online_quiz_grade1.update_attributes( :user_id => @student1.id , :created_at => @online_quiz_grade1.created_at + 10.days , :updated_at => @online_quiz_grade1.updated_at + 10.days  )
+		get url, params: {} ,headers: @user1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_equal resp['module_status'][@student1.id.to_s][0][1] , 10
+		
+		@online_quiz_grade1.update_attributes( :created_at => @online_quiz_grade1.created_at - 10.days , :updated_at => @online_quiz_grade1.updated_at - 10.days  )
+		get url, params: {} ,headers: @user1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_equal resp['module_status'][@student1.id.to_s][0][1] , 0
+	end	
+
+	test 'update graded quiz_statuses && validate module_progress_angular is updated' do
+		url = '/en/courses/'+ @course1.id.to_s+'/module_progress_angular'
+		get url, params: {} ,headers: @user1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_equal resp['module_status'][@student1.id.to_s][1][1] , 0
+
+		@quiz_status1_course1.update_attributes( :user_id => @user1.id )
+		get url, params: {} ,headers: @user1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_equal resp['module_status'][@student1.id.to_s][1][1] , -1
+		
+		@quiz_status1_course1.update_attributes( :user_id => @student1.id )
+		get url, params: {} ,headers: @user1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_equal resp['module_status'][@student1.id.to_s][1][1] , 0
+	end	
+	test 'update optional quiz_statuses && validate module_progress_angular is updated' do
+
+		@quiz_status1_course1.update_attributes( :user_id => @user1.id )
+		url = '/en/courses/'+ @course1.id.to_s+'/module_progress_angular'
+		get url, params: {} ,headers: @user1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_equal resp['module_status'][@student1.id.to_s][1][1] , -1
+
+		@quiz_status1_course1.quiz.update_attributes( :graded => false )
+		get url, params: {} ,headers: @user1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_equal resp['module_status'][@student1.id.to_s][1][1] , 0
+		
+
+		@quiz_status1_course1.update_attributes( :user_id => @student1.id )
+		get url, params: {} ,headers: @user1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_equal resp['module_status'][@student1.id.to_s][1][1] , 0
+	end	
+
+	test 'validate module_progress_angular for quiz_status1_course1' do
+		@group3_course1 = groups(:group3_course1)
+		@assignment_statuses_course1 =  assignment_statuses(:assignment_statuses_course1)
+
+		url = '/en/courses/'+ @course1.id.to_s+'/module_progress_angular'
+		get url, params: {} ,headers: @user1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		resp['students'] =  JSON.parse resp['students']
+		assert_equal resp['students'][0]['status'][@group3_course1.id.to_s] , 'Finished on Time'
+
+		@assignment_statuses_course1.update_attributes(status: 2)
+		get url, params: {} ,headers: @user1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		resp['students'] =  JSON.parse resp['students']
+		assert_equal resp['students'][0]['status'][@group3_course1.id.to_s] , 'Not Finished'
+	end	
+
+	test 'validate export_modules_progress method for teacher ' do
+		Delayed::Worker.delay_jobs = false
+
+		url = '/en/courses/'+ @course1.id.to_s+'/export_modules_progress'
+		get url, params: {} ,headers: @user1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_equal resp['notice'][0] , 'Course progress wil be exported to CSV and sent to your Email'
+
+	end
 
 end
