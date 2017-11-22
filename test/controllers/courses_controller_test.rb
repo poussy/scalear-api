@@ -524,6 +524,7 @@ class CoursesControllerTest <  ActionDispatch::IntegrationTest
 		assert_equal resp['module_status'][@student1.id.to_s][0][0] , @group1.id
 		assert_equal resp['module_status'][@student1.id.to_s][0][1] , 0
 	end
+
 	test 'update lecture view && validate module_progress_angular is updated' do
 		url = '/en/courses/'+ @course1.id.to_s+'/module_progress_angular'
 
@@ -615,7 +616,6 @@ class CoursesControllerTest <  ActionDispatch::IntegrationTest
 		resp =  JSON.parse response.body
 		assert_equal resp['module_status'][@student1.id.to_s][1][1] , 0
 	end	
-
 	test 'validate module_progress_angular for quiz_status1_course1' do
 		@group3_course1 = groups(:group3_course1)
 		@assignment_statuses_course1 =  assignment_statuses(:assignment_statuses_course1)
@@ -635,12 +635,118 @@ class CoursesControllerTest <  ActionDispatch::IntegrationTest
 
 	test 'validate export_modules_progress method for teacher ' do
 		Delayed::Worker.delay_jobs = false
-
 		url = '/en/courses/'+ @course1.id.to_s+'/export_modules_progress'
 		get url, params: {} ,headers: @user1.create_new_auth_token 
 		resp =  JSON.parse response.body
 		assert_equal resp['notice'][0] , 'Course progress wil be exported to CSV and sent to your Email'
-
 	end
 
+	test 'validate get_total_chart_angular' do
+		url = '/en/courses/'+ @course1.id.to_s+'/get_total_chart_angular'
+		get url, params: {} ,headers: @user1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_equal resp['student_progress'].count , 1
+		assert_equal resp['student_progress'][0].count , 3
+		assert_equal resp['student_progress'][0][0] , @student1.full_name
+		assert_equal resp['student_progress'][0][1] , 100.0
+		assert_equal resp['student_progress'][0][2] , 100.0
+	end
+
+	test 'update lecture view && validate get_total_chart_angular is updated' do
+		url = '/en/courses/'+ @course1.id.to_s+'/get_total_chart_angular'
+
+		@lecture_view_1.update_attribute( :percent , 25)
+		get url, params: {} ,headers: @user1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_equal resp['student_progress'][0][2] , 0
+
+		@online_quiz_grade1.online_quiz.update_attributes(graded: true)
+		get url, params: {} ,headers: @user1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_equal resp['student_progress'][0][2] , 50
+
+		@online_quiz_grade1.online_quiz.update_attributes(graded: false)
+		@lecture_view_1.update_attributes( :percent => 100 , :created_at => @lecture_view_1.created_at + 5.days , :updated_at => @lecture_view_1.updated_at + 5.days  )
+		get url, params: {} ,headers: @user1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_equal resp['student_progress'][0][2] , 100
+
+		@lecture_view_1.update_attributes( :created_at => @lecture_view_1.created_at - 5.days , :updated_at => @lecture_view_1.updated_at - 5.days  )
+		get url, params: {} ,headers: @user1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_equal resp['student_progress'][0][2] , 100
+	end
+
+	test 'update optional online_quiz_grade && validate get_total_chart_angular is updated' do
+		url = '/en/courses/'+ @course1.id.to_s+'/get_total_chart_angular'
+
+		@online_quiz_grade1.update_attributes( :user_id => @user2.id )
+		get url, params: {} ,headers: @user1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_equal resp['student_progress'][0][2] , 100
+
+		@online_quiz_grade1.update_attributes( :user_id => @student1.id , :created_at => @online_quiz_grade1.created_at + 10.days , :updated_at => @online_quiz_grade1.updated_at + 10.days  )
+		get url, params: {} ,headers: @user1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_equal resp['student_progress'][0][2] , 100
+		
+		@online_quiz_grade1.update_attributes( :created_at => @online_quiz_grade1.created_at - 10.days , :updated_at => @online_quiz_grade1.updated_at - 10.days  )
+		get url, params: {} ,headers: @user1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_equal resp['student_progress'][0][2] , 100		
+	end	
+	test 'update graded online_quiz_grade && validate get_total_chart_angular is updated' do
+		@online_quiz_grade1.online_quiz.update_attributes(graded: true)
+
+		url = '/en/courses/'+ @course1.id.to_s+'/get_total_chart_angular'
+		@online_quiz_grade1.update_attributes( :user_id => @user2.id )
+		get url, params: {} ,headers: @user1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_equal resp['student_progress'][0][2] , 50
+
+		@online_quiz_grade1.update_attributes( :user_id => @student1.id , :created_at => @online_quiz_grade1.created_at + 10.days , :updated_at => @online_quiz_grade1.updated_at + 10.days  )
+		get url, params: {} ,headers: @user1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_equal resp['student_progress'][0][2] , 100
+		
+		@online_quiz_grade1.update_attributes( :created_at => @online_quiz_grade1.created_at - 10.days , :updated_at => @online_quiz_grade1.updated_at - 10.days  )
+		get url, params: {} ,headers: @user1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_equal resp['student_progress'][0][2] , 100
+	end	
+
+	test 'update graded quiz_statuses && validate get_total_chart_angular is updated' do
+		url = '/en/courses/'+ @course1.id.to_s+'/get_total_chart_angular'
+		get url, params: {} ,headers: @user1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_equal resp['student_progress'][0][1] , 100
+		
+		@quiz_status1_course1.update_attributes( :user_id => @user1.id )
+		get url, params: {} ,headers: @user1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_equal resp['student_progress'][0][1] , 0
+		
+		@quiz_status1_course1.update_attributes( :user_id => @student1.id )
+		get url, params: {} ,headers: @user1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_equal resp['student_progress'][0][1] , 100
+	end	
+	test 'update optional quiz_statuses && validate get_total_chart_angular is updated' do
+		@quiz_status1_course1.update_attributes( :user_id => @user1.id )
+		url = '/en/courses/'+ @course1.id.to_s+'/get_total_chart_angular'
+		get url, params: {} ,headers: @user1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_equal resp['student_progress'][0][1] , 0
+
+		@quiz_status1_course1.quiz.update_attributes( :graded => false )
+		get url, params: {} ,headers: @user1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_equal resp['student_progress'][0][1] , 0
+		
+
+		@quiz_status1_course1.update_attributes( :user_id => @student1.id )
+		get url, params: {} ,headers: @user1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_equal resp['student_progress'][0][1] , 0
+	end	
 end

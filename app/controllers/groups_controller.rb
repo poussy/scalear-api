@@ -160,17 +160,17 @@ class GroupsController < ApplicationController
 	# end
 
 	def validate_group_angular
-		@group= Group.find(params[:id])
-		params[:group].each do |key, value|
-			@group[key]=value
+		if params[:group]
+			params[:group].each do |key, value|
+				@group[key]=value
+			end
 		end
-		
+
 		if @group.valid?
-			head :ok
+			render json:{ :nothing => true }
 		else
 			render json: {errors: @group.errors.full_messages}, status: :unprocessable_entity
 		end
-
   	end
 
 	# def get_quiz_chart_angular

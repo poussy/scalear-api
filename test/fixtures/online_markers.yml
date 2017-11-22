@@ -15,3 +15,12 @@ online_marker2:
   lecture: lecture2
   group: group2
   course: course2    
+
+online_marker_course3:
+  title: 'title'
+  annotation: 'short_title' 
+  hide: false 
+  time: 11.2
+  lecture_id: 3
+  group_id: 3
+  course_id: 3

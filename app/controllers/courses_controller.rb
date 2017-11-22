@@ -425,8 +425,38 @@ class CoursesController < ApplicationController
 		render json: {:module_status => @matrix, :late_modules => @late, :students => @students.to_json(:methods => [:status, :full_name]), :module_names => @mods, :total => @total}
 	end  
 
-	# def get_total_chart_angular
-	# end  
+	def get_total_chart_angular
+		@course=Course.where(:id => params[:id]).includes({:online_quizzes => [:online_answers, :lecture]}, :quizzes)[0]
+		@student_progress=[]
+		@nonline_total=@course.online_quizzes.select{|f| f.graded && f.lecture.graded && (!f.online_answers.empty? || f.question_type=="Free Text Question")}.size
+		@lectures_total =@course.lectures.select{|l|  ( l.graded && !l.duration.nil? ) }.size
+	
+		@n_total= @course.quizzes.select{|v| v.quiz_type=="quiz" and v.graded}.size    #where(:quiz_type => "quiz").count
+		@students=@course.users.select("users.*, LOWER(users.name), LOWER(users.last_name)").order("LOWER(users.last_name)").includes([{:free_online_quiz_grades => :lecture} , {:online_quiz_grades => :lecture} , {:quiz_statuses => :quiz}])
+		@total=@students.size
+
+		@students.each_with_index do |s, index|
+
+			@n_solved=s.quiz_statuses.select{|v| v.course_id==@course.id && v.status=="Submitted" && v.quiz.quiz_type=='quiz' && v.quiz.graded}.size
+			@nonline=s.online_quiz_grades.select{|q| q.course_id == @course.id && q.lecture.graded && q.online_quiz.graded }.uniq{|u| u.online_quiz_id}.size + s.free_online_quiz_grades.select{|f| f.course_id == @course.id && f.lecture.graded && f.online_quiz.graded}.uniq{|u| u.online_quiz_id}.size
+			@lectures_views = s.lecture_views.select{ |lec_view| lec_view.lecture.graded && ( lec_view.percent ==100 ) }.size
+
+			if @n_solved.nil? || @n_total==0
+				@result1=0
+			else
+				@result1=@n_solved.to_f/@n_total.to_f*100
+			end
+
+			if @lectures_total == 0
+				@result3=0
+			else
+				@result3= ( (@nonline.to_f + @lectures_views.to_f )/ ( @nonline_total.to_f + @lectures_total.to_f ) )*100
+			end
+
+			@student_progress[index]=[s.full_name, @result1, @result3] #@result2
+		end
+		render :json => {:student_progress => @student_progress}		
+	end  
 
 	def enroll_to_course
 		key = params[:unique_identifier]

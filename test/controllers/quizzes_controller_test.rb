@@ -65,14 +65,14 @@ class QuizzesControllerTest < ActionDispatch::IntegrationTest
     assert quiz.visible
     assert_equal quiz.retries, 2
 
-		put '/en/courses/3/quizzes/1', params:{:quiz => {required: false, appearance_time: '2017-10-10',appearance_time_module: false, due_date_module: false,
-        due_date: '2017-10-10', position: 1, graded: false, visible: false, retries: 5}}, headers: @user.create_new_auth_token
+		put '/en/courses/3/quizzes/1', params:{:quiz => {required: false, appearance_time: '2017-09-15',appearance_time_module: false, due_date_module: false,
+        due_date: '2017-10-8', position: 1, graded: false, visible: false, retries: 5}}, headers: @user.create_new_auth_token
 
     quiz.reload
     assert_not quiz.required
-    assert_equal quiz.appearance_time, Time.zone.parse('2017-10-10')
+    assert_equal quiz.appearance_time, Time.zone.parse('2017-09-15')
     assert_not quiz.due_date_module
-    assert_equal quiz.due_date, Time.zone.parse('2017-10-10')
+    assert_equal quiz.due_date, Time.zone.parse('2017-10-8')
     assert_equal quiz.position, 1
     assert_not quiz.graded
     assert_not quiz.visible
@@ -97,7 +97,7 @@ class QuizzesControllerTest < ActionDispatch::IntegrationTest
     assert_not quiz.graded
 		assert_equal quiz.appearance_time, '2017-9-9'
 		assert_equal quiz.due_date, '2017-10-9'
-	end
+    end
 
   test "should be able to delete quiz" do
 
@@ -129,10 +129,11 @@ class QuizzesControllerTest < ActionDispatch::IntegrationTest
   test "should copy quiz" do
 
     assert_equal Quiz.count, 4
-	
+    @evnet_counter = Event.count
 		post '/en/courses/3/quizzes/quiz_copy', params: {module_id: 3, quiz_id: 1}, headers: @headers, as: :json
 
     assert_equal Quiz.count, 5
+    assert_equal Event.count , @evnet_counter + 1
 
     	quiz_from = Quiz.find(1)
     new_quiz = Quiz.last
@@ -226,16 +227,52 @@ class QuizzesControllerTest < ActionDispatch::IntegrationTest
    
 	end
 
-  test "should be able to create quiz header" do
+    test "should be able to create quiz header" do
     
 		put '/en/courses/3/quizzes/1/update_questions_angular', params: {questions: [{id: 1, content: '<p class="medium-editor-p">new mcq</p>', match_type: "Free Text", question_type: "header", quiz_id: 1}]}, headers: @headers, as: :json
     
-    assert_equal Question.find(1).question_type, "header"
-   
+        assert_equal Question.find(1).question_type, "header"
 	end
 
+    test 'should be able get_questions_angular for teacher' do        
+        url = '/en/courses/3/quizzes/1/get_questions_angular'
+        get  url ,headers: @user.create_new_auth_token , as: :json
+        resp =  JSON.parse response.body
+        assert_equal resp['quiz']['retries'] , 2
+        assert_equal resp['questions'].count , 3
+    end
 
-
-
+    test 'validate validate_quiz_angular method ' do
+        url = '/en/courses/3/quizzes/1/validate_quiz_angular/'
+        put  url , params: {quiz: { name:'toto' } } ,headers: @user.create_new_auth_token , as: :json
+        assert_response :success
+        resp =  JSON.parse response.body
+        assert_equal resp['nothing'] , true
+    end
+    test 'validate validate_quiz_angular method and respone 422' do
+        url = '/en/courses/3/quizzes/1/validate_quiz_angular/'
+        put  url , params: {quiz: { due_date_module:false ,  due_date:DateTime.now + 3.months } } ,headers: @user.create_new_auth_token 
+        assert_response 422
+        resp =  JSON.parse response.body
+        assert_equal resp['errors'].count , 1
+        assert_equal resp['errors'][0] , "Due date must be before module due date"
+    end
+    test 'validate validate_quiz_angular method and respone 422 for retries is not position' do
+        url = '/en/courses/3/quizzes/1/validate_quiz_angular/'
+        put  url , params: {quiz: { due_date_module:false ,  due_date:DateTime.now + 3.months , retries:-9 }} ,headers: @user.create_new_auth_token 
+        assert_response 422
+        resp =  JSON.parse response.body
+        assert_equal resp['errors'].count , 2
+        assert_equal resp['errors'][0] , "Retries must be greater than or equal to 0"
+        assert_equal resp['errors'][1] , "Due date must be before module due date"
+    end
+    test 'validate validate_quiz_angular method and respone 422 for title is empty' do
+        url = '/en/courses/3/quizzes/1/validate_quiz_angular/'
+        put  url , params: {quiz: { name:'' }} ,headers: @user.create_new_auth_token 
+        assert_response 422
+        resp =  JSON.parse response.body
+        assert_equal resp['errors'].count , 1
+        assert_equal resp['errors'][0] , "Name can't be blank"
+    end
 
 end

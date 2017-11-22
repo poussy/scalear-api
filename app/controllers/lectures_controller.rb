@@ -253,13 +253,13 @@ class LecturesController < ApplicationController
 		num= answers.map{|n| n.pos} if !answers.empty?
 
 		render json: {:answers => answers, :other_nums => num}
-  	end
+	end
 
 	def get_html_data_angular
 		quiz= OnlineQuiz.find(params[:quiz])
 		answers= quiz.online_answers
 		render json: {:answers => answers}
-  	end
+	end
 
 	# def get_lecture_data_angular
 	# end
@@ -271,18 +271,18 @@ class LecturesController < ApplicationController
 	# end
 
 	
-  	def validate_lecture_angular
-		params[:lecture].each do |key, value|
-			@lecture[key]=value
-		end
-		
+	def validate_lecture_angular
+		if params[:lecture]
+			params[:lecture].each do |key, value|
+				@lecture[key]=value
+			end
+		end		
 		if @lecture.valid?
-			head :ok
+			render json:{ :nothing => true }
 		else
 			render json: {errors:@lecture.errors.full_messages}, status: :unprocessable_entity
 		end
-
-   	end
+	end
 
 
 	# def create_or_update_survey_responses

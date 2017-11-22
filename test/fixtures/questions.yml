@@ -3,11 +3,13 @@ ocq1:
   quiz_id: 1
   content: "old content"
   question_type: OCQ
+
 mcq1:
   id: 2
   quiz_id: 1
   content: ""
   question_type: MCQ
+
 free_text1:
   id: 3
   quiz_id: 1

@@ -18,9 +18,9 @@ class Lecture < ApplicationRecord
 	validates :name, :url,:appearance_time, :due_date,:course_id, :group_id, :start_time, :end_time, :position, :presence => true
 	validates_inclusion_of :appearance_time_module, :due_date_module,:required_module , :graded_module, :inclass, :distance_peer, :in => [true, false] #not in presence because boolean false considered not present.
 
-	validates_datetime :appearance_time, :on_or_after => lambda{|m| m.group.appearance_time}, :on_or_after_message => "lecture.errors.appearance time_after_module_appearance_time"
+	validates_datetime :appearance_time, :on_or_after => lambda{|m| m.group.appearance_time}, :on_or_after_message => I18n.t("lectures.errors.appearance_time_after_module_appearance_time")
 
-	validates_datetime :due_date, :on_or_after => lambda{|m| m.appearance_time}, :on_or_after_message => "lecture.errors.due_date_pass_after_appearance_date"
+	validates_datetime :due_date, :on_or_after => lambda{|m| m.appearance_time}, :on_or_after_message => I18n.t("lectures.errors.due_date_pass_after_appearance_date")
 
 	# validates_datetime :due_date, :on_or_before => lambda{|m| m.group.due_date}, :on_or_before_message => "must be before module due date"
 	validate :due_before_module_due_date
@@ -129,13 +129,13 @@ class Lecture < ApplicationRecord
   private
 	def due_before_module_due_date
 		if self.due_date && self.due_date > self.group.due_date && self.due_date < (Time.now + 100.years)
-			errors.add(:due_date, "lecture.errors.time_before_module_due_date")
+			errors.add(:due_date, I18n.t("lectures.errors.time_before_module_due_date") )
 		end
 	end
 
 	def type_inclass_distance_peer
 		if (self.distance_peer && self.inclass )
-			errors.add(:distance_peer, "lecture.errors.inclass_distance_peer_both_true")
+			errors.add(:distance_peer, I18n.t("lectures.errors.inclass_distance_peer_both_true") )
 		end
 	end
 

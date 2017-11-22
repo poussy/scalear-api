@@ -24,7 +24,6 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 		## necessary to send as json, so true and false wouldn't convert to strings
 		@headers = @user3.create_new_auth_token
 		@headers['content-type']="application/json"
-		
 	end
 
 	test "Validate abilities for user1" do
@@ -127,22 +126,32 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 		assert_equal lecture.appearance_time, '2017-9-8'
 		assert_equal lecture.due_date, '2017-10-8'
 		
-	
+		@inclass_session_count = InclassSession.count
 		## parent module has required ==false and graded ==false
-		put '/en/courses/3/lectures/3', params: {:lecture => {required_module: true, graded_module: true, appearance_time_module: true, due_date_module: true}}, headers: @headers, as: :json
+		put '/en/courses/3/lectures/3', params: {:lecture => {required_module: true, graded_module: true, appearance_time_module: true, due_date_module: true, inclass: true}}, headers: @headers, as: :json
 		
 		lecture.reload
+
 		assert_not lecture.required
 		assert_not lecture.graded
 		assert_equal lecture.appearance_time, '2017-9-9'
 		assert_equal lecture.due_date, '2017-10-9'
-		
+		assert lecture.inclass
+		assert_equal InclassSession.count , (@inclass_session_count +  lecture.online_quizzes.count)
+		@inclass_session_count = InclassSession.count
+		put '/en/courses/3/lectures/3', params: {:lecture => { inclass: false}}, headers: @headers, as: :json
+		assert_equal InclassSession.count , (@inclass_session_count -  lecture.online_quizzes.count)
 	end
 
 	test "should copy lecture to same group" do
+		lecture =lectures(:lecture3)
+		put '/en/courses/3/lectures/3', params: {:lecture => {required_module: true, graded_module: true, appearance_time_module: true, due_date_module: true, inclass: true}}, headers: @headers, as: :json
+		@inclass_session_count = InclassSession.count
+		@online_marker_count = OnlineMarker.count
+		@event_count = Event.count
+
 
 		group = Group.find(3)
-
 		lectures_count = group.lectures.size
 
 		post '/en/courses/3/lectures/lecture_copy', params: {lecture_id: 3, module_id: 3}, headers: @headers, as: :json
@@ -158,7 +167,9 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 		## due_date and appearance_time is copied from parent group
 		assert_equal group.due_date, new_lecture.due_date
 		assert_equal group.appearance_time, new_lecture.appearance_time
-
+		assert_equal InclassSession.count , (@inclass_session_count + lecture.online_quizzes.count)
+		assert_equal Event.count , (@event_count + lecture.events.count)
+		assert_equal OnlineMarker.count , (@online_marker_count + lecture.online_markers.count)
 		
 	end
 
@@ -229,7 +240,7 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 		
 	end
 	
-	test "should new_marker " do
+	test "should add new_marker " do
 		url = '/en/courses/'+@course1.id.to_s+'/lectures/'+@lecture1.id.to_s+'/new_marker'
 		get url , params: {time: 11.2},headers: @user1.create_new_auth_token 
 		resp =  JSON.parse response.body
@@ -243,12 +254,126 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 		assert_response 400		
 		assert_equal resp['errors']['time'][0] , "can't be blank"	
 	end
-	test "should new_marker for invalif time" do
+	test "should new_marker for invalid time" do
 		url = '/en/courses/'+@course1.id.to_s+'/lectures/'+@lecture1.id.to_s+'/new_marker'
 		get url , params: { time: "dsadasd"},headers: @user1.create_new_auth_token 
 		resp =  JSON.parse response.body
 		assert_response 400		
 		assert_equal resp['errors']['time'][0] , "is not a number"
+	end
+
+	test 'validate validate_lecture_angular method ' do
+		url = '/en/courses/'+@course1.id.to_s+'/lectures/'+@lecture1.id.to_s+'/validate_lecture_angular'
+		put  url , params: {lecture: { name:'toto' } } ,headers: @user1.create_new_auth_token 
+		assert_response :success
+		resp =  JSON.parse response.body
+		assert_equal resp['nothing'] , true
+	end
+	test 'validate validate_lecture_angular method and respone 422 for title is empty' do
+		url = '/en/courses/'+@course1.id.to_s+'/lectures/'+@lecture1.id.to_s+'/validate_lecture_angular'
+		put  url , params: {lecture: { name:'' }} ,headers: @user1.create_new_auth_token 
+		assert_response 422
+		resp =  JSON.parse response.body
+		assert_equal resp['errors'].count , 1
+		assert_equal resp['errors'][0] , "Name can't be blank"
+	end
+	test 'validate validate_lecture_angular method and respone 422' do
+		url = '/en/courses/'+@course1.id.to_s+'/lectures/'+@lecture1.id.to_s+'/validate_lecture_angular'
+		put  url , params: {lecture: { due_date_module:false ,  due_date:DateTime.now + 3.months } } ,headers: @user1.create_new_auth_token 
+		assert_response 422
+		resp =  JSON.parse response.body
+		assert_equal resp['errors'].count , 1
+		assert_equal resp['errors'][0] , "Due date must be before module due date"
+	end
+	test 'validate validate_lecture_angular method and respone 422 for retries is not position' do
+		url = '/en/courses/'+@course1.id.to_s+'/lectures/'+@lecture1.id.to_s+'/validate_lecture_angular'
+		put  url , params: {lecture: { inclass:true , distance_peer:true  }} ,headers: @user1.create_new_auth_token 
+		assert_response 422
+		resp =  JSON.parse response.body
+		assert_equal resp['errors'].count , 1
+		assert_equal resp['errors'][0] , "Distance peer must be inclass or distance peer"
+	end
+
+	test "should get_html_data_angular " do
+		@html_ocq_online_quiz1 = online_quizzes(:html_ocq_online_quiz1)
+
+		url = '/en/courses/'+@course1.id.to_s+'/lectures/'+@lecture1.id.to_s+'/get_html_data_angular'
+		get url , params: { quiz: @html_ocq_online_quiz1.id.to_s},headers: @user1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_response :success	
+		assert_equal resp['answers'].count , 2
+	end
+
+	test "should get_html_data_angular after updating online_quizzes" do
+		@html_ocq_online_quiz1 = online_quizzes(:html_ocq_online_quiz1)
+		@html_ocq_online_answer_correct2 = online_answers(:html_ocq_online_answer_correct2)
+		
+		@html_ocq_online_answer_correct2.update_attribute(:online_quiz_id,4)
+		url = '/en/courses/'+@course1.id.to_s+'/lectures/'+@lecture1.id.to_s+'/get_html_data_angular'
+		get url , params: { quiz: @html_ocq_online_quiz1.id.to_s},headers: @user1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_response :success	
+		assert_equal resp['answers'].count , 1
+		@html_ocq_online_answer_correct2.update_attribute(:online_quiz_id,@html_ocq_online_quiz1.id)
+		url = '/en/courses/'+@course1.id.to_s+'/lectures/'+@lecture1.id.to_s+'/get_html_data_angular'
+		get url , params: { quiz: @html_ocq_online_quiz1.id.to_s},headers: @user1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_response :success	
+		assert_equal resp['answers'].count , 2
+	end
+
+	test "should get_old_data_angular " do
+		@ocq_online_quiz1 = online_quizzes(:ocq_online_quiz1)
+
+		url = '/en/courses/'+@course1.id.to_s+'/lectures/'+@lecture1.id.to_s+'/get_old_data_angular'
+		get url , params: { quiz: @ocq_online_quiz1.id.to_s},headers: @user1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_response :success	
+		assert_equal resp['answers'].count , 2
+	end
+	test "should get_old_data_angular after updating online_quizzes" do
+		@ocq_online_quiz1 = online_quizzes(:ocq_online_quiz1)
+		@ocq_online_answer_correct1 = online_answers(:ocq_online_answer_correct1)
+		
+		@ocq_online_answer_correct1.update_attribute(:online_quiz_id,4)
+		url = '/en/courses/'+@course1.id.to_s+'/lectures/'+@lecture1.id.to_s+'/get_old_data_angular'
+		get url , params: { quiz: @ocq_online_quiz1.id.to_s},headers: @user1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_response :success	
+		assert_equal resp['answers'].count , 1
+		@ocq_online_answer_correct1.update_attribute(:online_quiz_id,@ocq_online_quiz1.id)
+		url = '/en/courses/'+@course1.id.to_s+'/lectures/'+@lecture1.id.to_s+'/get_old_data_angular'
+		get url , params: { quiz: @ocq_online_quiz1.id.to_s},headers: @user1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_response :success	
+		assert_equal resp['answers'].count , 2
+	end
+
+	test "should save_answers_angular " do
+		@ocq_online_quiz1 = online_quizzes(:ocq_online_quiz1)
+		@ocq_online_answer_correct1 = online_answers(:ocq_online_answer_correct1)
+		@ocq_online_answer2 = online_answers(:ocq_online_answer2)
+
+
+		assert_equal @ocq_online_quiz1.online_answers.count , 2
+		url = '/en/courses/'+@course1.id.to_s+'/lectures/'+@lecture1.id.to_s+'/save_answers_angular'
+		post url , params: {online_quiz_id: @ocq_online_quiz1.id.to_s ,  "answer":[
+			{id: @ocq_online_answer_correct1.id.to_s , online_quiz_id: @ocq_online_quiz1.id.to_s , "answer":"Answer 2","xcoor":0.344155844155844,"ycoor":0.188742921754339,"correct":false,"explanation":"",
+				"width":0.0168831168831169,"height":0.0300230946882217,"pos":0,"sub_ycoor":0.0987429217543393,"sub_xcoor":0.344155844155844,
+				"created_at":"2017-11-20T15:21:18.024Z","updated_at":"2017-11-22T18:17:09.075Z"},
+			{"answer":"Answer 2","xcoor":0.344155844155844,"ycoor":0.188742921754339,"correct":false,"explanation":"",
+				"width":0.0168831168831169,"height":0.0300230946882217,"pos":0,"sub_ycoor":0.0987429217543393,"sub_xcoor":0.344155844155844,
+				"created_at":"2017-11-20T15:21:18.024Z","updated_at":"2017-11-22T18:17:09.075Z"},
+			{"answer":"Answer 3","xcoor":0.391872278664732,"ycoor":0.437437332782549,"correct":true,"explanation":"",
+				"width":0.0188679245283019,"height":0.0335051546391753,"pos":0,"sub_ycoor":0.347437332782549,"sub_xcoor":0.391872278664732,
+				"created_at":"2017-11-22T18:17:09.083Z","updated_at":"2017-11-22T18:17:09.083Z"}],
+			"quiz_title":"<p class=\"medium-editor-p\">ocq </p>"} ,headers: @user1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_equal OnlineAnswer.where(id: @ocq_online_answer_correct1.id).count , 1
+		assert_equal OnlineAnswer.where(id: @ocq_online_answer2.id).count , 0
+		assert_response :success	
+		assert_equal @ocq_online_quiz1.online_answers.count , 3
+		assert_equal resp['notice'] , "Quiz was successfully saved" 
 	end
 
 end
