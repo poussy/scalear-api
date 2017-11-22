@@ -58,7 +58,6 @@ class HomeControllerTest < ActionDispatch::IntegrationTest
 		user = users(:user3)
 		get '/en/home/notifications' ,headers: user.create_new_auth_token 
 		resp =  JSON.parse response.body
-		p resp
 		resp["shared_items"].each do |key, value|
 			value["data"] = user.shared_withs.find(key)["data"]
 			value["sharer_email"] = user.shared_withs.find(key).sharer_email
