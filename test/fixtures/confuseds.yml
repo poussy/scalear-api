@@ -1,11 +1,35 @@
-# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+confused1:
+  id: 1
+  user_id: 6
+  course_id: 3
+  lecture_id: 3
+  time: 10
+  very: false
+  hide: false
 
-# This model initially had no columns defined. If you add columns to the
-# model remove the '{}' from the fixture names and add the columns immediately
-# below each fixture, per the syntax in the comments below
-#
-one: {}
-# column: value
-#
-two: {}
-# column: value
+confused2:
+  id: 2
+  user_id: 6
+  course_id: 3
+  lecture_id: 3
+  time: 13
+  very: false
+  hide: false
+
+confused3:
+  id: 3
+  user_id: 6
+  course_id: 3
+  lecture_id: 3
+  time: 30
+  very: false
+  hide: false
+
+really_confused1:
+  id: 4
+  user_id: 6
+  course_id: 3
+  lecture_id: 3
+  time: 50
+  very: true
+  hide: false

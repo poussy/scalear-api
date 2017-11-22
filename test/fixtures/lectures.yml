@@ -40,3 +40,18 @@ lecture3:
   position: 4
   appearance_time: '2017-9-8'
   due_date: '2017-10-8'
+
+lecture4:
+  id: 4
+  name: 'lecture4'
+  course_id: 3
+  group_id: 3
+  url: "http://www.youtube.com/watch?v=xGcGdfrty"
+  start_time: 0
+  end_time: 150
+  duration: 150
+  appearance_time_module: true
+  due_date_module: true
+  position: 5
+  appearance_time: '2017-9-10'
+  due_date: '2017-10-10'

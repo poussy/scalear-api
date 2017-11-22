@@ -24,6 +24,11 @@ class ApplicationController < ActionController::API
 		render json: {:errors=>[ I18n.t("controller_msg.you_are_not_authorized") ]}, status: 403
 	end
 
+  def record_not_found
+    render :json => {errors:[I18n.t("controller_msg.record_not_found")]}, status:404
+    true
+  end
+
 end
 
  # adding functionality to the Time class.
