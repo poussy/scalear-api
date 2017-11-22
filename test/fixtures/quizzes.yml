@@ -34,3 +34,39 @@ quiz2:
   visible: true
   quiz_type: 'quiz'
   instructions: "Please choose the correct answer(s)"
+
+quiz1_course1:
+  name: 'quiz1'
+  retries: 0
+  group: group2_course1 
+  course: course1
+  appearance_time_module: true
+  appearance_time: '2017-9-10'
+  due_date_module: true
+  due_date: '2017-10-9'
+  position: 1
+  required: true
+  required_module: false
+  graded: true
+  graded_module: false
+  visible: true
+  quiz_type: 'quiz'
+  instructions: "Please choose the correct answer(s)"
+
+quiz2_course1:
+  name: 'quiz2'
+  retries: 0
+  group: group3_course1 
+  course: course1
+  appearance_time_module: true
+  appearance_time: '2017-9-10'
+  due_date_module: true
+  due_date: '2017-10-9'
+  position: 1
+  required: true
+  required_module: false
+  graded: true
+  graded_module: false
+  visible: true
+  quiz_type: 'quiz'
+  instructions: "Please choose the correct answer(s)"

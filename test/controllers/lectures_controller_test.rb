@@ -1,9 +1,6 @@
 require 'test_helper'
 
 class LecturesControllerTest < ActionDispatch::IntegrationTest
-  # test "the truth" do
-  #   assert true
-  # end
 	def setup
 		@user1 = users(:user1)
 		@user2 = users(:user2)
@@ -25,11 +22,10 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 		@group3 = @course3.groups.find(3)
 
 		## necessary to send as json, so true and false wouldn't convert to strings
-    	@headers = @user3.create_new_auth_token
-    	@headers['content-type']="application/json"
+		@headers = @user3.create_new_auth_token
+		@headers['content-type']="application/json"
 		
 	end
-
 
 	test "Validate abilities for user1" do
 		ability1 = Ability.new(@user1)
@@ -233,4 +229,26 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 		
 	end
 	
+	test "should new_marker " do
+		url = '/en/courses/'+@course1.id.to_s+'/lectures/'+@lecture1.id.to_s+'/new_marker'
+		get url , params: {time: 11.2},headers: @user1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_response :success
+		assert_equal resp['marker']['time'] , 11.2	
+	end
+	test "should new_marker for empty params" do
+		url = '/en/courses/'+@course1.id.to_s+'/lectures/'+@lecture1.id.to_s+'/new_marker'
+		get url , params: {},headers: @user1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_response 400		
+		assert_equal resp['errors']['time'][0] , "can't be blank"	
+	end
+	test "should new_marker for invalif time" do
+		url = '/en/courses/'+@course1.id.to_s+'/lectures/'+@lecture1.id.to_s+'/new_marker'
+		get url , params: { time: "dsadasd"},headers: @user1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_response 400		
+		assert_equal resp['errors']['time'][0] , "is not a number"
+	end
+
 end

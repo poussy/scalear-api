@@ -91,6 +91,10 @@ class Ability
         can [:update], SharedItem, :shared_by_id => user.id
         can [:show, :show_shared, :accept_shared, :reject_shared, :update_shared_data, :destroy], SharedItem, :shared_with_id => user.id
 
+      ## Online Marker 
+        can [:create, :update, :destroy, :get_marker_list, :validate_name, :update_hide], OnlineMarker do |onlinie_marker|
+              onlinie_marker.course.correct_teacher(user)
+        end
     end
     if !(user.has_role? 'User') && !(user.has_role? :admin) && !(user.has_role? :administrator)
       #can :index, Course  #so that people without role can live until they get a role.

@@ -7,6 +7,24 @@ group1:
   required: false
   position: 1
 
+group2_course1:
+  name: 'name'
+  course: course1
+  appearance_time: '2017-9-9'
+  due_date: '2017-10-9'
+  graded: false
+  required: false
+  position: 2
+
+group3_course1:
+  name: 'name'
+  course: course1
+  appearance_time: '2017-9-9'
+  due_date: '2017-10-9'
+  graded: false
+  required: false
+  position: 3
+
 group2:
   name: 'name'
   course: course2

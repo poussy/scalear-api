@@ -5,5 +5,6 @@ class QuizStatus < ApplicationRecord
 	belongs_to :user
 	belongs_to :quiz
 	belongs_to :group
+	belongs_to :course
 
 end

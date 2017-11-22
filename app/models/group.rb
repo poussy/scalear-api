@@ -59,44 +59,41 @@ class Group < ApplicationRecord
         new_lecture.course_id = new_course.id
         new_lecture.group_id = new_group.id
         new_lecture.save(:validate => false)
-		## waiting for online_quizzes table
-        # l.online_quizzes.each do |quiz|
-        #   new_online_quiz = quiz.dup
-        #   new_online_quiz.lecture_id = new_lecture.id
-        #   new_online_quiz.group_id = new_group.id
-        #   new_online_quiz.course_id = new_course.id
-        #   new_online_quiz.save(:validate => false)
-        #   quiz.online_answers.each do |answer|
-        #     new_answer = answer.dup
-        #     new_answer.online_quiz_id = new_online_quiz.id
-        #     new_answer.save(:validate => false)
-        #   end
-        #   quiz_session = quiz.inclass_session
-        #   if !quiz_session.nil?
-        #     new_session = quiz_session.dup
-        #     new_session.online_quiz_id = new_online_quiz.id
-        #     new_session.lecture_id = new_lecture.id
-        #     new_session.group_id = new_group.id
-        #     new_session.course_id = new_course.id
-        #     new_session.save(:validate => false)
-        #   end
-        # end
-		## waiting for online_markers table
-        # l.online_markers.each do |marker|
-        #   new_online_marker = marker.dup
-        #   new_online_marker.lecture_id = new_lecture.id
-        #   new_online_marker.group_id = new_group.id
-        #   new_online_marker.course_id = new_course.id
-        #   new_online_marker.save(:validate => false)
-        # end
-		## waiting for events table
-        # Event.where(:quiz_id => nil, :lecture_id => l.id).each do |e|
-        #   new_event= e.dup
-        #   new_event.lecture_id = new_lecture.id
-        #   new_event.course_id = new_course.id
-        #   new_event.group_id = new_group.id
-        #   new_event.save(:validate => false)
-        # end
+        l.online_quizzes.each do |quiz|
+          new_online_quiz = quiz.dup
+          new_online_quiz.lecture_id = new_lecture.id
+          new_online_quiz.group_id = new_group.id
+          new_online_quiz.course_id = new_course.id
+          new_online_quiz.save(:validate => false)
+          quiz.online_answers.each do |answer|
+            new_answer = answer.dup
+            new_answer.online_quiz_id = new_online_quiz.id
+            new_answer.save(:validate => false)
+          end
+          quiz_session = quiz.inclass_session
+          if !quiz_session.nil?
+            new_session = quiz_session.dup
+            new_session.online_quiz_id = new_online_quiz.id
+            new_session.lecture_id = new_lecture.id
+            new_session.group_id = new_group.id
+            new_session.course_id = new_course.id
+            new_session.save(:validate => false)
+          end
+        end
+        l.online_markers.each do |marker|
+          new_online_marker = marker.dup
+          new_online_marker.lecture_id = new_lecture.id
+          new_online_marker.group_id = new_group.id
+          new_online_marker.course_id = new_course.id
+          new_online_marker.save(:validate => false)
+        end
+        Event.where(:quiz_id => nil, :lecture_id => l.id).each do |e|
+          new_event= e.dup
+          new_event.lecture_id = new_lecture.id
+          new_event.course_id = new_course.id
+          new_event.group_id = new_group.id
+          new_event.save(:validate => false)
+        end
 
       end
       g.quizzes.each do |q|
@@ -104,14 +101,13 @@ class Group < ApplicationRecord
         new_quiz.course_id = new_course.id
         new_quiz.group_id = new_group.id
         new_quiz.save(:validate => false)
-		## waiting for events table
-        # Event.where(:quiz_id => q.id, :lecture_id => nil).each do |e|
-        #   new_event= e.dup
-        #   new_event.quiz_id = new_quiz.id
-        #   new_event.course_id = new_course.id
-        #   new_event.group_id = new_group.id
-        #   new_event.save(:validate => false)
-        # end
+        Event.where(:quiz_id => q.id, :lecture_id => nil).each do |e|
+          new_event= e.dup
+          new_event.quiz_id = new_quiz.id
+          new_event.course_id = new_course.id
+          new_event.group_id = new_group.id
+          new_event.save(:validate => false)
+        end
 
         q.questions.each do |question|
           new_question = question.dup
@@ -132,13 +128,12 @@ class Group < ApplicationRecord
         new_link.group_id = new_group.id
         new_link.save(:validate => false)
       end
-	  ##waiting for events table
-    #   g.events.where(:quiz_id => nil, :lecture_id => nil).each do |e|
-    #     new_event= e.dup
-    #     new_event.course_id = new_course.id
-    #     new_event.group_id = new_group.id
-    #     new_event.save(:validate => false)
-    #   end
+      g.events.where(:quiz_id => nil, :lecture_id => nil).each do |e|
+        new_event= e.dup
+        new_event.course_id = new_course.id
+        new_event.group_id = new_group.id
+        new_event.save(:validate => false)
+      end
 
       return new_group
   	end

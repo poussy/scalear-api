@@ -268,8 +268,18 @@ Rails.application.routes.draw do
     end
 
 
-        resources :announcements
+    resources :announcements
     end    
+    
+    resources :online_markers do
+        member do
+            put 'validate_name'
+            post 'update_hide'
+        end
+            collection do
+            get 'get_marker_list'
+        end
+    end
 
     resources :custom_links do
       collection do
