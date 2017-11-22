@@ -182,8 +182,37 @@ class GroupsController < ApplicationController
 	# def get_survey_chart_angular
 	# end
 
-	# def get_student_statistics_angular
-	# end
+	def get_student_statistics_angular
+		@modulechart=Group.where(:id => params[:id], :course_id => params[:course_id]).includes([{:lectures => [:confuseds, :video_events]}]).first
+		if @modulechart.nil?
+			render json: {:errors => ["controller_msg.no_such_module"]}, status: 404 and return
+		end
+
+		@all_stats= @modulechart.get_statistics
+		@confused=@all_stats[0]
+		@back=@all_stats[1]
+		@pause=@all_stats[2]
+		@discussion=@all_stats[3]
+		@duration=@all_stats[4]
+		@time_list=@all_stats[5]
+		@lecture_names=@all_stats[6]
+		@really_confused=@all_stats[7]
+		@first_lecture = @modulechart.lectures.first.url if !@modulechart.lectures.empty?
+
+		@confused_chart= Confused.get_rounded_time_module(@confused) #right now I round up. [[234,5],[238,6]]
+		@really_confused_chart= Confused.get_rounded_time_module(@really_confused) #right now I round up. [[234,5],[238,6]]
+		@back_chart= VideoEvent.get_rounded_time_module(@back) #right now I round up. [[234,5],[238,6]]
+		@pause_chart= VideoEvent.get_rounded_time_module(@pause) #right now I round up. [[234,5],[238,6]]
+		## waiting for discussion app
+		# @question_chart2= VideoEvent.get_rounded_time_module(@discussion) #right now I round up. [[234,5],[238,6]]
+		@question_chart = @question_chart2.to_a.map{|v| v=[v[0],v[1][0]]} #getting the time [time,count]
+		@questions_list = @question_chart2.to_a.map{|v| v=[v[0],v[1][1]]} #getting the questions [time,questions]
+
+		@min= Time.zone.parse(Time.seconds_to_time(0)).to_i
+		@max= Time.zone.parse(Time.seconds_to_time(@duration)).floor(15.seconds).to_i
+
+		render json: {:confused => @confused_chart, :really_confused => @really_confused_chart, :back => @back_chart, :pauses => @pause_chart, :questions => @question_chart, :question_text => @questions_list, :width => @duration, :time_list => @time_list, :lecture_names => @lecture_names, :lecture_url => @first_lecture, :min => @min, :max => @max}
+	end
 
 	def change_status_angular
 		status=params[:status].to_i

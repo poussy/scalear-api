@@ -203,7 +203,7 @@ class QuizzesControllerTest < ActionDispatch::IntegrationTest
     
 		put '/en/courses/3/quizzes/1/update_questions_angular', params: {questions: [{answers: [{content:"a1", correct: true, explanation: "answer explanation" }],id: 1, content: '<p class="medium-editor-p">new mcq</p>', match_type: "Free Text", question_type: "MCQ", quiz_id: 1}]}, headers: @headers, as: :json
     
-    answer = Question.first.answers.first
+    answer = Question.find(1).answers.first
     assert answer.correct
     assert_equal answer.content, "a1"
     assert_equal answer.explanation, "answer explanation"
@@ -213,8 +213,6 @@ class QuizzesControllerTest < ActionDispatch::IntegrationTest
 
   test "should delete old answers and put new ones with no content" do ## if the question_type == 'Free Text Question && match_type == 'Free Text'
 
-    old_answers = Answer.all.each.map {|a| a.id}
-    
 		put '/en/courses/3/quizzes/1/update_questions_angular', params: {questions: [{answers: [{id: 1,content:"a3", correct: true, explanation: "answer explanation" }],id: 1, content: '<p class="medium-editor-p">new mcq</p>', match_type: "Free Text", question_type: "Free Text Question", quiz_id: 1}]}, headers: @headers, as: :json
     
     ## not the same old answer, old one is deleted and this is a new one
@@ -225,6 +223,14 @@ class QuizzesControllerTest < ActionDispatch::IntegrationTest
     assert_equal answer.content, ""
     assert_equal answer.explanation, "answer explanation"
     
+   
+	end
+
+  test "should be able to create quiz header" do
+    
+		put '/en/courses/3/quizzes/1/update_questions_angular', params: {questions: [{id: 1, content: '<p class="medium-editor-p">new mcq</p>', match_type: "Free Text", question_type: "header", quiz_id: 1}]}, headers: @headers, as: :json
+    
+    assert_equal Question.find(1).question_type, "header"
    
 	end
 

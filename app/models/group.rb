@@ -252,8 +252,44 @@ class Group < ApplicationRecord
 	# def previous_lecture(lec_pos)
 	# end
 
-	# def get_statistics
-	# end
+	def get_statistics
+		confuseds={}   #{234 => [23,"http://sss"]} # cumulative_time => [real_time, url]
+		really_confuseds={}
+		backs={}
+		pauses={}
+		discussion={}
+		time=0
+		time_list={}
+		time_list2=[]
+		students_id = course.users.map(&:id)
+		self.lectures.each do |lec|
+			lec.confuseds.select{|v| v.very==false && students_id.include?(v.user_id)}.sort{|x,y| x.time <=> y.time}.each_with_index do |c, index|
+				confuseds[[time,c.time, index]] = [c.time, lec.url]
+			end
+			lec.confuseds.select{|v| v.very==true && students_id.include?(v.user_id)}.sort{|x,y| x.time <=> y.time}.each_with_index do |c, index|
+				really_confuseds[[time,c.time, index]] = [c.time, lec.url]
+			end
+			lec.video_events.where("event_type = 3 and (from_time - to_time) <= 15 and (from_time - to_time) >= 1").sort{|x,y| x.from_time <=> y.from_time}.each_with_index do |c, index|
+				backs[[time,c.from_time, index]] = [c.from_time, lec.url]
+			end
+			lec.video_events.where(:event_type => 2).sort{|x,y| x.from_time <=> y.from_time}.each_with_index do |c, index|
+				pauses[[time,c.from_time, index]] = [c.from_time, lec.url]
+			end
+			## waiting for discussion table
+			# posts = Post.find(:all, :params => {lecture_id: lec.id})
+
+			# posts.sort{|x,y| x.time <=> y.time}.each_with_index do |c, index|
+			# 	discussion[[time,c.time, index]] = [c.time, c.content, lec.url]
+			# end
+
+			time+=(lec.duration || 0)
+			time_list[time]=lec.url
+			time_list2<<[lec.duration,lec.name]
+
+		end
+		return [confuseds,backs,pauses,discussion,time, time_list, time_list2, really_confuseds]
+  	end
+
 
 	# def inclass_session
 	# end

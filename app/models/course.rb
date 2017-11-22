@@ -43,6 +43,8 @@ class Course < ApplicationRecord
 	validate :validate_end_date_disable_regis_after_start_date ,on: [:create, :update]
 	validates_format_of :image_url, :with    => %r{\.(((g|G)(i|I)(f|F))|((j|J)(p|P)(e|E)?(g|G))|((p|P)(n|N)(g|G)))}i, :message => :must_be_image, :allow_blank => true
 	
+	attribute :modules
+	
 	def correct_teacher(user)
 		if !(self.teachers.include? user) && !user.has_role?('Administrator') && !(self.is_school_administrator(user))  
 			return false
