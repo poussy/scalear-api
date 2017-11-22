@@ -48,6 +48,15 @@ admin_user:
   university: "nilee"
   uid: "admin@gmailll.com"
 
+student_in_course3:
+  id: 6
+  name: "saleh"
+  email: "saleh@gmail.com"
+  last_name: "aly"
+  screen_name: "saleh"
+  university: "cairo"
+  uid: "saleh@gmail.com"
+  
 student1:
   name: "ahmed"
   email: "student_a.hossam.2010@gmail.com"

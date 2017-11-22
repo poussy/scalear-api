@@ -1,3 +1,6 @@
+user6course3:
+  user_id: 6
+  course_id: 3
 enrollment1:
   course: course1
   user: student1
