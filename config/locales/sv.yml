@@ -485,6 +485,7 @@ sv:
     link_successfully_created: "Länka har skapats."
     link_successfully_updated: "Länka har uppdaterats."
     link_successfully_deleted: "Länka har tagits bort."
+    marker_successfully_deleted: "Note har tagits bort."    
     answer_successfully_created: "Svar har skapats."
     answer_successfully_updated: "Svar har uppdaterats."
     question_successfully_created: "Fråga har skapats."

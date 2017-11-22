@@ -7,12 +7,16 @@ class GroupsControllerTest < ActionDispatch::IntegrationTest
 	def setup
 		@user1 = users(:user1)
 		@user2 = users(:user2)
+		@student1 = users(:student1)
 
 		@course1 = courses(:course1)
 		@course2 = courses(:course2)
 
 		@group1 = groups(:group1)
 		@group2 = groups(:group2)
+
+		@group3_course1 = groups(:group3_course1)
+		@assignment_statuses_course1 =  assignment_statuses(:assignment_statuses_course1)
 
 	end
 
@@ -165,10 +169,37 @@ class GroupsControllerTest < ActionDispatch::IntegrationTest
 			assert_equal group_from.custom_links[i].name, new_link.name
 			assert_equal group_from.custom_links[i].url, new_link.url
 		end
-		
-		
-		
 	end
+
+	test 'validate change_status_angular status from 1 to 2' do
+		assert_equal @assignment_statuses_course1.status , 1
+		url = '/en/courses/'+ @course1.id.to_s+'/groups/'+@group3_course1.id.to_s+'/change_status_angular'
+		post url, params: {status:2 , user_id: @student1.id.to_s} ,headers: @user1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_equal resp['success'] , true
+		assert_equal resp['notice'][0] , 'Status successfully changed'
+		assert_equal @assignment_statuses_course1.reload.status , 2
+	end	
+	test 'validate change_status_angular status 0 and check in the databsae the assignment_statuses got destroyed' do
+		assert_equal AssignmentStatus.count , 1
+		url = '/en/courses/'+ @course1.id.to_s+'/groups/'+@group3_course1.id.to_s+'/change_status_angular'
+		post url, params: {status:0 , user_id: @student1.id.to_s} ,headers: @user1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_equal resp['success'] , true
+		assert_equal resp['notice'][0] , 'Status successfully changed'
+		assert_equal AssignmentStatus.count , 0
+	end	
+	test 'validate change_status_angular status ' do
+		@assignment_statuses_course1.destroy 
+		assert_equal AssignmentStatus.count , 0
+		
+		url = '/en/courses/'+ @course1.id.to_s+'/groups/'+@group3_course1.id.to_s+'/change_status_angular'
+		post url, params: {status:1 , user_id: @student1.id.to_s} ,headers: @user1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_equal resp['success'] , true
+		assert_equal resp['notice'][0] , 'Status successfully changed'
+		assert_equal AssignmentStatus.count , 1
+	end	
 
 
 end

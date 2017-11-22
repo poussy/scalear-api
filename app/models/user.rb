@@ -61,6 +61,7 @@ class User < ActiveRecord::Base
   serialize :completion_wizard
 
   attribute :full_name
+  attribute :status
 
   def has_role?(role)
     self.roles.pluck(:name).include?(role)      
@@ -304,17 +305,68 @@ class User < ActiveRecord::Base
   # def get_finished_lecture_quizzes_count(lecture)
   # end
 
-  # def grades_angular_test(item)
-  # end
+  def grades_angular_test(item)
+    grades=[]
+    item.groups.each do |g|
+      grades<<[g.id, self.finished_group_test?(g),0,0]
+    end
+    return grades    
+  end
 
-  # def group_grades_test(course)
-  # end
+  def group_grades_test(course)
+    grades={}
+    course.groups.each do |g|
+      grades[g.id] = self.finished_group_test?(g)
+    end
+    return grades
+  end
 
-  # def finished_group_test?(group)
-  # end
+  def finished_group_test?(group)
+    lec_prog= finished_lectures_test(group)
+    quiz_prog= finished_quizzes_test(group)
 
-  # def finished_quizzes_test(group)
-  # end
+
+    if lec_prog==-1 || quiz_prog==-1
+      return -1
+    else
+      if lec_prog>quiz_prog
+        return lec_prog
+      else
+        return quiz_prog
+      end
+    end    
+  end
+
+  def finished_quizzes_test(group)
+    status = {}
+    self.assignment_item_statuses.select{|a| a.group_id == group.id && !a.lecture_id}.each do |s|
+      status[s.quiz_id] = s.status
+    end
+
+    max=0
+    a=self.quiz_statuses.select{|v|
+      v.group_id == group.id &&
+      v.quiz.graded &&
+      (status[v.quiz_id].nil? || status[v.quiz_id] !=1) &&
+      ((v.quiz.quiz_type=="quiz" && v.status.downcase=="submitted") ||
+      (v.quiz.quiz_type=="survey" && v.status.downcase=="saved" ))
+    }
+
+    b= group.quizzes.select{|v|
+      v.graded &&
+      (status[v.id].nil? || status[v.id] !=1)
+    }
+
+    if a.size!=b.size
+      return -1
+    else
+      a.each do |m|
+        new_max= m.created_at.to_date - m.quiz.due_date.to_date
+        max= new_max if new_max>max
+      end
+      return max.to_i
+    end    
+  end
 
   # def finished_lectures_test_percent(group) #called per student
   # end
@@ -325,8 +377,63 @@ class User < ActiveRecord::Base
   # def grades_module_before_due_date(group)
   # end
 
-  # def finished_lectures_test(group)
-  # end
+  def finished_lectures_test(group)
+    status = {}
+    self.assignment_item_statuses.select{|a| a.group_id == group.id && !a.quiz_id}.each do |s|
+      status[s.lecture_id] = s.status
+    end
+
+    max=0
+    a=self.online_quiz_grades.select{|v|
+      v.group_id == group.id &&
+      v.lecture.graded &&
+      v.online_quiz.graded &&
+      (status[v.lecture_id].nil? || status[v.lecture_id] !=1) &&
+      v.attempt == 1
+    }.uniq{|p| p.online_quiz_id}
+    b=self.free_online_quiz_grades.select{|v|
+      v.group_id == group.id &&
+      v.lecture.graded &&
+      v.online_quiz.graded &&
+      (status[v.lecture_id].nil? || status[v.lecture_id] !=1) &&
+      v.attempt == 1
+      }.uniq{|p| p.online_quiz_id}
+    c=self.lecture_views.select{|v|
+      v.group_id == group.id &&
+      v.lecture.graded &&
+      v.percent == 100 &&
+      (status[v.lecture_id].nil? || status[v.lecture_id] !=1)
+    }
+    if !(
+      group.lectures.select{|l|
+        l.graded &&
+        (status[l.id].nil? || status[l.id] !=1)
+      }.size == c.size &&
+      group.online_quizzes.select{|q|
+        q.graded &&
+        q.lecture.graded &&
+        (!q.online_answers.empty? || q.question_type=="Free Text Question") &&
+        (status[q.lecture_id].nil? || status[q.lecture_id] !=1)
+      }.size== a.size+b.size) #solved all    //.select{|q| q.lecture.graded == true}
+      return -1 #-1 means not finished
+    else
+      # 0 means finished on time, any other n, means finished late with n as the late days
+
+      a.each do |m|
+        new_max= m.created_at.to_date - m.lecture.due_date.to_date
+        max= new_max if new_max>max
+      end
+      b.each do |m|
+        new_max= m.created_at.to_date - m.lecture.due_date.to_date
+        max= new_max if new_max>max
+      end
+      c.each do |m|
+        new_max= m.created_at.to_date - m.lecture.due_date.to_date
+        max= new_max if new_max>max
+      end
+    end
+    return max.to_i    
+  end
 
   # def grades_angular(item)          #
   # end      

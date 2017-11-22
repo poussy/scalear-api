@@ -214,8 +214,18 @@ class GroupsController < ApplicationController
 		render json: {:confused => @confused_chart, :really_confused => @really_confused_chart, :back => @back_chart, :pauses => @pause_chart, :questions => @question_chart, :question_text => @questions_list, :width => @duration, :time_list => @time_list, :lecture_names => @lecture_names, :lecture_url => @first_lecture, :min => @min, :max => @max}
 	end
 
-	# def change_status_angular
-	# end
+	def change_status_angular
+		status=params[:status].to_i
+		assign= @group.assignment_statuses.where(:user_id => params[:user_id]).first
+		if !assign.nil? and status==0 #original
+			assign.destroy
+		elsif !assign.nil? #status anything else
+			assign.update_attributes(:status => status)
+		elsif status!=0 and assign.nil?
+			@group.assignment_statuses<< AssignmentStatus.new(:user_id => params[:user_id], :course_id => params[:course_id], :status => status)
+		end
+		render :json => {:success => true, :notice => [ I18n.t("courses.status_successfully_changed")]}		
+	end
 
 	# def display_quizzes_angular
 	# end

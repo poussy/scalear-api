@@ -12,7 +12,6 @@ class CustomLinksController < ApplicationController
   end
 
   def validate_custom_link
-    p params[:link]
     @link= CustomLink.find(params[:id]) 
     params[:link].each do |key, value|
       @link[key]=value

@@ -70,7 +70,6 @@ class SharedItemsController < ApplicationController
 				end
 				rescue => error
 				# errors << id
-				p errors
 				end
 			end
 			all_shared[teacher.id] << item
