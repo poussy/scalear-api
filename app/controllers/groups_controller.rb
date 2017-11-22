@@ -185,8 +185,18 @@ class GroupsController < ApplicationController
 	# def get_student_statistics_angular
 	# end
 
-	# def change_status_angular
-	# end
+	def change_status_angular
+		status=params[:status].to_i
+		assign= @group.assignment_statuses.where(:user_id => params[:user_id]).first
+		if !assign.nil? and status==0 #original
+			assign.destroy
+		elsif !assign.nil? #status anything else
+			assign.update_attributes(:status => status)
+		elsif status!=0 and assign.nil?
+			@group.assignment_statuses<< AssignmentStatus.new(:user_id => params[:user_id], :course_id => params[:course_id], :status => status)
+		end
+		render :json => {:success => true, :notice => [ I18n.t("courses.status_successfully_changed")]}		
+	end
 
 	# def display_quizzes_angular
 	# end

@@ -1,0 +1,4 @@
+enrollment1:
+  course: course1
+  user: student1
+  email_due_date: false

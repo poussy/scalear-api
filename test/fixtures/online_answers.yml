@@ -11,3 +11,17 @@ online_answer1:
   xcoor: 2
   ycoor: 3
 
+ocq_online_answer_correct1:
+  online_quiz: ocq_online_quiz1
+  answer: "aaa"
+  xcoor: 2
+  ycoor: 3  
+  explanation: ""  
+  width: 3  
+  height: 2
+  pos: 3  
+  sub_xcoor: 2
+  sub_ycoor: 3  
+  correct: true
+  created_at: '2017-10-9'
+  updated_at: '2017-10-9'  

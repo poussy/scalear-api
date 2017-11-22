@@ -401,8 +401,29 @@ class CoursesController < ApplicationController
 	# def get_course_angular
 	# end  
 
-	# def module_progress_angular
-	# end  
+	def module_progress_angular
+		@student_names=[]
+		@course=Course.where(:id => params[:id]).includes(:groups => [{:online_quizzes => [:online_answers, :lecture]}, :quizzes, :lectures => :online_quizzes])[0]
+		@students=@course.users.select("users.*, LOWER(users.name), LOWER(users.last_name)").order("LOWER(users.last_name) ").limit(params[:limit]).offset(params[:offset]).includes([{:free_online_quiz_grades => [:lecture, :online_quiz]}, {:online_quiz_grades => [:lecture, :online_quiz]}, {:lecture_views => :lecture}, {:quiz_statuses => :quiz}, :assignment_statuses])
+
+		@matrix={}
+		@late={}
+		@students.each do |s|
+			@matrix[s.id]=s.grades_angular_test(@course)  #returns for each module in the course, whether student finished r not and on time or not.
+			s.status={}
+			s.assignment_statuses.each do |stat|
+				if stat.status == 1
+					s.status[stat.group_id]="Finished on Time"
+				elsif stat.status == 2
+					s.status[stat.group_id]="Not Finished"
+				end
+			end
+		end
+
+		@mods=@course.groups.map{|m| m.name}
+		@total= @course.users.size
+		render json: {:module_status => @matrix, :late_modules => @late, :students => @students.to_json(:methods => [:status, :full_name]), :module_names => @mods, :total => @total}
+	end  
 
 	# def get_total_chart_angular
 	# end  
@@ -446,8 +467,11 @@ class CoursesController < ApplicationController
 	# def export_for_transfer
 	# end  
 
-	# def export_modules_progress
-	# end  
+	def export_modules_progress
+		@course=Course.where(:id => params[:id]).includes(:groups => [{:online_quizzes => [:online_answers, :lecture]}, :quizzes, :lectures => :online_quizzes])[0]
+		@course.export_modules_progress(current_user)
+		render :json => {:notice => ['Course progress wil be exported to CSV and sent to your Email']}
+	end  
 
 
 private

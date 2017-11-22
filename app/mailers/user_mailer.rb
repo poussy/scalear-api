@@ -52,8 +52,17 @@ class UserMailer < ApplicationMailer
 	# def attachment_email(user, file_name, file_path, locale)
 	# end
 
-	# def progress_days_late(user, file_name, file_path, locale,course)
-	# end
+	def progress_days_late(user, file_name, file_path, locale,course)
+		I18n.locale=locale
+		@from =  "\"Scalable Learning\" <info@scalable-learning.com>"
+		@user_name= user.name
+		@user_email= user.email
+		attachments[file_name]= File.read(file_path)
+		@url_progress  = "courses/#{course.id}/progress"
+		@course_short_name = "#{course.short_name}"
+		@today = Date.today
+		mail(:to => @user_email , :subject => "Course Progress Export from #{course.short_name} (#{course.name})", :from => @from)
+	end
 
 	# def analytics_student_questions(user_email, file_name, file_path, locale,course)
 	# end
