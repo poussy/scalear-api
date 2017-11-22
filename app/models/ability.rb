@@ -86,6 +86,10 @@ class Ability
               announcement.course.correct_student(user)
         end
 
+      ## Online Marker 
+        can [:create, :update, :destroy, :get_marker_list, :validate_name, :update_hide], OnlineMarker do |onlinie_marker|
+              onlinie_marker.course.correct_teacher(user)
+        end
     end
     if !(user.has_role? 'User') && !(user.has_role? :admin) && !(user.has_role? :administrator)
       #can :index, Course  #so that people without role can live until they get a role.

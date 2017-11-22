@@ -173,7 +173,6 @@ class LecturesController < ApplicationController
 	# end
 
 	def new_quiz_angular
-		lecture= Lecture.find(params[:id])
 		alert=""
 		
 		if params[:quiz_type] == 'survey' || params[:quiz_type] == "html_survey"
@@ -181,7 +180,7 @@ class LecturesController < ApplicationController
 		else
 			title = "New Quiz"
 		end
-		quiz = lecture.online_quizzes.build(:group_id => lecture.group_id, :course_id => params[:course_id], :question => title, 
+		quiz = @lecture.online_quizzes.build(:group_id => @lecture.group_id, :course_id => params[:course_id], :question => title, 
 				:time => params[:time], :start_time => params[:start_time], :end_time => params[:end_time], 
 				:question_type => params[:ques_type], :quiz_type => params[:quiz_type], :inclass => params[:inclass])
 		if quiz.save
@@ -191,8 +190,14 @@ class LecturesController < ApplicationController
 		end
   	end
 
-	# def new_marker
-	# end
+	def new_marker
+		marker = @lecture.online_markers.build(:group_id => @lecture.group_id, :course_id => @lecture.course_id, :title => "", :annotation => "", :time => params[:time])
+		if marker.save
+			render json: {:marker => marker, notice: "#{I18n.t('controller_msg.marker_successfully_created')}"}
+		else
+			render json: {:errors => marker.errors}, status: 400
+		end
+	end
 
 	def save_answers_angular
 		OnlineQuiz.transaction do
@@ -402,10 +407,9 @@ class LecturesController < ApplicationController
 	# # end
 
 private
-
-  def lecture_params
-    params.require(:lecture).permit(:course_id, :description, :name, :url, :group_id, :appearance_time, :due_date, :duration,
-		:aspect_ratio, :slides, :appearance_time_module, :due_date_module,:required_module , :inordered_module, 
-		:position, :required, :inordered, :start_time, :end_time, :type, :graded, :graded_module, :inclass, :distance_peer, :parent_id )
-  end
+	def lecture_params
+		params.require(:lecture).permit(:course_id, :description, :name, :url, :group_id, :appearance_time, :due_date, :duration,
+			:aspect_ratio, :slides, :appearance_time_module, :due_date_module,:required_module , :inordered_module, 
+			:position, :required, :inordered, :start_time, :end_time, :type, :graded, :graded_module, :inclass, :distance_peer, :parent_id )
+	end
 end

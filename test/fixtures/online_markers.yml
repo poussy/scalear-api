@@ -1,11 +1,17 @@
-# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+online_marker1:
+  title: 'title'
+  annotation: 'short_title' 
+  hide: false 
+  time: 11.2
+  lecture: lecture1
+  group: group1
+  course: course1  
 
-# This model initially had no columns defined. If you add columns to the
-# model remove the '{}' from the fixture names and add the columns immediately
-# below each fixture, per the syntax in the comments below
-#
-one: {}
-# column: value
-#
-two: {}
-# column: value
+online_marker2:
+  title: 'title'
+  annotation: 'short_title' 
+  hide: false 
+  time: 11.2
+  lecture: lecture2
+  group: group2
+  course: course2    
