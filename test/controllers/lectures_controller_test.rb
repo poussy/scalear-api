@@ -101,9 +101,9 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 
 		lecture.reload
 		assert_not lecture.required
-		assert_equal lecture.appearance_time, Time.parse('2017-10-6')
+		assert_equal lecture.appearance_time, Time.zone.parse('2017-10-6')
 		assert_not lecture.due_date_module
-		assert_equal lecture.due_date, Time.parse('2017-10-7')
+		assert_equal lecture.due_date, Time.zone.parse('2017-10-7')
 		assert_equal lecture.position, 1
 		assert_not lecture.graded
 		
