@@ -70,9 +70,9 @@ class QuizzesControllerTest < ActionDispatch::IntegrationTest
 
     quiz.reload
     assert_not quiz.required
-    assert_equal quiz.appearance_time, '2017-10-10'
+    assert_equal quiz.appearance_time, Time.parse('2017-10-10')
     assert_not quiz.due_date_module
-    assert_equal quiz.due_date, '2017-10-10'
+    assert_equal quiz.due_date, Time.parse('2017-10-10')
     assert_equal quiz.position, 1
     assert_not quiz.graded
     assert_not quiz.visible

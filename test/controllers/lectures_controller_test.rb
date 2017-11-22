@@ -75,13 +75,13 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 
 	test "user should be able to add new lecture" do
 		
-		assert_equal @group3.lectures.count, 1
+		lectures_count = @group3.lectures.count
 
 		get '/en/courses/3/lectures/new_lecture_angular', params: {distance_peer: false, group: 3, inclass: false}, headers: @headers
 		
 		@group3.reload
 		
-		assert_equal @group3.lectures.count, 2
+		assert_equal @group3.lectures.count, lectures_count+1
 		
 	end
 
@@ -101,9 +101,9 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 
 		lecture.reload
 		assert_not lecture.required
-		assert_equal lecture.appearance_time, '2017-10-6'
+		assert_equal lecture.appearance_time, Time.parse('2017-10-6')
 		assert_not lecture.due_date_module
-		assert_equal lecture.due_date, '2017-10-7'
+		assert_equal lecture.due_date, Time.parse('2017-10-7')
 		assert_equal lecture.position, 1
 		assert_not lecture.graded
 		
@@ -143,11 +143,11 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 
 		group = Group.find(3)
 
-		assert_equal group.lectures.size, 1
+		lectures_count = group.lectures.size
 
 		post '/en/courses/3/lectures/lecture_copy', params: {lecture_id: 3, module_id: 3}, headers: @headers, as: :json
 
-		assert_equal group.lectures.size, 2
+		assert_equal group.lectures.size, lectures_count + 1
 		
 		
 		lecture_from = Lecture.find(3)
