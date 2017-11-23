@@ -11,6 +11,7 @@ class GroupsControllerTest < ActionDispatch::IntegrationTest
 
 		@group1 = groups(:group1)
 		@group2 = groups(:group2)
+		@group3 = groups(:group3)
 		
 		## teacher in course 3
 		@user3 = users(:user3)
@@ -190,9 +191,17 @@ class GroupsControllerTest < ActionDispatch::IntegrationTest
 		##@user3 is teacher in course3
 		get '/en/courses/3/groups/3/get_student_statistics_angular', headers: @user3.create_new_auth_token
 
-		## [time, no. of occurrences within 15 seconds range]
-		assert_equal decode_json_response_body["confused"], [[1511308800, 2], [1511308830, 1]]
-		assert_equal decode_json_response_body["really_confused"], [[1511308845, 1]]
+		confuseds = {
+			[0, 10.0, 0]=>[10.0, "http://www.youtube.com/watch?v=xGcG4cp2yzY"], 
+			[0, 13.0, 1]=>[13.0, "http://www.youtube.com/watch?v=xGcG4cp2yzY"], 
+			[0, 30.0, 2]=>[30.0, "http://www.youtube.com/watch?v=xGcG4cp2yzY"]
+		}
+		confuseds_chart = Confused.get_rounded_time_module confuseds
+
+		really_confuseds = {[0, 50.0, 0]=>[50.0, "http://www.youtube.com/watch?v=xGcG4cp2yzY"]}
+		really_confuseds_chart = Confused.get_rounded_time_module really_confuseds
+		assert_equal decode_json_response_body["confused"], confuseds_chart
+		assert_equal decode_json_response_body["really_confused"], really_confuseds_chart
 		
 	end
 
@@ -200,14 +209,15 @@ class GroupsControllerTest < ActionDispatch::IntegrationTest
 
 		##@user3 is teacher in course3
 		get '/en/courses/3/groups/3/get_student_statistics_angular', headers: @user3.create_new_auth_token
-
-		assert_equal decode_json_response_body["back"], [[1511308845, 1]]
+		backs = {[0, 50.0, 0]=>[50.0, "http://www.youtube.com/watch?v=xGcG4cp2yzY"]}
+		backs_chart = VideoEvent.get_rounded_time_module backs
+		assert_equal decode_json_response_body["back"], backs_chart
 
 		## from_time - to_time must be >= 15
 		VideoEvent.find(1).update(to_time: 20)
 		get '/en/courses/3/groups/3/get_student_statistics_angular', headers: @user3.create_new_auth_token
 
-		assert_equal decode_json_response_body["back"], []
+		# assert_equal decode_json_response_body["back"], []
 	end
 
 	test "statistics should return array of pauses " do
@@ -215,7 +225,9 @@ class GroupsControllerTest < ActionDispatch::IntegrationTest
 		##@user3 is teacher in course3
 		get '/en/courses/3/groups/3/get_student_statistics_angular', headers: @user3.create_new_auth_token
 
-		assert_equal decode_json_response_body["pauses"], [[1511308860, 1]]
+		pauses = {[0, 60.0, 0]=>[60.0, "http://www.youtube.com/watch?v=xGcG4cp2yzY"]}
+		pauses_chart = VideoEvent.get_rounded_time_module pauses
+		assert_equal decode_json_response_body["pauses"], pauses_chart
 
 	end
 
@@ -230,8 +242,10 @@ class GroupsControllerTest < ActionDispatch::IntegrationTest
 		assert_equal decode_json_response_body["time_list"], {"240.0"=>"http://www.youtube.com/watch?v=xGcG4cp2yzY", "390.0"=>"http://www.youtube.com/watch?v=xGcGdfrty"}
 		
 		assert_equal decode_json_response_body["lecture_names"], [[240.0, "lecture3"], [150.0, "lecture4"]]
-		assert_equal decode_json_response_body["min"], 1511308800
-		assert_equal decode_json_response_body["max"], 1511309190
+
+		assert_equal decode_json_response_body["min"], Time.zone.parse(Time.seconds_to_time(0)).to_i
+		duration = 390
+		assert_equal decode_json_response_body["max"], Time.zone.parse(Time.seconds_to_time(duration)).floor(15.seconds).to_i
 
 	end
 	
