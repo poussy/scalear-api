@@ -13,6 +13,15 @@ class Quiz < ApplicationRecord
   attribute :current_user
   attribute :requirements
 
+  validates :retries, :numericality => {:only_integer => true, :greater_than_or_equal_to => 0 }
+  validates :name, :appearance_time,:due_date,:course_id, :group_id, :presence => true
+  validates_inclusion_of :appearance_time_module, :due_date_module,:required_module , :graded_module, :in => [true, false]
+
+  validates_datetime :appearance_time, :on_or_after => lambda{|m| m.group.appearance_time}, :on_or_after_message => "must be after module appearance time"
+  validate :due_before_module_due_date
+
+  after_destroy :clean_up
+
   def is_done
     st=current_user
     assign= st.get_assignment_status(self)
@@ -26,8 +35,13 @@ class Quiz < ApplicationRecord
     end
   end
 
-  # def due_before_module_due_date
-  # end
+  def due_before_module_due_date
+    error=false
+    if self.due_date && self.due_date > self.group.due_date && self.due_date < (Time.now + 100.years)
+       error=true
+    end
+    errors.add(:due_date, "must be before module due date") if error
+  end
 
   # def get_class_name
   # end
@@ -95,8 +109,8 @@ class Quiz < ApplicationRecord
   # def get_survey_student_display_data_angular(students_id)
   # end
 
-  # private
-  #   def clean_up
-  #   end  
-
+  private
+    def clean_up
+      self.events.where(:lecture_id => nil).destroy_all
+    end
 end    

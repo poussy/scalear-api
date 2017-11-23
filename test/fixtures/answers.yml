@@ -3,3 +3,10 @@ answer1:
   question_id: 1
   content: "answer11"
   explanation: "explanation to answer 1"
+
+answer_free_text1:
+  id: 2
+  question_id: 3
+  content: ""
+  correct: true
+  explanation:

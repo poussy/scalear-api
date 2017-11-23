@@ -56,3 +56,17 @@ ocq_online_quiz1:
   end_time: 120
   question: New Quiz
   display_text: true
+
+html_ocq_online_quiz1:
+  group: group1
+  course: course1
+  lecture: lecture1
+  question_type: "OCQ"
+  quiz_type: "html"
+  inclass: false
+  graded: false
+  start_time: 100
+  time: 35
+  end_time: 120
+  question: New Quiz
+  display_text: true

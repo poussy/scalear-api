@@ -187,7 +187,6 @@ class QuizzesController < ApplicationController
     if params[:quiz][:graded_module]== true
       params[:quiz][:graded]=group.graded
     end
-
     if @quiz.update_attributes(quiz_params)
        @quiz.events.where(:lecture_id => nil, :group_id => group.id).destroy_all
        if @quiz.due_date.to_formatted_s(:long) != group.due_date.to_formatted_s(:long)
@@ -239,13 +238,15 @@ class QuizzesController < ApplicationController
 
 
   def validate_quiz_angular
-    @quiz= Quiz.find(params[:id])
-    params[:quiz].each do |key, value|
-      @quiz[key]=value
+    # @quiz= Quiz.find(params[:id])
+    if params[:quiz]
+      params[:quiz].each do |key, value|
+        @quiz[key]=value
+      end
     end
-    
+
     if @quiz.valid?
-      head :ok
+      render json:{ :nothing => true }
     else
       render json: {errors:@quiz.errors.full_messages}, status: :unprocessable_entity 
     end

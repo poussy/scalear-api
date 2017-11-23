@@ -42,3 +42,23 @@ event5:
   all_day: false
   group_id: 5
   course_id: 3
+
+quiz1_event:
+  name: "New Quiz due"
+  start_at: "2017-9-9 00:00:00"
+  end_at: "2017-9-9 00:00:00"
+  color: "red"
+  all_day: false
+  group_id: 3
+  course_id: 3
+  quiz_id: 1
+
+lecture3_event:
+  name: "New Quiz due"
+  start_at: "2017-9-9 00:00:00"
+  end_at: "2017-9-9 00:00:00"
+  color: "red"
+  all_day: false
+  group_id: 3
+  course_id: 3
+  lecture_id: 3

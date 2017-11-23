@@ -1,9 +1,6 @@
 require 'test_helper'
 
 class GroupsControllerTest < ActionDispatch::IntegrationTest
-  # test "the truth" do
-  #   assert true
-  # end
 	def setup
 		@user1 = users(:user1)
 		@user2 = users(:user2)
@@ -278,4 +275,35 @@ class GroupsControllerTest < ActionDispatch::IntegrationTest
 	end	
 
 
+	test 'validate validate_group_angular method ' do
+		url = '/en/courses/'+@course1.id.to_s+'/groups/'+@group3_course1.id.to_s+'/validate_group_angular'
+		put  url , params: {group: { name:'toto' } } ,headers: @user1.create_new_auth_token 
+		assert_response :success
+		resp =  JSON.parse response.body
+		assert_equal resp['nothing'] , true
+	end
+	test 'validate validate_group_angular method and respone 422 for title is empty' do
+		url = '/en/courses/'+@course1.id.to_s+'/groups/'+@group3_course1.id.to_s+'/validate_group_angular'
+		put  url , params: {group: { name:'' }} ,headers: @user1.create_new_auth_token 
+		assert_response 422
+		resp =  JSON.parse response.body
+		assert_equal resp['errors'].count , 1
+		assert_equal resp['errors'][0] , "Name can't be blank"
+	end
+
+	test 'validate get_group_statistics method ' do
+		url = '/en/courses/'+'3'+'/groups/'+'3'+'/get_group_statistics'
+		get  url , params: {group: { name:'' }} ,headers: @user3.create_new_auth_token 
+		assert_response :success
+		resp =  JSON.parse response.body
+		assert_equal resp['items'].count , 5
+		assert_equal resp['total_questions'] , 3  
+		assert_equal resp['total_quiz_questions'] , 3 
+		assert_equal resp['total_survey_questions'] , 0
+		assert_equal resp['total_lectures'] , 2 
+		assert_equal resp['total_quizzes'] , 1 
+		assert_equal resp['total_surveys'] , 0
+		assert_equal resp['total_links'] , 2 
+	end
+	
 end

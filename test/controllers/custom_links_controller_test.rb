@@ -52,4 +52,29 @@ class CustomLinksControllerTest < ActionDispatch::IntegrationTest
     assert_not_equal link_from.id, new_link.id
 		
 	end
+
+    test 'validate validate_custom_link method ' do
+        url = '/en/custom_links/1/validate_custom_link/'
+        put  url , params: {link: { name:'toto' } } ,headers: @user.create_new_auth_token , as: :json
+        assert_response :success
+        resp =  JSON.parse response.body
+        assert_equal resp['nothing'] , true
+    end
+    test 'validate validate_custom_link method and respone 422 for name is empty' do
+        url = '/en/custom_links/1/validate_custom_link/'
+        put  url , params: {link: { name:'' }} ,headers: @user.create_new_auth_token 
+        assert_response 422
+        resp =  JSON.parse response.body
+        assert_equal resp['errors'].count , 1
+        assert_equal resp['errors'][0] , "Name can't be blank"
+    end
+    test 'validate validate_custom_link method and respone 422 for url is empty' do
+        url = '/en/custom_links/1/validate_custom_link/'
+        put  url , params: {link: { url:'' }} ,headers: @user.create_new_auth_token 
+        assert_response 422
+        resp =  JSON.parse response.body
+        assert_equal resp['errors'].count , 1
+        assert_equal resp['errors'][0] , "Url can't be blank"
+    end
+
 end
