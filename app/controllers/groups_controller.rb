@@ -95,11 +95,32 @@ class GroupsController < ApplicationController
 	# def finished_lecture_test
 	# end
 
-	# def get_all_items_progress_angular
-	# end
+	def get_all_items_progress_angular
+		@students=@course.users.select("users.*, LOWER(users.name), LOWER(users.last_name)").order("LOWER(users.last_name)").limit(params[:limit]).offset(params[:offset]).includes([:lecture_views, :online_quiz_grades, :free_online_quiz_grades])
+		@mod=Group.where(:id => params[:id], :course_id => params[:course_id]).includes({:lectures => [:free_online_quiz_grades, :online_quiz_grades, {:online_quizzes => :online_answers}]}).first
 
-	# def get_all_items_progress_angular
-	# end
+		@total= @course.users.count
+
+		@matrixLecture={}
+		@late_lecture={}
+		@solvedCount={}
+		@totalCount = {}
+
+		@students.each do |s|
+			@matrixLecture[s.id]=s.grades_angular_all_items(@mod)
+			s.status={}
+			s.assignment_item_statuses.each do |stat|
+				if stat.status == 1
+					s.status[stat.lecture_id || stat.quiz_id]="Finished on Time"
+				elsif stat.status == 2
+					s.status[stat.lecture_id || stat.quiz_id]="Not Finished"
+				end
+			end
+		end
+
+		@mods=@mod.get_sub_items.map{|m| m.name}
+		render json: {:total => @total, :students => @students.to_json(:methods => [:status, :full_name]), :lecture_names => @mods, :lecture_status => @matrixLecture}
+  	end
 
 	# def get_quizzes_progress_angular
 	# end

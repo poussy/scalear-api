@@ -222,8 +222,9 @@ class Group < ApplicationRecord
 		return all
 	end
 
-	# def get_sub_items
-	# end
+	def get_sub_items
+    	all=(quizzes+lectures).sort{|a,b| a.position <=> b.position}
+  	end
 
 	# def get_appeared_items
 	# end
