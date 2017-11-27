@@ -25,5 +25,12 @@ class UserTest < ActiveSupport::TestCase
     assert_equal u.roles[0], user_role
   end
 
+  test "finished lecture test" do
+    user = users(:student_in_course3)
+    lecture = lectures(:lecture3)
+    assert_equal user.finished_lecture_test?(lecture), [-1, 0, 0, 0, 2]
+  end
+  
+
 
 end
