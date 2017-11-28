@@ -26,8 +26,16 @@ class Lecture < ApplicationRecord
 	validate :due_before_module_due_date
 	validate :type_inclass_distance_peer
 
-	attribute :class_name
+	attr_accessor :current_user
 
+	attribute :class_name
+	attribute :done
+	attribute :user_confused
+	attribute :posts
+	attribute :lecture_notes
+	attribute :title_markers
+	attribute :video_quizzes
+	attribute :annotations
 
 
 	# def has_not_appeared
@@ -63,8 +71,19 @@ class Lecture < ApplicationRecord
 	# def done?(user_asking) #marks lecture as done IF all quizzes solved AND passed all 25/50/75 marks.
 	# end
 
-	# def is_done
-	# end
+	def is_done
+		assign= current_user.get_assignment_status(self)
+		assign_lecture = current_user.get_lecture_status(self)
+		if (!assign.nil? && assign.status==1) || (!assign_lecture.nil? && assign_lecture.status==1)#modified status and marked as done on time
+			return true
+		else
+			lecture_quizzes=online_quizzes.includes(:online_answers).select{|f| f.online_answers.size!=0 && f.graded}.map{|v| v.id}.sort #ids of lecture quizzes
+			user_quizzes=current_user.get_online_quizzes_solved(self)   #stubbed in lec_spec
+			#will add now the marks.
+			viewed=current_user.get_lectures_viewed(self)
+			return ( user_quizzes&lecture_quizzes == lecture_quizzes and !viewed.empty? and viewed.first.percent == 100)
+		end
+  	end
 
 	# def is_done_summary_table
 	# end

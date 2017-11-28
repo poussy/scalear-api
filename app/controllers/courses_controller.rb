@@ -482,8 +482,79 @@ class CoursesController < ApplicationController
 		end		
 	end  
 
-	# def courseware_angular
-	# end  
+	def courseware_angular
+		course=Course.find(params[:id])
+		course[:duration] = course.duration
+		is_preview_user = current_user.is_preview?
+		today = Time.now
+		if is_preview_user
+		groups = course.groups.includes(:lectures, :quizzes, :custom_links).select{|v|
+			v.lectures.size > 0 ||
+			v.quizzes.size > 0 ||
+			v.custom_links.size > 0
+		}
+		else
+		p course.groups
+		groups = course.groups.includes(:lectures, :quizzes, :custom_links).select{|v|
+			v.appearance_time <= today &&
+			(
+			l =v.lectures.where("appearance_time <= ? or inclass = true", today );
+			q = v.quizzes.where( "appearance_time <= ?", today );
+			l.size > 0 ||
+			q.size > 0 ||
+			v.custom_links.size > 0
+			)
+		}
+		end
+
+		groups.sort!{|x,y| ( x.position and y.position ) ? x.position <=> y.position : ( x.position ? -1 : 1 )  }
+
+		should_enter=true
+		next_i=nil
+		last_viewed_group = -1
+		last_viewed_lecture = course.lecture_views.includes(:lecture).select{|lec_view| lec_view.user_id == current_user.id && lec_view.lecture.appearance_time <= today }.sort_by!(&:updated_at).last
+		last_viewed_group_id = last_viewed_lecture.group_id if !last_viewed_lecture.nil?
+
+		groups.each do |g|
+			g.current_user= current_user
+			g[:has_inclass] = false
+			g[:has_distance_peer] = false
+			all = g.get_items
+			all.each do |q|
+				q[:class_name]= q.class.name.downcase
+				if q[:class_name] != 'customlink'
+					q.current_user=current_user
+					q[:done] = q.is_done
+					if last_viewed_group_id == g.id && last_viewed_lecture.id == q.id  && !q[:done] && should_enter
+						next_i = q
+						should_enter = false
+					end
+					if q[:class_name] == 'lecture' && !g[:has_inclass]
+						g[:has_inclass] = q.inclass
+					end
+					if q[:class_name] == 'lecture' && !g[:has_distance_peer]
+						g[:has_distance_peer] = q.distance_peer
+					end
+				end
+			end
+			g[:items] = all
+			g[:sub_items_size] = g.lectures.size + g.quizzes.size
+			g[:total_time] = g.total_time
+		end
+		next_item={}
+		if !next_i.nil?
+			next_item[:module]= next_i.group_id
+			next_item[:item] = {:id => next_i.id, :class_name => next_i.class.name.downcase}
+		elsif groups.size > 0 && groups[0].items.size > 0 && groups[0].items[0][:class_name]!="customlink"
+			next_item[:module] = groups[0].id
+			next_item[:item] = {:id => groups[0].items[0].id, :class_name => groups[0].items[0][:class_name]}
+		else
+			next_item[:module] = -1
+			next_item[:item] = -1
+		end
+
+		render json: {:course => course,  :groups => groups, :next_item => next_item}
+  	end
 
 	# def courseware
 	# end  
