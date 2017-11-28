@@ -261,8 +261,56 @@ class LecturesController < ApplicationController
 		render json: {:answers => answers}
 	end
 
-	# def get_lecture_data_angular
-	# end
+	def get_lecture_data_angular
+		@q= Lecture.where(:id => params[:id], :course_id => params[:course_id]).first
+		if ((@q.nil? || @q.appearance_time > Time.zone.now.to_datetime) &&  !current_user.is_preview?) || @q.group.nil?
+			render json: {errors: [t('controller_msg.no_such_lecture')]}, :status => 404 and return
+		else
+		item_pos= @q.id#group.lectures.index(@q)
+		group_pos= @q.group_id #group.id#group.course.groups.index(group)
+		next_i = @q.group.next_item(@q.position)
+		next_item={}
+		if !next_i.nil?
+			next_item[:id] = next_i.id
+			next_item[:class_name] = next_i.class.name.downcase
+			next_item[:group_id]= next_i.group_id
+		end
+		today = Time.zone.now
+		all = @q.group.lectures.select{|v| v.appearance_time <= today } +  @q.group.quizzes.select{ |v| v.appearance_time <= today}
+		all.sort!{|x,y| ( x.position and y.position ) ? x.position <=> y.position : ( x.position ? -1 : 1 )  }
+		requirements={:lecture=> [], :quiz => []}
+		if @q.required
+			all.each do |l|
+				if l.id == @q.id
+					break
+				elsif l.required
+					requirements[l.class.name.downcase.to_sym] << l.id
+				end
+			end
+		end
+		@q[:requirements] = requirements
+
+		day2='day'.pluralize((Time.zone.now.to_date - @q.due_date.to_date).to_i)
+		day= t("controller_msg.#{day2}")
+
+		@alert_messages={}
+		if @q.due_date < Time.zone.now
+			@alert_messages['due']= [I18n.localize(@q.due_date, :format => '%d %b'), (Time.zone.now.to_date - @q.due_date.to_date).to_i, day2]
+		elsif @q.due_date.to_date == Time.zone.today
+			@alert_messages['today'] = @q.due_date#.strftime("%I:%M %p")
+		end
+		a=LectureView.where(:user_id => current_user.id, :course_id => params[:course_id], :lecture_id =>  params[:id])
+		if a.empty?
+			LectureView.create(:user_id => current_user.id, :group_id => @q.group_id, :course_id => params[:course_id], :lecture_id => params[:id], :percent => 0)
+		else
+			a = a.first
+			a.updated_at = Time.now
+			a.save
+		end
+		@q.current_user = current_user
+			render :json => {:alert_messages => @alert_messages,:next_item => next_item, :lecture => @q, :done => [item_pos, group_pos, @q.is_done]}
+		end
+	end
 
 	# def switch_quiz
 	# end

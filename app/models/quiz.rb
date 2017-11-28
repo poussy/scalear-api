@@ -12,6 +12,7 @@ class Quiz < ApplicationRecord
   attribute :class_name
   attribute :current_user
   attribute :requirements
+  attribute :done
 
   validates :retries, :numericality => {:only_integer => true, :greater_than_or_equal_to => 0 }
   validates :name, :appearance_time,:due_date,:course_id, :group_id, :presence => true

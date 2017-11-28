@@ -37,6 +37,11 @@ class Group < ApplicationRecord
 	attribute :total_quizzes
 	attribute :total_surveys
 	attribute :total_links
+	attribute :has_inclass
+	attribute :has_distance_peer
+	attribute :sub_items_size
+
+	attr_accessor :current_user
 
 	# def has_not_appeared
 	# end
