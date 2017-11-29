@@ -494,7 +494,6 @@ class CoursesController < ApplicationController
 			v.custom_links.size > 0
 		}
 		else
-		p course.groups
 		groups = course.groups.includes(:lectures, :quizzes, :custom_links).select{|v|
 			v.appearance_time <= today &&
 			(
