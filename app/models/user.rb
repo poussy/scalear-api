@@ -307,8 +307,13 @@ class User < ActiveRecord::Base
   # def finished_lecture_test?(lecture)
   # end
 
-  # def get_finished_lecture_quizzes_count(lecture)
-  # end
+  def get_finished_lecture_quizzes_count(lecture)
+      total= lecture.online_quizzes.select{|f| f.graded && (!f.online_answers.empty? or f.question_type=="Free Text Question")}.count
+      a=lecture.online_quiz_grades.includes(:online_quiz).select{|v| v.user_id==self.id && v.online_quiz.graded }.uniq{|v| v.online_quiz_id}.count
+      b=lecture.free_online_quiz_grades.includes(:online_quiz).select{|v| v.user_id==self.id && v.online_quiz.graded}.uniq{|v| v.online_quiz_id}.count
+      return [a+b, total]
+  end
+
 
   def grades_angular_test(item)
     grades=[]

@@ -36,6 +36,7 @@ class Lecture < ApplicationRecord
 	attribute :title_markers
 	attribute :video_quizzes
 	attribute :annotations
+	attribute :requirements
 
 
 	# def has_not_appeared

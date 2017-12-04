@@ -11,11 +11,14 @@ class VideoEvent < ApplicationRecord
 	belongs_to :course
 	belongs_to :group
 
-	# def self.get_events
-	# end
+	def self.get_events
+    	{:play => 1, :pause => 2, :seek => 3, :fullscreen => 4}
+  	end
 
-	# def self.get_event(event)
-	# end
+	def self.get_event(event)
+		get_events[event.to_sym]
+	end
+
 
 	def self.get_rounded_time_module(array)
 		return_hash={}
