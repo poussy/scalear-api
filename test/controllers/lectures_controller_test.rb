@@ -381,7 +381,6 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 	end
 
 	test "should update percent view if view is present with the highest percent" do
-		pp LectureView.where(lecture_id:3)
 		post '/en/courses/3/lectures/3/update_percent_view', params: {percent:50}, headers: @headers2, as: :json
 		assert_equal LectureView.where(lecture_id:3).first.percent, 50
 		#now highest percent is 50
@@ -398,7 +397,6 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 	test "should set percent view to 100 if it 5 seconds or less to end" do
 		post '/en/courses/3/lectures/3/update_percent_view', params: {percent:98}, headers: @headers2, as: :json
 		assert_equal LectureView.where(lecture_id:3).first.percent, 100
-		pp response.body
 	end
 	
 
