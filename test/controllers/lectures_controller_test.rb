@@ -21,6 +21,10 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 		@course3.teacher_enrollments.create(:user_id => 3, :role_id => 1, :email_discussion => false)
 		@group3 = @course3.groups.find(3)
 
+		@student = users(:student_in_course3)
+		@headers2 = @student.create_new_auth_token
+		@headers2['content-type']="application/json"
+
 		## necessary to send as json, so true and false wouldn't convert to strings
 		@headers = @user3.create_new_auth_token
 		@headers['content-type']="application/json"
@@ -375,5 +379,27 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 		assert_equal @ocq_online_quiz1.online_answers.count , 3
 		assert_equal resp['notice'] , "Quiz was successfully saved" 
 	end
+
+	test "should update percent view if view is present with the highest percent" do
+		pp LectureView.where(lecture_id:3)
+		post '/en/courses/3/lectures/3/update_percent_view', params: {percent:50}, headers: @headers2, as: :json
+		assert_equal LectureView.where(lecture_id:3).first.percent, 50
+		#now highest percent is 50
+		post '/en/courses/3/lectures/3/update_percent_view', params: {percent:20}, headers: @headers2, as: :json
+		assert_equal LectureView.where(lecture_id:3).first.percent, 50
+	end
+
+	test "should create percent view and set its percent if no view is present" do
+		LectureView.where(lecture_id:3).destroy_all
+		post '/en/courses/3/lectures/3/update_percent_view', params: {percent:20}, headers: @headers2, as: :json
+		assert_equal LectureView.where(lecture_id:3).first.percent, 20
+	end
+
+	test "should set percent view to 100 if it 5 seconds or less to end" do
+		post '/en/courses/3/lectures/3/update_percent_view', params: {percent:98}, headers: @headers2, as: :json
+		assert_equal LectureView.where(lecture_id:3).first.percent, 100
+		pp response.body
+	end
+	
 
 end
