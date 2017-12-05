@@ -255,9 +255,9 @@ class Group < ApplicationRecord
 		f.position>pos &&
 		(
 			(f.class.name.downcase == "lecture" &&
-			(!f.inclass ||
-				(f.inclass && f.appearance_time <= Time.now)
-			)
+				(!f.inclass ||
+					(f.inclass && f.appearance_time <= Time.now)
+				)
 			) ||
 			f.class.name.downcase != "lecture"
 		)}.first

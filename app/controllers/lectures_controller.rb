@@ -233,8 +233,6 @@ class LecturesController < ApplicationController
           regex = Regexp.new match_string
           @grade =  !!(@answer =~ regex)? 1:0
         else
-          p @answer
-          p match_string
           @grade = !!(@answer.downcase == match_string.downcase)? 1:0
         end
         review = false

@@ -530,9 +530,80 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 
 	test "html free text should create quiz grade 1 if answer is right" do
 		
-		post '/en/courses/3/lectures/3/save_online', params: {quiz: 10, answer: "answer free text", distance_peer:false, in_group: false}, headers: @headers2, as: :json
+		post '/en/courses/3/lectures/3/save_html', params: {quiz: 10, answer: "answer free text", distance_peer:false, in_group: false}, headers: @headers2, as: :json
 		assert_equal FreeOnlineQuizGrade.where(online_quiz_id:10).first["grade"], 1
 		assert_equal decode_json_response_body["explanation"], {"10"=>"<p class=\"medium-editor-p\">explanation free text</p>"}
 	end
+
+	test "should create video_event with right parameters" do
+		post '/en/courses/3/lectures/3/log_video_event', params: {"event":"play","from_time":161.776062,"in_quiz":false,"speed":1,"volume":0.8,"fullscreen":false}, headers: @headers2, as: :json
+		assert_equal VideoEvent.where(lecture_id:3, group_id:3, course_id:3).last["event_type"], 1
+		assert_equal VideoEvent.where(lecture_id:3, group_id:3, course_id:3).last["from_time"], 161.776062
+		assert_equal VideoEvent.where(lecture_id:3, group_id:3, course_id:3).last["speed"], 1
+		assert_equal VideoEvent.where(lecture_id:3, group_id:3, course_id:3).last["volume"], 0.8
+
+		post '/en/courses/3/lectures/3/log_video_event', params: {"event":"pause","from_time":161.776062,"in_quiz":false,"speed":1,"volume":0.8,"fullscreen":false}, headers: @headers2, as: :json
+		assert_equal VideoEvent.where(lecture_id:3, group_id:3, course_id:3).last["event_type"], 2
+		
+		post '/en/courses/3/lectures/3/log_video_event', params: {"event":"seek","from_time":161.776062,"in_quiz":false,"speed":1,"volume":0.8,"fullscreen":false}, headers: @headers2, as: :json
+		assert_equal VideoEvent.where(lecture_id:3, group_id:3, course_id:3).last["event_type"], 3
+
+		post '/en/courses/3/lectures/3/log_video_event', params: {"event":"fullscreen","from_time":161.776062,"in_quiz":false,"speed":1,"volume":0.8,"fullscreen":false}, headers: @headers2, as: :json
+		assert_equal VideoEvent.where(lecture_id:3, group_id:3, course_id:3).last["event_type"], 4
+		
+	end
+
+	test "get_lecture_data_angular requirement" do
+		# lecture 3 is required and quiz 1 is required and its appearance time <= today
+		get '/en/courses/3/lectures/3/get_lecture_data_angular', headers: @headers2
+		assert_equal decode_json_response_body["lecture"]["requirements"], {"lecture"=>[], "quiz"=>[1]}
+		
+		Quiz.find(1).update_attribute(:appearance_time,Time.now + 2.days) 
+		get '/en/courses/3/lectures/3/get_lecture_data_angular', headers: @headers2
+		assert_equal decode_json_response_body["lecture"]["requirements"], {"lecture"=>[], "quiz"=>[]}
+
+	end
+
+	test "get_lecture_data_angular next_item should be next lecture or quiz in group" do
+		
+		get '/en/courses/3/lectures/3/get_lecture_data_angular', headers: @headers2
+		assert_equal decode_json_response_body["next_item"], {"id"=>4, "class_name"=>"lecture", "group_id"=>3}
+		# if next item is lecture and inclass, its appearance time must be < today
+		Lecture.find(4).update_attribute(:inclass,true) 
+		Lecture.find(4).update_attribute(:appearance_time,Time.now + 2.days)
+		get '/en/courses/3/lectures/3/get_lecture_data_angular', headers: @headers2
+		assert decode_json_response_body["next_item"].empty?
+		
+	end
+	
+	test "get_lecture_data_angular alert message should return due date" do
+		
+		get '/en/courses/3/lectures/3/get_lecture_data_angular', headers: @headers2
+		lecture =lectures(:lecture3)
+		due_date = I18n.localize(lecture.due_date, :format => '%d %b')
+		days_to_today = (Time.zone.now.to_date - lecture.due_date.to_date).to_i 
+		assert_equal decode_json_response_body["alert_messages"], {"due"=>[due_date, days_to_today, "days"]}
+
+	end
+	
+	test "get_lecture_data_angular should change updated_at of lecture_view or create new one if no lecture_views are present" do
+
+		old_lecture_view = LectureView.where(lecture_id: 3).first
+		
+		get '/en/courses/3/lectures/3/get_lecture_data_angular', headers: @headers2
+		# same lecture_view but changed updated_at
+		assert_equal LectureView.where(lecture_id: 3).first.updated_at.to_i, Time.zone.now.to_i
+		assert_equal LectureView.where(lecture_id: 3).first, old_lecture_view
+
+		LectureView.where(lecture_id: 3).destroy_all
+
+		get '/en/courses/3/lectures/3/get_lecture_data_angular', headers: @headers2
+		# new lecture_view
+		assert_equal LectureView.where(lecture_id: 3).first.updated_at.to_i, Time.zone.now.to_i
+		assert_not LectureView.where(lecture_id: 3).first == old_lecture_view
+		
+	end
+	
+	
 
 end
