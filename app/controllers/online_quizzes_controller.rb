@@ -50,9 +50,12 @@ class OnlineQuizzesController < ApplicationController
 			render json: {errors: @online_quiz.errors}, status: :unprocessable_entity
 		end
   	end
-	
-	# def destroy
-	# end
+  
+	def destroy
+		@online_quiz.destroy
+		
+		render json: {:notice => [I18n.t("controller_msg.quiz_successfully_deleted")]}
+	end
 	
 	def get_quiz_list_angular
 		lecture = Lecture.find(params[:lecture_id])

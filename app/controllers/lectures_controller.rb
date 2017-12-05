@@ -153,7 +153,7 @@ class LecturesController < ApplicationController
     if(online_quiz.question_type=="MCQ") #MCQ
 
       quiz_grades = OnlineQuizGrade.where(:user_id => current_user.id, :online_quiz_id => @quiz, :in_group => answered_in_group )
-      attempt = quiz_grades.sort!{|x,y| x.attempt <=> y.attempt }.last.attempt rescue 0
+      attempt = quiz_grades.sort{|x,y| x.attempt <=> y.attempt }.last.attempt rescue 0
 
        @answer=@answer.keys.map{|f| f.to_i}.select{|v| @answer["#{v}"]==true}.sort
        if(@answer.nil? or @answer.empty?)
@@ -192,7 +192,7 @@ class LecturesController < ApplicationController
     elsif (online_quiz.question_type.upcase=="DRAG") #drag
 
         quiz_grades = FreeOnlineQuizGrade.where(:user_id => current_user.id, :online_quiz_id => @quiz)
-        attempt = quiz_grades.sort!{|x,y| x.attempt <=> y.attempt }.last.attempt rescue 0
+        attempt = quiz_grades.sort{|x,y| x.attempt <=> y.attempt }.last.attempt rescue 0
 
          correct= online_quiz.online_answers[0].answer
          @exp={}
@@ -217,7 +217,7 @@ class LecturesController < ApplicationController
        render json: {:msg => I18n.t('controller_msg.succefully_submitted'), :correct => @grade==1 , :explanation => @exp, :done => [item_pos, group_pos, @lecture.is_done] }
     elsif (online_quiz.question_type.upcase=="FREE TEXT QUESTION") #Free Text
       quiz_grades = FreeOnlineQuizGrade.where(:user_id => current_user.id, :online_quiz_id => @quiz)
-      attempt = quiz_grades.sort!{|x,y| x.attempt <=> y.attempt }.last.attempt rescue 0
+      attempt = quiz_grades.sort{|x,y| x.attempt <=> y.attempt }.last.attempt rescue 0
 
       @exp = {}
       ee = online_quiz.online_answers[0].explanation
@@ -245,7 +245,7 @@ class LecturesController < ApplicationController
       render json: {:msg => I18n.t('controller_msg.succefully_submitted'), :correct => @grade==1 , :explanation => @exp, :done => [item_pos, group_pos, @lecture.is_done], :review => review}
     else #OCQ
       quiz_grades = OnlineQuizGrade.where(:user_id => current_user.id, :online_quiz_id => @quiz, :in_group => answered_in_group )
-      attempt = quiz_grades.sort!{|x,y| x.attempt <=> y.attempt }.last.attempt rescue 0
+      attempt = quiz_grades.sort{|x,y| x.attempt <=> y.attempt }.last.attempt rescue 0
 
       if(@answer.nil? or @answer.empty?)
           render json: {:msg => "Empty", :correct => false, :explanation => ["empty"], :detailed_exp => {}, :done => [item_pos, group_pos, @lecture.is_done]} and return
@@ -322,7 +322,7 @@ class LecturesController < ApplicationController
     end
     if ques_type=="MCQ"
       quiz_grades = OnlineQuizGrade.where(:user_id => current_user.id, :online_quiz_id => @quiz_id, :in_group => answered_in_group )
-      attempt = quiz_grades.sort!{|x,y| x.attempt <=> y.attempt }.last.attempt rescue 0
+      attempt = quiz_grades.sort{|x,y| x.attempt <=> y.attempt }.last.attempt rescue 0
       if @answer.empty?
         render json: {:msg => "Empty", :correct => false, :explanation => ["empty"], :detailed_exp => {}, :done => [item_pos, group_pos, @lecture.is_done]} and return
       end
@@ -371,7 +371,7 @@ class LecturesController < ApplicationController
       end
 
       quiz_grades = OnlineQuizGrade.where(:user_id => current_user.id, :online_quiz_id => @quiz_id, :in_group => answered_in_group)
-      attempt = quiz_grades.sort!{|x,y| x.attempt <=> y.attempt }.last.attempt rescue 0
+      attempt = quiz_grades.sort{|x,y| x.attempt <=> y.attempt }.last.attempt rescue 0
 
       @answer.each do |k,v|
         pos=OnlineAnswer.find(k.to_i).pos
@@ -414,7 +414,7 @@ class LecturesController < ApplicationController
       @exp[quiz.id] = ee
 
       quiz_grades = FreeOnlineQuizGrade.where(:user_id => current_user.id, :online_quiz_id => quiz.id)
-      attempt = quiz_grades.sort!{|x,y| x.attempt <=> y.attempt }.last.attempt rescue 0
+      attempt = quiz_grades.sort{|x,y| x.attempt <=> y.attempt }.last.attempt rescue 0
 
       if !answers.empty?
         if answers.first.answer.blank?
@@ -439,7 +439,7 @@ class LecturesController < ApplicationController
     else #OCQ
 
       quiz_grades = OnlineQuizGrade.where(:user_id => current_user.id, :online_quiz_id => @quiz_id, :in_group => answered_in_group)
-      attempt = quiz_grades.sort!{|x,y| x.attempt <=> y.attempt }.last.attempt rescue 0
+      attempt = quiz_grades.sort{|x,y| x.attempt <=> y.attempt }.last.attempt rescue 0
 
       if @answer.nil? or @answer.blank?
         render json: {:msg => "Empty", :correct => false, :explanation => ["empty"], :detailed_exp => {}, :done => [item_pos, group_pos, @lecture.is_done]} and return
@@ -732,8 +732,25 @@ class LecturesController < ApplicationController
 	# def delete_confused
 	# end
 
-	# def save_note
-	# end
+	def save_note
+			lecture= Lecture.find(params[:id])
+			if params[:note_id]
+				note = lecture.video_notes.find(params[:note_id])
+				if note.update_attributes(:data => params[:data])
+					render json: {:notice => I18n.t('notes.successfully_saved'),:note => note}
+				else
+					render json: {errors:note.errors.full_messages}, status: 400
+				end
+			else
+				note = lecture.video_notes.build(:user_id => current_user.id, :data => params[:data], :time => params[:time])
+				if note.save
+					render json: {:notice => I18n.t('notes.successfully_saved'),:note => note}
+				else
+					render json: {errors:lecture.errors.full_messages}, status: 400
+				end
+			end
+		
+	end
 
 	# def delete_note
 	# end

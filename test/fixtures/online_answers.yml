@@ -4,12 +4,63 @@
 # model remove the '{}' from the fixture names and add the columns immediately
 # below each fixture, per the syntax in the comments below
 #
+# answer for free text question 3
 online_answer1:
   id: 1
   online_quiz_id: 3
-  answer: "aaa"
+  answer: answer for free text
   xcoor: 2
-  ycoor: 3
+  ycoor: 6 
+  explanation: "<p class=\"medium-editor-p\">explanation free text</p>"
+  width: 3  
+  height: 2
+  pos: 2
+  sub_xcoor: 2
+  sub_ycoor: 3  
+  correct: false
+
+# answer for free text question 2
+answer1_free_text2:
+  id: 2
+  online_quiz_id: 2
+  answer: ""
+  xcoor: 2
+  ycoor: 6 
+  explanation: "<p class=\"medium-editor-p\">explanation free text</p>"
+  width: 3  
+  height: 2
+  pos: 2
+  sub_xcoor: 2
+  sub_ycoor: 3  
+  correct: false
+
+# answer for free text question 9
+answer1_free_text9:
+  online_quiz_id: 9
+  answer: ""
+  xcoor: 2
+  ycoor: 6 
+  explanation: "<p class=\"medium-editor-p\">explanation free text</p>"
+  width: 3  
+  height: 2
+  pos: 2
+  sub_xcoor: 2
+  sub_ycoor: 3  
+  correct: false
+
+# answer for free text question 10
+answer1_free_text10:
+  online_quiz_id: 10
+  answer: "answer free text"
+  xcoor: 2
+  ycoor: 6 
+  explanation: "<p class=\"medium-editor-p\">explanation free text</p>"
+  width: 3  
+  height: 2
+  pos: 2
+  sub_xcoor: 2
+  sub_ycoor: 3  
+  correct: false
 
 ocq_online_answer_correct1:
   online_quiz: ocq_online_quiz1
@@ -70,5 +121,204 @@ html_ocq_online_answer_correct2:
   correct: true
   created_at: '2017-10-9'
   updated_at: '2017-10-9'  
+# answers for ocq quiz 1
+answer1_quiz_1_correct:
+  id: 6
+  online_quiz_id: 1
+  answer: "answer1"
+  xcoor: 2
+  ycoor: 3  
+  explanation: "explanation for answer1"  
+  width: 3  
+  height: 2
+  pos: 3  
+  sub_xcoor: 2
+  sub_ycoor: 3  
+  correct: true
 
-  
+answer2_quiz_1:
+  id: 7
+  online_quiz_id: 1
+  answer: "answer2"
+  xcoor: 2
+  ycoor: 6 
+  explanation: "explanation for answer2"  
+  width: 3  
+  height: 2
+  pos: 3  
+  sub_xcoor: 2
+  sub_ycoor: 3  
+  correct: false
+# answers for mcq online_quiz 4
+answer1_quiz_4_correct:
+  id: 8
+  online_quiz_id: 4
+  answer: "answer1"
+  xcoor: 2
+  ycoor: 3  
+  explanation: "explanation for answer1"  
+  width: 3  
+  height: 2
+  pos: 1  
+  sub_xcoor: 2
+  sub_ycoor: 3  
+  correct: true
+
+7:
+  id: 9
+  online_quiz_id: 4
+  answer: "answer2"
+  xcoor: 2
+  ycoor: 3  
+  explanation: "explanation for answer2"  
+  width: 3  
+  height: 2
+  pos: 2
+  sub_xcoor: 2
+  sub_ycoor: 3  
+  correct: false
+
+answer3_quiz_4_correct:
+  id: 10
+  online_quiz_id: 4
+  answer: "answer3"
+  xcoor: 2
+  ycoor: 6 
+  explanation: "explanation for answer3"  
+  width: 3  
+  height: 2
+  pos: 3 
+  sub_xcoor: 2
+  sub_ycoor: 3  
+  correct: true
+
+# answers for  drag question 8
+answer1_quiz_5:
+  id: 11
+  online_quiz_id: 5
+  answer: "<p class=\"medium-editor-p\">answer1</p>"
+  xcoor: 2
+  ycoor: 3  
+  explanation: ["correct because..","item 2 is incorrect because..","item 3 is incorrect because.."]
+  width: 3  
+  height: 2
+  pos: 0  
+  sub_xcoor: 2
+  sub_ycoor: 3  
+  correct: false
+
+answer2_quiz_5:
+  id: 12
+  online_quiz_id: 5
+  answer: "<p class=\"medium-editor-p\">answer2</p>"
+  xcoor: 2
+  ycoor: 3  
+  explanation: ["item 1 is incorrect because....","correct because.." ,"item 3 is incorrect beacuse.."]
+  width: 3  
+  height: 2
+  pos: 1
+  sub_xcoor: 2
+  sub_ycoor: 3  
+  correct: false
+
+answer3_quiz_5:
+  id: 13
+  online_quiz_id: 5
+  answer: "<p class=\"medium-editor-p\">answer3</p>"
+  xcoor: 2
+  ycoor: 6 
+  explanation: ["item 1 incorrect here because....","item 2 incorrect here because..","correct because.."]
+  width: 3  
+  height: 2
+  pos: 2
+  sub_xcoor: 2
+  sub_ycoor: 3  
+  correct: false
+
+# answer for html drag question 8
+answer1_quiz_8:
+  id: 19
+  online_quiz_id: 8
+  answer: ["<p class=\"medium-editor-p\">answer1</p>","<p class=\"medium-editor-p\">answer2</p>"]
+  xcoor: 2
+  ycoor: 3  
+  explanation: ["<p class='medium-editor-p'>explanation 1</p>", "<p class='medium-editor-p'>explanation 2</p>"]
+  width: 3  
+  height: 2
+  pos: 0  
+  sub_xcoor: 2
+  sub_ycoor: 3  
+  correct: false
+
+# answers for html ocq quiz 6
+answer1_quiz_6_correct:
+  id: 14
+  online_quiz_id: 6
+  answer: "answer1"
+  xcoor: 2
+  ycoor: 3  
+  explanation: "explanation for answer1"  
+  width: 3  
+  height: 2
+  pos: 3  
+  sub_xcoor: 2
+  sub_ycoor: 3  
+  correct: true
+
+answer2_quiz_6:
+  id: 15
+  online_quiz_id: 6
+  answer: "answer2"
+  xcoor: 2
+  ycoor: 6 
+  explanation: "explanation for answer2"  
+  width: 3  
+  height: 2
+  pos: 3  
+  sub_xcoor: 2
+  sub_ycoor: 3  
+  correct: false
+
+# answers for html mcq online_quiz 7
+answer1_quiz_7_correct:
+  id: 16
+  online_quiz_id: 7
+  answer: "answer1"
+  xcoor: 2
+  ycoor: 3  
+  explanation: "explanation for answer1"  
+  width: 3  
+  height: 2
+  pos: 1  
+  sub_xcoor: 2
+  sub_ycoor: 3  
+  correct: true
+
+answer2_quiz_7:
+  id: 17
+  online_quiz_id: 7
+  answer: "answer2"
+  xcoor: 2
+  ycoor: 3  
+  explanation: "explanation for answer2"  
+  width: 3  
+  height: 2
+  pos: 2
+  sub_xcoor: 2
+  sub_ycoor: 3  
+  correct: false
+
+answer3_quiz_7_correct:
+  id: 18
+  online_quiz_id: 7
+  answer: "answer3"
+  xcoor: 2
+  ycoor: 6 
+  explanation: "explanation for answer3"  
+  width: 3  
+  height: 2
+  pos: 3 
+  sub_xcoor: 2
+  sub_ycoor: 3  
+  correct: true
+

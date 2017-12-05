@@ -394,10 +394,145 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 		assert_equal LectureView.where(lecture_id:3).first.percent, 20
 	end
 
-	test "should set percent view to 100 if it 5 seconds or less to end" do
+	test "should set percent view to 100 if it is 5 seconds or less to end" do
 		post '/en/courses/3/lectures/3/update_percent_view', params: {percent:98}, headers: @headers2, as: :json
 		assert_equal LectureView.where(lecture_id:3).first.percent, 100
 	end
-	
+
+	test "save_online should create new OnlineQuizGrade and respond with details" do
+		# OCQ
+		post '/en/courses/3/lectures/3/save_online', params: {quiz: 1, answer: 6, distance_peer:false, in_group: false}, headers: @headers2, as: :json
+		assert_equal OnlineQuizGrade.where(online_quiz_id:1,online_answer_id: 6, lecture_id: 3).size, 1
+
+		assert_equal decode_json_response_body['msg'], "Successfully Submitted"
+		assert_equal decode_json_response_body['correct'], 1
+		assert_equal decode_json_response_body['explanation'], ["explanation for answer1"]
+		assert_equal decode_json_response_body['detailed_exp'], { "6"=> [true,"explanation for answer1"], "7"=> [false,"explanation for answer2"] }
+		assert_equal decode_json_response_body['done'], ["3",3,false]
+
+	end
+
+	test "MCQ question's answers must be all right to be saved as grade = 1" do
+		# MCQ correct answers are 8,10
+		post '/en/courses/3/lectures/3/save_online', params: {quiz: 4, answer: [8,9], distance_peer:false, in_group: false}, headers: @headers2, as: :json
+		assert_equal OnlineQuizGrade.where(online_quiz_id:4, online_answer_id: 8).first.grade, 0
+		assert_equal OnlineQuizGrade.where(online_quiz_id:4, online_answer_id: 9).first.grade, 0
+
+		post '/en/courses/3/lectures/3/save_online', params: {quiz: 4, answer: [8,10], distance_peer:false, in_group: false}, headers: @headers2, as: :json
+		assert_equal OnlineQuizGrade.where(online_quiz_id:4, online_answer_id: 8).second.grade, 1
+		assert_equal OnlineQuizGrade.where(online_quiz_id:4, online_answer_id: 10).first.grade, 1
+		assert_equal OnlineQuizGrade.where(online_quiz_id:4, online_answer_id: 10).first.attempt, 2
+	end
+
+	test "drag question" do
+		
+		post '/en/courses/3/lectures/3/save_online', params: {
+			quiz: 5, 
+			answer:{
+				"11":"<p class=\"medium-editor-p\">answer3</p>",
+				"12":"<p class=\"medium-editor-p\">answer2</p>",
+				"13":"<p class=\"medium-editor-p\">answer1</p>"}, 
+			distance_peer:false, 
+			in_group: false}, headers: @headers2, as: :json
+		assert_equal decode_json_response_body['explanation'], ["item 1 incorrect here because....","correct because..","item 3 is incorrect because.."]
+		assert_equal decode_json_response_body['detailed_exp'], {"11" => [false,"item 1 incorrect here because...."],"12"=>[true,"correct because.."],"13"=>[false,"item 3 is incorrect because.."]}
+	end
+
+	test "save_online should create new OnlineQuizGrade with right attempts" do
+		# first attempt
+		post '/en/courses/3/lectures/3/save_online', params: {quiz: 1, answer: 7, distance_peer:false, in_group: false}, headers: @headers2, as: :json
+		# second
+		post '/en/courses/3/lectures/3/save_online', params: {quiz: 1, answer: 6, distance_peer:false, in_group: false}, headers: @headers2, as: :json
+		
+		assert_equal OnlineQuizGrade.where(online_quiz_id:1,online_answer_id: 6, lecture_id: 3).first['attempt'], 2
+	end
+
+	test "free text should create quiz grade 0 if no answer was specified" do
+		
+		post '/en/courses/3/lectures/3/save_online', params: {quiz: 2, answer: "answer for free text", distance_peer:false, in_group: false}, headers: @headers2, as: :json
+		assert_equal FreeOnlineQuizGrade.where(online_quiz_id:2).first["grade"], 0
+		assert_equal decode_json_response_body["explanation"], {"2"=>"<p class=\"medium-editor-p\">explanation free text</p>"}
+	end
+
+	test "free text should create quiz grade 1 if answer is right" do
+		
+		post '/en/courses/3/lectures/3/save_online', params: {quiz: 3, answer: "answer for free text", distance_peer:false, in_group: false}, headers: @headers2, as: :json
+		assert_equal FreeOnlineQuizGrade.where(online_quiz_id:3).first["grade"], 1
+		assert_equal decode_json_response_body["explanation"], {"3"=>"<p class=\"medium-editor-p\">explanation free text</p>"}
+	end
+	##save_html questions
+	test "save_html should create new OnlineQuizGrade and respond with details" do
+		# OCQ
+		post '/en/courses/3/lectures/3/save_html', params: {quiz: 6, answer: "14", distance_peer:false, in_group: false}, headers: @headers2, as: :json
+		assert_equal OnlineQuizGrade.where(online_quiz_id:6).size, 1
+
+		assert_equal decode_json_response_body['msg'], "Successfully Submitted"
+		assert_equal decode_json_response_body['correct'], 1
+		assert_equal decode_json_response_body['explanation'], ["explanation for answer1"]
+		assert_equal decode_json_response_body['detailed_exp'], { "14"=> [true,"explanation for answer1"], "15"=> [false,"explanation for answer2"] }
+		assert_equal decode_json_response_body['done'], ["3",3,false]
+	end
+
+	test "MCQ question's answers must be all right to be saved as grade = 1 in save_html" do
+		# MCQ correct answers are 8,10
+		post '/en/courses/3/lectures/3/save_html', params: {quiz: 7, answer: {"16": true,"17": true}, distance_peer:false, in_group: false}, headers: @headers2, as: :json
+		assert_equal OnlineQuizGrade.where(online_quiz_id:7, online_answer_id: 16).first.grade, 0
+		assert_equal OnlineQuizGrade.where(online_quiz_id:7, online_answer_id: 17).first.grade, 0
+
+		post '/en/courses/3/lectures/3/save_html', params: {quiz: 7, answer: {"16": true,"18": true}, distance_peer:false, in_group: false}, headers: @headers2, as: :json
+		assert_equal OnlineQuizGrade.where(online_quiz_id:7, online_answer_id: 16).second.grade, 1
+		assert_equal OnlineQuizGrade.where(online_quiz_id:7, online_answer_id: 18).first.grade, 1
+		assert_equal OnlineQuizGrade.where(online_quiz_id:7, online_answer_id: 18).first.attempt, 2
+	end
+
+	test "html drag question correct" do
+		
+		post '/en/courses/3/lectures/3/save_html', params: {
+			quiz: 8, 
+			answer: ["<p class=\"medium-editor-p\">answer1</p>","<p class=\"medium-editor-p\">answer2</p>"]}, headers: @headers2, as: :json
+
+		assert_equal decode_json_response_body['correct'],true
+		
+		assert_equal decode_json_response_body['explanation'],{
+			"8"=> {
+				"<p class=\"medium-editor-p\">answer1</p>"=>"<p class='medium-editor-p'>explanation 1</p>",
+				"<p class=\"medium-editor-p\">answer2</p>"=>"<p class='medium-editor-p'>explanation 2</p>"
+			}
+		} 
+	end
+
+	test "html drag question incorrect should not return explanation" do
+		
+		post '/en/courses/3/lectures/3/save_html', params: {
+			quiz: 8, 
+			answer: ["<p class=\"medium-editor-p\">answer2</p>","<p class=\"medium-editor-p\">answer1</p>"]}, headers: @headers2, as: :json
+
+		assert_equal decode_json_response_body['correct'],false
+		
+		assert decode_json_response_body['explanation'].empty?
+	end
+
+	test "save_html should create new OnlineQuizGrade with right attempts" do
+		# first attempt
+		post '/en/courses/3/lectures/3/save_html', params: {quiz: 6, answer: "15", distance_peer:false, in_group: false}, headers: @headers2, as: :json
+		# second
+		post '/en/courses/3/lectures/3/save_html', params: {quiz: 6, answer: "14", distance_peer:false, in_group: false}, headers: @headers2, as: :json
+		
+		assert_equal OnlineQuizGrade.where(online_quiz_id:6,online_answer_id: 14, lecture_id: 3).first['attempt'], 2
+	end
+
+	test "html free text should create quiz grade 0 if no answer was specified" do
+		
+		post '/en/courses/3/lectures/3/save_html', params: {quiz: 9, answer: "answer for free text", distance_peer:false, in_group: false}, headers: @headers2, as: :json
+		assert_equal FreeOnlineQuizGrade.where(online_quiz_id:9).first["grade"], 0
+		assert_equal decode_json_response_body["explanation"], {"9"=>"<p class=\"medium-editor-p\">explanation free text</p>"}
+	end
+
+	test "html free text should create quiz grade 1 if answer is right" do
+		
+		post '/en/courses/3/lectures/3/save_online', params: {quiz: 10, answer: "answer free text", distance_peer:false, in_group: false}, headers: @headers2, as: :json
+		assert_equal FreeOnlineQuizGrade.where(online_quiz_id:10).first["grade"], 1
+		assert_equal decode_json_response_body["explanation"], {"10"=>"<p class=\"medium-editor-p\">explanation free text</p>"}
+	end
 
 end
