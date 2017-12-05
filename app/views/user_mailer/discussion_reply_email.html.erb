@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
+  </head>
+  <body>
+  	<p>You asked a question in <%= @lecture.name%> in <%= @module.name%>:</p>
+    <p>"<%= @post.content.html_safe %>"</p>
+    <br />
+    <p><%= @comment_owner.screen_name%> responded</p>
+
+    <p>"<%= @comment.content.html_safe %>"</p>
+    <p>
+      <%= link_to "Click to view your question and the video", root_url+@url, :target => '_blank' %>
+    </p>
+  </body>
+</html>

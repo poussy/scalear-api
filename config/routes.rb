@@ -19,6 +19,24 @@ Rails.application.routes.draw do
     post "home/accept_course"
     post "home/reject_course"    
 
+    post "discussions/create_comment"
+    get "discussions/get_comments"
+    post "discussions/vote"
+    post "discussions/flag"
+    post "discussions/create_post"
+    get "discussions/get_posts"
+    delete "discussions/delete_post"
+    delete "discussions/delete_comment"
+    post "discussions/vote_comment"
+    post "discussions/flag_comment"
+    delete "discussions/remove_all_flags"
+    delete "discussions/remove_all_comment_flags"
+    post "discussions/hide_post"
+    post "discussions/hide_comment"
+    post "discussions/update_post"
+
+
+
     # devise_for :users 
     resources :users, only: [] do
       member do

@@ -1,0 +1,23 @@
+# config/application.yml
+defaults: &defaults
+  scalear_forum: http://localhost:4000
+
+development:
+  <<: *defaults
+  scalear_forum: http://localhost:4000
+
+test:
+  <<: *defaults
+  scalear_forum: http://scalear-forum.herokuapp.com
+
+staging:
+  <<: *defaults
+  scalear_forum: http://scalear-forum.herokuapp.com
+
+staging2:
+  <<: *defaults
+  scalear_forum: http://scalear-forum-staging.herokuapp.com
+
+production:
+  <<: *defaults
+  scalear_forum: http://scalear-discussion.herokuapp.com

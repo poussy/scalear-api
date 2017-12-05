@@ -70,11 +70,35 @@ class UserMailer < ApplicationMailer
 	# def apology_email(user, course)
 	# end
 
-	# def discussion_reply_email(post_owner, comment_owner, course, group, lecture, post, comment, locale)
-	# end
+	def discussion_reply_email(post_owner, comment_owner, course, group, lecture, post, comment, locale)
+		I18n.locale=locale
+		@from =  "\"#{course.short_name} - #{course.name}\" <info@scalable-learning.com>"
+		# @user_email = user.email
+		@post_owner = post_owner
+		@comment_owner = comment_owner
+		@post = post
+		@comment = comment
+		@url  = "courses/#{course.id}/modules/#{group.id}/courseware/lectures/#{lecture.id}?time=#{post.time}"
+		@course = course
+		@lecture = lecture
+		@module = group
+		mail(:to => @post_owner.email, :subject => "You've got an answer! (#{lecture.name})", :from => @from,:reply_to => @comment_owner.email)		
+	end
 
-	# def teacher_discussion_email(post_owner, teacher, course, group, lecture, post, locale)
-	# end
+	def teacher_discussion_email(post_owner, teacher, course, group, lecture, post, locale)
+		I18n.locale=locale
+		@from =  "\"ScalableLearning Question\" <no-reply@scalable-learning.com>"
+		@post_owner = post_owner
+		@teacher = teacher
+		@post = post
+		item_id = 'disc_'+post.id.to_s+'a'+post.lecture_id.to_s
+		@url  = "courses/#{course.id}/modules/#{group.id}/progress?item_id=#{item_id}"
+		@url2  = "courses/#{course.id}/information"
+		@course = course
+		@lecture = lecture
+		@module = group
+		mail(:to => @teacher.email, :subject => "Question in #{course.short_name}: #{lecture.name}", :from => @from)
+	end
 
 	# def password_changed_email(user,locale)
 	# end
