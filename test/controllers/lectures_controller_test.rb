@@ -603,7 +603,26 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 		assert_not LectureView.where(lecture_id: 3).first == old_lecture_view
 		
 	end
-	
-	
+
+	test "should create new note if no id was sent" do
+
+		notes = VideoNote.where(lecture_id:3, user_id:6).size
+		
+		post '/en/courses/3/lectures/3/save_note', params:{"data":"<p class=\"medium-editor-p\">note1</p>","time":10} , headers: @headers2, as: :json
+
+		assert_equal decode_json_response_body["notice"], "Note was successfully saved"
+		assert_equal  VideoNote.where(lecture_id:3, user_id:6).size, notes+1
+	end
+
+	test "should update note if id was sent" do
+
+		VideoNote.create(lecture_id:3, user_id:6, data: "note data", id: 6)
+		notes = VideoNote.where(lecture_id:3, user_id:6).size
+		post '/en/courses/3/lectures/3/save_note', params:{"data":"<p class=\"medium-editor-p\">note1</p>","time":10, note_id: 6} , headers: @headers2, as: :json
+
+		assert_equal decode_json_response_body["notice"], "Note was successfully saved"
+		assert_equal decode_json_response_body["note"]["data"], "<p class=\"medium-editor-p\">note1</p>"
+		assert_equal  VideoNote.where(lecture_id:3, user_id:6).size, notes
+	end
 
 end

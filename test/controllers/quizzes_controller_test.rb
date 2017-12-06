@@ -6,6 +6,10 @@ class QuizzesControllerTest < ActionDispatch::IntegrationTest
     @user = users(:user3)
 
 		@user.roles << Role.find(1)
+
+    @student = users(:student_in_course3)
+		@headers2 = @student.create_new_auth_token
+		@headers2['content-type']="application/json"
 	
 		@course = courses(:course3)
     @course4 = courses(:course4)
@@ -239,7 +243,7 @@ class QuizzesControllerTest < ActionDispatch::IntegrationTest
         get  url ,headers: @user.create_new_auth_token , as: :json
         resp =  JSON.parse response.body
         assert_equal resp['quiz']['retries'] , 2
-        assert_equal resp['questions'].count , 3
+        assert_equal resp['questions'].count , 4
     end
 
     test 'validate validate_quiz_angular method ' do
@@ -274,5 +278,28 @@ class QuizzesControllerTest < ActionDispatch::IntegrationTest
         assert_equal resp['errors'].count , 1
         assert_equal resp['errors'][0] , "Name can't be blank"
     end
+
+    test 'get_questions_angular for student' do        
+
+        get '/en/courses/3/quizzes/1/get_questions_angular' ,headers: @headers2 , as: :json
+
+        assert_equal decode_json_response_body["quiz"]["name"], quizzes(:quiz1)["name"]
+        assert_equal decode_json_response_body["questions"].size, 4
+        assert_equal decode_json_response_body["answers"], 
+          [
+            [{"id"=>1,"question_id"=>1,"content"=>"<p class=\"medium-editor-p\">a1</p>"},
+             {"id"=>225623090,"question_id"=>1,"content"=>"<p class=\"medium-editor-p\">a2</p>"}],
+            [{"id"=>954619823,"question_id"=>2,"content"=>"<p class=\\\"medium-editor-p\\\">a1</p>"},
+              {"id"=>1047667971,"question_id"=>2,"content"=>"<p class=\\\"medium-editor-p\\\">a2</p>"}],
+            [{"id"=>863453129, "question_id"=>3, "content"=>"abcd"}],
+              #result is based on shuffling in drag questions
+              [{"id"=>585904983,"question_id"=>4,"content"=>["<p class=\"medium-editor-p\">ans1</p>","<p class=\"medium-editor-p\">ans2</p>"],"explanation"=>[]}] || 
+              [[{"id"=>585904983,"question_id"=>4,"content"=>["<p class=\"medium-editor-p\">ans2</p>","<p class=\"medium-editor-p\">ans1</p>"],"explanation"=>[]}]]
+          ]
+        pp decode_json_response_body
+
+       
+    end
+
 
 end
