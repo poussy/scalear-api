@@ -285,19 +285,18 @@ class QuizzesControllerTest < ActionDispatch::IntegrationTest
 
         assert_equal decode_json_response_body["quiz"]["name"], quizzes(:quiz1)["name"]
         assert_equal decode_json_response_body["questions"].size, 4
-        assert_equal decode_json_response_body["answers"], 
-          [
+        assert_equal decode_json_response_body["answers"][0], 
             [{"id"=>1,"question_id"=>1,"content"=>"<p class=\"medium-editor-p\">a1</p>"},
-             {"id"=>225623090,"question_id"=>1,"content"=>"<p class=\"medium-editor-p\">a2</p>"}],
-            [{"id"=>954619823,"question_id"=>2,"content"=>"<p class=\\\"medium-editor-p\\\">a1</p>"},
-              {"id"=>1047667971,"question_id"=>2,"content"=>"<p class=\\\"medium-editor-p\\\">a2</p>"}],
-            [{"id"=>863453129, "question_id"=>3, "content"=>"abcd"}],
-              #result is based on shuffling in drag questions
-              [{"id"=>585904983,"question_id"=>4,"content"=>["<p class=\"medium-editor-p\">ans1</p>","<p class=\"medium-editor-p\">ans2</p>"],"explanation"=>[]}] || 
-              [[{"id"=>585904983,"question_id"=>4,"content"=>["<p class=\"medium-editor-p\">ans2</p>","<p class=\"medium-editor-p\">ans1</p>"],"explanation"=>[]}]]
-          ]
-        pp decode_json_response_body
+             {"id"=>225623090,"question_id"=>1,"content"=>"<p class=\"medium-editor-p\">a2</p>"}]
 
+        assert_equal decode_json_response_body["answers"][1],  
+            [{"id"=>954619823,"question_id"=>2,"content"=>"<p class=\\\"medium-editor-p\\\">a1</p>"},
+              {"id"=>1047667971,"question_id"=>2,"content"=>"<p class=\\\"medium-editor-p\\\">a2</p>"}]
+        
+        assert_equal decode_json_response_body["answers"][2], [{"id"=>863453129, "question_id"=>3, "content"=>"abcd"}]
+        #because it is shuffled we cannot predict the exact answer
+        assert decode_json_response_body["answers"][3] == [{"id"=>585904983,"question_id"=>4,"content"=>["<p class=\"medium-editor-p\">ans1</p>","<p class=\"medium-editor-p\">ans2</p>"],"explanation"=>[]}] || 
+                decode_json_response_body["answers"][3] == [{"id"=>585904983,"question_id"=>4,"content"=>["<p class=\"medium-editor-p\">ans2</p>","<p class=\"medium-editor-p\">ans1</p>"],"explanation"=>[]}]
        
     end
 
