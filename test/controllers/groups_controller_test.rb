@@ -311,8 +311,8 @@ class GroupsControllerTest < ActionDispatch::IntegrationTest
 		assert_response :success
 		resp =  JSON.parse response.body
 		assert_equal resp['items'].count , 5
-		assert_equal resp['total_questions'] , 3  
-		assert_equal resp['total_quiz_questions'] , 3 
+		assert_equal resp['total_questions'] , 10
+		assert_equal resp['total_quiz_questions'] , 4
 		assert_equal resp['total_survey_questions'] , 0
 		assert_equal resp['total_lectures'] , 2 
 		assert_equal resp['total_quizzes'] , 1 

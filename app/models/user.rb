@@ -136,8 +136,9 @@ class User < ActiveRecord::Base
   # def is_administrator?
   # end
 
-  # def is_preview?
-  # end
+  def is_preview?
+    role_ids.include?6
+  end
 
   # def tutorials_taken
   # end
@@ -148,21 +149,25 @@ class User < ActiveRecord::Base
   # def get_exact_stats(group)
   # end
 
-  # def get_online_quizzes_solved(lecture)
-  # end
+  def get_online_quizzes_solved(lecture)
+    return ((online_quiz_grades.includes(:online_quiz).select{|v| v.lecture_id == lecture.id &&  v.online_quiz.graded}.map{|t| t.online_quiz_id})+(free_online_quiz_grades.includes(:online_quiz).select{|v| v.lecture_id == lecture.id && v.online_quiz.graded}.map{|t| t.online_quiz_id})).sort.uniq
+  end
 
   # def get_summary_table_online_quizzes_solved(lecture)
   # end
 
   
-  # def get_lecture_status(item)
-  # end
+  def get_lecture_status(item)
+    return self.assignment_item_statuses.select{|a| a.group_id == item.group_id && a.lecture_id == item.id && !a.quiz_id}.first
+
+  end
   
   # def count_online_quizzes_solved(group)
   # end
 
-  # def get_lectures_viewed(lecture)
-  # end
+  def get_lectures_viewed(lecture)
+    return lecture_views.select{|v| v.lecture_id == lecture.id} #, :percent => 75
+  end
 
   # def grades(course)          #
   # end
@@ -361,8 +366,13 @@ class User < ActiveRecord::Base
     return [ [max,a1,a2,c].max.to_i, a.size+b.size, total.size, a_optional.size+b_optional.size, total_optional.size]
   end
 
-  # def get_finished_lecture_quizzes_count(lecture)
-  # end
+  def get_finished_lecture_quizzes_count(lecture)
+      total= lecture.online_quizzes.select{|f| f.graded && (!f.online_answers.empty? or f.question_type=="Free Text Question")}.count
+      a=lecture.online_quiz_grades.includes(:online_quiz).select{|v| v.user_id==self.id && v.online_quiz.graded }.uniq{|v| v.online_quiz_id}.count
+      b=lecture.free_online_quiz_grades.includes(:online_quiz).select{|v| v.user_id==self.id && v.online_quiz.graded}.uniq{|v| v.online_quiz_id}.count
+      return [a+b, total]
+  end
+
 
   def grades_angular_test(item)
     grades=[]

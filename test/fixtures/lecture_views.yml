@@ -6,3 +6,12 @@ lecture_view_1:
   percent: 100
   created_at: '2017-10-9'
   updated_at: '2017-10-9'    
+
+lecture_view2:
+  user_id: 6
+  lecture_id: 3
+  group_id: 3
+  course_id: 3
+  percent: 30
+  created_at: '2017-10-9'
+  updated_at: '2017-10-9'  

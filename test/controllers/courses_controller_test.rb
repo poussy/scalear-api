@@ -749,4 +749,25 @@ class CoursesControllerTest <  ActionDispatch::IntegrationTest
 		resp =  JSON.parse response.body
 		assert_equal resp['student_progress'][0][1] , 0
 	end	
+
+	test "courseware_angular response" do
+		user = users(:student_in_course3)
+		
+		get '/en/courses/3/courseware_angular', headers: user.create_new_auth_token
+		
+		assert_equal decode_json_response_body['course']['name'], "course3"
+
+		# course 3 has 3 groups, but only one of them has a lecture and a quiz
+		assert_equal decode_json_response_body['groups'].size, 1
+
+		assert_equal decode_json_response_body['groups'][0]['has_inclass'], false
+		assert_equal decode_json_response_body['groups'][0]['has_distance_peer'], false
+		assert_equal decode_json_response_body['groups'][0]['total_time'], 390
+		assert_equal decode_json_response_body['groups'][0]['sub_items_size'], 3
+
+		assert_equal decode_json_response_body['next_item']['module'], -1
+		assert_equal decode_json_response_body['next_item']['item'], -1
+		
+	end
+	
 end

@@ -1,17 +1,23 @@
 ocq1:
   id: 1
   quiz_id: 1
-  content: "old content"
+  content: <p class=\"medium-editor-p\">ocq</p>
   question_type: OCQ
 
 mcq1:
   id: 2
   quiz_id: 1
-  content: ""
+  content: <p class=\"medium-editor-p\">q1</p>
   question_type: MCQ
 
 free_text1:
   id: 3
   quiz_id: 1
   content: ""
-  question_type: Free Text Question
+  question_type: <p class=\"medium-editor-p\">free text</p>
+
+drag1:
+  id: 4
+  quiz_id: 1
+  content: <p class=\"medium-editor-p\">drag quiz</p>
+  question_type: drag

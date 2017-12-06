@@ -1,12 +1,37 @@
-answer1:
+# answers for mcq 2
+a1_mcq2:
+  question_id: 2
+  content: <p class=\"medium-editor-p\">a1</p>
+  correct: false
+  explanation: <p class=\"medium-editor-p\">exp 1</p>
+
+a2_mcq2:
+  question_id: 2
+  content: <p class=\"medium-editor-p\">a2</p>
+  correct: true
+  explanation: <p class=\"medium-editor-p\">exp 2</p>
+# answers for drag 3
+a_drag4:
+  question_id: 4
+  content: ["<p class=\"medium-editor-p\">ans1</p>", "<p class=\"medium-editor-p\">ans2</p>"]
+  explanation: ["<p class=\"medium-editor-p\">exp1</p>", "<p class=\"medium-editor-p\">exp2</p>"]
+  correct: false
+# answers for ocq 1
+a1_ocq1:
   id: 1
   question_id: 1
-  content: "answer11"
-  explanation: "explanation to answer 1"
+  content: "<p class=\"medium-editor-p\">a1</p>"
+  correct: false
+  explanation: "<p class=\"medium-editor-p\">exp1</p>"
 
-answer_free_text1:
-  id: 2
-  question_id: 3
-  content: ""
+a2_ocq1:
+  question_id: 1
+  content: "<p class=\"medium-editor-p\">a2</p>"
   correct: true
-  explanation:
+  explanation: "<p class=\"medium-editor-p\">exp2</p>"
+#answer for free text 3
+a_free3:
+  question_id: 3
+  content: "abcd"
+  correct: false
+  explanation: "<p class=\"medium-editor-p\">exp free text</p>"

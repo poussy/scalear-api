@@ -488,22 +488,22 @@ class CoursesController < ApplicationController
 		is_preview_user = current_user.is_preview?
 		today = Time.now
 		if is_preview_user
-			groups = course.groups.includes(:lectures, :quizzes, :custom_links).select{|v|
-				v.lectures.size > 0 ||
-				v.quizzes.size > 0 ||
-				v.custom_links.size > 0
-			}
+		groups = course.groups.includes(:lectures, :quizzes, :custom_links).select{|v|
+			v.lectures.size > 0 ||
+			v.quizzes.size > 0 ||
+			v.custom_links.size > 0
+		}
 		else
-			groups = course.groups.includes(:lectures, :quizzes, :custom_links).select{|v|
-				v.appearance_time <= today &&
-				(
-				v.lectures.select!{|v| v.appearance_time <= today || v.inclass };
-				v.quizzes.select!{ |v| v.appearance_time <= today};
-				v.lectures.size > 0 ||
-				v.quizzes.size > 0 ||
-				v.custom_links.size > 0
-				)
-			}
+		groups = course.groups.includes(:lectures, :quizzes, :custom_links).select{|v|
+			v.appearance_time <= today &&
+			(
+			l =v.lectures.where("appearance_time <= ? or inclass = true", today );
+			q = v.quizzes.where( "appearance_time <= ?", today );
+			l.size > 0 ||
+			q.size > 0 ||
+			v.custom_links.size > 0
+			)
+		}
 		end
 
 		groups.sort!{|x,y| ( x.position and y.position ) ? x.position <=> y.position : ( x.position ? -1 : 1 )  }
