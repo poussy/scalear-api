@@ -401,9 +401,10 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 
 	test "save_online should create new OnlineQuizGrade and respond with details" do
 		# OCQ
-		post '/en/courses/3/lectures/3/save_online', params: {quiz: 1, answer: 6, distance_peer:false, in_group: false}, headers: @headers2, as: :json
-		assert_equal OnlineQuizGrade.where(online_quiz_id:1,online_answer_id: 6, lecture_id: 3).size, 1
-
+		assert_difference 'OnlineQuizGrade.where(online_quiz_id:1,online_answer_id: 6, lecture_id: 3).size' do
+			post '/en/courses/3/lectures/3/save_online', params: {quiz: 1, answer: 6, distance_peer:false, in_group: false}, headers: @headers2, as: :json
+		end
+		
 		assert_equal decode_json_response_body['msg'], "Successfully Submitted"
 		assert_equal decode_json_response_body['correct'], 1
 		assert_equal decode_json_response_body['explanation'], ["explanation for answer1"]
@@ -439,12 +440,16 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 	end
 
 	test "save_online should create new OnlineQuizGrade with right attempts" do
-		# first attempt
-		post '/en/courses/3/lectures/3/save_online', params: {quiz: 1, answer: 7, distance_peer:false, in_group: false}, headers: @headers2, as: :json
-		# second
-		post '/en/courses/3/lectures/3/save_online', params: {quiz: 1, answer: 6, distance_peer:false, in_group: false}, headers: @headers2, as: :json
+
+		assert_difference "OnlineQuizGrade.where(online_quiz_id:1,online_answer_id: 6, lecture_id: 3).last['attempt']", 2 do
+			# first attempt
+			post '/en/courses/3/lectures/3/save_online', params: {quiz: 1, answer: 7, distance_peer:false, in_group: false}, headers: @headers2, as: :json
+			# second
+			post '/en/courses/3/lectures/3/save_online', params: {quiz: 1, answer: 6, distance_peer:false, in_group: false}, headers: @headers2, as: :json
+
+		end
 		
-		assert_equal OnlineQuizGrade.where(online_quiz_id:1,online_answer_id: 6, lecture_id: 3).first['attempt'], 2
+		
 	end
 
 	test "free text should create quiz grade 0 if no answer was specified" do
