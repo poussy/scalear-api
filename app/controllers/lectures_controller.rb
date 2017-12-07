@@ -816,8 +816,18 @@ class LecturesController < ApplicationController
 	# def export_notes
 	# end
 
-	# def change_status_angular
-	# end
+  def change_status_angular
+   status=params[:status].to_i
+   assign= @lecture.assignment_item_statuses.where(:user_id => params[:user_id]).first
+   if !assign.nil?
+     #0 original
+     (status == 0)? assign.destroy : assign.update_attributes(:status => status)
+   elsif status!=0
+     @lecture.assignment_item_statuses<< AssignmentItemStatus.create(:user_id => params[:user_id], :course_id => params[:course_id], :status => status ,  :group_id =>@lecture.group.id , :lecture_id => params[:id])
+   end
+
+   render :json => {:success => true, :notice => [I18n.t("courses.status_successfully_changed")]}
+  end
 
 	# def confused_show_inclass
 	# end

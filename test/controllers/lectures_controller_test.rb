@@ -625,4 +625,17 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 		assert_equal  VideoNote.where(lecture_id:3, user_id:6).size, notes
 	end
 
+	test "change_status_angular should change status assignment_item_status, or create new one with specified status" do
+		# will create one if empty
+		assert Lecture.find(3).assignment_item_statuses.empty?
+		post "/en/courses/3/lectures/3/change_status_angular", params:{user_id:6, status: 2}, headers: @headers, as: :json
+		assert_equal Lecture.find(3).assignment_item_statuses.first["status"], 2
+		# will change existing if present
+		post "/en/courses/3/lectures/3/change_status_angular", params:{user_id:6, status: 1}, headers: @headers, as: :json
+		assert_equal Lecture.find(3).assignment_item_statuses.first["status"], 1
+		assert_equal Lecture.find(3).assignment_item_statuses.size, 1
+      
+      
+    end
+
 end

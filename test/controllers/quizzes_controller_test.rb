@@ -300,5 +300,19 @@ class QuizzesControllerTest < ActionDispatch::IntegrationTest
        
     end
 
+    test "change_status_angular should change status assignment_item_status, or create new one with specified status" do
+      # will create one if empty
+      assert Quiz.find(1).assignment_item_statuses.empty?
+      post "/en/courses/3/quizzes/1/change_status_angular", params:{user_id:6, status: 2}, headers: @headers, as: :json
+      assert_equal Quiz.find(1).assignment_item_statuses.first["status"], 2
+      # will change existing if present
+      post "/en/courses/3/quizzes/1/change_status_angular", params:{user_id:6, status: 1}, headers: @headers, as: :json
+      assert_equal Quiz.find(1).assignment_item_statuses.first["status"], 1
+      assert_equal Quiz.find(1).assignment_item_statuses.size, 1
+      
+      
+    end
+    
+
 
 end
