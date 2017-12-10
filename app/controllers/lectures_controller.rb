@@ -84,17 +84,402 @@ class LecturesController < ApplicationController
 		end
 
 	end
-	# def update_percent_view
-	# end
 
-	# def log_video_event
-	# end
+  def update_percent_view
+    lecture = Lecture.find(params[:id])
+    end_offset_percent = ( (lecture.duration - 5) * 100 ) / lecture.duration rescue 0
+    lecture.current_user=current_user
+    views = LectureView.where(:user_id => current_user.id, :course_id => params[:course_id], :lecture_id =>  params[:id])
+    percent = params[:percent]
+    if percent.nil? || percent < 0
+      percent = 0
+    elsif percent >= end_offset_percent
+      percent = 100
+    end
 
-	# def save_html #when student answers an html online quiz
-	# end
+    if views.empty?
+      view = LectureView.new(:user_id => current_user.id, :group_id => lecture.group_id, :course_id => lecture.course_id, :lecture_id => lecture.id, :percent => 0)
+    else
+      view = views.first
+    end
 
-	# def save_online
-	# end
+    obj = { :watched => view.percent, :quizzes_done => current_user.get_finished_lecture_quizzes_count(lecture)}
+    if percent > view.percent
+      view.percent = percent
+      if view.save
+        obj[:notice] = [I18n.t("controller_msg.lecture_successfully_updated")]
+        obj[:watched] = view.percent
+        obj[:lecture_done] = lecture.is_done
+        render json: obj
+      else
+        render json: {:errors => view.errors}, :status => :unprocessable_entity
+      end
+    else
+      obj[:lecture_done] = lecture.is_done
+      render json: obj
+    end
+  end
+
+  def log_video_event
+    @lecture= Lecture.find(params[:id])
+    event_type = VideoEvent.get_event params[:event]
+    VideoEvent.create(:event_type => event_type, :lecture_id => @lecture.id, :group_id => @lecture.group_id, :course_id => @lecture.course_id, :user_id => current_user.id, :from_time => params[:from_time], :to_time => params[:to_time], :in_quiz => params[:in_quiz], :speed => params[:speed], :volume => params[:volume], :fullscreen => params[:fullscreen])
+    render json: {}
+  end
+
+  def save_html #when student answers an html online quiz
+    @answer= params[:answer]
+    @quiz= params[:quiz]
+    @lecture= Lecture.find(params[:id])
+    #@grade = params[:correct]=="Correct" ? 1 : 0
+    online_quiz = OnlineQuiz.find(@quiz)
+    answered_inclass = params[:inclass] || false
+    answered_in_group = params[:in_group] || false
+    answered_distance_peer = params[:distance_peer] || false
+    group=@lecture.group
+    item_pos=params[:id]#group.lectures.index(@lecture)
+    group_pos= group.id #course.groups.index(group)
+    @lecture.current_user=current_user
+
+    if online_quiz.inclass && answered_inclass
+      views = LectureView.where(:user_id => current_user.id,  :lecture_id =>  params[:id])
+      if views.empty?
+        LectureView.create(:user_id => current_user.id, :group_id =>  @lecture.group_id, :course_id =>  @lecture.course_id, :lecture_id =>  params[:id], :percent => 100)
+      elsif views.first && views.first.percent < 100
+        views.first.update_attribute(:percent, 100)
+      end
+    end
+
+    if(online_quiz.question_type=="MCQ") #MCQ
+
+      quiz_grades = OnlineQuizGrade.where(:user_id => current_user.id, :online_quiz_id => @quiz, :in_group => answered_in_group )
+      attempt = quiz_grades.sort{|x,y| x.attempt <=> y.attempt }.last.attempt rescue 0
+
+       @answer=@answer.keys.map{|f| f.to_i}.select{|v| @answer["#{v}"]==true}.sort
+       if(@answer.nil? or @answer.empty?)
+          render json: {:msg => "Empty", :correct => false, :explanation => ["empty"], :detailed_exp => {}, :done => [item_pos, group_pos, @lecture.is_done]} and return
+       end
+       @real=OnlineAnswer.where(:online_quiz_id => @quiz, :correct => true).pluck(:id).sort{|x,y| x<=>y}
+       @exp=[]#OnlineAnswer.where(:id => @answer).pluck(:explanation).sort{|x,y| x<=>y}
+       @grade= @answer==@real? 1:0
+       @exp2={}
+
+      if(@grade == 0) #wrong
+        @answer.each do |a|
+          picked=OnlineAnswer.find(a.to_i)
+            ee = picked.explanation
+            ee = I18n.t('controller_msg.no_explanation') if ee ==""
+          @exp2[a]=[picked.correct, ee]
+        end
+      else #right
+        online_quiz.online_answers.each do |ans|
+          ee = ans.explanation
+          ee = I18n.t('controller_msg.no_explanation') if ee ==""
+          @exp2[ans.id]=[ans.correct, ee]
+        end
+      end
+
+       if online_quiz.inclass && answered_inclass
+        quiz_grades.destroy_all
+        attempt = 0
+       end
+
+      @answer.each do |a|
+        OnlineQuizGrade.create(:lecture_id => params[:id], :course_id => params[:course_id], :group_id => @lecture.group_id ,:user_id => current_user.id, :online_quiz_id => @quiz, :online_answer_id => a, :grade => @grade, :in_group => answered_in_group, :inclass => answered_inclass, :attempt => attempt+1,:distance_peer => answered_distance_peer)
+      end
+
+       render json: {:msg => I18n.t('controller_msg.succefully_submitted'), :correct => @answer==@real, :explanation => @exp, :detailed_exp => @exp2, :done => [item_pos, group_pos, @lecture.is_done]}
+    elsif (online_quiz.question_type.upcase=="DRAG") #drag
+
+        quiz_grades = FreeOnlineQuizGrade.where(:user_id => current_user.id, :online_quiz_id => @quiz)
+        attempt = quiz_grades.sort{|x,y| x.attempt <=> y.attempt }.last.attempt rescue 0
+
+         correct= online_quiz.online_answers[0].answer
+         @exp={}
+         @exp2 = {}
+         if @answer==correct #student ordered correctly
+           @grade=1
+           # @exp = online_quiz.online_answers[0].explanation
+           online_quiz.online_answers[0].explanation.each_with_index do |explanation ,index|
+            ee = explanation
+            ee = I18n.t('controller_msg.no_explanation') if ee ==""
+            @exp2[correct[index]] = ee
+           end
+           @exp[online_quiz.id] = @exp2
+         else
+           @grade=0
+         end
+
+        #@answer.each do |k,v|
+          FreeOnlineQuizGrade.create(:lecture_id => params[:id],:course_id => params[:course_id], :group_id => @lecture.group_id , :user_id => current_user.id, :online_quiz_id => @quiz, :online_answer => @answer , :grade => @grade, :attempt => attempt+1)
+        #end
+
+       render json: {:msg => I18n.t('controller_msg.succefully_submitted'), :correct => @grade==1 , :explanation => @exp, :done => [item_pos, group_pos, @lecture.is_done] }
+    elsif (online_quiz.question_type.upcase=="FREE TEXT QUESTION") #Free Text
+      quiz_grades = FreeOnlineQuizGrade.where(:user_id => current_user.id, :online_quiz_id => @quiz)
+      attempt = quiz_grades.sort{|x,y| x.attempt <=> y.attempt }.last.attempt rescue 0
+
+      @exp = {}
+      ee = online_quiz.online_answers[0].explanation
+      ee = I18n.t('controller_msg.no_explanation') if ee ==""
+      @exp[online_quiz.id] = ee
+      if online_quiz.online_answers[0].answer == ""
+        @grade = 0
+        review = true
+      else
+        match_string = online_quiz.online_answers[0].answer
+        if match_string =~ /^\/.*\/$/
+          match_string =match_string[1..match_string.length-2]
+          regex = Regexp.new match_string
+          @grade =  !!(@answer =~ regex)? 1:0
+        else
+          @grade = !!(@answer.downcase == match_string.downcase)? 1:0
+        end
+        review = false
+      end
+      # if FreeOnlineQuizGrade.where(:user_id => current_user.id, :online_quiz_id => @quiz).empty?
+      FreeOnlineQuizGrade.create(:lecture_id => params[:id],:course_id => params[:course_id], :group_id => @lecture.group_id , :user_id => current_user.id, :online_quiz_id => @quiz, :online_answer => @answer , :grade => @grade, :attempt => attempt+1)
+      # end
+      render json: {:msg => I18n.t('controller_msg.succefully_submitted'), :correct => @grade==1 , :explanation => @exp, :done => [item_pos, group_pos, @lecture.is_done], :review => review}
+    else #OCQ
+      quiz_grades = OnlineQuizGrade.where(:user_id => current_user.id, :online_quiz_id => @quiz, :in_group => answered_in_group )
+      attempt = quiz_grades.sort{|x,y| x.attempt <=> y.attempt }.last.attempt rescue 0
+
+      if(@answer.nil? or @answer.empty?)
+          render json: {:msg => "Empty", :correct => false, :explanation => ["empty"], :detailed_exp => {}, :done => [item_pos, group_pos, @lecture.is_done]} and return
+      end
+      @real_ans= OnlineAnswer.find(@answer.to_i)
+      @grade=@real_ans.correct ? 1:0
+
+      @exp2={}
+      logger.debug("grade is #{@grade}")
+
+
+      if(@grade == 0)
+        ee = @real_ans.explanation
+        ee = I18n.t('controller_msg.no_explanation') if ee ==""
+        @exp2[@answer]=[@real_ans.correct, ee]
+      else
+        online_quiz.online_answers.each do |ans|
+          ee= ans.explanation
+          ee= I18n.t('controller_msg.no_explanation') if ee==""
+
+          @exp2[ans.id]=[ans.correct, ee]
+        end
+      end
+
+
+
+      logger.debug("grade is #{@grade}")
+
+      if online_quiz.inclass && answered_inclass
+        quiz_grades.destroy_all
+        attempt = 0
+      end
+
+      # if quiz_grades.empty?
+      OnlineQuizGrade.create(:lecture_id => params[:id],:course_id => params[:course_id], :group_id => @lecture.group_id , :user_id => current_user.id, :online_quiz_id => @quiz, :online_answer_id => @answer, :grade => @grade, :in_group => answered_in_group, :inclass => answered_inclass, :attempt => attempt+1,:distance_peer => answered_distance_peer)
+      # elsif online_quiz.inclass && answered_inclass
+      #   quiz_grades.first.update_attributes(:online_answer_id => @answer, :grade => @grade)
+      # end
+
+      render json: {:msg => I18n.t('controller_msg.succefully_submitted'), :correct => @grade, :explanation => [@real_ans.explanation], :detailed_exp => @exp2, :done => [item_pos, group_pos, @lecture.is_done]}
+
+      # if quiz_grades.empty?
+      #   OnlineQuizGrade.create(:lecture_id => params[:id], :course_id => params[:course_id], :group_id => @lecture.group_id , :user_id => current_user.id, :online_quiz_id => @quiz, :online_answer_id => @answer, :grade => @grade)
+      #   render json: {:msg => t('controller_msg.succefully_submitted'), :correct => @real_ans.correct, :explanation => [@real_ans.explanation], :detailed_exp => @exp2, :done => [item_pos, group_pos, @lecture.is_done]}
+      # else
+      #   render json: {:msg =>t('controller_msg.already_answered_question'), :ans => a.first.online_answer_id , :correct => @real_ans.correct, :explanation => [@real_ans.explanation] , :detailed_exp => @exp2, :done => [item_pos, group_pos, @lecture.is_done]}
+      # end
+    end
+
+  end
+
+  def save_online
+    @answer= params[:answer]
+    @quiz_id= params[:quiz]
+    quiz = OnlineQuiz.find(@quiz_id)
+    ques_type=quiz.question_type
+    @lecture= Lecture.find(params[:id])
+    answered_inclass = params[:inclass] || false
+    answered_in_group = params[:in_group] || false
+    answered_distance_peer = params[:distance_peer] || false
+    group=@lecture.group
+    item_pos=params[:id]
+    group_pos= group.id
+    @lecture.current_user=current_user
+    # quiz_grades = OnlineQuizGrade.where(:user_id => current_user.id, :online_quiz_id => @quiz_id, :in_group => answered_in_group)
+
+    if quiz.inclass && answered_inclass
+      views = LectureView.where(:user_id => current_user.id,  :lecture_id =>  params[:id])
+      if views.empty?
+        LectureView.create(:user_id => current_user.id, :group_id =>  @lecture.group_id, :course_id =>  @lecture.course_id, :lecture_id =>  params[:id], :percent => 100)
+      elsif views.first && views.first.percent < 100
+        views.first.update_attribute(:percent, 100)
+      end
+    end
+    if ques_type=="MCQ"
+      quiz_grades = OnlineQuizGrade.where(:user_id => current_user.id, :online_quiz_id => @quiz_id, :in_group => answered_in_group )
+      attempt = quiz_grades.sort{|x,y| x.attempt <=> y.attempt }.last.attempt rescue 0
+      if @answer.empty?
+        render json: {:msg => "Empty", :correct => false, :explanation => ["empty"], :detailed_exp => {}, :done => [item_pos, group_pos, @lecture.is_done]} and return
+      end
+      @answer.map!{|e| e.to_i}
+      @real=OnlineAnswer.where(:online_quiz_id => @quiz_id, :correct => true).pluck(:id).sort{|x,y| x<=>y}
+      @exp=OnlineAnswer.where(:id => @answer).pluck(:explanation).sort{|x,y| x<=>y}
+
+      @exp2={}
+
+      if quiz.quiz_type =='survey'
+        @grade = 1
+      else
+        @grade= @answer.sort{|x,y| x<=>y}==@real? 1:0
+      end
+
+      if(@grade == 0) #wrong
+        @answer.each do |a|
+          picked=OnlineAnswer.find(a.to_i)
+            ee = picked.explanation
+            ee = I18n.t('controller_msg.no_explanation') if ee ==""
+          @exp2[a]=[picked.correct, ee]
+        end
+      else #right
+        quiz.online_answers.each do |ans|
+          ee = ans.explanation
+          ee = I18n.t('controller_msg.no_explanation') if ee ==""
+          @exp2[ans.id]=[ans.correct, ee]
+        end
+      end
+
+      if quiz.inclass && answered_inclass
+        quiz_grades.destroy_all
+        attempt = 0
+      end
+
+      @answer.each do |a|
+        OnlineQuizGrade.create(:lecture_id => params[:id],:course_id => params[:course_id], :group_id => @lecture.group_id , :user_id => current_user.id, :online_quiz_id => @quiz_id, :online_answer_id => a, :grade => @grade, :in_group => answered_in_group, :inclass => answered_inclass, :attempt => attempt+1,:distance_peer => answered_distance_peer)
+      end
+      render json: {:msg => I18n.t('controller_msg.succefully_submitted'), :correct => @grade, :explanation => @exp, :detailed_exp => @exp2, :done => [item_pos, group_pos, @lecture.is_done]}
+    elsif ques_type.downcase=="drag"
+      @exp=[]
+      @exp2={}
+      @grade=1
+      if @answer.empty?
+        render json: {:msg => "Empty", :correct => false, :explanation => ["empty"], :detailed_exp => {}, :done => [item_pos, group_pos, @lecture.is_done]} and return
+      end
+
+      quiz_grades = OnlineQuizGrade.where(:user_id => current_user.id, :online_quiz_id => @quiz_id, :in_group => answered_in_group)
+      attempt = quiz_grades.sort{|x,y| x.attempt <=> y.attempt }.last.attempt rescue 0
+
+      @answer.each do |k,v|
+        pos=OnlineAnswer.find(k.to_i).pos
+        if OnlineAnswer.find(k.to_i).answer!=v
+          q=OnlineAnswer.find(k.to_i).online_quiz
+          all=q.online_answers
+          @grade=0
+
+          if !all.select{|t| t.answer==v }[0].nil?
+            ee= all.select{|t| t.answer==v }[0].explanation[pos]
+            ee= I18n.t('controller_msg.no_explanation') if ee==""
+            @exp2[k]=[false, ee]
+          else
+            @exp2[k]=[false, I18n.t('controller_msg.no_explanation')]
+          end
+
+          @exp<<all.select{|t| t.answer==v }[0].explanation[pos] if !all.select{|t| t.answer==v }[0].nil?
+        else
+          ee= OnlineAnswer.find(k.to_i).explanation[pos]
+          ee= I18n.t('controller_msg.no_explanation') if ee==""
+
+          @exp2[k]=[true, ee]
+          @exp<<OnlineAnswer.find(k.to_i).explanation[pos]
+        end
+      end
+
+      @answer.each do |k,v|
+        OnlineQuizGrade.create(:lecture_id => params[:id],:course_id => params[:course_id], :group_id => @lecture.group_id , :user_id => current_user.id, :online_quiz_id => @quiz_id, :online_answer_id => k.to_i,:optional_text => v, :grade => @grade, :attempt => attempt+1)
+      end
+
+      render json: {:msg => I18n.t('controller_msg.succefully_submitted'), :correct => @grade==1 , :explanation => @exp, :detailed_exp => @exp2, :done => [item_pos, group_pos, @lecture.is_done]}
+    elsif ques_type.downcase=="free text question"
+      answers = quiz.online_answers
+      # @exp = []
+      # @exp = quiz.online_answers[0].explanation|| ""
+      @exp = {}
+      ee= quiz.online_answers[0].explanation
+      ee= I18n.t('controller_msg.no_explanation') if ee==""
+
+      @exp[quiz.id] = ee
+
+      quiz_grades = FreeOnlineQuizGrade.where(:user_id => current_user.id, :online_quiz_id => quiz.id)
+      attempt = quiz_grades.sort{|x,y| x.attempt <=> y.attempt }.last.attempt rescue 0
+
+      if !answers.empty?
+        if answers.first.answer.blank?
+          @grade = 0
+          review = true
+        else
+          match_string = answers.first.answer
+          if match_string =~ /^\/.*\/$/
+            match_string =match_string[1..match_string.length-2]
+            regex = Regexp.new match_string
+            @grade =  !!(@answer =~ regex)? 1:0
+          else
+            @grade = !!(@answer.downcase == match_string.downcase)? 1:0
+          end
+          review = false
+        end
+
+        FreeOnlineQuizGrade.create(:lecture_id => params[:id],:course_id => params[:course_id], :group_id => @lecture.group_id , :user_id => current_user.id, :online_quiz_id => quiz.id, :online_answer => @answer , :grade => @grade, :attempt => attempt+1)
+        render json: {:msg => I18n.t('controller_msg.succefully_submitted'), :correct => @grade==1 , :explanation => @exp, :done => [item_pos, group_pos, @lecture.is_done], :review => review}
+
+      end
+    else #OCQ
+
+      quiz_grades = OnlineQuizGrade.where(:user_id => current_user.id, :online_quiz_id => @quiz_id, :in_group => answered_in_group)
+      attempt = quiz_grades.sort{|x,y| x.attempt <=> y.attempt }.last.attempt rescue 0
+
+      if @answer.nil? or @answer.blank?
+        render json: {:msg => "Empty", :correct => false, :explanation => ["empty"], :detailed_exp => {}, :done => [item_pos, group_pos, @lecture.is_done]} and return
+      end
+
+      @real_ans= OnlineAnswer.find(@answer)
+      if quiz.quiz_type =='survey'
+        @grade = 1
+      else
+        @grade= @real_ans.correct ? 1:0
+      end
+
+      @exp2={}
+
+      if(@grade == 0)
+          ee= @real_ans.explanation
+          ee= I18n.t('controller_msg.no_explanation') if ee==""
+
+        @exp2[@answer]=[@real_ans.correct, ee]
+      else
+        quiz.online_answers.each do |ans|
+          ee= ans.explanation
+          ee= I18n.t('controller_msg.no_explanation') if ee==""
+
+          @exp2[ans.id]=[ans.correct, ee]
+        end
+      end
+
+      if quiz.inclass && answered_inclass
+        quiz_grades.destroy_all
+        attempt = 0
+      end
+
+      # if quiz_grades.empty?
+      OnlineQuizGrade.create(:lecture_id => params[:id],:course_id => params[:course_id], :group_id => @lecture.group_id , :user_id => current_user.id, :online_quiz_id => @quiz_id, :online_answer_id => @answer, :grade => @grade, :in_group => answered_in_group, :inclass => answered_inclass, :attempt => attempt+1,:distance_peer => answered_distance_peer)
+      # elsif quiz.inclass && answered_inclass
+      #   quiz_grades.first.update_attributes(:online_answer_id => @answer, :grade => @grade)
+      # end
+
+      render json: {:msg => I18n.t('controller_msg.succefully_submitted'), :correct => @grade, :explanation => [@real_ans.explanation], :detailed_exp => @exp2, :done => [item_pos, group_pos, @lecture.is_done]}
+    end
+  end
 
 	# def confused #can be atmost confused twice within 15 seconds. when once -> very false, when twice -> very true, if more will not save and alert you to ask a question instead.
 	# end
@@ -261,8 +646,56 @@ class LecturesController < ApplicationController
 		render json: {:answers => answers}
 	end
 
-	# def get_lecture_data_angular
-	# end
+	def get_lecture_data_angular
+		@q= Lecture.where(:id => params[:id], :course_id => params[:course_id]).first
+		if ((@q.nil? || @q.appearance_time > Time.zone.now.to_datetime) &&  !current_user.is_preview?) || @q.group.nil?
+			render json: {errors: [I18n.t('controller_msg.no_such_lecture')]}, :status => 404 and return
+		else
+		item_pos= @q.id#group.lectures.index(@q)
+		group_pos= @q.group_id #group.id#group.course.groups.index(group)
+		next_i = @q.group.next_item(@q.position)
+		next_item={}
+		if !next_i.nil?
+			next_item[:id] = next_i.id
+			next_item[:class_name] = next_i.class.name.downcase
+			next_item[:group_id]= next_i.group_id
+		end
+		today = Time.zone.now
+		all = @q.group.lectures.select{|v| v.appearance_time <= today } +  @q.group.quizzes.select{ |v| v.appearance_time <= today}
+		all.sort!{|x,y| ( x.position and y.position ) ? x.position <=> y.position : ( x.position ? -1 : 1 )  }
+		requirements={:lecture=> [], :quiz => []}
+		if @q.required
+			all.each do |l|
+				if l.id == @q.id
+					break
+				elsif l.required
+					requirements[l.class.name.downcase.to_sym] << l.id
+				end
+			end
+		end
+		@q[:requirements] = requirements
+
+		day2='day'.pluralize((Time.zone.now.to_date - @q.due_date.to_date).to_i)
+		day= I18n.t("controller_msg.#{day2}")
+
+		@alert_messages={}
+		if @q.due_date < Time.zone.now
+			@alert_messages['due']= [I18n.localize(@q.due_date, :format => '%d %b'), (Time.zone.now.to_date - @q.due_date.to_date).to_i, day2]
+		elsif @q.due_date.to_date == Time.zone.today
+			@alert_messages['today'] = @q.due_date#.strftime("%I:%M %p")
+		end
+		a=LectureView.where(:user_id => current_user.id, :course_id => params[:course_id], :lecture_id =>  params[:id])
+		if a.empty?
+			LectureView.create(:user_id => current_user.id, :group_id => @q.group_id, :course_id => params[:course_id], :lecture_id => params[:id], :percent => 0)
+		else
+			a = a.first
+			a.updated_at = Time.now
+			a.save
+		end
+		@q.current_user = current_user
+			render :json => {:alert_messages => @alert_messages,:next_item => next_item, :lecture => @q, :done => [item_pos, group_pos, @q.is_done]}
+		end
+	end
 
 	# def switch_quiz
 	# end
@@ -297,8 +730,25 @@ class LecturesController < ApplicationController
 	# def delete_confused
 	# end
 
-	# def save_note
-	# end
+	def save_note
+			lecture= Lecture.find(params[:id])
+			if params[:note_id]
+				note = lecture.video_notes.find(params[:note_id])
+				if note.update_attributes(:data => params[:data])
+					render json: {:notice => I18n.t('notes.successfully_saved'),:note => note}
+				else
+					render json: {errors:note.errors.full_messages}, status: 400
+				end
+			else
+				note = lecture.video_notes.build(:user_id => current_user.id, :data => params[:data], :time => params[:time])
+				if note.save
+					render json: {:notice => I18n.t('notes.successfully_saved'),:note => note}
+				else
+					render json: {errors:lecture.errors.full_messages}, status: 400
+				end
+			end
+		
+	end
 
 	# def delete_note
 	# end
@@ -366,8 +816,18 @@ class LecturesController < ApplicationController
 	# def export_notes
 	# end
 
-	# def change_status_angular
-	# end
+  def change_status_angular
+   status=params[:status].to_i
+   assign= @lecture.assignment_item_statuses.where(:user_id => params[:user_id]).first
+   if !assign.nil?
+     #0 original
+     (status == 0)? assign.destroy : assign.update_attributes(:status => status)
+   elsif status!=0
+     @lecture.assignment_item_statuses<< AssignmentItemStatus.create(:user_id => params[:user_id], :course_id => params[:course_id], :status => status ,  :group_id =>@lecture.group.id , :lecture_id => params[:id])
+   end
+
+   render :json => {:success => true, :notice => [I18n.t("courses.status_successfully_changed")]}
+  end
 
 	# def confused_show_inclass
 	# end
@@ -375,8 +835,17 @@ class LecturesController < ApplicationController
 	# def check_if_invited_distance_peer
 	# end
 
-	# def check_if_in_distance_peer_session
-	# end
+	def check_if_in_distance_peer_session
+		session = current_user.user_distance_peers.includes(:distance_peer).order('updated_at DESC').select{|d| d.distance_peer.lecture_id == params[:id].to_i && !(d.status == 0 || d.status == 6 )}
+		# user_email = session.first.select { |d| current_user.id != d.distance_peer.user_id }
+		if session.count != 0
+			user_distance_peer = DistancePeer.find(session.first.distance_peer_id).user_distance_peers.select{|d| d.status !=0 && current_user.id == d.user_id}
+			online_names =  DistancePeer.find(session.first.distance_peer_id).user_distance_peers.select{|d| d.status !=0 && current_user.id != d.user_id}.map{|u_dis| u_dis.user.screen_name }
+			render json: {:distance_peer => session.first, :user_distance_peer => user_distance_peer[0] ,:name => online_names[0] }
+		else
+			render json:{ :distance_peer => "no_peer_session"}
+		end
+  	end
 
 	# def invite_student_distance_peer
 	# end

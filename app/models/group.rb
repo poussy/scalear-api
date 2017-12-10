@@ -37,6 +37,11 @@ class Group < ApplicationRecord
 	attribute :total_quizzes
 	attribute :total_surveys
 	attribute :total_links
+	attribute :has_inclass
+	attribute :has_distance_peer
+	attribute :sub_items_size
+
+	attr_accessor :current_user
 
 	# def has_not_appeared
 	# end
@@ -222,8 +227,10 @@ class Group < ApplicationRecord
 		return all
 	end
 
-	# def get_sub_items
-	# end
+	def get_sub_items
+    	all=(quizzes+lectures).sort{|a,b| a.position <=> b.position}
+	end
+
 
 	# def get_appeared_items
 	# end
@@ -243,8 +250,20 @@ class Group < ApplicationRecord
 	# def total_student_questions_review
 	# end
 
-	# def next_item(pos)
-	# end
+	def next_item(pos)
+		self.get_sub_items.select{|f|
+		f.position>pos &&
+		(
+			(f.class.name.downcase == "lecture" &&
+				(!f.inclass ||
+					(f.inclass && f.appearance_time <= Time.now)
+				)
+			) ||
+			f.class.name.downcase != "lecture"
+		)}.first
+
+
+  	end
 
 	# def next_lecture(lec_pos)
 	# end

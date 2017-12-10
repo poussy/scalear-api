@@ -136,8 +136,9 @@ class User < ActiveRecord::Base
   # def is_administrator?
   # end
 
-  # def is_preview?
-  # end
+  def is_preview?
+    role_ids.include?6
+  end
 
   # def tutorials_taken
   # end
@@ -148,21 +149,25 @@ class User < ActiveRecord::Base
   # def get_exact_stats(group)
   # end
 
-  # def get_online_quizzes_solved(lecture)
-  # end
+  def get_online_quizzes_solved(lecture)
+    return ((online_quiz_grades.includes(:online_quiz).select{|v| v.lecture_id == lecture.id &&  v.online_quiz.graded}.map{|t| t.online_quiz_id})+(free_online_quiz_grades.includes(:online_quiz).select{|v| v.lecture_id == lecture.id && v.online_quiz.graded}.map{|t| t.online_quiz_id})).sort.uniq
+  end
 
   # def get_summary_table_online_quizzes_solved(lecture)
   # end
 
   
-  # def get_lecture_status(item)
-  # end
+  def get_lecture_status(item)
+    return self.assignment_item_statuses.select{|a| a.group_id == item.group_id && a.lecture_id == item.id && !a.quiz_id}.first
+
+  end
   
   # def count_online_quizzes_solved(group)
   # end
 
-  # def get_lectures_viewed(lecture)
-  # end
+  def get_lectures_viewed(lecture)
+    return lecture_views.select{|v| v.lecture_id == lecture.id} #, :percent => 75
+  end
 
   # def grades(course)          #
   # end
@@ -284,14 +289,50 @@ class User < ActiveRecord::Base
   # def grades_angular_lecture_test(group)
   # end
 
-  # def grades_angular_all_items(group)
-  # end
+  def grades_angular_all_items(group)
+    grades=[]
+    ### id , day_finished , quiz solved , total quiz , optional quiz solved , optional total quiz , precentage, (1for lecture // 2for quiz)
+    group.get_sub_items.each do |g|
+      if g.class.name.downcase == 'lecture'
+          views = LectureView.where(:user_id => self.id, :course_id => g.course_id, :lecture_id =>  g.id).first.percent rescue 0
+          grades<<[g.id, self.finished_lecture_test?(g),views,1].flatten
+      elsif g.class.name.downcase == 'quiz'
+        if g.quiz_type == 'survey'
+          # grades<<[g.id, self.finished_survey_test?(g),1,1,1,1,1,1]
+          grades<<[g.id, self.finished_survey_test_with_completed_question_count?(g),2].flatten
+        else
+          # grades<<[g.id, self.finished_quiz_test?(g),0,0,0,0,0,0]
+          ### id , day_finished , quiz solved , total quiz , optional quiz solved , 0, 0, (1for lecture // 2for quiz)
+          grades<<[g.id, self.finished_quiz_test_with_correct_question_count?(g),2].flatten
+        end
+      end
+    end
+    return grades
+  end
 
   # def finished_quiz_test?(quiz)
   # end
 
-  # def finished_quiz_test_with_correct_question_count?(quiz)
-  # end
+  def finished_quiz_test_with_correct_question_count?(quiz)
+    inst=self.quiz_statuses.select{|v| v.quiz_id==quiz.id and v.status=="Submitted"}[0]
+    day_finished = 0
+    total_question_count = quiz.questions.where("question_type !=?", 'header').count
+    ocq_mcq_grade = self.quiz_grades.includes(:question,:quiz).where(quiz_id: quiz.id).uniq{|q| q.question_id}.group_by{|a| a.grade} #0.0 ,1.0
+    drag_grades = self.free_answers.includes(:question,:quiz).select{|answer| answer.quiz_id ==quiz.id && answer.question.question_type == 'drag'}.uniq{|q| q.question_id}.group_by{|a| a.grade} #0
+    free_text_grades = self.free_answers.includes(:question,:quiz).select{|answer| answer.quiz_id ==quiz.id && answer.question.question_type != 'drag'}.uniq{|q| q.question_id}.group_by{|a| a.grade} #1
+    correct_answers_question = (ocq_mcq_grade[1.0] || []).count +  (drag_grades[1] || []).count + (free_text_grades[2] || []).count + (free_text_grades[3] || []).count
+    not_checked_question = (free_text_grades[0] || []).count
+
+    if inst.nil?
+      day_finished = -1
+    elsif inst.created_at < quiz.due_date
+      day_finished = 0
+    else
+      day_finished = (inst.created_at.to_date - quiz.due_date.to_date).to_i  #solved after lecture due date
+    end
+    ### day_finished , quiz solved , total quiz , optional quiz solved , 0 , (1for lecture // 2for quiz)
+    return [ day_finished , correct_answers_question, total_question_count ,not_checked_question, 0 ,0 ]
+  end
 
   # def finished_survey_test?(survey)
   # end
@@ -299,11 +340,39 @@ class User < ActiveRecord::Base
   # def finished_survey_test_with_completed_question_count?(survey)
   # end
 
-  # def finished_lecture_test?(lecture)
-  # end
+  def finished_lecture_test?(lecture)
+      viewed=self.lecture_views.select{|v| v.lecture_id == lecture.id && v.percent == 100}[0]
+      max=a1=a2=c=0
+      all_online_quiz = lecture.online_quizzes.includes(:online_answers).select{|f| (!f.online_answers.empty? || f.question_type=="Free Text Question" )}.group_by {|n| n.graded? ? :graded : :not_graded}
+      all_online_quiz_grades = lecture.online_quiz_grades.includes(:online_quiz).select{|v|  v.user_id==self.id && v.attempt == 1}.uniq{|v| v.online_quiz_id}.group_by {|n| n.online_quiz.graded? ? :graded : :not_graded}
+      all_free_online_quiz_grades = lecture.free_online_quiz_grades.includes(:online_quiz).select{|v| v.user_id==self.id && v.attempt == 1}.uniq{|v| v.online_quiz_id}.group_by {|n| n.online_quiz.graded? ? :graded : :not_graded}
 
-  # def get_finished_lecture_quizzes_count(lecture)
-  # end
+      total= all_online_quiz[:graded] || []
+      a=all_online_quiz_grades[:graded] || []
+      b=all_free_online_quiz_grades[:graded] || []
+
+      total_optional= all_online_quiz[:not_graded] || []
+      a_optional=all_online_quiz_grades[:not_graded] || []
+      b_optional=all_free_online_quiz_grades[:not_graded] || []
+
+      if a.size + b.size < total.size or viewed.nil?
+        return [-1, a.size+b.size, total.size,a_optional.size+b_optional.size, total_optional.size]
+      else
+        a1=a.max_by{|obj| obj.created_at }.created_at.to_date - lecture.due_date.to_date if !a.empty?
+        a2=b.max_by{|obj| obj.created_at }.created_at.to_date - lecture.due_date.to_date if !b.empty?
+        c=viewed.created_at.to_date - lecture.due_date.to_date
+      end
+
+    return [ [max,a1,a2,c].max.to_i, a.size+b.size, total.size, a_optional.size+b_optional.size, total_optional.size]
+  end
+
+  def get_finished_lecture_quizzes_count(lecture)
+      total= lecture.online_quizzes.select{|f| f.graded && (!f.online_answers.empty? or f.question_type=="Free Text Question")}.count
+      a=lecture.online_quiz_grades.includes(:online_quiz).select{|v| v.user_id==self.id && v.online_quiz.graded }.uniq{|v| v.online_quiz_id}.count
+      b=lecture.free_online_quiz_grades.includes(:online_quiz).select{|v| v.user_id==self.id && v.online_quiz.graded}.uniq{|v| v.online_quiz_id}.count
+      return [a+b, total]
+  end
+
 
   def grades_angular_test(item)
     grades=[]

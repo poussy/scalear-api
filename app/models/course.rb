@@ -44,6 +44,7 @@ class Course < ApplicationRecord
 	validates_format_of :image_url, :with    => %r{\.(((g|G)(i|I)(f|F))|((j|J)(p|P)(e|E)?(g|G))|((p|P)(n|N)(g|G)))}i, :message => :must_be_image, :allow_blank => true
 	
 	attribute :modules
+	attribute :duration
 	
 	def correct_teacher(user)
 		if !(self.teachers.include? user) && !user.has_role?('Administrator') && !(self.is_school_administrator(user))  
@@ -86,7 +87,10 @@ class Course < ApplicationRecord
 	end
 
 	def duration
-		( self.end_date - self.start_date ).numerator / 7
+		if self.end_date && self.start_date
+			( self.end_date - self.start_date ).numerator / 7
+		end
+		
 	end
 
 	def is_teacher(user)

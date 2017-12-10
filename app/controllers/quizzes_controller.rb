@@ -387,10 +387,19 @@ class QuizzesController < ApplicationController
   
   # def quiz_copy
   # end
-  
-  # def change_status_angular
-  # end
-  
+
+  def change_status_angular
+   status=params[:status].to_i
+   assign= @quiz.assignment_item_statuses.where(:user_id => params[:user_id]).first
+   if !assign.nil?
+    #0 original
+    (status==0)? assign.destroy : assign.update_attributes(:status => status)
+   elsif status!=0
+     @quiz.assignment_item_statuses<< AssignmentItemStatus.create(:user_id => params[:user_id], :course_id => params[:course_id], :status => status ,  :group_id =>@quiz.group.id , :quiz_id => @quiz.id)
+   end
+   render :json => {:success => true, :notice => [I18n.t("courses.status_successfully_changed")]}
+  end
+
 
 private
 

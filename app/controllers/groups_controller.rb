@@ -95,11 +95,32 @@ class GroupsController < ApplicationController
 	# def finished_lecture_test
 	# end
 
-	# def get_all_items_progress_angular
-	# end
+	def get_all_items_progress_angular
+		@students=@course.users.select("users.*, LOWER(users.name), LOWER(users.last_name)").order("LOWER(users.last_name)").limit(params[:limit]).offset(params[:offset]).includes([:lecture_views, :online_quiz_grades, :free_online_quiz_grades])
+		@mod=Group.where(:id => params[:id], :course_id => params[:course_id]).includes({:lectures => [:free_online_quiz_grades, :online_quiz_grades, {:online_quizzes => :online_answers}]}).first
 
-	# def get_all_items_progress_angular
-	# end
+		@total= @course.users.count
+
+		@matrixLecture={}
+		@late_lecture={}
+		@solvedCount={}
+		@totalCount = {}
+
+		@students.each do |s|
+			@matrixLecture[s.id]=s.grades_angular_all_items(@mod)
+			s.status={}
+			s.assignment_item_statuses.each do |stat|
+				if stat.status == 1
+					s.status[stat.lecture_id || stat.quiz_id]="Finished on Time"
+				elsif stat.status == 2
+					s.status[stat.lecture_id || stat.quiz_id]="Not Finished"
+				end
+			end
+		end
+
+		@mods=@mod.get_sub_items.map{|m| m.name}
+		render json: {:total => @total, :students => @students.to_json(:methods => [:status, :full_name]), :lecture_names => @mods, :lecture_status => @matrixLecture}
+  	end
 
 	# def get_quizzes_progress_angular
 	# end
@@ -239,8 +260,64 @@ class GroupsController < ApplicationController
 	# def get_inclass_active_angular
 	# end
 
-	# def get_module_data_angular
-	# end
+	def get_module_data_angular
+		group= Group.where(:id => params[:id], :course_id => params[:course_id])
+			.includes(
+			:lectures =>
+			[{:online_quizzes => [
+				:online_quiz_grades,
+				:free_online_quiz_grades
+			]},
+			:confuseds,
+			:video_notes,
+			:online_markers
+			]
+		).first
+
+		today = Time.zone.now
+		if (group.nil? || group.appearance_time >today) &&  !current_user.is_preview?
+			render json: {errors: [t('controller_msg.no_such_module')]}, :status => 404 and return
+		else
+			if current_user.is_preview?
+				lectures = group.lectures.sort{|x,y| ( x.position and y.position ) ? x.position <=> y.position : ( x.position ? -1 : 1 )  }
+			else
+				lectures = group.lectures.select{|v| v.appearance_time <= today || v.inclass }.sort{|x,y| ( x.position and y.position ) ? x.position <=> y.position : ( x.position ? -1 : 1 )  }
+			end    
+			lectures.each do |l|
+				l[:user_confused]= l.confuseds.select{|c| c.user_id == current_user.id}#.where(:user_id => current_user.id)
+				l.current_user= current_user
+				l.online_quizzes.each do |q|
+					student_online_grades = q.online_quiz_grades.select{|v| v.user_id == current_user.id}
+					student_free_online_grades = q.free_online_quiz_grades.select{|v| v.user_id == current_user.id}
+					q[:solved_quiz]= (student_online_grades.size!=0 || student_free_online_grades.size!=0)
+					if student_online_grades.first
+						q[:reviewed]=student_online_grades.first.review_vote
+					elsif student_free_online_grades.first
+						q[:reviewed]=student_free_online_grades.first.review_vote
+					else
+						q[:reviewed]=false
+					end
+					q[:votes_count] =  q.get_votes
+					q[:online_answers] = q.online_answers.select([:id, :online_quiz_id, :answer, :xcoor, :ycoor, :width,:height,:pos, :sub_xcoor, :sub_ycoor])
+
+					if q.quiz_type=="html" && q.question_type.downcase=="drag"
+						q[:online_answers_drag] = q[:online_answers][0].answer.shuffle! if !q[:online_answers][0].nil?
+					end
+					if q.question_type.downcase=="free text question"
+						q[:online_answers][0].answer=nil if !q[:online_answers][0].nil?
+					end
+				end
+				# waiting for post
+				# l[:posts] = l.posts_public
+				l[:lecture_notes] = l.video_notes.select{|n| n.user_id == current_user.id} || []
+				l[:title_markers] = l.online_markers.select{|a| a.title != ''} || []
+				l[:video_quizzes] = l.online_quizzes || []
+				l[:annotations] = l.online_markers.select{|a| a.annotation != ''} || []
+			end
+
+			render :json => {:module_lectures => lectures}
+		end	
+	end
 
 	def module_copy
 		id = params[:id] || params[:module_id]

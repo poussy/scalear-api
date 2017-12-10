@@ -311,13 +311,30 @@ class GroupsControllerTest < ActionDispatch::IntegrationTest
 		assert_response :success
 		resp =  JSON.parse response.body
 		assert_equal resp['items'].count , 5
-		assert_equal resp['total_questions'] , 3  
-		assert_equal resp['total_quiz_questions'] , 3 
+		assert_equal resp['total_questions'] , 10
+		assert_equal resp['total_quiz_questions'] , 4
 		assert_equal resp['total_survey_questions'] , 0
 		assert_equal resp['total_lectures'] , 2 
 		assert_equal resp['total_quizzes'] , 1 
 		assert_equal resp['total_surveys'] , 0
 		assert_equal resp['total_links'] , 2 
 	end
+
+	test 'module completion' do
+		get '/en/courses/3/groups/3/get_all_items_progress_angular', headers: @user3.create_new_auth_token
+
+		assert_equal decode_json_response_body['total'], 1
+		students_ids = Enrollment.where(course_id: 3).map{|e|e.user_id}
+		students = User.where(id: students_ids)
+		(JSON.parse decode_json_response_body['students']).each_with_index do |k,v|
+			assert_equal k['name'], students[v]['name']
+			
+		end
+				
+		assert_equal decode_json_response_body['lecture_names'], @group3.get_sub_items.map{|m|m.name}
+		assert_equal decode_json_response_body['lecture_status'], {"6"=>[[1, -1, 0, 4, 0, 0, 0, 2], [3, -1, 0, 0, 0, 10, 30, 1], [4, -1, 0, 0, 0, 0, 0, 1]]}
+		
+	end
+	
 	
 end
