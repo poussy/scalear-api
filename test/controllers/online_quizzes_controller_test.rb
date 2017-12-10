@@ -13,6 +13,10 @@ class OnlineQuizzesControllerTest < ActionDispatch::IntegrationTest
 		## necessary to send as json, so true and false wouldn't convert to strings
     @headers = @user3.create_new_auth_token
     @headers['content-type']="application/json"
+
+    @student = users(:student_in_course3)
+		@headers2 = @student.create_new_auth_token
+		@headers2['content-type']="application/json"
   end
 
   test "should update online_quiz with sent paramaters" do
@@ -99,11 +103,79 @@ class OnlineQuizzesControllerTest < ActionDispatch::IntegrationTest
       if q['question_type']=="Free Text Question" && OnlineAnswer.where(online_quiz_id: q['id']).count > 0 && !OnlineAnswer.where(online_quiz_id: q['id']).first.answer.blank?
         assert_equal q['match_type'], "Match Text"
       end
-      
+    end
+  end
+
+  test "vote_for_review " do 
+
+    quiz = OnlineQuiz.find(1)
+    assert_not quiz.online_quiz_grades.empty?
+    quiz.online_quiz_grades.each do |grade|
+      assert_equal grade["review_vote"], false
     end
 
+    post '/en/online_quizzes/1/vote_for_review', params: {}, headers: @headers2
+
+    quiz.reload
     
+    quiz.online_quiz_grades.each do |grade|
+      assert_equal grade["review_vote"], true
+    end
   end
+
+  test "unvote_for_review " do 
+
+    OnlineQuizGrade.find(1).update_attribute("review_vote", true)
+    
+    quiz = OnlineQuiz.find(1)
+    assert_not quiz.online_quiz_grades.empty?
+    quiz.online_quiz_grades.each do |grade|
+      assert_equal grade["review_vote"], true
+    end
+
+    post '/en/online_quizzes/1/unvote_for_review', params: {}, headers: @headers2
+
+    quiz.reload
+    
+    quiz.online_quiz_grades.each do |grade|
+      assert_equal grade["review_vote"], false
+    end
+  end
+
+
+  test "vote_for_review for free text and html/drag" do 
+
+    quiz = OnlineQuiz.find(2)
+    assert_not quiz.free_online_quiz_grades.empty?
+    quiz.free_online_quiz_grades.each do |grade|
+      assert_equal grade["review_vote"], false
+    end
+
+    post '/en/online_quizzes/2/vote_for_review', params: {}, headers: @headers2
+
+    quiz.reload
+    quiz.free_online_quiz_grades.each do |grade|
+      assert_equal grade["review_vote"], true
+    end
+  end
+  
+  test "unvote_for_review for free text and html/drag" do 
+
+    FreeOnlineQuizGrade.find(1).update_attribute("review_vote", true)
+    quiz = OnlineQuiz.find(2)
+    assert_not quiz.free_online_quiz_grades.empty?
+    quiz.free_online_quiz_grades.each do |grade|
+      assert_equal grade["review_vote"], true
+    end
+
+    post '/en/online_quizzes/2/unvote_for_review', params: {}, headers: @headers2
+
+    quiz.reload
+    quiz.free_online_quiz_grades.each do |grade|
+      assert_equal grade["review_vote"], false
+    end
+  end
+  
   
 
 end
