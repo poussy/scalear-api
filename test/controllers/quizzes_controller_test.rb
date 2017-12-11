@@ -300,6 +300,27 @@ class QuizzesControllerTest < ActionDispatch::IntegrationTest
        
     end
 
+    test 'get_questions_angular shold return next_item if quiz was submitted' do    
+      # submit answer
+      post '/en/courses/3/quizzes/1/save_student_quiz_angular' , 
+        params: {
+          "student_quiz":{
+            "1":5,
+            "2":{"1":false, "2":true},
+            "3":"abcd",
+            "4": ["<p class=\"medium-editor-p\">ans1</p>","<p class=\"medium-editor-p\">ans2</p>"]
+          },
+          "commit":"submit"
+        }, 
+        headers: @headers2 , as: :json
+
+
+      get '/en/courses/3/quizzes/1/get_questions_angular' ,headers: @headers2 , as: :json
+
+      assert_equal decode_json_response_body["next_item"], {"id"=>3, "class_name"=>"lecture", "group_id"=>3}
+       
+    end
+
     test "save_student_quiz_angular should return status" do
       post '/en/courses/3/quizzes/1/save_student_quiz_angular' , 
         params: {

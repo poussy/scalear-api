@@ -524,7 +524,7 @@ class CoursesController < ApplicationController
 				if q[:class_name] != 'customlink'
 					q.current_user=current_user
 					q[:done] = q.is_done
-					if last_viewed_group_id == g.id && last_viewed_lecture.id == q.id  && !q[:done] && should_enter
+					if last_viewed_group_id == g.id && last_viewed_lecture.lecture_id == q.id  && !q[:done] && should_enter
 						next_i = q
 						should_enter = false
 					end
