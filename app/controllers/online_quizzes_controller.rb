@@ -50,9 +50,12 @@ class OnlineQuizzesController < ApplicationController
 			render json: {errors: @online_quiz.errors}, status: :unprocessable_entity
 		end
   	end
-	
-	# def destroy
-	# end
+  
+	def destroy
+		@online_quiz.destroy
+		
+		render json: {:notice => [I18n.t("controller_msg.quiz_successfully_deleted")]}
+	end
 	
 	def get_quiz_list_angular
 		lecture = Lecture.find(params[:lecture_id])
@@ -71,13 +74,39 @@ class OnlineQuizzesController < ApplicationController
 		end
 		render json: {:quizList => quizList, :status=>"success"}
   	end
-	
-	# def vote_for_review
-	# end
-	
-	# def unvote_for_review
-	# end
-	
+
+	def vote_for_review
+		quiz = OnlineQuiz.find(params[:id])
+		if quiz.question_type.upcase=="FREE TEXT QUESTION" || (quiz.quiz_type.upcase =="HTML" && quiz.question_type.upcase=="DRAG")
+			quiz_grades= quiz.free_online_quiz_grades.where(:user_id => current_user.id, :attempt => 1)
+		else
+			quiz_grades= quiz.online_quiz_grades.where(:user_id => current_user.id, :attempt => 1)
+
+		end
+		quiz_grades.each do |quiz_grade|
+			if !quiz_grade.nil?
+				quiz_grade.review_vote = true
+				quiz_grade.save
+			end
+		end
+		render :json => {:done => true}
+	end
+
+	def unvote_for_review
+		quiz = OnlineQuiz.find(params[:id])
+		if quiz.question_type.upcase=="FREE TEXT QUESTION" || (quiz.quiz_type.upcase =="HTML" && quiz.question_type.upcase=="DRAG")
+			quiz_grades= quiz.free_online_quiz_grades.where(:user_id => current_user.id, :attempt => 1)
+		else
+			quiz_grades= quiz.online_quiz_grades.where(:user_id => current_user.id, :attempt => 1)
+		end
+		quiz_grades.each do |quiz_grade|
+			if !quiz_grade.nil?
+				quiz_grade.review_vote = false
+				quiz_grade.save
+			end
+		end
+		render :json => {:done => true}
+	end
 	# def hide_responses
 	# end
 	

@@ -228,8 +228,9 @@ class Group < ApplicationRecord
 	end
 
 	def get_sub_items
-		all=(quizzes+lectures).sort{|a,b| a.position <=> b.position}
+    	all=(quizzes+lectures).sort{|a,b| a.position <=> b.position}
 	end
+
 
 	# def get_appeared_items
 	# end
@@ -250,17 +251,19 @@ class Group < ApplicationRecord
 	# end
 
 	def next_item(pos)
-	self.get_sub_items.select{|f|
+		self.get_sub_items.select{|f|
 		f.position>pos &&
 		(
 			(f.class.name.downcase == "lecture" &&
 				(!f.inclass ||
-				(f.inclass && f.appearance_time <= Time.now)
-			)
-		) ||
-		f.class.name.downcase != "lecture"
-	)}.first
-	end
+					(f.inclass && f.appearance_time <= Time.now)
+				)
+			) ||
+			f.class.name.downcase != "lecture"
+		)}.first
+
+
+  	end
 
 	# def next_lecture(lec_pos)
 	# end

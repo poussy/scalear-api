@@ -43,6 +43,112 @@ free_text_q_with_online_answer:
   question: New Quiz
   display_text: true
 
+online_quiz_mcq1:
+  id: 4
+  course_id: 3
+  group_id: 3
+  lecture_id: 3
+  question_type: "MCQ"
+  quiz_type: "invideo"
+  inclass: false
+  graded: false
+  start_time: 250
+  time: 50
+  end_time: 300
+  question: MCQ Quiz
+  display_text: true
+
+online_quiz_drag:
+  id: 5
+  course_id: 3
+  group_id: 3
+  lecture_id: 3
+  question_type: "drag"
+  quiz_type: "invideo"
+  inclass: false
+  graded: false
+  start_time: 250
+  time: 50
+  end_time: 300
+  question: DRAG Quiz
+  display_text: true
+
+html_ocq_quiz1:
+  id: 6
+  course_id: 3
+  group_id: 3
+  lecture_id: 3
+  question_type: "OCQ"
+  quiz_type: "html"
+  inclass: false
+  graded: false
+  start_time: 250
+  time: 60
+  end_time: 300
+  question: ocq html question
+  display_text: true
+
+html_mcq_quiz1:
+  id: 7
+  course_id: 3
+  group_id: 3
+  lecture_id: 3
+  question_type: "MCQ"
+  quiz_type: "html"
+  inclass: false
+  graded: false
+  start_time: 250
+  time: 70
+  end_time: 300
+  question: mcq html question
+  display_text: true
+
+html_drag_quiz1:
+  id: 8
+  course_id: 3
+  group_id: 3
+  lecture_id: 3
+  question_type: "drag"
+  quiz_type: "html"
+  inclass: false
+  graded: false
+  start_time: 250
+  time: 80
+  end_time: 300
+  question: DRAG Quiz
+  display_text: true
+
+html_free_text_quiz1:
+  id: 9
+  course_id: 3
+  group_id: 3
+  lecture_id: 3
+  question_type: "Free Text Question"
+  quiz_type: "html"
+  inclass: false
+  graded: false
+  start_time: 250
+  time: 80
+  end_time: 300
+  question: free text html question
+  display_text: true
+
+html_free_text_quiz_with_answer1:
+  id: 10
+  course_id: 3
+  group_id: 3
+  lecture_id: 3
+  question_type: "Free Text Question"
+  quiz_type: "html"
+  inclass: false
+  graded: false
+  start_time: 250
+  time: 80
+  end_time: 300
+  question: free text html question
+  display_text: true
+
+
 ocq_online_quiz1:
   group: group1
   course: course1
@@ -70,3 +176,4 @@ html_ocq_online_quiz1:
   end_time: 120
   question: New Quiz
   display_text: true
+

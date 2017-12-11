@@ -90,6 +90,7 @@ class Course < ApplicationRecord
 		if self.end_date && self.start_date
 			( self.end_date - self.start_date ).numerator / 7
 		end
+		
 	end
 
 	def is_teacher(user)
