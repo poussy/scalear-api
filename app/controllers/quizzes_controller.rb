@@ -95,7 +95,6 @@ class QuizzesController < ApplicationController
           end
           s_grades[q.id]=grades2[0].answer
           correct[q.id]=grades2[0].grade
-          puts "a.content issssss #{exp}"
         end
         if quiz.course.is_student(current_user) || quiz.course.is_guest(current_user)
           if q.question_type.upcase=="DRAG"
@@ -164,7 +163,7 @@ class QuizzesController < ApplicationController
     @alert_messages={}
     day2='day'.pluralize((Time.zone.now.to_date - quiz.due_date.to_date).to_i)
     if quiz.due_date < Time.zone.now #if due date 5 april (night) then i have until 6 april..
-      @alert_messages['due']= [I18n.localize(quiz.due_date, :format => '%d %b'), (Time.zone.now.to_date - quiz.due_date.to_date).to_i, t("controller_msg.#{day2}")]
+      @alert_messages['due']= [I18n.localize(quiz.due_date, :format => '%d %b'), (Time.zone.now.to_date - quiz.due_date.to_date).to_i, I18n.t("controller_msg.#{day2}")]
     elsif  quiz.due_date.to_date == Time.zone.today && Time.zone.now.hour <= quiz.due_date.hour
       @alert_messages['today'] = quiz.due_date
     end
@@ -188,7 +187,6 @@ class QuizzesController < ApplicationController
     if params[:quiz][:graded_module]== true
       params[:quiz][:graded]=group.graded
     end
-
     if @quiz.update_attributes(quiz_params)
        @quiz.events.where(:lecture_id => nil, :group_id => group.id).destroy_all
        if @quiz.due_date.to_formatted_s(:long) != group.due_date.to_formatted_s(:long)
@@ -216,25 +214,23 @@ class QuizzesController < ApplicationController
     copy_quiz.due_date_module = true
     copy_quiz.required_module = true
     copy_quiz.graded_module = true
-    ## waiting for events table
-    # Event.where(:quiz_id => old_quiz.id, :lecture_id => nil).each do |e|
-    #   new_event= e.dup
-    #   new_event.quiz_id = copy_quiz.id
-    #   new_event.course_id = copy_quiz.course_id
-    #   new_event.group_id = copy_quiz.group_id
-    #   new_event.save(:validate => false)
-    # end
+    Event.where(:quiz_id => old_quiz.id, :lecture_id => nil).each do |e|
+      new_event= e.dup
+      new_event.quiz_id = copy_quiz.id
+      new_event.course_id = copy_quiz.course_id
+      new_event.group_id = copy_quiz.group_id
+      new_event.save(:validate => false)
+    end
 
     old_quiz.questions.each do |question|
       new_question = question.dup
       new_question.quiz_id = copy_quiz.id
       new_question.save(:validate => false)
-      ## waiting for answers table
-      # question.answers.each do |answer|
-      #   new_answer = answer.dup
-      #   new_answer.question_id = new_question.id
-      #   new_answer.save(:validate => false)
-      # end
+      question.answers.each do |answer|
+        new_answer = answer.dup
+        new_answer.question_id = new_question.id
+        new_answer.save(:validate => false)
+      end
     end
 
     render json:{quiz: copy_quiz, :notice => [I18n.t("controller_msg.#{copy_quiz.quiz_type}_successfully_created")]}
@@ -242,13 +238,15 @@ class QuizzesController < ApplicationController
 
 
   def validate_quiz_angular
-    @quiz= Quiz.find(params[:id])
-    params[:quiz].each do |key, value|
-      @quiz[key]=value
+    # @quiz= Quiz.find(params[:id])
+    if params[:quiz]
+      params[:quiz].each do |key, value|
+        @quiz[key]=value
+      end
     end
-    
+
     if @quiz.valid?
-      head :ok
+      render json:{ :nothing => true }
     else
       render json: {errors:@quiz.errors.full_messages}, status: :unprocessable_entity 
     end
@@ -306,8 +304,80 @@ class QuizzesController < ApplicationController
   # def make_visible
   # end
   
-  # def update_questions_angular
-  # end
+  def update_questions_angular
+
+    @questions = params[:questions]
+
+    Quiz.transaction do
+      #want to update existing records. (for questions and answers)
+      # want to create new ones //
+      # want to delete ones no longer there.//
+      old_questions=[]
+      old_answers=[]
+      if !@questions.nil?
+
+        @questions.each_with_index do |new_q, index|
+          if !new_q["id"].nil? #old one
+            
+            old_questions<<new_q["id"].to_i
+            @current_q=Question.find(new_q["id"])
+
+            z= @current_q.update_attributes!(:content => new_q["content"], :question_type => new_q["question_type"], :position => index+1)
+            if !new_q["answers"].nil?
+             
+              if(@current_q.question_type == "Free Text Question" && new_q["match_type"] =='Free Text')
+                  @current_q.answers.each do |ans|
+                    ans.destroy
+                  end
+                  
+                  new_q["answers"].each do |new_ans|
+                    y = @current_q.answers.create(:content =>"" , :correct => new_ans["correct"],:explanation => new_ans["explanation"])
+                    old_answers<<y.id.to_i
+                  end
+              else
+                new_q["answers"].each do |new_ans| ######### ANSWERS #########
+                  if !new_ans["id"].nil? #old one
+                    old_answers<<new_ans["id"].to_i
+                    Answer.find(new_ans["id"]).update_attributes!(:content => new_ans["content"], :correct => new_ans["correct"],:explanation => new_ans["explanation"])
+                  else
+                    y=@current_q.answers.create(:content => new_ans["content"], :correct => new_ans["correct"],:explanation => new_ans["explanation"])
+                    old_answers<<y.id.to_i
+                  end
+                end
+              end
+            end
+          else #new one
+            x=@quiz.questions.create(:content => new_q["content"], :question_type =>new_q["question_type"], :position => index+1)
+            old_questions<<x.id.to_i
+            if !new_q["answers"].nil?
+              new_q["answers"].each do |new_ans|
+                y=x.answers.create(:content => new_ans["content"], :correct => new_ans["correct"],:explanation => new_ans["explanation"])
+                old_answers<<y.id.to_i
+              end
+            end
+          end
+        end
+      else
+        old_questions=[]
+        old_answers=[]
+      end
+      to_delete_a=[]
+      @quiz.questions.each do |q|
+        to_delete_a<<q.answers.pluck(:id)
+      end
+      to_delete_a.flatten!
+      to_delete_a = to_delete_a - old_answers
+      to_delete_a.each do |d|
+        Answer.find(d).destroy
+      end
+      to_delete= @quiz.questions.pluck(:id) - old_questions
+      to_delete.each do |d|
+        Question.find(d).destroy
+      end
+      render :json => {:message => "success", :notice => [I18n.t("controller_msg.#{@quiz.quiz_type}_successfully_saved")]} and return
+    end
+    render :json => {:errors => [I18n.t("controller_msg.transaction_rolled_back")]}, :status => 400
+  end
   
   # def save_student_quiz_angular
   # end
@@ -317,10 +387,19 @@ class QuizzesController < ApplicationController
   
   # def quiz_copy
   # end
-  
-  # def change_status_angular
-  # end
-  
+
+  def change_status_angular
+   status=params[:status].to_i
+   assign= @quiz.assignment_item_statuses.where(:user_id => params[:user_id]).first
+   if !assign.nil?
+    #0 original
+    (status==0)? assign.destroy : assign.update_attributes(:status => status)
+   elsif status!=0
+     @quiz.assignment_item_statuses<< AssignmentItemStatus.create(:user_id => params[:user_id], :course_id => params[:course_id], :status => status ,  :group_id =>@quiz.group.id , :quiz_id => @quiz.id)
+   end
+   render :json => {:success => true, :notice => [I18n.t("courses.status_successfully_changed")]}
+  end
+
 
 private
 

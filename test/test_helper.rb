@@ -12,4 +12,12 @@ class ActiveSupport::TestCase
   def decode_json_response_body
     ActiveSupport::JSON.decode @response.body
   end
+
 end
+
+class ActiveRecord::Associations::CollectionProxy
+    def last_created_record
+      self.sort_by(&:created_at).last
+    end
+end
+

@@ -19,6 +19,24 @@ Rails.application.routes.draw do
     post "home/accept_course"
     post "home/reject_course"    
 
+    post "discussions/create_comment"
+    get "discussions/get_comments"
+    post "discussions/vote"
+    post "discussions/flag"
+    post "discussions/create_post"
+    get "discussions/get_posts"
+    delete "discussions/delete_post"
+    delete "discussions/delete_comment"
+    post "discussions/vote_comment"
+    post "discussions/flag_comment"
+    delete "discussions/remove_all_flags"
+    delete "discussions/remove_all_comment_flags"
+    post "discussions/hide_post"
+    post "discussions/hide_comment"
+    post "discussions/update_post"
+
+
+
     # devise_for :users 
     resources :users, only: [] do
       member do
@@ -268,19 +286,56 @@ Rails.application.routes.draw do
     end
 
 
-        resources :announcements
+    resources :announcements
     end    
+    
+    resources :online_markers do
+        member do
+            put 'validate_name'
+            post 'update_hide'
+        end
+            collection do
+            get 'get_marker_list'
+        end
+    end
 
     resources :custom_links do
-    collection do
-      post 'sort_course'
-      post 'link_copy'      
+      collection do
+        post 'sort_course'
+        post 'link_copy'      
+      end
+      member do
+        put 'validate_custom_link'
+        post 'link_copy'
+      end
     end
-    member do
-      put 'validate_custom_link'
-      post 'link_copy'
+
+    resources :online_quizzes do
+      collection do
+        get 'get_quiz_list_angular'
+      end
+      member do
+        get  'get_chart_data'
+        put  'validate_name'
+        post 'vote_for_review'
+        post 'unvote_for_review'
+        post 'hide_responses'
+        post 'update_inclass_session'
+        get 'get_inclass_session_votes'
+        post 'update_grade'
+      end
     end
-  end
+
+    resources :shared_items do
+      member do
+        post 'accept_shared'
+        post 'update_shared_data'
+        post 'reject_shared'
+      end
+      collection do
+        get 'show_shared'
+      end
+    end
 
   end
 end

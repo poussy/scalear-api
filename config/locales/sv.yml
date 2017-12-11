@@ -204,6 +204,11 @@ sv:
     ask: "Fråga"
     please_choose_one_answer: "Välj minst ett svar"
     hover_for_details: "Peka för mer information"
+    errors:
+        appearance_time_after_module_appearance_time: "must be after module appearance time(t)"
+        due_date_pass_after_appearance_date: "must be before appearance time(t)"
+        time_before_module_due_date: "must be before module due date(t)"
+        inclass_distance_peer_both_true: "must be inclass or distance peer(t)"        
   online_quiz:
     you_sure_delete_quiz: "Är du säker på att du vill radera Quiz'en"
     change_time: "ändra tid"
@@ -485,6 +490,7 @@ sv:
     link_successfully_created: "Länka har skapats."
     link_successfully_updated: "Länka har uppdaterats."
     link_successfully_deleted: "Länka har tagits bort."
+    marker_successfully_deleted: "Note har tagits bort."    
     answer_successfully_created: "Svar har skapats."
     answer_successfully_updated: "Svar har uppdaterats."
     question_successfully_created: "Fråga har skapats."

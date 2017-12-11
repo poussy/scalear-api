@@ -401,11 +401,62 @@ class CoursesController < ApplicationController
 	# def get_course_angular
 	# end  
 
-	# def module_progress_angular
-	# end  
+	def module_progress_angular
+		@student_names=[]
+		@course=Course.where(:id => params[:id]).includes(:groups => [{:online_quizzes => [:online_answers, :lecture]}, :quizzes, :lectures => :online_quizzes])[0]
+		@students=@course.users.select("users.*, LOWER(users.name), LOWER(users.last_name)").order("LOWER(users.last_name) ").limit(params[:limit]).offset(params[:offset]).includes([{:free_online_quiz_grades => [:lecture, :online_quiz]}, {:online_quiz_grades => [:lecture, :online_quiz]}, {:lecture_views => :lecture}, {:quiz_statuses => :quiz}, :assignment_statuses])
 
-	# def get_total_chart_angular
-	# end  
+		@matrix={}
+		@late={}
+		@students.each do |s|
+			@matrix[s.id]=s.grades_angular_test(@course)  #returns for each module in the course, whether student finished r not and on time or not.
+			s.status={}
+			s.assignment_statuses.each do |stat|
+				if stat.status == 1
+					s.status[stat.group_id]="Finished on Time"
+				elsif stat.status == 2
+					s.status[stat.group_id]="Not Finished"
+				end
+			end
+		end
+
+		@mods=@course.groups.map{|m| m.name}
+		@total= @course.users.size
+		render json: {:module_status => @matrix, :late_modules => @late, :students => @students.to_json(:methods => [:status, :full_name]), :module_names => @mods, :total => @total}
+	end  
+
+	def get_total_chart_angular
+		@course=Course.where(:id => params[:id]).includes({:online_quizzes => [:online_answers, :lecture]}, :quizzes)[0]
+		@student_progress=[]
+		@nonline_total=@course.online_quizzes.select{|f| f.graded && f.lecture.graded && (!f.online_answers.empty? || f.question_type=="Free Text Question")}.size
+		@lectures_total =@course.lectures.select{|l|  ( l.graded && !l.duration.nil? ) }.size
+	
+		@n_total= @course.quizzes.select{|v| v.quiz_type=="quiz" and v.graded}.size    #where(:quiz_type => "quiz").count
+		@students=@course.users.select("users.*, LOWER(users.name), LOWER(users.last_name)").order("LOWER(users.last_name)").includes([{:free_online_quiz_grades => :lecture} , {:online_quiz_grades => :lecture} , {:quiz_statuses => :quiz}])
+		@total=@students.size
+
+		@students.each_with_index do |s, index|
+
+			@n_solved=s.quiz_statuses.select{|v| v.course_id==@course.id && v.status=="Submitted" && v.quiz.quiz_type=='quiz' && v.quiz.graded}.size
+			@nonline=s.online_quiz_grades.select{|q| q.course_id == @course.id && q.lecture.graded && q.online_quiz.graded }.uniq{|u| u.online_quiz_id}.size + s.free_online_quiz_grades.select{|f| f.course_id == @course.id && f.lecture.graded && f.online_quiz.graded}.uniq{|u| u.online_quiz_id}.size
+			@lectures_views = s.lecture_views.select{ |lec_view| lec_view.lecture.graded && ( lec_view.percent ==100 ) }.size
+
+			if @n_solved.nil? || @n_total==0
+				@result1=0
+			else
+				@result1=@n_solved.to_f/@n_total.to_f*100
+			end
+
+			if @lectures_total == 0
+				@result3=0
+			else
+				@result3= ( (@nonline.to_f + @lectures_views.to_f )/ ( @nonline_total.to_f + @lectures_total.to_f ) )*100
+			end
+
+			@student_progress[index]=[s.full_name, @result1, @result3] #@result2
+		end
+		render :json => {:student_progress => @student_progress}		
+	end  
 
 	def enroll_to_course
 		key = params[:unique_identifier]
@@ -431,8 +482,78 @@ class CoursesController < ApplicationController
 		end		
 	end  
 
-	# def courseware_angular
-	# end  
+	def courseware_angular
+		course=Course.find(params[:id])
+		course[:duration] = course.duration
+		is_preview_user = current_user.is_preview?
+		today = Time.now
+		if is_preview_user
+		groups = course.groups.includes(:lectures, :quizzes, :custom_links).select{|v|
+			v.lectures.size > 0 ||
+			v.quizzes.size > 0 ||
+			v.custom_links.size > 0
+		}
+		else
+		groups = course.groups.includes(:lectures, :quizzes, :custom_links).select{|v|
+			v.appearance_time <= today &&
+			(
+			l =v.lectures.where("appearance_time <= ? or inclass = true", today );
+			q = v.quizzes.where( "appearance_time <= ?", today );
+			l.size > 0 ||
+			q.size > 0 ||
+			v.custom_links.size > 0
+			)
+		}
+		end
+
+		groups.sort!{|x,y| ( x.position and y.position ) ? x.position <=> y.position : ( x.position ? -1 : 1 )  }
+
+		should_enter=true
+		next_i=nil
+		last_viewed_group = -1
+		last_viewed_lecture = course.lecture_views.includes(:lecture).select{|lec_view| lec_view.user_id == current_user.id && lec_view.lecture.appearance_time <= today }.sort_by!(&:updated_at).last
+		last_viewed_group_id = last_viewed_lecture.group_id if !last_viewed_lecture.nil?
+
+		groups.each do |g|
+			g.current_user= current_user
+			g[:has_inclass] = false
+			g[:has_distance_peer] = false
+			all = g.get_items
+			all.each do |q|
+				q[:class_name]= q.class.name.downcase
+				if q[:class_name] != 'customlink'
+					q.current_user=current_user
+					q[:done] = q.is_done
+					if last_viewed_group_id == g.id && last_viewed_lecture.id == q.id  && !q[:done] && should_enter
+						next_i = q
+						should_enter = false
+					end
+					if q[:class_name] == 'lecture' && !g[:has_inclass]
+						g[:has_inclass] = q.inclass
+					end
+					if q[:class_name] == 'lecture' && !g[:has_distance_peer]
+						g[:has_distance_peer] = q.distance_peer
+					end
+				end
+			end
+			g[:items] = all
+			g[:sub_items_size] = g.lectures.size + g.quizzes.size
+			g[:total_time] = g.total_time
+		end
+		next_item={}
+		if !next_i.nil?
+			next_item[:module]= next_i.group_id
+			next_item[:item] = {:id => next_i.id, :class_name => next_i.class.name.downcase}
+		elsif groups.size > 0 && groups[0].items.size > 0 && groups[0].items[0][:class_name]!="customlink"
+			next_item[:module] = groups[0].id
+			next_item[:item] = {:id => groups[0].items[0].id, :class_name => groups[0].items[0][:class_name]}
+		else
+			next_item[:module] = -1
+			next_item[:item] = -1
+		end
+
+		render json: {:course => course,  :groups => groups, :next_item => next_item}
+  	end
 
 	# def courseware
 	# end  
@@ -446,14 +567,15 @@ class CoursesController < ApplicationController
 	# def export_for_transfer
 	# end  
 
-	# def export_modules_progress
-	# end  
+	def export_modules_progress
+		@course=Course.where(:id => params[:id]).includes(:groups => [{:online_quizzes => [:online_answers, :lecture]}, :quizzes, :lectures => :online_quizzes])[0]
+		@course.export_modules_progress(current_user)
+		render :json => {:notice => ['Course progress wil be exported to CSV and sent to your Email']}
+	end  
 
-
-private
-
-  def course_params
-    params.require(:course).permit(:description, :end_date, :name, :prerequisites, :short_name, :start_date, :user_ids, :user_id, :time_zone, :discussion_link, :importing,
-    			 :image_url ,:disable_registration )
-  end
+	private
+		def course_params
+			params.require(:course).permit(:description, :end_date, :name, :prerequisites, :short_name, :start_date, :user_ids, :user_id, :time_zone, :discussion_link, :importing,
+					 :image_url ,:disable_registration )
+		end
 end

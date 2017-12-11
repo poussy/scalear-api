@@ -31,6 +31,7 @@ class Course < ApplicationRecord
 	has_many :online_quiz_grades
 	has_many :online_quizzes
 	has_many :video_events
+	has_many :quiz_statuses
 
 	validates :name, :end_date, :short_name,:start_date, :user_id, :time_zone, :presence => true
 
@@ -41,6 +42,9 @@ class Course < ApplicationRecord
 
 	validate :validate_end_date_disable_regis_after_start_date ,on: [:create, :update]
 	validates_format_of :image_url, :with    => %r{\.(((g|G)(i|I)(f|F))|((j|J)(p|P)(e|E)?(g|G))|((p|P)(n|N)(g|G)))}i, :message => :must_be_image, :allow_blank => true
+	
+	attribute :modules
+	attribute :duration
 	
 	def correct_teacher(user)
 		if !(self.teachers.include? user) && !user.has_role?('Administrator') && !(self.is_school_administrator(user))  
@@ -83,11 +87,14 @@ class Course < ApplicationRecord
 	end
 
 	def duration
-		( self.end_date - self.start_date ).numerator / 7
+		if self.end_date && self.start_date
+			( self.end_date - self.start_date ).numerator / 7
+		end
+		
 	end
 
 	def is_teacher(user)
-		self.teachers.where(:id => current.id).count>0
+		self.teachers.where(:id => user.id).count>0
 	end
 
 	def is_student(user)
@@ -139,41 +146,39 @@ class Course < ApplicationRecord
 				new_lecture.appearance_time = l.appearance_time + addition_days
 				new_lecture.due_date = l.due_date + addition_days
 				new_lecture.save(:validate => false)
-				### waiting for online markers table
-				# l.online_markers.each do |marker|
-				# 	new_online_marker = marker.dup
-				# 	new_online_marker.lecture_id = new_lecture.id
-				# 	new_online_marker.group_id = new_group.id
-				# 	new_online_marker.course_id = new_course.id
-				# 	new_online_marker.hide = false
-				# 	new_online_marker.save(:validate => false)
-				# end
-				# l.online_quizzes.each do |quiz|
-				# 	new_online_quiz = quiz.dup
-				# 	new_online_quiz.lecture_id = new_lecture.id
-				# 	new_online_quiz.group_id = new_group.id
-				# 	new_online_quiz.course_id = new_course.id
-				# 	new_online_quiz.hide = true
-				# 	new_online_quiz.save(:validate => false)
-				# 	if new_online_quiz.inclass
-				# 		new_online_quiz.create_inclass_session(:status => 0, :lecture_id => new_online_quiz.lecture_id, :group_id => new_online_quiz.group_id, :course_id => new_online_quiz.course_id)
-				# 	end
-				# 	quiz.online_answers.each do |answer|
-				# 		new_answer = answer.dup
-				# 		new_answer.online_quiz_id = new_online_quiz.id
-				# 		new_answer.save(:validate => false)
-				# 	end
-				# end
-				### waiting for events table
-				# Event.where(:quiz_id => nil, :lecture_id => l.id).each do |e|
-				# 	new_event= e.dup
-				# 	new_event.lecture_id = new_lecture.id
-				# 	new_event.course_id = new_course.id
-				# 	new_event.group_id = new_group.id
-				# 	new_event.start_at = e.start_at + addition_days
-				# 	new_event.end_at = e.end_at + addition_days
-				# 	new_event.save(:validate => false)
-				# end
+				l.online_markers.each do |marker|
+					new_online_marker = marker.dup
+					new_online_marker.lecture_id = new_lecture.id
+					new_online_marker.group_id = new_group.id
+					new_online_marker.course_id = new_course.id
+					new_online_marker.hide = false
+					new_online_marker.save(:validate => false)
+				end
+				l.online_quizzes.each do |quiz|
+					new_online_quiz = quiz.dup
+					new_online_quiz.lecture_id = new_lecture.id
+					new_online_quiz.group_id = new_group.id
+					new_online_quiz.course_id = new_course.id
+					new_online_quiz.hide = true
+					new_online_quiz.save(:validate => false)
+					if new_online_quiz.inclass
+						new_online_quiz.create_inclass_session(:status => 0, :lecture_id => new_online_quiz.lecture_id, :group_id => new_online_quiz.group_id, :course_id => new_online_quiz.course_id)
+					end
+					quiz.online_answers.each do |answer|
+						new_answer = answer.dup
+						new_answer.online_quiz_id = new_online_quiz.id
+						new_answer.save(:validate => false)
+					end
+				end
+				Event.where(:quiz_id => nil, :lecture_id => l.id).each do |e|
+					new_event= e.dup
+					new_event.lecture_id = new_lecture.id
+					new_event.course_id = new_course.id
+					new_event.group_id = new_group.id
+					new_event.start_at = e.start_at + addition_days
+					new_event.end_at = e.end_at + addition_days
+					new_event.save(:validate => false)
+				end
 
 			end
 			g.quizzes.each do |q|
@@ -189,16 +194,15 @@ class Course < ApplicationRecord
 				new_quiz.due_date = new_quiz.due_date + addition_days
 				new_quiz.save(:validate => false)
 
-				### waiting for events table
-				# Event.where(:quiz_id => q.id, :lecture_id => nil).each do |e|
-				# 	new_event= e.dup
-				# 	new_event.quiz_id = new_quiz.id
-				# 	new_event.course_id = new_course.id
-				# 	new_event.group_id = new_group.id
-				# 	new_event.start_at = Date.today + 200.years
-				# 	new_event.end_at = Date.today + 200.years
-				# 	new_event.save(:validate => false)
-				# end
+				Event.where(:quiz_id => q.id, :lecture_id => nil).each do |e|
+					new_event= e.dup
+					new_event.quiz_id = new_quiz.id
+					new_event.course_id = new_course.id
+					new_event.group_id = new_group.id
+					new_event.start_at = Date.today + 200.years
+					new_event.end_at = Date.today + 200.years
+					new_event.save(:validate => false)
+				end
 
 				q.questions.each do |question|
 					new_question = question.dup
@@ -221,15 +225,14 @@ class Course < ApplicationRecord
 				new_link.save(:validate => false)
 			end
 
-			### waiting for events table
-			# g.events.where(:quiz_id => nil, :lecture_id => nil).each do |e|
-			# 	new_event= e.dup
-			# 	new_event.course_id = new_course.id
-			# 	new_event.group_id = new_group.id
-			# 	new_event.save(:validate => false)
-			# 	new_event.start_at = e.start_at + addition_days
-			# 	new_event.end_at = e.end_at + addition_days
-			# end
+			g.events.where(:quiz_id => nil, :lecture_id => nil).each do |e|
+				new_event= e.dup
+				new_event.course_id = new_course.id
+				new_event.group_id = new_group.id
+				new_event.save(:validate => false)
+				new_event.start_at = e.start_at + addition_days
+				new_event.end_at = e.end_at + addition_days
+			end
 		end
 		self.importing = false
 		self.save!
@@ -251,8 +254,53 @@ class Course < ApplicationRecord
 	# def export_for_transfer
 	# end
 
-	# def export_modules_progress(current_user)
-	# end
+	def export_modules_progress(current_user)
+		students=self.users.select("users.*, LOWER(users.name), LOWER(users.last_name)").order("LOWER(users.last_name)").includes([{:free_online_quiz_grades => :lecture}, {:online_quiz_grades => :lecture}, {:lecture_views => :lecture}, {:quiz_statuses => :quiz},:assignment_statuses])
+		course_groups = self.groups.sort{|x,y| ( x.position and y.position ) ? x.position <=> y.position : ( x.position ? -1 : 1 )  }
+		module_names= course_groups.map{|m| m.name}
+		csv_file = CSV.generate do |csv_course|
+		csv_course << ["student_last", "student_first", "student_email", "total_late_days"]+module_names
+
+		students.each do |s|
+			grades=s.group_grades_test(self)  #returns for each module in the course, whether student finished r not and on time or not.
+				s.assignment_statuses.each do |stat|
+					if stat.status == 1
+						grades[stat.group_id] = 0
+					elsif stat.status == 2
+						grades[stat.group_id] = -1
+					end
+				end
+				late_total = 0
+				student_grades = []
+				course_groups.each do |g|
+					if(grades[g.id] != -1)
+						late_total+= grades[g.id]
+						student_grades << grades[g.id]
+					else
+						student_grades << "-"
+					end
+				end
+				csv_course << [s.last_name, s.name, s.email, late_total]+student_grades
+			end
+			csv_course << ["Number indicates number of days late."]
+			csv_course << ["0 days late means completed on-time. "]
+			csv_course << ["'-' means did not finished."]
+		end
+
+
+		file_name = short_name.gsub(" ","_")+"_progress_days_late.zip"
+		t = Tempfile.new(file_name)
+		csv_file_name = short_name.gsub(" ","_")+"_progress_days_late.csv"
+
+		Zip::ZipOutputStream.open(t.path) do |z|
+		z.put_next_entry(csv_file_name)
+		z.write(csv_file)
+		end
+		
+		UserMailer.progress_days_late(current_user, file_name, t.path, I18n.locale,self).deliver
+		t.close
+	end
+	# handle_asynchronously :export_modules_progress, :run_at => Proc.new { 5.seconds.from_now }
 
 	# def self.school_admin_statistics_course_ids(raw_start_date, raw_end_date, domain = 'All', current_user)
 	# end

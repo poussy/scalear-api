@@ -61,6 +61,7 @@ class User < ActiveRecord::Base
   serialize :completion_wizard
 
   attribute :full_name
+  attribute :status
 
   def has_role?(role)
     self.roles.pluck(:name).include?(role)      
@@ -135,8 +136,9 @@ class User < ActiveRecord::Base
   # def is_administrator?
   # end
 
-  # def is_preview?
-  # end
+  def is_preview?
+    role_ids.include?6
+  end
 
   # def tutorials_taken
   # end
@@ -147,21 +149,25 @@ class User < ActiveRecord::Base
   # def get_exact_stats(group)
   # end
 
-  # def get_online_quizzes_solved(lecture)
-  # end
+  def get_online_quizzes_solved(lecture)
+    return ((online_quiz_grades.includes(:online_quiz).select{|v| v.lecture_id == lecture.id &&  v.online_quiz.graded}.map{|t| t.online_quiz_id})+(free_online_quiz_grades.includes(:online_quiz).select{|v| v.lecture_id == lecture.id && v.online_quiz.graded}.map{|t| t.online_quiz_id})).sort.uniq
+  end
 
   # def get_summary_table_online_quizzes_solved(lecture)
   # end
 
   
-  # def get_lecture_status(item)
-  # end
+  def get_lecture_status(item)
+    return self.assignment_item_statuses.select{|a| a.group_id == item.group_id && a.lecture_id == item.id && !a.quiz_id}.first
+
+  end
   
   # def count_online_quizzes_solved(group)
   # end
 
-  # def get_lectures_viewed(lecture)
-  # end
+  def get_lectures_viewed(lecture)
+    return lecture_views.select{|v| v.lecture_id == lecture.id} #, :percent => 75
+  end
 
   # def grades(course)          #
   # end
@@ -283,14 +289,50 @@ class User < ActiveRecord::Base
   # def grades_angular_lecture_test(group)
   # end
 
-  # def grades_angular_all_items(group)
-  # end
+  def grades_angular_all_items(group)
+    grades=[]
+    ### id , day_finished , quiz solved , total quiz , optional quiz solved , optional total quiz , precentage, (1for lecture // 2for quiz)
+    group.get_sub_items.each do |g|
+      if g.class.name.downcase == 'lecture'
+          views = LectureView.where(:user_id => self.id, :course_id => g.course_id, :lecture_id =>  g.id).first.percent rescue 0
+          grades<<[g.id, self.finished_lecture_test?(g),views,1].flatten
+      elsif g.class.name.downcase == 'quiz'
+        if g.quiz_type == 'survey'
+          # grades<<[g.id, self.finished_survey_test?(g),1,1,1,1,1,1]
+          grades<<[g.id, self.finished_survey_test_with_completed_question_count?(g),2].flatten
+        else
+          # grades<<[g.id, self.finished_quiz_test?(g),0,0,0,0,0,0]
+          ### id , day_finished , quiz solved , total quiz , optional quiz solved , 0, 0, (1for lecture // 2for quiz)
+          grades<<[g.id, self.finished_quiz_test_with_correct_question_count?(g),2].flatten
+        end
+      end
+    end
+    return grades
+  end
 
   # def finished_quiz_test?(quiz)
   # end
 
-  # def finished_quiz_test_with_correct_question_count?(quiz)
-  # end
+  def finished_quiz_test_with_correct_question_count?(quiz)
+    inst=self.quiz_statuses.select{|v| v.quiz_id==quiz.id and v.status=="Submitted"}[0]
+    day_finished = 0
+    total_question_count = quiz.questions.where("question_type !=?", 'header').count
+    ocq_mcq_grade = self.quiz_grades.includes(:question,:quiz).where(quiz_id: quiz.id).uniq{|q| q.question_id}.group_by{|a| a.grade} #0.0 ,1.0
+    drag_grades = self.free_answers.includes(:question,:quiz).select{|answer| answer.quiz_id ==quiz.id && answer.question.question_type == 'drag'}.uniq{|q| q.question_id}.group_by{|a| a.grade} #0
+    free_text_grades = self.free_answers.includes(:question,:quiz).select{|answer| answer.quiz_id ==quiz.id && answer.question.question_type != 'drag'}.uniq{|q| q.question_id}.group_by{|a| a.grade} #1
+    correct_answers_question = (ocq_mcq_grade[1.0] || []).count +  (drag_grades[1] || []).count + (free_text_grades[2] || []).count + (free_text_grades[3] || []).count
+    not_checked_question = (free_text_grades[0] || []).count
+
+    if inst.nil?
+      day_finished = -1
+    elsif inst.created_at < quiz.due_date
+      day_finished = 0
+    else
+      day_finished = (inst.created_at.to_date - quiz.due_date.to_date).to_i  #solved after lecture due date
+    end
+    ### day_finished , quiz solved , total quiz , optional quiz solved , 0 , (1for lecture // 2for quiz)
+    return [ day_finished , correct_answers_question, total_question_count ,not_checked_question, 0 ,0 ]
+  end
 
   # def finished_survey_test?(survey)
   # end
@@ -298,23 +340,102 @@ class User < ActiveRecord::Base
   # def finished_survey_test_with_completed_question_count?(survey)
   # end
 
-  # def finished_lecture_test?(lecture)
-  # end
+  def finished_lecture_test?(lecture)
+      viewed=self.lecture_views.select{|v| v.lecture_id == lecture.id && v.percent == 100}[0]
+      max=a1=a2=c=0
+      all_online_quiz = lecture.online_quizzes.includes(:online_answers).select{|f| (!f.online_answers.empty? || f.question_type=="Free Text Question" )}.group_by {|n| n.graded? ? :graded : :not_graded}
+      all_online_quiz_grades = lecture.online_quiz_grades.includes(:online_quiz).select{|v|  v.user_id==self.id && v.attempt == 1}.uniq{|v| v.online_quiz_id}.group_by {|n| n.online_quiz.graded? ? :graded : :not_graded}
+      all_free_online_quiz_grades = lecture.free_online_quiz_grades.includes(:online_quiz).select{|v| v.user_id==self.id && v.attempt == 1}.uniq{|v| v.online_quiz_id}.group_by {|n| n.online_quiz.graded? ? :graded : :not_graded}
 
-  # def get_finished_lecture_quizzes_count(lecture)
-  # end
+      total= all_online_quiz[:graded] || []
+      a=all_online_quiz_grades[:graded] || []
+      b=all_free_online_quiz_grades[:graded] || []
 
-  # def grades_angular_test(item)
-  # end
+      total_optional= all_online_quiz[:not_graded] || []
+      a_optional=all_online_quiz_grades[:not_graded] || []
+      b_optional=all_free_online_quiz_grades[:not_graded] || []
 
-  # def group_grades_test(course)
-  # end
+      if a.size + b.size < total.size or viewed.nil?
+        return [-1, a.size+b.size, total.size,a_optional.size+b_optional.size, total_optional.size]
+      else
+        a1=a.max_by{|obj| obj.created_at }.created_at.to_date - lecture.due_date.to_date if !a.empty?
+        a2=b.max_by{|obj| obj.created_at }.created_at.to_date - lecture.due_date.to_date if !b.empty?
+        c=viewed.created_at.to_date - lecture.due_date.to_date
+      end
 
-  # def finished_group_test?(group)
-  # end
+    return [ [max,a1,a2,c].max.to_i, a.size+b.size, total.size, a_optional.size+b_optional.size, total_optional.size]
+  end
 
-  # def finished_quizzes_test(group)
-  # end
+  def get_finished_lecture_quizzes_count(lecture)
+      total= lecture.online_quizzes.select{|f| f.graded && (!f.online_answers.empty? or f.question_type=="Free Text Question")}.count
+      a=lecture.online_quiz_grades.includes(:online_quiz).select{|v| v.user_id==self.id && v.online_quiz.graded }.uniq{|v| v.online_quiz_id}.count
+      b=lecture.free_online_quiz_grades.includes(:online_quiz).select{|v| v.user_id==self.id && v.online_quiz.graded}.uniq{|v| v.online_quiz_id}.count
+      return [a+b, total]
+  end
+
+
+  def grades_angular_test(item)
+    grades=[]
+    item.groups.each do |g|
+      grades<<[g.id, self.finished_group_test?(g),0,0]
+    end
+    return grades    
+  end
+
+  def group_grades_test(course)
+    grades={}
+    course.groups.each do |g|
+      grades[g.id] = self.finished_group_test?(g)
+    end
+    return grades
+  end
+
+  def finished_group_test?(group)
+    lec_prog= finished_lectures_test(group)
+    quiz_prog= finished_quizzes_test(group)
+
+
+    if lec_prog==-1 || quiz_prog==-1
+      return -1
+    else
+      if lec_prog>quiz_prog
+        return lec_prog
+      else
+        return quiz_prog
+      end
+    end    
+  end
+
+  def finished_quizzes_test(group)
+    status = {}
+    self.assignment_item_statuses.select{|a| a.group_id == group.id && !a.lecture_id}.each do |s|
+      status[s.quiz_id] = s.status
+    end
+
+    max=0
+    a=self.quiz_statuses.select{|v|
+      v.group_id == group.id &&
+      v.quiz.graded &&
+      (status[v.quiz_id].nil? || status[v.quiz_id] !=1) &&
+      ((v.quiz.quiz_type=="quiz" && v.status.downcase=="submitted") ||
+      (v.quiz.quiz_type=="survey" && v.status.downcase=="saved" ))
+    }
+
+    b= group.quizzes.select{|v|
+      v.graded &&
+      (status[v.id].nil? || status[v.id] !=1)
+    }
+
+    if a.size!=b.size
+      return -1
+    else
+      a.each do |m|
+        new_max= m.created_at.to_date - m.quiz.due_date.to_date
+        max= new_max if new_max>max
+      end
+      return max.to_i
+    end    
+  end
 
   # def finished_lectures_test_percent(group) #called per student
   # end
@@ -325,8 +446,63 @@ class User < ActiveRecord::Base
   # def grades_module_before_due_date(group)
   # end
 
-  # def finished_lectures_test(group)
-  # end
+  def finished_lectures_test(group)
+    status = {}
+    self.assignment_item_statuses.select{|a| a.group_id == group.id && !a.quiz_id}.each do |s|
+      status[s.lecture_id] = s.status
+    end
+
+    max=0
+    a=self.online_quiz_grades.select{|v|
+      v.group_id == group.id &&
+      v.lecture.graded &&
+      v.online_quiz.graded &&
+      (status[v.lecture_id].nil? || status[v.lecture_id] !=1) &&
+      v.attempt == 1
+    }.uniq{|p| p.online_quiz_id}
+    b=self.free_online_quiz_grades.select{|v|
+      v.group_id == group.id &&
+      v.lecture.graded &&
+      v.online_quiz.graded &&
+      (status[v.lecture_id].nil? || status[v.lecture_id] !=1) &&
+      v.attempt == 1
+      }.uniq{|p| p.online_quiz_id}
+    c=self.lecture_views.select{|v|
+      v.group_id == group.id &&
+      v.lecture.graded &&
+      v.percent == 100 &&
+      (status[v.lecture_id].nil? || status[v.lecture_id] !=1)
+    }
+    if !(
+      group.lectures.select{|l|
+        l.graded &&
+        (status[l.id].nil? || status[l.id] !=1)
+      }.size == c.size &&
+      group.online_quizzes.select{|q|
+        q.graded &&
+        q.lecture.graded &&
+        (!q.online_answers.empty? || q.question_type=="Free Text Question") &&
+        (status[q.lecture_id].nil? || status[q.lecture_id] !=1)
+      }.size== a.size+b.size) #solved all    //.select{|q| q.lecture.graded == true}
+      return -1 #-1 means not finished
+    else
+      # 0 means finished on time, any other n, means finished late with n as the late days
+
+      a.each do |m|
+        new_max= m.created_at.to_date - m.lecture.due_date.to_date
+        max= new_max if new_max>max
+      end
+      b.each do |m|
+        new_max= m.created_at.to_date - m.lecture.due_date.to_date
+        max= new_max if new_max>max
+      end
+      c.each do |m|
+        new_max= m.created_at.to_date - m.lecture.due_date.to_date
+        max= new_max if new_max>max
+      end
+    end
+    return max.to_i    
+  end
 
   # def grades_angular(item)          #
   # end      
@@ -380,8 +556,7 @@ class User < ActiveRecord::Base
         VideoNote.where(:user_id => id, :lecture_id => lecture.id).destroy_all
         OnlineQuizGrade.where(:user_id => id, :lecture_id => lecture.id).destroy_all
         FreeOnlineQuizGrade.where(:user_id => id, :lecture_id => lecture.id).destroy_all
-        # waiting for post table
-        # Post.delete('destroy_all_by_user', {:user_id => id, :lecture_id => lecture.id} )
+        Forum::Post.delete('destroy_all_by_user', {:user_id => id, :lecture_id => lecture.id} )
       end
     end
   end  

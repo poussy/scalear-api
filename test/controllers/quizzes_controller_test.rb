@@ -6,6 +6,10 @@ class QuizzesControllerTest < ActionDispatch::IntegrationTest
     @user = users(:user3)
 
 		@user.roles << Role.find(1)
+
+    @student = users(:student_in_course3)
+		@headers2 = @student.create_new_auth_token
+		@headers2['content-type']="application/json"
 	
 		@course = courses(:course3)
     @course4 = courses(:course4)
@@ -21,21 +25,21 @@ class QuizzesControllerTest < ActionDispatch::IntegrationTest
 
   test "should be able to create quiz" do
 
-    assert_equal Quiz.count, 2
+    assert_equal Quiz.count, 4
 
 		post '/en/courses/3/quizzes/new_or_edit/', params:{:group => 3, :type => 'quiz'},headers: @user.create_new_auth_token
 
-    assert_equal Quiz.count, 3
+    assert_equal Quiz.count, 5
 		
 	end
 
   test "should be able to create survey" do
 
-    assert_equal Quiz.count, 2
+    assert_equal Quiz.count, 4
 
 		post '/en/courses/3/quizzes/new_or_edit/', params:{:group => 3, :type => 'survey'},headers: @user.create_new_auth_token
 
-    assert_equal Quiz.count, 3
+    assert_equal Quiz.count, 5
 		
 	end
 
@@ -65,14 +69,14 @@ class QuizzesControllerTest < ActionDispatch::IntegrationTest
     assert quiz.visible
     assert_equal quiz.retries, 2
 
-		put '/en/courses/3/quizzes/1', params:{:quiz => {required: false, appearance_time: '2017-10-10',appearance_time_module: false, due_date_module: false,
-        due_date: '2017-10-10', position: 1, graded: false, visible: false, retries: 5}}, headers: @user.create_new_auth_token
+		put '/en/courses/3/quizzes/1', params:{:quiz => {required: false, appearance_time: '2017-09-15',appearance_time_module: false, due_date_module: false,
+        due_date: '2017-10-8', position: 1, graded: false, visible: false, retries: 5}}, headers: @user.create_new_auth_token
 
     quiz.reload
     assert_not quiz.required
-    assert_equal quiz.appearance_time, '2017-10-10'
+    assert_equal quiz.appearance_time, Time.zone.parse('2017-09-15')
     assert_not quiz.due_date_module
-    assert_equal quiz.due_date, '2017-10-10'
+    assert_equal quiz.due_date, Time.zone.parse('2017-10-8')
     assert_equal quiz.position, 1
     assert_not quiz.graded
     assert_not quiz.visible
@@ -97,7 +101,7 @@ class QuizzesControllerTest < ActionDispatch::IntegrationTest
     assert_not quiz.graded
 		assert_equal quiz.appearance_time, '2017-9-9'
 		assert_equal quiz.due_date, '2017-10-9'
-	end
+    end
 
   test "should be able to delete quiz" do
 
@@ -128,11 +132,12 @@ class QuizzesControllerTest < ActionDispatch::IntegrationTest
 
   test "should copy quiz" do
 
-    assert_equal Quiz.count, 2
-	
+    assert_equal Quiz.count, 4
+    @evnet_counter = Event.count
 		post '/en/courses/3/quizzes/quiz_copy', params: {module_id: 3, quiz_id: 1}, headers: @headers, as: :json
 
-    assert_equal Quiz.count, 3
+    assert_equal Quiz.count, 5
+    assert_equal Event.count , @evnet_counter + 1
 
     	quiz_from = Quiz.find(1)
     new_quiz = Quiz.last
@@ -147,7 +152,167 @@ class QuizzesControllerTest < ActionDispatch::IntegrationTest
 
 	end
 
+  test "should add question if sent with no id and delete other questions from database" do
+    ## array of old questions ids
+    old_questions = Question.all.each.map {|q| q.id}
+    ## question sent in params doesnt have an id
+		put '/en/courses/3/quizzes/1/update_questions_angular', params: {questions: [{ content: '<p class="medium-editor-p">new mcq</p>', match_type: "Free Text", question_type: "MCQ", quiz_id: 1}]}, headers: @headers, as: :json
+    
+    assert_equal Question.count, 1
+    assert_equal Question.first.content, '<p class="medium-editor-p">new mcq</p>'
+    assert_equal Question.first.question_type, 'MCQ'
+    ## assert that it is a newly created question with new id
+    assert_not old_questions.include? Question.first.id
 
+
+	end
+
+  test "should add question if sent with no id and add its answers" do
+   
+		put '/en/courses/3/quizzes/1/update_questions_angular', params: {questions: [{ answers: [{id: 1, content:"a1", correct: true, explanation: "answer explanation" }], content: '<p class="medium-editor-p">new mcq</p>', match_type: "Free Text", question_type: "MCQ", quiz_id: 1}]}, headers: @headers, as: :json
+    
+    assert_equal Question.first.answers.count, 1
+    assert_equal Question.first.answers.first.content, 'a1'
+    
+    
+
+
+	end
+
+  test "should edit question if sent with id and delete other questions from database" do
+    
+		put '/en/courses/3/quizzes/1/update_questions_angular', params: {questions: [{id: 1, content: '<p class="medium-editor-p">new mcq</p>', match_type: "Free Text", question_type: "MCQ", quiz_id: 1}]}, headers: @headers, as: :json
+    
+    assert_equal Question.count, 1
+    assert_equal Question.first.content, '<p class="medium-editor-p">new mcq</p>'
+    ## same old question
+    assert Question.first.id, 1
+    assert_equal Question.first.content, '<p class="medium-editor-p">new mcq</p>'
+    assert_equal Question.first.question_type, 'MCQ'
+
+	end
+
+  test "should update old answers if sent with id" do
+    
+		put '/en/courses/3/quizzes/1/update_questions_angular', params: {questions: [{answers: [{id: 1, content:"a1", correct: true, explanation: "answer explanation" }],id: 1, content: '<p class="medium-editor-p">new mcq</p>', match_type: "Free Text", question_type: "MCQ", quiz_id: 1}]}, headers: @headers, as: :json
+    
+    answer = Question.first.answers.find(1)
+    assert answer.correct
+    assert_equal answer.content, "a1"
+    assert_equal answer.explanation, "answer explanation"
+    assert_equal answer.explanation, "answer explanation"
+   
+	end
+
+  test "should create new answers if sent with no id" do
+    
+		put '/en/courses/3/quizzes/1/update_questions_angular', params: {questions: [{answers: [{content:"a1", correct: true, explanation: "answer explanation" }],id: 1, content: '<p class="medium-editor-p">new mcq</p>', match_type: "Free Text", question_type: "MCQ", quiz_id: 1}]}, headers: @headers, as: :json
+    
+    answer = Question.find(1).answers.first
+    assert answer.correct
+    assert_equal answer.content, "a1"
+    assert_equal answer.explanation, "answer explanation"
+    assert_equal answer.explanation, "answer explanation"
+   
+	end
+
+  test "should delete old answers and put new ones with no content" do ## if the question_type == 'Free Text Question && match_type == 'Free Text'
+
+		put '/en/courses/3/quizzes/1/update_questions_angular', params: {questions: [{answers: [{id: 1,content:"a3", correct: true, explanation: "answer explanation" }],id: 1, content: '<p class="medium-editor-p">new mcq</p>', match_type: "Free Text", question_type: "Free Text Question", quiz_id: 1}]}, headers: @headers, as: :json
+    
+    ## not the same old answer, old one is deleted and this is a new one
+    assert_not_equal Question.first.answers.first.id, 1
+
+    answer = Question.first.answers.first
+    assert answer.correct
+    assert_equal answer.content, ""
+    assert_equal answer.explanation, "answer explanation"
+    
+   
+	end
+
+    test "should be able to create quiz header" do
+    
+		put '/en/courses/3/quizzes/1/update_questions_angular', params: {questions: [{id: 1, content: '<p class="medium-editor-p">new mcq</p>', match_type: "Free Text", question_type: "header", quiz_id: 1}]}, headers: @headers, as: :json
+    
+        assert_equal Question.find(1).question_type, "header"
+	end
+
+    test 'should be able get_questions_angular for teacher' do        
+        url = '/en/courses/3/quizzes/1/get_questions_angular'
+        get  url ,headers: @user.create_new_auth_token , as: :json
+        resp =  JSON.parse response.body
+        assert_equal resp['quiz']['retries'] , 2
+        assert_equal resp['questions'].count , 4
+    end
+
+    test 'validate validate_quiz_angular method ' do
+        url = '/en/courses/3/quizzes/1/validate_quiz_angular/'
+        put  url , params: {quiz: { name:'toto' } } ,headers: @user.create_new_auth_token , as: :json
+        assert_response :success
+        resp =  JSON.parse response.body
+        assert_equal resp['nothing'] , true
+    end
+    test 'validate validate_quiz_angular method and respone 422' do
+        url = '/en/courses/3/quizzes/1/validate_quiz_angular/'
+        put  url , params: {quiz: { due_date_module:false ,  due_date:DateTime.now + 3.months } } ,headers: @user.create_new_auth_token 
+        assert_response 422
+        resp =  JSON.parse response.body
+        assert_equal resp['errors'].count , 1
+        assert_equal resp['errors'][0] , "Due date must be before module due date"
+    end
+    test 'validate validate_quiz_angular method and respone 422 for retries is not position' do
+        url = '/en/courses/3/quizzes/1/validate_quiz_angular/'
+        put  url , params: {quiz: { due_date_module:false ,  due_date:DateTime.now + 3.months , retries:-9 }} ,headers: @user.create_new_auth_token 
+        assert_response 422
+        resp =  JSON.parse response.body
+        assert_equal resp['errors'].count , 2
+        assert_equal resp['errors'][0] , "Retries must be greater than or equal to 0"
+        assert_equal resp['errors'][1] , "Due date must be before module due date"
+    end
+    test 'validate validate_quiz_angular method and respone 422 for title is empty' do
+        url = '/en/courses/3/quizzes/1/validate_quiz_angular/'
+        put  url , params: {quiz: { name:'' }} ,headers: @user.create_new_auth_token 
+        assert_response 422
+        resp =  JSON.parse response.body
+        assert_equal resp['errors'].count , 1
+        assert_equal resp['errors'][0] , "Name can't be blank"
+    end
+
+    test 'get_questions_angular for student' do        
+
+        get '/en/courses/3/quizzes/1/get_questions_angular' ,headers: @headers2 , as: :json
+
+        assert_equal decode_json_response_body["quiz"]["name"], quizzes(:quiz1)["name"]
+        assert_equal decode_json_response_body["questions"].size, 4
+        assert_equal decode_json_response_body["answers"][0], 
+            [{"id"=>1,"question_id"=>1,"content"=>"<p class=\"medium-editor-p\">a1</p>"},
+             {"id"=>225623090,"question_id"=>1,"content"=>"<p class=\"medium-editor-p\">a2</p>"}]
+
+        assert_equal decode_json_response_body["answers"][1],  
+            [{"id"=>954619823,"question_id"=>2,"content"=>"<p class=\\\"medium-editor-p\\\">a1</p>"},
+              {"id"=>1047667971,"question_id"=>2,"content"=>"<p class=\\\"medium-editor-p\\\">a2</p>"}]
+        
+        assert_equal decode_json_response_body["answers"][2], [{"id"=>863453129, "question_id"=>3, "content"=>"abcd"}]
+        #because it is shuffled we cannot predict the exact answer
+        assert decode_json_response_body["answers"][3] == [{"id"=>585904983,"question_id"=>4,"content"=>["<p class=\"medium-editor-p\">ans1</p>","<p class=\"medium-editor-p\">ans2</p>"],"explanation"=>[]}] || 
+                decode_json_response_body["answers"][3] == [{"id"=>585904983,"question_id"=>4,"content"=>["<p class=\"medium-editor-p\">ans2</p>","<p class=\"medium-editor-p\">ans1</p>"],"explanation"=>[]}]
+       
+    end
+
+    test "change_status_angular should change status assignment_item_status, or create new one with specified status" do
+      # will create one if empty
+      assert Quiz.find(1).assignment_item_statuses.empty?
+      post "/en/courses/3/quizzes/1/change_status_angular", params:{user_id:6, status: 2}, headers: @headers, as: :json
+      assert_equal Quiz.find(1).assignment_item_statuses.first["status"], 2
+      # will change existing if present
+      post "/en/courses/3/quizzes/1/change_status_angular", params:{user_id:6, status: 1}, headers: @headers, as: :json
+      assert_equal Quiz.find(1).assignment_item_statuses.first["status"], 1
+      assert_equal Quiz.find(1).assignment_item_statuses.size, 1
+      
+      
+    end
+    
 
 
 end

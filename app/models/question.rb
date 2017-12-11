@@ -8,6 +8,9 @@ class Question < ApplicationRecord
 
 	validates :content,:quiz_id,:question_type, :presence => true   #:content
 
+	attribute :match_type
+
+
 	# before_destroy :delete_user_data
 
 	private

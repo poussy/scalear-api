@@ -26,7 +26,7 @@ class Group < ApplicationRecord
 	
 	validate :appearance_date_must_be_before_items
 	validate :due_date_must_be_after_items
-	validates_datetime :due_date, :on_or_after => lambda{|m| m.appearance_time}, :on_or_after_message => "group.errors.due_date_pass_after_appearance_date"
+	validates_datetime :due_date, :on_or_after => lambda{|m| m.appearance_time}, :on_or_after_message => I18n.t("group.errors.due_date_pass_after_appearance_date")
 
 	attribute :total_time 
 	attribute :items
@@ -37,6 +37,11 @@ class Group < ApplicationRecord
 	attribute :total_quizzes
 	attribute :total_surveys
 	attribute :total_links
+	attribute :has_inclass
+	attribute :has_distance_peer
+	attribute :sub_items_size
+
+	attr_accessor :current_user
 
 	# def has_not_appeared
 	# end
@@ -59,44 +64,41 @@ class Group < ApplicationRecord
         new_lecture.course_id = new_course.id
         new_lecture.group_id = new_group.id
         new_lecture.save(:validate => false)
-		## waiting for online_quizzes table
-        # l.online_quizzes.each do |quiz|
-        #   new_online_quiz = quiz.dup
-        #   new_online_quiz.lecture_id = new_lecture.id
-        #   new_online_quiz.group_id = new_group.id
-        #   new_online_quiz.course_id = new_course.id
-        #   new_online_quiz.save(:validate => false)
-        #   quiz.online_answers.each do |answer|
-        #     new_answer = answer.dup
-        #     new_answer.online_quiz_id = new_online_quiz.id
-        #     new_answer.save(:validate => false)
-        #   end
-        #   quiz_session = quiz.inclass_session
-        #   if !quiz_session.nil?
-        #     new_session = quiz_session.dup
-        #     new_session.online_quiz_id = new_online_quiz.id
-        #     new_session.lecture_id = new_lecture.id
-        #     new_session.group_id = new_group.id
-        #     new_session.course_id = new_course.id
-        #     new_session.save(:validate => false)
-        #   end
-        # end
-		## waiting for online_markers table
-        # l.online_markers.each do |marker|
-        #   new_online_marker = marker.dup
-        #   new_online_marker.lecture_id = new_lecture.id
-        #   new_online_marker.group_id = new_group.id
-        #   new_online_marker.course_id = new_course.id
-        #   new_online_marker.save(:validate => false)
-        # end
-		## waiting for events table
-        # Event.where(:quiz_id => nil, :lecture_id => l.id).each do |e|
-        #   new_event= e.dup
-        #   new_event.lecture_id = new_lecture.id
-        #   new_event.course_id = new_course.id
-        #   new_event.group_id = new_group.id
-        #   new_event.save(:validate => false)
-        # end
+        l.online_quizzes.each do |quiz|
+          new_online_quiz = quiz.dup
+          new_online_quiz.lecture_id = new_lecture.id
+          new_online_quiz.group_id = new_group.id
+          new_online_quiz.course_id = new_course.id
+          new_online_quiz.save(:validate => false)
+          quiz.online_answers.each do |answer|
+            new_answer = answer.dup
+            new_answer.online_quiz_id = new_online_quiz.id
+            new_answer.save(:validate => false)
+          end
+          quiz_session = quiz.inclass_session
+          if !quiz_session.nil?
+            new_session = quiz_session.dup
+            new_session.online_quiz_id = new_online_quiz.id
+            new_session.lecture_id = new_lecture.id
+            new_session.group_id = new_group.id
+            new_session.course_id = new_course.id
+            new_session.save(:validate => false)
+          end
+        end
+        l.online_markers.each do |marker|
+          new_online_marker = marker.dup
+          new_online_marker.lecture_id = new_lecture.id
+          new_online_marker.group_id = new_group.id
+          new_online_marker.course_id = new_course.id
+          new_online_marker.save(:validate => false)
+        end
+        Event.where(:quiz_id => nil, :lecture_id => l.id).each do |e|
+          new_event= e.dup
+          new_event.lecture_id = new_lecture.id
+          new_event.course_id = new_course.id
+          new_event.group_id = new_group.id
+          new_event.save(:validate => false)
+        end
 
       end
       g.quizzes.each do |q|
@@ -104,14 +106,13 @@ class Group < ApplicationRecord
         new_quiz.course_id = new_course.id
         new_quiz.group_id = new_group.id
         new_quiz.save(:validate => false)
-		## waiting for events table
-        # Event.where(:quiz_id => q.id, :lecture_id => nil).each do |e|
-        #   new_event= e.dup
-        #   new_event.quiz_id = new_quiz.id
-        #   new_event.course_id = new_course.id
-        #   new_event.group_id = new_group.id
-        #   new_event.save(:validate => false)
-        # end
+        Event.where(:quiz_id => q.id, :lecture_id => nil).each do |e|
+          new_event= e.dup
+          new_event.quiz_id = new_quiz.id
+          new_event.course_id = new_course.id
+          new_event.group_id = new_group.id
+          new_event.save(:validate => false)
+        end
 
         q.questions.each do |question|
           new_question = question.dup
@@ -132,13 +133,12 @@ class Group < ApplicationRecord
         new_link.group_id = new_group.id
         new_link.save(:validate => false)
       end
-	  ##waiting for events table
-    #   g.events.where(:quiz_id => nil, :lecture_id => nil).each do |e|
-    #     new_event= e.dup
-    #     new_event.course_id = new_course.id
-    #     new_event.group_id = new_group.id
-    #     new_event.save(:validate => false)
-    #   end
+      g.events.where(:quiz_id => nil, :lecture_id => nil).each do |e|
+        new_event= e.dup
+        new_event.course_id = new_course.id
+        new_event.group_id = new_group.id
+        new_event.save(:validate => false)
+      end
 
       return new_group
   	end
@@ -177,7 +177,7 @@ class Group < ApplicationRecord
 		count =0
 		lectures.each do |l|
 			if l.online_quizzes.count != 0
-				count+= l.online_quizzes.select(&@quiz_not_empty).size
+				count+= l.online_quizzes.select(@quiz_not_empty).size
 			end
 		end
 		return count
@@ -227,8 +227,10 @@ class Group < ApplicationRecord
 		return all
 	end
 
-	# def get_sub_items
-	# end
+	def get_sub_items
+    	all=(quizzes+lectures).sort{|a,b| a.position <=> b.position}
+	end
+
 
 	# def get_appeared_items
 	# end
@@ -248,8 +250,20 @@ class Group < ApplicationRecord
 	# def total_student_questions_review
 	# end
 
-	# def next_item(pos)
-	# end
+	def next_item(pos)
+		self.get_sub_items.select{|f|
+		f.position>pos &&
+		(
+			(f.class.name.downcase == "lecture" &&
+				(!f.inclass ||
+					(f.inclass && f.appearance_time <= Time.now)
+				)
+			) ||
+			f.class.name.downcase != "lecture"
+		)}.first
+
+
+  	end
 
 	# def next_lecture(lec_pos)
 	# end
@@ -257,8 +271,43 @@ class Group < ApplicationRecord
 	# def previous_lecture(lec_pos)
 	# end
 
-	# def get_statistics
-	# end
+	def get_statistics
+		confuseds={}   #{234 => [23,"http://sss"]} # cumulative_time => [real_time, url]
+		really_confuseds={}
+		backs={}
+		pauses={}
+		discussion={}
+		time=0
+		time_list={}
+		time_list2=[]
+		students_id = course.users.map(&:id)
+		self.lectures.each do |lec|
+			lec.confuseds.select{|v| v.very==false && students_id.include?(v.user_id)}.sort{|x,y| x.time <=> y.time}.each_with_index do |c, index|
+				confuseds[[time,c.time, index]] = [c.time, lec.url]
+			end
+			lec.confuseds.select{|v| v.very==true && students_id.include?(v.user_id)}.sort{|x,y| x.time <=> y.time}.each_with_index do |c, index|
+				really_confuseds[[time,c.time, index]] = [c.time, lec.url]
+			end
+			lec.video_events.where("event_type = 3 and (from_time - to_time) <= 15 and (from_time - to_time) >= 1").sort{|x,y| x.from_time <=> y.from_time}.each_with_index do |c, index|
+				backs[[time,c.from_time, index]] = [c.from_time, lec.url]
+			end
+			lec.video_events.where(:event_type => 2).sort{|x,y| x.from_time <=> y.from_time}.each_with_index do |c, index|
+				pauses[[time,c.from_time, index]] = [c.from_time, lec.url]
+			end
+			posts = Forum::Post.find(:all, :params => {lecture_id: lec.id})
+
+			posts.sort{|x,y| x.time <=> y.time}.each_with_index do |c, index|
+				discussion[[time,c.time, index]] = [c.time, c.content, lec.url]
+			end
+
+			time+=(lec.duration || 0)
+			time_list[time]=lec.url
+			time_list2<<[lec.duration,lec.name]
+
+		end
+		return [confuseds,backs,pauses,discussion,time, time_list, time_list2, really_confuseds]
+  	end
+
 
 	# def inclass_session
 	# end
@@ -296,7 +345,7 @@ class Group < ApplicationRecord
 					error=true
 				end
 			end
-			errors.add(:appearance_time, "group.errors.appearance_date_must_be_before_items") if error		
+			errors.add(:appearance_time, I18n.t("group.errors.appearance_date_must_be_before_items") ) if error		
 			# errors.add(:appearance_time, "must be before items appearance time") if error		
 		end
 		
@@ -307,7 +356,7 @@ class Group < ApplicationRecord
 					error=true
 				end
 			end
-			errors.add(:due_date, "group.errors.due_date_must_be_after_items") if error
+			errors.add(:due_date, I18n.t("group.errors.due_date_must_be_after_items") ) if error
 		end
 
 		def clean_up

@@ -1,11 +1,23 @@
-# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+ocq1:
+  id: 1
+  quiz_id: 1
+  content: <p class=\"medium-editor-p\">ocq</p>
+  question_type: OCQ
 
-# This model initially had no columns defined. If you add columns to the
-# model remove the '{}' from the fixture names and add the columns immediately
-# below each fixture, per the syntax in the comments below
-#
-one: {}
-# column: value
-#
-two: {}
-# column: value
+mcq1:
+  id: 2
+  quiz_id: 1
+  content: <p class=\"medium-editor-p\">q1</p>
+  question_type: MCQ
+
+free_text1:
+  id: 3
+  quiz_id: 1
+  content: ""
+  question_type: <p class=\"medium-editor-p\">free text</p>
+
+drag1:
+  id: 4
+  quiz_id: 1
+  content: <p class=\"medium-editor-p\">drag quiz</p>
+  question_type: drag

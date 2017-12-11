@@ -47,3 +47,20 @@ admin_user:
   screen_name: "admin,"
   university: "nilee"
   uid: "admin@gmailll.com"
+
+student_in_course3:
+  id: 6
+  name: "saleh"
+  email: "saleh@gmail.com"
+  last_name: "aly"
+  screen_name: "saleh"
+  university: "cairo"
+  uid: "saleh@gmail.com"
+  
+student1:
+  name: "ahmed"
+  email: "student_a.hossam.2010@gmail.com"
+  last_name: "hossam"
+  screen_name: "student_ahmed hossam"
+  university: "nile"
+  uid: "student_a.hossam.2010@gmail.com"

@@ -1,11 +1,32 @@
-# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+online_quiz_grade1:
+  lecture: lecture1
+  group: group1
+  course: course1
+  user: student1
+  online_quiz: ocq_online_quiz1
+  online_answer: ocq_online_answer_correct1
+  grade: 1.0
+  optional_text: ""
+  review_vote: false
+  in_group: false
+  inclass: false
+  distance_peer: false 
+  attempt: 1
+  created_at: '2017-10-9'
+  updated_at: '2017-10-9'
 
-# This model initially had no columns defined. If you add columns to the
-# model remove the '{}' from the fixture names and add the columns immediately
-# below each fixture, per the syntax in the comments below
-#
-one: {}
-# column: value
-#
-two: {}
-# column: value
+quiz1_grade:
+  id: 1,
+  lecture_id: 3
+  group_id: 3
+  course_id: 3
+  user_id: 6
+  online_quiz_id: 1
+  online_answer_id: 6
+  grade: 1.0
+  optional_text: ""
+  review_vote: false
+  in_group: false
+  inclass: false
+  distance_peer: false
+  attempt: 1

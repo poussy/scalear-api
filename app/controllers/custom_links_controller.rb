@@ -3,26 +3,24 @@ class CustomLinksController < ApplicationController
   
   
   def update
-    @link = CustomLink.find(params[:id])
-    if @link.update_attributes(custom_link_params)
+    if @custom_link.update_attributes(custom_link_params)
       render json: {:notice => I18n.t('controller_msg.link_successfully_updated')}
     else
-      render json: {errors:@link.errors}, status: 400
+      render json: {errors:@custom_link.errors}, status: 400
     end
   end
 
   def validate_custom_link
-    p params[:link]
-    @link= CustomLink.find(params[:id]) 
-    params[:link].each do |key, value|
-      @link[key]=value
+    if params[:link]
+      params[:link].each do |key, value|
+        @custom_link[key]=value
+      end
     end
-    if @link.valid?
-      head :ok
+    if @custom_link.valid?
+      render json:{ :nothing => true }
     else
-      render json: {errors:@link.errors.full_messages}, status: :unprocessable_entity
+      render json: {errors:@custom_link.errors.full_messages}, status: :unprocessable_entity
     end
-    
   end
 
   def link_copy
@@ -43,7 +41,7 @@ class CustomLinksController < ApplicationController
 
       render json: {:notice => [I18n.t("controller_msg.link_successfully_deleted")]}
     else 
-      render json: {errors:@link.errors.full_messages}, status: :unprocessable_entity  
+      render json: {errors:@custom_link.errors.full_messages}, status: :unprocessable_entity  
     end
   end
 

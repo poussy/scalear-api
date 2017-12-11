@@ -223,6 +223,11 @@ en:
     ask: "Ask"
     please_choose_one_answer: "Please Choose atleast one answer"
     hover_for_details: "Hover for details"
+    errors:
+        appearance_time_after_module_appearance_time: "must be after module appearance time"
+        due_date_pass_after_appearance_date: "must be before appearance time"
+        time_before_module_due_date: "must be before module due date"
+        inclass_distance_peer_both_true: "must be inclass or distance peer"
   online_quiz:
     you_sure_delete_quiz: "Are you sure you want to delete quiz"
     change_time: "Change time"
@@ -507,6 +512,7 @@ en:
     link_successfully_created: "Link was successfully created."
     link_successfully_updated: "Link was successfully updated."
     link_successfully_deleted: "Link was successfully deleted."
+    marker_successfully_deleted: "Note was successfully deleted."
     answer_successfully_created: "Answer was successfully created."
     answer_successfully_updated: "Answer was successfully updated."
     question_successfully_created: "Question was successfully created."
