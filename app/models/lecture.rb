@@ -60,8 +60,17 @@ class Lecture < ApplicationRecord
 	# def titled_markers
 	# end
 
-	# def posts_public
-	# end
+	def posts_public
+		posts = Forum::Post.find(:all, :params => {lecture_id: self.id, user_id:current_user.id, privacy: 1})
+		posts.each do |x|
+			user = User.find(x.user_id)
+			x.email = user.email #will be screen name later.
+			x.screen_name = user.screen_name
+			x.current_user = current_user
+			x.comments = x.comments()
+		end
+		return posts		
+	end
 
 	# def posts_all
 	# end

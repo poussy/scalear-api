@@ -224,8 +224,7 @@ class GroupsController < ApplicationController
 		@really_confused_chart= Confused.get_rounded_time_module(@really_confused) #right now I round up. [[234,5],[238,6]]
 		@back_chart= VideoEvent.get_rounded_time_module(@back) #right now I round up. [[234,5],[238,6]]
 		@pause_chart= VideoEvent.get_rounded_time_module(@pause) #right now I round up. [[234,5],[238,6]]
-		## waiting for discussion app
-		# @question_chart2= VideoEvent.get_rounded_time_module(@discussion) #right now I round up. [[234,5],[238,6]]
+		@question_chart2= VideoEvent.get_rounded_time_module(@discussion) #right now I round up. [[234,5],[238,6]]
 		@question_chart = @question_chart2.to_a.map{|v| v=[v[0],v[1][0]]} #getting the time [time,count]
 		@questions_list = @question_chart2.to_a.map{|v| v=[v[0],v[1][1]]} #getting the questions [time,questions]
 
@@ -307,8 +306,7 @@ class GroupsController < ApplicationController
 						q[:online_answers][0].answer=nil if !q[:online_answers][0].nil?
 					end
 				end
-				# waiting for post
-				# l[:posts] = l.posts_public
+				l[:posts] = l.posts_public
 				l[:lecture_notes] = l.video_notes.select{|n| n.user_id == current_user.id} || []
 				l[:title_markers] = l.online_markers.select{|a| a.title != ''} || []
 				l[:video_quizzes] = l.online_quizzes || []

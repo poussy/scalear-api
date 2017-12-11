@@ -1,7 +1,14 @@
 require 'test_helper'
-
 class DiscussionsControllerTest < ActionDispatch::IntegrationTest
-  # test "the truth" do
-  #   assert true
-  # end
+
+	# def create_post
+	# def update_post
+	# def delete_post
+	# def delete_comment
+	# def create_comment
+	# def vote
+	# def flag
+	# def vote_comment
+	# def flag_comment
+	
 end

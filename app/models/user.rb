@@ -556,8 +556,7 @@ class User < ActiveRecord::Base
         VideoNote.where(:user_id => id, :lecture_id => lecture.id).destroy_all
         OnlineQuizGrade.where(:user_id => id, :lecture_id => lecture.id).destroy_all
         FreeOnlineQuizGrade.where(:user_id => id, :lecture_id => lecture.id).destroy_all
-        # waiting for post table
-        # Post.delete('destroy_all_by_user', {:user_id => id, :lecture_id => lecture.id} )
+        Forum::Post.delete('destroy_all_by_user', {:user_id => id, :lecture_id => lecture.id} )
       end
     end
   end  

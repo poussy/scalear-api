@@ -294,12 +294,11 @@ class Group < ApplicationRecord
 			lec.video_events.where(:event_type => 2).sort{|x,y| x.from_time <=> y.from_time}.each_with_index do |c, index|
 				pauses[[time,c.from_time, index]] = [c.from_time, lec.url]
 			end
-			## waiting for discussion table
-			# posts = Post.find(:all, :params => {lecture_id: lec.id})
+			posts = Forum::Post.find(:all, :params => {lecture_id: lec.id})
 
-			# posts.sort{|x,y| x.time <=> y.time}.each_with_index do |c, index|
-			# 	discussion[[time,c.time, index]] = [c.time, c.content, lec.url]
-			# end
+			posts.sort{|x,y| x.time <=> y.time}.each_with_index do |c, index|
+				discussion[[time,c.time, index]] = [c.time, c.content, lec.url]
+			end
 
 			time+=(lec.duration || 0)
 			time_list[time]=lec.url

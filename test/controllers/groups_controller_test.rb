@@ -332,7 +332,7 @@ class GroupsControllerTest < ActionDispatch::IntegrationTest
 		end
 				
 		assert_equal decode_json_response_body['lecture_names'], @group3.get_sub_items.map{|m|m.name}
-		assert_equal decode_json_response_body['lecture_status'], {"6"=>[[1, -1, 0, 4, 0, 0, 0, 2], [3, -1, 0, 0, 0, 10, 30, 1], [4, -1, 0, 0, 0, 0, 0, 1]]}
+		assert_equal decode_json_response_body['lecture_status'], {"6"=>[[1, -1, 0, 4, 0, 0, 0, 2], [3, -1, 0, 0, 2, 10, 30, 1], [4, -1, 0, 0, 0, 0, 0, 1]]}
 		
 	end
 	
