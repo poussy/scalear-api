@@ -605,7 +605,7 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 
 		get '/en/courses/3/lectures/3/get_lecture_data_angular', headers: @headers2
 		# new lecture_view
-		assert_equal LectureView.where(lecture_id: 3).first.updated_at.to_i, Time.zone.now.to_i
+		assert_equal LectureView.where(lecture_id: 3).first.updated_at.to_i/10.floor, Time.zone.now.to_i/10.floor
 		assert_not LectureView.where(lecture_id: 3).first == old_lecture_view
 		
 	end
