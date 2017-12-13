@@ -149,6 +149,49 @@ class Group < ApplicationRecord
 	# def get_stats_summary#[not_watched, watched_less_than_50, watched_more_than_50, watched_more_than_80, completed_on_time, completed_late]
 	# end
 
+	def survey_count(appearance_time_boolean=false) 
+		# return self.quizzes.where(:quiz_type => "survey").count a.appearance_time <= today 
+		# .where('start_date <= ?', Time.now) 
+		today = Time.now 
+		if appearance_time_boolean 
+				return self.quizzes.where(:quiz_type => "survey").where('appearance_time <= ?' , today).count 
+		else 
+				return self.quizzes.where(:quiz_type => "survey").count 
+		end 
+	end 
+
+	def quiz_count(appearance_time_boolean=false) 
+		# return self.quizzes.where(:quiz_type => "quiz").count 
+		today = Time.now 
+		if appearance_time_boolean 
+				return self.quizzes.where(:quiz_type => "quiz").where('appearance_time <= ?' , today).count 
+		else 
+				return self.quizzes.where(:quiz_type => "quiz").count 
+		end 
+	end 
+
+	def online_survey_count(appearance_time_boolean=false) 
+		search = 'survey' 
+		# return self.online_quizzes.where("quiz_type LIKE ?","%#{search}%").count 
+		today = Time.now 
+		if appearance_time_boolean 
+				return (self.online_quizzes.where("quiz_type LIKE ?","%#{search}%")).select{|qu| qu.lecture.appearance_time <= today}.count 
+		else 
+				return self.online_quizzes.where("quiz_type LIKE ?","%#{search}%").count 
+		end 
+	end 
+
+	def online_quiz_count(appearance_time_boolean=false) 
+		search = 'survey' 
+		# return self.online_quizzes.count - self.online_quizzes.where("quiz_type LIKE ?","%#{search}%").count 
+		today = Time.now 
+		if appearance_time_boolean 
+				return (self.online_quizzes - self.online_quizzes.where("quiz_type LIKE ?","%#{search}%")).select{|qu| qu.lecture.appearance_time <= today}.count 
+		else  
+				return self.online_quizzes.count - self.online_quizzes.where("quiz_type LIKE ?","%#{search}%").count 
+		end 
+	end 
+
 	# def get_numbering
 	# end
 
@@ -328,11 +371,304 @@ class Group < ApplicationRecord
 	# def get_discussion_summary_teacher
 	# end
 
-	# def get_module_summary_student(current_user)
-	# end
+	def get_module_summary_student(current_user)
+		today = Time.now 
+		course = self.course
+		data = {}
 
-	# def get_completion_summary_student(current_user)
-	# end
+		data['title'] = course.short_name+": "+self.name
+		data['id'] = self.id
+		data['course_id'] = course.id
+		data['due_date'] = ((self.due_date.to_time - DateTime.current.to_time )) # get due date
+		data['due_date_string'] = self.due_date
+		data['type'] = "student"
+		data['has_inclass'] = self.lectures.select{|a| a.inclass}.size > 0
+		data['duration'] = self.lectures.select{|a| a.appearance_time <= today}.map(&:duration).select{|d| !d.nil?}.sum 
+		data['quiz_count'] = self.quiz_count(true) + self.online_quiz_count(true) 
+		data['survey_count'] = self.survey_count(true) +  self.online_survey_count(true) 
+		all_views = self.lecture_views.where(:user_id => current_user.id).sort_by{|a| a.updated_at}
+		if all_views.map(&:percent).size == 0
+			data['module_done_perc'] = 0
+		else
+			data['module_done_perc'] = all_views.map(&:percent).sum /  ( self.lectures.size )
+		end
+
+		last_viewed = all_views.last    
+		first_lecture = self.lectures.select{|lecture| lecture.appearance_time <= today }.first
+		data['last_viewed'] = (!last_viewed.nil?)? last_viewed.lecture_id : -1
+		data['first_lecture'] = (!first_lecture.nil?)? first_lecture.id : -1
+
+		return data
+  	end
+
+	def get_completion_summary_student(current_user)
+			today = Time.now 
+			data = {}
+
+			data['duration'] = self.lectures.select{|a| a.appearance_time <= today}.map(&:duration).select{|d| !d.nil?}.sum 
+			data['quiz_count'] = self.quiz_count(true) + self.online_quiz_count(true) 
+			data['survey_count'] = self.survey_count(true) +  self.online_survey_count(true) 
+
+			data['module_done'] = current_user.finished_group_test?(self)
+
+			data['total_finished_duration'] = 0
+			data['module_percentage'] = 0
+
+			lecture_views = current_user.lecture_views.select{|v| v.group_id==self.id }
+			done_lectures_view = lecture_views.select{|v| v.percent==100}
+
+			student_online_quiz_grades = current_user.online_quiz_grades.includes(:online_quiz).select{|v| v.group_id==self.id}
+			done_online_quizzes = student_online_quiz_grades.uniq{|p| p.online_quiz_id}
+
+			student_free_online_quiz_grades = current_user.free_online_quiz_grades.includes(:online_quiz).select{|v| v.group_id==self.id}
+			done_free_online_quizzes = student_free_online_quiz_grades.uniq{|p| p.online_quiz_id}
+
+			done_online_quiz_ids = []
+			done_online_quiz_ids = ( done_online_quizzes.map { |e|  e.online_quiz_id } + done_free_online_quizzes.map { |e| e.online_quiz_id } ).uniq
+
+			done_quiz_a = current_user.quiz_grades.includes(:quiz).select{|v| v.quiz.group_id==self.id}.uniq{|p| p.quiz_id}
+			done_quiz_b = current_user.free_answers.includes(:quiz).select{|v| v.quiz.group_id==self.id}.uniq{|p| p.quiz_id}
+			done_quiz_ids =[]
+			done_quiz_ids = ( done_quiz_a.map { |e|  e.quiz_id } + done_quiz_b.map { |e| e.quiz_id } ).uniq
+
+			data['finished_all_quiz_count'] =  0
+			data['finished_all_survey_count'] =  0
+
+			data['module_completion']=[]
+			data['online_quiz_count']= self.online_quizzes.count + self.total_quiz_questions + self.total_survey_questions
+
+			self.get_sub_items.each_with_index do |item , index|
+					data_item = {}
+					data_item['id'] = item.id
+					data_item['group_id'] = item.group.id
+					if item.appearance_time <= today 
+							if item.class.name.downcase == 'lecture'
+									lec_duration = item.duration || 0
+									data_item['type'] = 'lecture'
+									data['module_percentage'] += lec_duration
+									lecture_view_percentage = lecture_views.select{|r| r.lecture_id == item.id}[0]
+									data_item['duration'] = lec_duration
+									data_item['percent_finished'] = 0
+									data_item['item_name'] = item.name
+									data_item['inclass'] = item.inclass
+									data_item['distance_peer'] = item.distance_peer
+
+									if lecture_view_percentage
+											data_item['percent_finished'] = lecture_view_percentage.percent
+											data['total_finished_duration'] +=  ( lecture_view_percentage.percent / 100.0 ) * lec_duration
+									end
+									d=done_online_quizzes.select{|r| r.lecture_id == item.id}
+									e=done_free_online_quizzes.select{|r| r.lecture_id == item.id}
+									g=done_lectures_view.select{|r| r.lecture_id == item.id}
+
+									if (!(d.size+e.size < item.online_quizzes.size or g.empty?)) #means done.
+											data_item['status'] = 'done'
+									else
+											data_item['status'] = 'not_done'
+									end
+									data_item['online_quizzes'] = []
+									item.online_quizzes.order('start_time').each do |online_quiz|
+											data_online_quiz={}
+											data_online_quiz['lecture_id'] = online_quiz.lecture.id
+											data_online_quiz['quiz_name'] = online_quiz.question
+											data_online_quiz['id'] = online_quiz.id
+											data_online_quiz['time'] = online_quiz.time
+											data_online_quiz['required'] = online_quiz.graded 
+											data_online_quiz['inclass'] = item.inclass
+											data_online_quiz['distance_peer'] = item.distance_peer
+
+											data_online_quiz['data'] = []
+
+											if  online_quiz.quiz_type.include?"survey"
+													data_online_quiz['type'] = 'survey'
+													if done_online_quiz_ids.include?(online_quiz.id)
+															data['finished_all_survey_count'] += 1
+													end
+													self_student_answers = student_online_quiz_grades.select{|grade| grade.online_quiz_id == online_quiz.id && !grade.inclass && !grade.distance_peer }
+													group_student_answers = student_online_quiz_grades.select{|grade| grade.online_quiz_id == online_quiz.id && grade.inclass && grade.distance_peer }
+
+													if  self_student_answers.size > 0
+																	data_online_quiz['data'].push('self_survey_solved')
+													else
+																	data_online_quiz['data'].push('self_never_tried')
+													end
+
+													if item.inclass || item.distance_peer
+															if group_student_answers
+																			data_online_quiz['data'].push('group_survey_solved')
+															else
+																			data_online_quiz['data'].push('group_never_tried')
+															end
+													end
+											else
+													data_online_quiz['type'] = 'quiz'
+													if done_online_quiz_ids.include?(online_quiz.id)
+															data['finished_all_quiz_count'] += 1
+													end
+													self_student_answers = student_online_quiz_grades.select{|grade| grade.online_quiz_id == online_quiz.id && !grade.in_group }
+													self_student_answers += student_free_online_quiz_grades.select{|grade| grade.online_quiz_id == online_quiz.id  }
+													group_student_answers = student_online_quiz_grades.select{|grade| grade.online_quiz_id == online_quiz.id && grade.in_group }
+
+													if online_quiz.question_type != "Free Text Question"
+															if  self_student_answers.size > 0
+																	if self_student_answers.select{|grade| grade.attempt ==  1 && grade.grade ==  1}.size > 0
+																					data_online_quiz['data'].push('self_correct_first_try')
+																	elsif self_student_answers.select{|grade| grade.grade ==  1}.size  > 0
+																					data_online_quiz['data'].push('self_tried_correct_finally')
+																	elsif self_student_answers.select{|grade| grade.grade ==  0}.size  == 1
+																					data_online_quiz['data'].push('self_tried_not_correct_first')
+																	else
+																					data_online_quiz['data'].push('self_tried_not_correct_finally')
+																	end
+															else
+																			data_online_quiz['data'].push('self_never_tried')
+															end
+
+															if item.inclass || item.distance_peer
+																	if group_student_answers.size >  0
+																			if group_student_answers.select{|grade| grade.attempt ==  1 && grade.grade ==  1}.size > 0
+																							data_online_quiz['data'].push('group_correct_first_try')
+																			elsif group_student_answers.select{|grade| grade.grade ==  1}.size  > 0
+																							data_online_quiz['data'].push('group_tried_correct_finally')
+																			elsif group_student_answers.select{|grade| grade.grade ==  0}.size  == 1
+																							data_online_quiz['data'].push('group_tried_not_correct_first')
+																			else
+																							data_online_quiz['data'].push('group_tried_not_correct_finally')
+																			end
+																	else
+																					data_online_quiz['data'].push('group_never_tried')
+																	end
+															end
+													else
+															if  self_student_answers.size > 0
+																	if self_student_answers.select{|grade| grade.attempt ==  1 &&  ( grade.grade ==  3 || grade.grade ==  2 ) }.size > 0
+																					data_online_quiz['data'].push('self_correct_first_try')
+																	elsif self_student_answers.select{|grade| ( grade.grade ==  3 || grade.grade ==  2 ) }.size  > 0
+																					data_online_quiz['data'].push('self_tried_correct_finally')
+																	elsif self_student_answers.select{|grade|  grade.grade ==  0   }.size  > 0
+																					data_online_quiz['data'].push('self_not_checked')
+																	elsif self_student_answers.select{|grade|  grade.grade ==  1   }.size  == 1
+																					data_online_quiz['data'].push('self_tried_not_correct_first')
+																	else
+																					data_online_quiz['data'].push('self_tried_not_correct_finally')
+																	end
+															else
+																			data_online_quiz['data'].push('self_never_tried')
+															end
+													end
+											end
+											data_item['online_quizzes'].push(data_online_quiz)
+									end
+									######  take care from it is required or not  ####################################################
+							else ## QUIZ
+									data_item['item_name'] = item.name
+									## add 5 minutes
+									data['module_percentage'] += 300
+									data_item['duration'] = 300
+									data_item['status'] = 'not_done'
+									data_item['percent_finished'] = 0
+									student_quiz_grades = current_user.quiz_grades.includes(:quiz).select{|v| v.quiz.group_id==self.id}
+									quiz_student_free_online_quiz_grades = current_user.free_answers.includes(:quiz).select{|v| v.quiz.group_id==self.id}
+									data_item['online_quizzes'] = []          
+
+									if  item.quiz_type ==  "survey"
+											data_item['type'] = 'survey'
+											data_item['percent_finished'] = 0
+											if done_quiz_ids.include?(item.id)
+													data_item['status'] = 'done'
+													data_item['percent_finished'] = 100
+													data['finished_all_survey_count'] += 1
+													data_item['finished_duration'] = 300
+													data['remaining_duration'] = 0
+											end
+											item.questions.order('position').select{|q| q.question_type !='header'}.each do |question| 
+													self_student_answers = student_quiz_grades.select{|grade| grade.question_id == question.id }
+													self_student_answers += quiz_student_free_online_quiz_grades.select{|grade| grade.question_id == question.id }
+
+													data_online_quiz={}
+													data_online_quiz['lecture_id'] = question.quiz.id
+													data_online_quiz['quiz_name'] = question.content
+													data_online_quiz['id'] = question.id
+													data_online_quiz['required'] = item.graded 
+													data_online_quiz['inclass'] = false
+													data_online_quiz['distance_peer'] = false
+													data_online_quiz['data'] = []
+													data_online_quiz['type'] = 'survey'
+													if  self_student_answers.size > 0
+																	data_online_quiz['data'].push('self_survey_solved')
+													else
+																	data_online_quiz['data'].push('self_never_tried')
+													end
+													data_item['online_quizzes'].push(data_online_quiz)
+											end
+									else
+											data_item['type'] = 'quiz'
+											if done_quiz_ids.include?(item.id)
+													data_item['status'] = 'done'
+													data_item['percent_finished'] = 100
+													data['finished_all_quiz_count'] += 1
+													data_item['finished_duration'] = 300
+													data['remaining_duration'] = 0
+											end
+											item.questions.order('position').select{|q| q.question_type !='header'}.each do |question| 
+													self_student_answers = student_quiz_grades.select{|grade| grade.question_id == question.id }
+													self_student_answers += quiz_student_free_online_quiz_grades.select{|grade| grade.question_id == question.id }
+
+													data_online_quiz={}
+													data_online_quiz['lecture_id'] = question.quiz.id
+													data_online_quiz['quiz_name'] = question.content
+													data_online_quiz['id'] = question.id
+													data_online_quiz['required'] = item.graded 
+													data_online_quiz['inclass'] = false
+													data_online_quiz['distance_peer'] = false
+													data_online_quiz['data'] = []
+													data_online_quiz['type'] = 'survey'
+
+													if question.question_type != "Free Text Question"
+															if  self_student_answers.size > 0
+																	# p self_student_answers
+																	if self_student_answers.select{|grade| grade.grade ==  1}.size > 0
+																					data_online_quiz['data'].push('self_correct_question')
+																	elsif self_student_answers.select{|grade| grade.grade ==  0}.size  > 0
+																					data_online_quiz['data'].push('self_not_correct_question')
+																	end
+															else
+																			data_online_quiz['data'].push('self_never_tried')
+															end
+													else
+															if  self_student_answers.size > 0
+																	if self_student_answers.select{|grade| ( grade.grade ==  3 || grade.grade ==  2 ) }.size > 0
+																					data_online_quiz['data'].push('self_correct_question')
+																	elsif self_student_answers.select{|grade|  grade.grade ==  0   }.size  > 0
+																					data_online_quiz['data'].push('self_not_checked_question')
+																	elsif self_student_answers.select{|grade|  grade.grade ==  1   }.size  > 0
+																					data_online_quiz['data'].push('self_not_correct_question')
+																	end
+															else
+																			data_online_quiz['data'].push('self_never_tried')
+															end
+													end
+
+													data_item['online_quizzes'].push(data_online_quiz)
+
+
+											end
+									end
+							end
+							data['module_completion'].push(data_item )
+					end
+			end
+
+			if data['module_percentage'] == 0
+					data['module_percentage'] = 1
+			end 
+			data['module_completion'].each{|g|  g['duration'] = ( g['duration'] /  data['module_percentage'] )*99 }
+			data['remaining_duration'] = data['duration'] - data['total_finished_duration']
+			data['remaining_quiz'] = data['quiz_count'] - data['finished_all_quiz_count']
+			data['remaining_survey'] =  data['survey_count'] - data['finished_all_survey_count']
+
+			return data
+	end
 
 	# def get_discussion_summary_student(current_user)
 	# end
@@ -347,7 +683,6 @@ class Group < ApplicationRecord
 				end
 			end
 			errors.add(:appearance_time, I18n.t("group.errors.appearance_date_must_be_before_items") ) if error		
-			# errors.add(:appearance_time, "must be before items appearance time") if error		
 		end
 		
 		def due_date_must_be_after_items

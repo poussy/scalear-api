@@ -336,12 +336,24 @@ class GroupsController < ApplicationController
 	# def update_all_inclass_sessions
 	# end
 
-	# def get_module_summary
-	# end
-
-	# def get_online_quiz_summary
-	# end
-
+	def get_module_summary
+		course = Course.find(params[:course_id])
+		if course.is_student(current_user)
+			group = Group.find(params[:id])
+			data = group.get_module_summary_student(current_user)
+		else
+			group = Group.includes([:course, :lectures,{:online_quizzes => :online_answers}, {:quizzes => [:quiz_grades, :free_answers]}, :online_quiz_grades, :free_online_quiz_grades, :lecture_views ]).find(params[:id])
+			data = group.get_module_summary_teacher
+		end
+		render :json => {:module =>data }
+	end
+	
+	def get_online_quiz_summary
+		group = Group.includes(:course).find(params[:id])
+		course = group.course
+		data = course.is_student(current_user)? group.get_completion_summary_student(current_user) : group.get_online_quiz_summary_teacher
+		render :json => {:module =>data }
+	end
 	# def get_discussion_summary
 	# end
 
