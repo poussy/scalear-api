@@ -440,8 +440,57 @@ class User < ActiveRecord::Base
   # def finished_lectures_test_percent(group) #called per student
   # end
 
-  # def finished_group_percent(group) #called per student
-  # end
+  def finished_group_percent(group) #called per student
+    group_online_quizzes= group.online_quizzes.select{|f| !f.online_answers.empty? or f.question_type=="Free Text Question"}
+    online_quizzes_count = group_online_quizzes.size
+
+    a = group.online_quiz_grades.select{|v| v.user_id == self.id}.uniq{|p| p.online_quiz_id}
+    b = group.free_online_quiz_grades.select{|v| v.user_id==self.id}.uniq{|p| p.online_quiz_id}
+    c = group.lecture_views.select{|v| v.user_id==self.id and v.percent==100}
+
+    quiz_a = group.quizzes.flat_map{|q| q.quiz_grades}.select{|q| q.user_id == self.id}.uniq{|p| p.quiz_id}
+    quiz_b = group.quizzes.flat_map{|q| q.free_answers}.select{|q| q.user_id == self.id}.uniq{|p| p.quiz_id}
+    solved_quiz_ids_count = ( quiz_a.map{|e| e.quiz_id } + quiz_b.map{|e| e.quiz_id } ).uniq.size
+    lecture_count = group.lectures.size
+    quiz_count = group.quizzes.size
+
+    if ( ((lecture_count != 0 && c.size == 0) && (quiz_count !=0 && (solved_quiz_ids_count == 0))) || ((lecture_count == 0 ) && (quiz_count != 0 && (solved_quiz_ids_count == 0))) || ((lecture_count !=0 && c.size == 0) && (quiz_count == 0)) )
+      return 0 # not started
+    elsif (lecture_count == c.size && online_quizzes_count == a.size+b.size && quiz_count == solved_quiz_ids_count)
+      (a+b+c).each do |m|
+        if m.created_at > m.lecture.due_date
+          return 3 #late
+        end
+      end
+      (quiz_a + quiz_b).each do |m|
+        if m.created_at > m.quiz.due_date
+          return 3 #late
+        end
+      end
+    else
+      num=0
+      group.lectures.each do |l|
+        d=a.select{|q| q.lecture_id == l.id}
+        e=b.select{|q| q.lecture_id == l.id}
+        g=c.select{|v| v.lecture_id == l.id}
+        lec_quiz_count = group_online_quizzes.select{|q| q.lecture_id == l.id }.size
+        if (!(d.size+e.size < lec_quiz_count || g.empty?)) #means done.
+          num+=1
+        end
+      end
+      num += solved_quiz_ids_count
+      percent =  num * 1.0 / (quiz_count + lecture_count)
+      (0.5..0.8).include?(percent)
+      if (0.5..0.8).include?(percent)
+        return 1 #  80% > finished > 50%
+      elsif (0..0.5).include?(percent)
+        return 4 # finished < 50%
+      else
+        return 5 #   finished > 80%
+      end
+    end
+    return 2 #ontime
+  end
 
   # def grades_module_before_due_date(group)
   # end

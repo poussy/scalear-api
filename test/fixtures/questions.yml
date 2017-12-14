@@ -9,12 +9,24 @@ mcq1:
   quiz_id: 1
   content: <p class=\"medium-editor-p\">q1</p>
   question_type: MCQ
-
+# match type with exact text
 free_text1:
   id: 3
   quiz_id: 1
-  content: ""
-  question_type: <p class=\"medium-editor-p\">free text</p>
+  content: <p class=\"medium-editor-p\">free text</p>
+  question_type: Free Text Question
+# match type with regular expression
+free_text2:
+  id: 5
+  quiz_id: 1
+  content: <p class=\"medium-editor-p\">free text</p>
+  question_type: Free Text Question
+# fee text
+free_text3:
+  id: 6
+  quiz_id: 1
+  content: <p class=\"medium-editor-p\">free text</p>
+  question_type: Free Text Question
 
 drag1:
   id: 4

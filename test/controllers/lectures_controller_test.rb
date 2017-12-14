@@ -597,14 +597,15 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 		
 		get '/en/courses/3/lectures/3/get_lecture_data_angular', headers: @headers2
 		# same lecture_view but changed updated_at
-		assert_equal LectureView.where(lecture_id: 3).first.updated_at.to_i, Time.zone.now.to_i
+		## /10.floor to remove last digit because it fails because of seconds' differences, and we dont need to assert with that kind of precision
+		assert_equal LectureView.where(lecture_id: 3).first.updated_at.to_i/10.floor, Time.zone.now.to_i/10.floor
 		assert_equal LectureView.where(lecture_id: 3).first, old_lecture_view
 
 		LectureView.where(lecture_id: 3).destroy_all
 
 		get '/en/courses/3/lectures/3/get_lecture_data_angular', headers: @headers2
 		# new lecture_view
-		assert_equal LectureView.where(lecture_id: 3).first.updated_at.to_i, Time.zone.now.to_i
+		assert_equal LectureView.where(lecture_id: 3).first.updated_at.to_i/10.floor, Time.zone.now.to_i/10.floor
 		assert_not LectureView.where(lecture_id: 3).first == old_lecture_view
 		
 	end
