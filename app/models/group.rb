@@ -503,8 +503,6 @@ end
 
 		question.quiz_grades.group_by{ |quiz_grade| quiz_grade.grade  }.each{|quiz_grade_group| grade_grouped_user_ids_list[quiz_grade_group[0]] =  quiz_grade_group[1].map{|e| e.user_id }.uniq  }
 		question.free_answers.group_by{ |quiz_grade| quiz_grade.grade  }.each{|quiz_grade_group| grade_grouped_user_ids_list[quiz_grade_group[0]] =  quiz_grade_group[1].map{|e| e.user_id }.uniq  }
-		# p question.question_type 
-		# p grade_grouped_user_ids_list
 		if question.quiz.quiz_type == "survey"
 			data_question[question.id]['type'] = 'survey'
 			## added nil for survey quiz grades without grade 
@@ -538,12 +536,12 @@ end
 				data_question[question.id]['data']['not_checked'] = 'null'
 			else
 				data_question[question.id]['data']['correct_first_try'] = 'null'#(  ( grade_grouped_user_ids_list[3] || [] ) + ( grade_grouped_user_ids_list[2] || [] )).uniq.size # first_correct_attempt.size + first_partial_correct_attempt.size
-				data_question[question.id]['data']['correct_quiz'] =  (  ( grade_grouped_user_ids_list[3] || [] ) + ( grade_grouped_user_ids_list[2] || [] )).uniq.size#'null'
+				data_question[question.id]['data']['correct_quiz'] =  (  ( grade_grouped_user_ids_list[3.0] || [] )+ ( grade_grouped_user_ids_list[3] || [] ) + ( grade_grouped_user_ids_list[2] || [] ) +  ( grade_grouped_user_ids_list[2.0] || [] )).uniq.size#'null'
 				data_question[question.id]['data']['tried_correct_finally'] = 'null' #(  ( grade_grouped_user_ids_list[3.0] || [] ) + ( grade_grouped_user_ids_list[2.0] || [] )- first_partial_correct_attempt - first_correct_attempt).uniq.size
 				data_question[question.id]['data']['not_correct_first_try'] = 'null'#( (grade_grouped_user_ids_list[1] || [] ) - (grade_grouped_user_ids_list[3] || []) - ( grade_grouped_user_ids_list[2] || [] )).uniq.size#( (tried_not_correct || []) - (grade_grouped_user_ids_list[3.0] || []) - ( grade_grouped_user_ids_list[2.0] || [] )- first_partial_correct_attempt - first_correct_attempt -(not_first_incorrect_attempt || []) ).uniq.size
-				data_question[question.id]['data']['not_correct_quiz'] =  ( (grade_grouped_user_ids_list[1] || [] ) - (grade_grouped_user_ids_list[3] || []) - ( grade_grouped_user_ids_list[2] || [] )).uniq.size#'null'        
+				data_question[question.id]['data']['not_correct_quiz'] =  ( (grade_grouped_user_ids_list[1.0] || [] ) - (grade_grouped_user_ids_list[3.0] || []) - ( grade_grouped_user_ids_list[2.0] || [] )).uniq.size#'null'        
 				data_question[question.id]['data']['not_correct_many_tries'] = 'null' #tried_not_correct.size - data_question[question.id]['data']['not_correct_first_try']
-				data_question[question.id]['data']['not_checked'] = ( (grade_grouped_user_ids_list[0] || [] ) - (grade_grouped_user_ids_list[3] || []) - ( grade_grouped_user_ids_list[2] || [] )).uniq.size
+				data_question[question.id]['data']['not_checked'] = ( (grade_grouped_user_ids_list[0] || [] ) + (grade_grouped_user_ids_list[0.0] || [] ) - (grade_grouped_user_ids_list[3] || []) - (grade_grouped_user_ids_list[3.0] || []) - ( grade_grouped_user_ids_list[2] || [] ) - ( grade_grouped_user_ids_list[2.0] || [] )).uniq.size
 				data_question[question.id]['data']['never_tried'] = students_count - data_question[question.id]['data']['correct_quiz'] - data_question[question.id]['data']['not_correct_quiz'] - data_question[question.id]['data']['not_checked']
 				data_question[question.id]['data']['review_vote'] = 'null'#question.get_votes
 
@@ -560,11 +558,9 @@ end
 		data ={:online_quiz => []}
 
 		self.get_items.each do |item|
-			pp item.class.name.downcase
 			if item.class.name.downcase == 'lecture'
 				# self.online_quizzes.includes([:online_answers,:lecture, :online_quiz_grades, :free_online_quiz_grades]).order('lectures.position , online_quizzes.start_time').each do |online_quiz|
 				item.online_quizzes.includes([:online_answers,:lecture, :online_quiz_grades, :free_online_quiz_grades]).order('online_quizzes.start_time').each do |online_quiz|
-						pp online_quiz.id
 						data_online_quiz = self.get_summary_teacher_for_each_online_quiz(online_quiz , students_count)  
 						data[:online_quiz].push(data_online_quiz )
 				end

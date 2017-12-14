@@ -416,7 +416,7 @@ class GroupsController < ApplicationController
     stat= lec.get_statistics(students)
     lectures[lec.id]["confused"]= Confused.get_rounded_time_lecture(stat[:confused]) #right now I round up. [[234,5],[238,6]]
     lectures[lec.id]["really_confused"]= Confused.get_rounded_time_lecture(stat[:really_confused]) #right now I round up. [[234,5],[238,6]]
-    discussion = Post.get_rounded_time(stat[:discussion])
+    discussion = Forum::Post.get_rounded_time(stat[:discussion])
     lectures[lec.id]["discussion"] = discussion.to_a.map{|v| v=[v[0],v[1][1]]} #lec.posts_all_teacher
     review_question_count += stat[:discussion].select{|v| v.hide == false}.count
   end
