@@ -146,8 +146,32 @@ class Group < ApplicationRecord
 	# def get_stats
 	# end
 
-	# def get_stats_summary#[not_watched, watched_less_than_50, watched_more_than_50, watched_more_than_80, completed_on_time, completed_late]
-	# end
+	def get_stats_summary#[not_watched, watched_less_than_50, watched_more_than_50, watched_more_than_80, completed_on_time, completed_late]
+		not_watched=0
+		watched_less_than_50=0
+		watched_more_than_50=0
+		watched_more_than_80 = 0
+		completed_on_time=0
+		completed_late=0
+		self.course.users.each do |u|
+			# x=u.grades_module_before_due_date(self)
+			x=u.finished_group_percent(self)
+			if x==0
+					not_watched+=1
+			elsif x==1
+					watched_more_than_50+=1
+			elsif x==2
+					completed_on_time+=1
+			elsif x==3
+					completed_late+=1
+			elsif x==4
+					watched_less_than_50+=1
+			elsif x==5
+					watched_more_than_80+=1        
+			end
+		end
+		return [not_watched, watched_less_than_50, watched_more_than_50, watched_more_than_80, completed_on_time, completed_late]
+	end
 
 	def survey_count(appearance_time_boolean=false) 
 		# return self.quizzes.where(:quiz_type => "survey").count a.appearance_time <= today 
@@ -356,17 +380,205 @@ class Group < ApplicationRecord
 	# def inclass_session
 	# end
 
-	# def get_module_summary_teacher
-	# end
+def get_module_summary_teacher
+	course = self.course
+	data = {}
 
-	# def get_summary_teacher_for_each_online_quiz(online_quiz , students_count)
-	# end
+	data['title'] = course.short_name+": "+self.name
+	data['id'] = self.id
+	data['course_id'] = course.id
+	data['duration'] = self.lectures.map(&:duration).select{|d| !d.nil?}.sum 
+	data['quiz_count'] = self.quizzes.select{|q| q.quiz_type == "quiz"}.size + self.online_quizzes.select{|q| !q.quiz_type.include?"survey" }.size
+	data['survey_count'] = self.quizzes.select{|q| q.quiz_type == "survey"}.size +  self.online_quizzes.select{|q| q.quiz_type.include?"survey"}.size
+	data['due_date'] = ((self.due_date.to_time - DateTime.current.to_time )) # get due date
+	data['due_date_string'] = self.due_date
+	data['type'] = "teacher"
+	data['students_count'] = course.users.size
+	module_stats = self.get_stats_summary #[not_watched, watched_less_than_50, watched_more_than_50, watched_more_than_80,completed_on_time, completed_late]
+	data['students_completion'] = {}
+	data['students_completion']['incomplete'] = 0 
+	data['students_completion']['between_50_80'] = 0 
+	data['students_completion']['more_than_80'] = 0
+	data['students_completion']['completed_late'] = 0
+	data['students_completion']['on_time'] = 0
+	data['students_completion']['completed'] = 0
+	if data['duration'] != 0
+		if data['due_date'] > 0 # due date in future
+			# data['students_completion']['not_watched'] = module_stats[0]
+			data['students_completion']['incomplete'] = module_stats[0] + module_stats[1] 
+			# data['students_completion']['less_than_50'] = module_stats[1]
+			data['students_completion']['between_50_80'] = module_stats[2] 
+			data['students_completion']['more_than_80'] = module_stats[3]
+			data['students_completion']['completed'] = module_stats[4]
+		else # due date is in past
+			data['students_completion']['incomplete'] = module_stats[0] + module_stats[1] 
+			data['students_completion']['between_50_80'] = module_stats[2] 
+			data['students_completion']['more_than_80'] = module_stats[3]
+			data['students_completion']['completed_late'] = module_stats[5]
+			data['students_completion']['on_time'] = module_stats[4]
+		end
+	else
+		data['duration'] = 1
+	end
+	return data
+end
 
-	# def get_summary_teacher_for_each_normal_quiz(question , students_count)
-	# end
+	def get_summary_teacher_for_each_online_quiz(online_quiz , students_count)
+		data_online_quiz={}
+		data_online_quiz[online_quiz.id]={}
+		data_online_quiz[online_quiz.id]['lecture_name'] = online_quiz.lecture.name
+		data_online_quiz[online_quiz.id]['quiz_name'] = online_quiz.question
+		data_online_quiz[online_quiz.id]['data'] = {}
+		grade_grouped_user_ids_list = {}
+		online_quiz.online_quiz_grades.group_by{ |quiz_grade| quiz_grade.grade  }.each{|quiz_grade_group| grade_grouped_user_ids_list[quiz_grade_group[0]] =  quiz_grade_group[1].map{|e| e.user_id }.uniq  }
+		online_quiz.free_online_quiz_grades.group_by{ |quiz_grade| quiz_grade.grade  }.each{|quiz_grade_group| grade_grouped_user_ids_list[quiz_grade_group[0]] =  quiz_grade_group[1].map{|e| e.user_id }.uniq  }
 
-	# def get_online_quiz_summary_teacher
-	# end
+		if online_quiz.quiz_type.include?"survey"
+			data_online_quiz[online_quiz.id]['type'] = 'survey'
+			data_online_quiz[online_quiz.id]['data']['survey_solved'] = ( ( grade_grouped_user_ids_list[1.0] || [] ) + (grade_grouped_user_ids_list[0.0] || []) ).uniq.size
+			data_online_quiz[online_quiz.id]['data']['never_tried'] = students_count - data_online_quiz[online_quiz.id]['data']['survey_solved']
+
+			data_online_quiz[online_quiz.id]['answer'] = {}
+			user_ids_attempt_online_answers  = online_quiz.online_quiz_grades.group(:user_id ).select('user_id as user_id , Max(attempt) as max').map{|a| [a.user_id ,  a.max.to_i ] }
+			online_answers_list = online_quiz.online_quiz_grades.select{|a| user_ids_attempt_online_answers.include?([a.user_id , a.attempt.to_i]) }.map{|a| a.online_answer_id}
+			online_quiz.online_answers.each do |online_answer|
+					data_online_quiz[online_quiz.id]['answer'][online_answer.answer] = online_answers_list.count(online_answer.id)
+			end
+		else
+			data_online_quiz[online_quiz.id]['type'] = 'quiz'
+			data_online_quiz[online_quiz.id]['inclass'] = online_quiz.lecture.inclass
+			data_online_quiz[online_quiz.id]['distance_peer'] = online_quiz.lecture.distance_peer
+
+			if online_quiz.question_type != "Free Text Question"
+				first_correct_attempt = online_quiz.online_quiz_grades.select{|q| q.attempt == 1 && q.grade == 1}.map(&:user_id).uniq
+				first_correct_attempt += online_quiz.free_online_quiz_grades.select{|q| q.attempt == 1 && q.grade == 1}.map(&:user_id).uniq
+
+				not_first_incorrect_attempt = online_quiz.online_quiz_grades.select{|q| q.attempt != 1 && q.grade == 0}.map(&:user_id).uniq
+				not_first_incorrect_attempt += online_quiz.free_online_quiz_grades.select{|q| q.attempt != 1 && q.grade == 0}.map(&:user_id).uniq
+				tried_not_correct = ( (grade_grouped_user_ids_list[0.0] || [] ) - (grade_grouped_user_ids_list[1.0] || []) - first_correct_attempt).uniq
+
+				data_online_quiz[online_quiz.id]['data']['correct_first_try'] = first_correct_attempt.size
+				data_online_quiz[online_quiz.id]['data']['tried_correct_finally'] = (  ( grade_grouped_user_ids_list[1.0] || []) - first_correct_attempt).uniq.size
+				data_online_quiz[online_quiz.id]['data']['not_correct_first_try'] = ( (tried_not_correct || []) - (grade_grouped_user_ids_list[1.0] || []) - (first_correct_attempt || []) - (not_first_incorrect_attempt || []) ).uniq.size
+				data_online_quiz[online_quiz.id]['data']['not_correct_many_tries'] = tried_not_correct.size - data_online_quiz[online_quiz.id]['data']['not_correct_first_try']
+				data_online_quiz[online_quiz.id]['data']['never_tried'] = students_count - data_online_quiz[online_quiz.id]['data']['correct_first_try'] - data_online_quiz[online_quiz.id]['data']['tried_correct_finally'] -data_online_quiz[online_quiz.id]['data']['not_correct_many_tries'] -data_online_quiz[online_quiz.id]['data']['not_correct_first_try']
+				data_online_quiz[online_quiz.id]['data']['review_vote'] = online_quiz.get_votes
+				data_online_quiz[online_quiz.id]['data']['not_checked'] = 'null'
+				data_online_quiz[online_quiz.id]['data']['correct_quiz'] = 'null'
+				data_online_quiz[online_quiz.id]['data']['not_correct_quiz'] = 'null'
+			else
+				first_correct_attempt = online_quiz.online_quiz_grades.select{|q| q.attempt == 1 && q.grade == 3}.map(&:user_id).uniq
+				first_correct_attempt += online_quiz.free_online_quiz_grades.select{|q| q.attempt == 1 && q.grade == 3}.map(&:user_id).uniq
+				first_partial_correct_attempt = online_quiz.online_quiz_grades.select{|q| q.attempt == 1 && q.grade == 2}.map(&:user_id).uniq
+				first_partial_correct_attempt += online_quiz.free_online_quiz_grades.select{|q| q.attempt == 1 && q.grade == 2}.map(&:user_id).uniq
+
+				not_first_incorrect_attempt = online_quiz.online_quiz_grades.select{|q| q.attempt != 1 && q.grade == 1}.map(&:user_id).uniq
+				not_first_incorrect_attempt += online_quiz.free_online_quiz_grades.select{|q| q.attempt != 1 && q.grade == 1}.map(&:user_id).uniq
+				tried_not_correct = ( (grade_grouped_user_ids_list[1.0] || [] ) - (grade_grouped_user_ids_list[3.0] || []) - ( grade_grouped_user_ids_list[2.0] || [] )- first_partial_correct_attempt - first_correct_attempt).uniq
+
+				data_online_quiz[online_quiz.id]['data']['correct_first_try'] = first_correct_attempt.size + first_partial_correct_attempt.size
+				data_online_quiz[online_quiz.id]['data']['tried_correct_finally'] = (  ( grade_grouped_user_ids_list[3.0] || [] ) + ( grade_grouped_user_ids_list[2.0] || [] )- first_partial_correct_attempt - first_correct_attempt).uniq.size
+				# data_online_quiz[online_quiz.id]['data']['tried_not_correct'] = ( (grade_grouped_user_ids_list[1.0] || [] ) - (grade_grouped_user_ids_list[3.0] || []) - ( grade_grouped_user_ids_list[2.0] || [] )- first_partial_correct_attempt - first_correct_attempt).uniq.size
+				data_online_quiz[online_quiz.id]['data']['not_correct_first_try'] = ( (tried_not_correct || []) - (grade_grouped_user_ids_list[3.0] || []) - ( grade_grouped_user_ids_list[2.0] || [] )- first_partial_correct_attempt - first_correct_attempt -(not_first_incorrect_attempt || []) ).uniq.size
+				data_online_quiz[online_quiz.id]['data']['not_correct_many_tries'] = tried_not_correct.size - data_online_quiz[online_quiz.id]['data']['not_correct_first_try']
+				data_online_quiz[online_quiz.id]['data']['not_checked'] = ( (grade_grouped_user_ids_list[0.0] || [] ) - (grade_grouped_user_ids_list[3.0] || []) - ( grade_grouped_user_ids_list[2.0] || [] )- first_partial_correct_attempt - first_correct_attempt).uniq.size
+				data_online_quiz[online_quiz.id]['data']['never_tried'] = students_count - data_online_quiz[online_quiz.id]['data']['correct_first_try'] - data_online_quiz[online_quiz.id]['data']['tried_correct_finally'] -data_online_quiz[online_quiz.id]['data']['not_correct_many_tries'] -data_online_quiz[online_quiz.id]['data']['not_correct_first_try'] - data_online_quiz[online_quiz.id]['data']['not_checked']
+				data_online_quiz[online_quiz.id]['data']['review_vote'] = online_quiz.get_votes
+				data_online_quiz[online_quiz.id]['data']['correct_quiz'] = 'null'
+				data_online_quiz[online_quiz.id]['data']['not_correct_quiz'] = 'null'
+
+			end
+		end
+		return data_online_quiz
+	end
+
+	def get_summary_teacher_for_each_normal_quiz(question , students_count)
+		# "MCQ"    # "OCQ"    # "Free Text Question"    # "drag"
+		data_question={}
+		data_question[question.id]={}
+		data_question[question.id]['lecture_name'] = question.quiz.name
+		data_question[question.id]['quiz_name'] = question.content
+		data_question[question.id]['data'] = {}
+		grade_grouped_user_ids_list = {}
+
+
+		question.quiz_grades.group_by{ |quiz_grade| quiz_grade.grade  }.each{|quiz_grade_group| grade_grouped_user_ids_list[quiz_grade_group[0]] =  quiz_grade_group[1].map{|e| e.user_id }.uniq  }
+		question.free_answers.group_by{ |quiz_grade| quiz_grade.grade  }.each{|quiz_grade_group| grade_grouped_user_ids_list[quiz_grade_group[0]] =  quiz_grade_group[1].map{|e| e.user_id }.uniq  }
+		# p question.question_type 
+		# p grade_grouped_user_ids_list
+		if question.quiz.quiz_type == "survey"
+			data_question[question.id]['type'] = 'survey'
+			## added nil for survey quiz grades without grade 
+			data_question[question.id]['data']['survey_solved'] = ( (grade_grouped_user_ids_list[1.0] || []) + (grade_grouped_user_ids_list[1] || []) + (grade_grouped_user_ids_list[0.0] || []) + (grade_grouped_user_ids_list[0] || []) + (grade_grouped_user_ids_list[nil] || [])).uniq.size
+			data_question[question.id]['data']['never_tried'] = students_count - data_question[question.id]['data']['survey_solved']
+
+			if question.question_type != "Free Text Question"
+				data_question[question.id]['answer'] = {}
+				answers_list = question.quiz_grades.map{|a| a.answer_id}
+				question.answers.each do |answer|
+						data_question[question.id]['answer'][answer.content] = answers_list.count(answer.id)
+				end
+			else
+				data_question[question.id]['answer'] = {}
+			end
+		else
+			data_question[question.id]['type'] = 'quiz'
+			data_question[question.id]['inclass'] = false
+			data_question[question.id]['distance_peer'] = false
+
+			if question.question_type != "Free Text Question"
+
+				data_question[question.id]['data']['correct_first_try'] = 'null'#( (grade_grouped_user_ids_list[1.0]||[]) + (grade_grouped_user_ids_list[1]||[]) ).uniq.size # first_correct_attempt.size
+				data_question[question.id]['data']['correct_quiz'] =  ( (grade_grouped_user_ids_list[1.0]||[]) + (grade_grouped_user_ids_list[1]||[]) ).uniq.size#'null'
+				data_question[question.id]['data']['tried_correct_finally'] = 'null' #(  ( grade_grouped_user_ids_list[1.0] || []) - first_correct_attempt).uniq.size
+				data_question[question.id]['data']['not_correct_first_try'] = 'null'#( (grade_grouped_user_ids_list[0.0]||[]) + (grade_grouped_user_ids_list[0]||[]) - (grade_grouped_user_ids_list[1.0]||[]) - (grade_grouped_user_ids_list[1]||[]) ).uniq.size #( (tried_not_correct || []) - (grade_grouped_user_ids_list[1.0] || []) - (first_correct_attempt || []) - (not_first_incorrect_attempt || []) ).uniq.size
+				data_question[question.id]['data']['not_correct_quiz'] =  ( (grade_grouped_user_ids_list[0.0]||[]) + (grade_grouped_user_ids_list[0]||[]) - (grade_grouped_user_ids_list[1.0]||[]) - (grade_grouped_user_ids_list[1]||[]) ).uniq.size#'null'
+				data_question[question.id]['data']['not_correct_many_tries'] =  'null' #tried_not_correct.size - data_question[question.id]['data']['not_correct_first_try']
+				data_question[question.id]['data']['never_tried'] = students_count - data_question[question.id]['data']['correct_quiz'] - data_question[question.id]['data']['not_correct_quiz']
+				data_question[question.id]['data']['review_vote'] = 'null' #question.get_votes
+				data_question[question.id]['data']['not_checked'] = 'null'
+			else
+				data_question[question.id]['data']['correct_first_try'] = 'null'#(  ( grade_grouped_user_ids_list[3] || [] ) + ( grade_grouped_user_ids_list[2] || [] )).uniq.size # first_correct_attempt.size + first_partial_correct_attempt.size
+				data_question[question.id]['data']['correct_quiz'] =  (  ( grade_grouped_user_ids_list[3] || [] ) + ( grade_grouped_user_ids_list[2] || [] )).uniq.size#'null'
+				data_question[question.id]['data']['tried_correct_finally'] = 'null' #(  ( grade_grouped_user_ids_list[3.0] || [] ) + ( grade_grouped_user_ids_list[2.0] || [] )- first_partial_correct_attempt - first_correct_attempt).uniq.size
+				data_question[question.id]['data']['not_correct_first_try'] = 'null'#( (grade_grouped_user_ids_list[1] || [] ) - (grade_grouped_user_ids_list[3] || []) - ( grade_grouped_user_ids_list[2] || [] )).uniq.size#( (tried_not_correct || []) - (grade_grouped_user_ids_list[3.0] || []) - ( grade_grouped_user_ids_list[2.0] || [] )- first_partial_correct_attempt - first_correct_attempt -(not_first_incorrect_attempt || []) ).uniq.size
+				data_question[question.id]['data']['not_correct_quiz'] =  ( (grade_grouped_user_ids_list[1] || [] ) - (grade_grouped_user_ids_list[3] || []) - ( grade_grouped_user_ids_list[2] || [] )).uniq.size#'null'        
+				data_question[question.id]['data']['not_correct_many_tries'] = 'null' #tried_not_correct.size - data_question[question.id]['data']['not_correct_first_try']
+				data_question[question.id]['data']['not_checked'] = ( (grade_grouped_user_ids_list[0] || [] ) - (grade_grouped_user_ids_list[3] || []) - ( grade_grouped_user_ids_list[2] || [] )).uniq.size
+				data_question[question.id]['data']['never_tried'] = students_count - data_question[question.id]['data']['correct_quiz'] - data_question[question.id]['data']['not_correct_quiz'] - data_question[question.id]['data']['not_checked']
+				data_question[question.id]['data']['review_vote'] = 'null'#question.get_votes
+
+			end
+		end
+		return data_question
+	end
+
+	def get_online_quiz_summary_teacher
+		course = self.course
+		students_count = course.users.size
+		## Video Date
+		online_quiz_data=[]
+		data ={:online_quiz => []}
+
+		self.get_items.each do |item|
+			pp item.class.name.downcase
+			if item.class.name.downcase == 'lecture'
+				# self.online_quizzes.includes([:online_answers,:lecture, :online_quiz_grades, :free_online_quiz_grades]).order('lectures.position , online_quizzes.start_time').each do |online_quiz|
+				item.online_quizzes.includes([:online_answers,:lecture, :online_quiz_grades, :free_online_quiz_grades]).order('online_quizzes.start_time').each do |online_quiz|
+						pp online_quiz.id
+						data_online_quiz = self.get_summary_teacher_for_each_online_quiz(online_quiz , students_count)  
+						data[:online_quiz].push(data_online_quiz )
+				end
+			elsif item.class.name.downcase == 'quiz'
+				item.questions.includes([:answers,:quiz, :quiz_grades, :free_answers]).order('questions.position').select{|q| q.question_type !='header'}.each do |question|
+						data_normal_quiz = self.get_summary_teacher_for_each_normal_quiz(question , students_count)  
+						data[:online_quiz].push(data_normal_quiz )
+				end
+			end
+		end
+		return data
+	end
+
 
 	# def get_discussion_summary_teacher
 	# end

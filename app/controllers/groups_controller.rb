@@ -324,9 +324,88 @@ class GroupsController < ApplicationController
 	# def get_survey_charts
 	# end
 
-	# def get_module_progress
-	# end
+ def get_module_progress
 
+  _module=Group.where(:id => params[:id], :course_id => params[:course_id]).includes([
+    {:course => :users},
+    {:lectures =>
+      {:online_quizzes => [
+        {:online_answers => :online_quiz_grades},
+        :free_online_quiz_grades,
+        :online_quiz_grades
+      ]}
+    },
+    :online_quizzes
+  ]).first
+
+  if _module.nil?
+    render json: {:errors => ["controller_msg.no_such_module"]}, status: 404 and return
+  end
+  students = _module.course.users
+  students_ids = students.map(&:id)
+  lectures={}
+
+  review_question_count = 0
+  review_quizzes_count = _module.online_quizzes.select{|q| !q.hide && !q.inclass}.size
+  inclass_quizzes_count= _module.online_quizzes.select{|q| !q.hide && q.inclass}.size
+
+  _module.lectures.each do |lec|
+    lecture_charts = lec.get_charts_all(students_ids)
+    lecture_questions = lec.get_questions
+    lecture_chart_checked = lec.get_checked_quizzes
+    free_questions_collection = lec.get_free_text_question_and_answers(students_ids)
+    # quiz_free_questions = lec.get_free_text_questions
+    # quiz_free_answers= lec.get_free_text_answers
+
+
+    lectures[lec.id] = {:meta => lec, :charts => {}, :free_question => {}}
+
+    lecture_questions.each do |id, q|
+      if q[:type]!= "Free Text Question"
+        lectures[lec.id][:charts][id]=[q[:time], {
+          :title => q[:title],
+          :type => q[:type],
+          :quiz_type =>(q[:quiz_type]=='survey' || q[:quiz_type]=='html_survey')? 'Survey' : 'Quiz',
+          :review => q[:review],
+          :hide => lecture_chart_checked[id],
+          :id => id,
+          :answers => lecture_charts[id]
+        }]
+        if q[:inclass]
+          lectures[lec.id][:charts][id][1][:inclass] = true
+          lectures[lec.id][:charts][id][1][:timers] = OnlineQuiz.where(:id => id).select([:intro, :self, :in_group, :discussion]).first
+        end
+      end
+    end
+
+    if !free_questions_collection.empty?
+      free_questions_collection.each do |id, q|
+        # id = q[:id]
+        question = q[:question]
+        answer = q[:answer]
+        lectures[lec.id][:free_question][id] = [question[:time],{
+          :review => question[:review],
+          :title => question[:title],
+          :answers => answer,
+          :show => !question[:hide],
+          :id => id,
+          :quiz_type => (question[:quiz_type]=='survey' || question[:quiz_type]=='html_survey')? 'Survey' : 'Quiz'
+        }]
+      end
+    end
+
+    stat= lec.get_statistics(students)
+    lectures[lec.id]["confused"]= Confused.get_rounded_time_lecture(stat[:confused]) #right now I round up. [[234,5],[238,6]]
+    lectures[lec.id]["really_confused"]= Confused.get_rounded_time_lecture(stat[:really_confused]) #right now I round up. [[234,5],[238,6]]
+    discussion = Post.get_rounded_time(stat[:discussion])
+    lectures[lec.id]["discussion"] = discussion.to_a.map{|v| v=[v[0],v[1][1]]} #lec.posts_all_teacher
+    review_question_count += stat[:discussion].select{|v| v.hide == false}.count
+  end
+  students_count = students.size
+  first_lecture = _module.lectures.first if !_module.lectures.empty?
+
+  render json: { :lectures => lectures, :students_count => students_count, :first_lecture => first_lecture, :review_question_count => review_question_count, :review_video_quiz_count => review_quizzes_count, :inclass_quizzes_count => inclass_quizzes_count}
+ end
 	# def last_watched
 	# end
 
