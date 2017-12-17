@@ -337,8 +337,23 @@ class User < ActiveRecord::Base
   # def finished_survey_test?(survey)
   # end
 
-  # def finished_survey_test_with_completed_question_count?(survey)
-  # end
+  def finished_survey_test_with_completed_question_count?(survey)
+    total_question_count = survey.questions.where("question_type !=?", 'header').count
+    ocq_mcq_grade = self.quiz_grades.includes(:question,:quiz).where(quiz_id: survey.id).uniq{|q| q.question_id}
+    free_text_grades = self.free_answers.includes(:question,:quiz).select{|answer| answer.quiz_id ==survey.id && !answer.answer.nil? }.uniq{|q| q.question_id}
+    completed_count = (ocq_mcq_grade || []).count +  (free_text_grades || []).count
+    day_finished = 0
+    inst=self.quiz_statuses.select{|v| v.quiz_id==survey.id and v.status=="Saved"}[0]
+    if inst.nil?
+      day_finished = -1
+    elsif inst.created_at < survey.due_date
+      day_finished = 0
+    else
+      day_finished = (inst.created_at.to_date - survey.due_date.to_date).to_i  #solved after lecture due date
+    end
+    ### day_finished , quiz solved , total quiz , 0 , 0 , (1for lecture // 2for quiz)
+    return [ day_finished , completed_count, total_question_count ,0, 0 ,0 ]
+  end
 
   def finished_lecture_test?(lecture)
       viewed=self.lecture_views.select{|v| v.lecture_id == lecture.id && v.percent == 100}[0]

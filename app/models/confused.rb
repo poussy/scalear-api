@@ -19,7 +19,15 @@
 		return return_hash.to_a
   	end
 
-	# def self.get_rounded_time_lecture(array)
-	# end
+	def self.get_rounded_time_lecture(array)
+		return_hash={}
+		array.each do |v|
+			parsed_time=v.time % 15 == 0 ? v.time : v.time - (v.time % 15)
+			return_hash[parsed_time] = {:count =>0, :show => false} if return_hash[parsed_time].nil?
+			return_hash[parsed_time][:count] += 1
+			return_hash[parsed_time][:show] = !v.hide if !v.hide
+		end
+		return return_hash.to_a
+	end
 
 end

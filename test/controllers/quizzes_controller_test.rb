@@ -24,23 +24,16 @@ class QuizzesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "should be able to create quiz" do
-
-    assert_equal Quiz.count, 4
-
-		post '/en/courses/3/quizzes/new_or_edit/', params:{:group => 3, :type => 'quiz'},headers: @user.create_new_auth_token
-
-    assert_equal Quiz.count, 5
-		
+    assert_difference 'Quiz.count' do
+		  post '/en/courses/3/quizzes/new_or_edit/', params:{:group => 3, :type => 'quiz'},headers: @user.create_new_auth_token
+		end
 	end
 
   test "should be able to create survey" do
 
-    assert_equal Quiz.count, 4
-
-		post '/en/courses/3/quizzes/new_or_edit/', params:{:group => 3, :type => 'survey'},headers: @user.create_new_auth_token
-
-    assert_equal Quiz.count, 5
-		
+    assert_difference 'Quiz.count' do 
+		  post '/en/courses/3/quizzes/new_or_edit/', params:{:group => 3, :type => 'survey'},headers: @user.create_new_auth_token
+		end
 	end
 
 
@@ -131,15 +124,11 @@ class QuizzesControllerTest < ActionDispatch::IntegrationTest
 	end
 
   test "should copy quiz" do
+    assert_difference ['Quiz.count', 'Event.count'] do
+		  post '/en/courses/3/quizzes/quiz_copy', params: {module_id: 3, quiz_id: 1}, headers: @headers, as: :json
+    end
 
-    assert_equal Quiz.count, 4
-    @evnet_counter = Event.count
-		post '/en/courses/3/quizzes/quiz_copy', params: {module_id: 3, quiz_id: 1}, headers: @headers, as: :json
-
-    assert_equal Quiz.count, 5
-    assert_equal Event.count , @evnet_counter + 1
-
-    	quiz_from = Quiz.find(1)
+   	quiz_from = Quiz.find(1)
     new_quiz = Quiz.last
 
     assert_equal quiz_from.name, new_quiz.name

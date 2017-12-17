@@ -445,7 +445,7 @@ class GroupsControllerTest < ActionDispatch::IntegrationTest
 
 		online_quizzes_and_questions = decode_json_response_body["module"]["online_quiz"]
 
-		assert_equal online_quizzes_and_questions.size, 16 # online_quizzes and questions in normal quizzes
+		assert_equal online_quizzes_and_questions.size, 16 # total online_quizzes in lectures and questions in normal quizzes
 		question = online_quizzes_and_questions[0]["1"]
 		assert_equal question["lecture_name"], "quiz1" #question.quiz.name
 		assert_equal question["quiz_name"], "<p class=\\\"medium-editor-p\\\">ocq</p>" #question.content
@@ -458,7 +458,7 @@ class GroupsControllerTest < ActionDispatch::IntegrationTest
 
 	end
 
-	test 'module review online_quiz data != free_text_question' do
+	test 'module review online_quiz data of non free_text_question' do
 		#correct_quiz
 		QuizGrade.create(user_id: 7, quiz_id: 1, question_id: 1, answer_id: 5, grade: 1 )
 		#not_correct_quiz
@@ -492,7 +492,7 @@ class GroupsControllerTest < ActionDispatch::IntegrationTest
 
 	end
 
-	test 'module review online_quiz data free_text_question' do
+	test 'module review online_quiz data for free_text_question' do
 		#correct_quiz
 		QuizGrade.create(user_id: 7, quiz_id: 1, question_id: 6, answer_id: 8, grade: 3 )
 		#not_correct_quiz
@@ -533,6 +533,36 @@ class GroupsControllerTest < ActionDispatch::IntegrationTest
 		assert_equal online_quiz["data"]["review_vote"], 0
 
 	end
+
+	test "get_online_quiz_summary for survey questions" do
+
+		## normal quiz
+		Quiz.create(id: 50,name: 'quiz2', retries: 0, group_id: 3 , course_id: 3, appearance_time_module: false, appearance_time: '2017-9-10', 
+			due_date_module: false, due_date: '2017-10-9', position: 16, required: true, required_module: false, graded: true, graded_module: false, visible: true, 
+			quiz_type: 'survey', instructions: "Please fill the survey")
+		
+		Question.create(id: 55,quiz_id: 50, content: "<p class=\"medium-editor-p\">mcq survey</p>", question_type: "MCQ", show: true, position: 1, student_show: true, match_type: nil)
+		
+		QuizGrade.create(user_id: 6, quiz_id: 50, question_id: 55, answer_id: 1, grade: 0.0)
+
+		## online_quiz
+
+		OnlineQuiz.create(id: 56, course_id: 3, group_id: 3, lecture_id: 3, question_type: "OCQ", quiz_type: "survey", inclass: false, graded: false, start_time: 170, time: 170, end_time: 170, question: "Survey1", display_text: true)
+		OnlineQuizGrade.create(user_id: 6, course_id: 3, group_id: 3, lecture_id:3, online_quiz_id: 56, online_answer_id: 1, grade: 0.0)
+		
+		
+		get '/en/courses/3/groups/3/get_online_quiz_summary', headers: @user3.create_new_auth_token
+
+		
+ 		assert_equal decode_json_response_body["module"]["online_quiz"][17]["55"]["quiz_name"], "<p class=\"medium-editor-p\">mcq survey</p>"
+ 		assert_equal decode_json_response_body["module"]["online_quiz"][17]["55"]["data"], {"survey_solved"=>1, "never_tried"=>4}
+
+ 		assert_equal decode_json_response_body["module"]["online_quiz"][16]["56"]["quiz_name"], "Survey1"
+ 		assert_equal decode_json_response_body["module"]["online_quiz"][16]["56"]["data"], {"survey_solved"=>1, "never_tried"=>4}
+
+
+	end
+	
 	
 	
 
