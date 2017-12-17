@@ -562,10 +562,87 @@ class GroupsControllerTest < ActionDispatch::IntegrationTest
 
 
 	end
-	
-	
-	
 
-	
+	test "get_quiz_charts" do
+
+		QuizStatus.create(user_id: 7, quiz_id: 1, course_id: 3, status: "Submitted", group_id: 3)
+		QuizStatus.create(user_id: 8, quiz_id: 1, course_id: 3, status: "Submitted", group_id: 3)
+
+		QuizGrade.create(user_id: 7, quiz_id: 1, question_id: 1, answer_id: 4, grade: 1 )
+		QuizGrade.create(user_id: 8, quiz_id: 1, question_id: 3, answer_id: 5, grade: 1)
+
+
+		FreeAnswer.create(user_id: 7, quiz_id:1, question_id: 3, answer: "answer to free text")
+
+		FreeAnswer.create(user_id: 7, quiz_id: 1, question_id: 4, answer: ["<p class=\"medium-editor-p\">ans1</p>", "<p class=\"medium-editor-p\">ans2</p>"], 
+			response: "", hide: true, grade: 1, student_hide: false,)
+
+		get '/en/courses/3/groups/3/get_quiz_charts', headers: @user3.create_new_auth_token
+
+		quiz = decode_json_response_body["quizzes"]["1"]
+
+		assert_equal quiz["meta"]["id"], Quiz.find(1).id
+		assert_equal quiz["questions"].size, Question.where(quiz_id:1).size
+		assert_equal quiz["free_question"].size, Question.where(quiz_id: 1, question_type: "Free Text Question").size
+		assert_equal quiz["free_question"]["3"]["answers"][0]["answer"],"answer to free text"
+		
+		assert_equal quiz["charts"].size, Question.where(quiz_id: 1, question_type: "Free Text Question").size
+		#ocq
+		assert_equal quiz["charts"]["1"],  {"answers"=>
+          	{"4"=>[1, false, "<p class=\"medium-editor-p\">a1</p>"],
+           "5"=>[1, true, "<p class=\"medium-editor-p\">a2</p>"]}}
+		#mcq
+		assert_equal quiz["charts"]["2"],  {"answers"=>
+          {"1"=>[0, false, "<p class=\\\"medium-editor-p\\\">a1</p>"],
+           "2"=>[0, true, "<p class=\\\"medium-editor-p\\\">a2</p>"]}}
+		# drag
+		assert_equal quiz["charts"]["4"],  {"answers"=>
+         	 {"<p class=\"medium-editor-p\">ans1</p>"=>
+				[1,true,"<p class=\"medium-editor-p\">ans1</p> in correct place"],
+			"<p class=\"medium-editor-p\">ans2</p>"=>
+				[1,true,"<p class=\"medium-editor-p\">ans2</p> in correct place"]}}
+		
+	end
+
+	test "get_survey_charts" do
+
+		Quiz.find(1).update_attributes(:quiz_type=>"survey")
+
+		QuizStatus.create(user_id: 7, quiz_id: 1, course_id: 3, status: "Saved", group_id: 3)
+		QuizStatus.create(user_id: 8, quiz_id: 1, course_id: 3, status: "Saved", group_id: 3)
+
+		QuizGrade.create(user_id: 7, quiz_id: 1, question_id: 1, answer_id: 4, grade: 1 )
+		QuizGrade.create(user_id: 8, quiz_id: 1, question_id: 3, answer_id: 5, grade: 1)
+
+
+		FreeAnswer.create(user_id: 7, quiz_id:1, question_id: 3, answer: "answer to free text")
+
+		FreeAnswer.create(user_id: 7, quiz_id: 1, question_id: 4, answer: ["<p class=\"medium-editor-p\">ans1</p>", "<p class=\"medium-editor-p\">ans2</p>"], 
+			response: "", hide: true, grade: 1, student_hide: false,)
+
+		
+		get '/en/courses/3/groups/3/get_survey_charts', headers: @user3.create_new_auth_token
+
+		quiz = decode_json_response_body["surveys"]["1"]
+		
+		assert_equal quiz["meta"]["id"], Quiz.find(1).id
+		assert_equal quiz["questions"].size, Question.where(quiz_id:1).size
+		assert_equal quiz["free_question"].size, Question.where(quiz_id: 1, question_type: "Free Text Question").size
+		assert_equal quiz["free_question"]["3"]["answers"][0]["answer"],"answer to free text"
+		assert_equal quiz["charts"].size, Question.where(quiz_id: 1, question_type: "Free Text Question").size
+		#ocq
+		assert_equal quiz["charts"]["1"], {
+			"show"=>false, "student_show"=>true, "answers"=>{
+				"4"=>[1, "<p class=\"medium-editor-p\">a1</p>"], 
+				"5"=>[1, "<p class=\"medium-editor-p\">a2</p>"]}, 
+			"title"=>"<p class=\\\"medium-editor-p\\\">ocq</p>"}
+		#mcq
+		assert_equal quiz["charts"]["2"],  {
+			"show"=>false, "student_show"=>true, "answers"=>{
+				"1"=>[0, "<p class=\\\"medium-editor-p\\\">a1</p>"], 
+				"2"=>[0, "<p class=\\\"medium-editor-p\\\">a2</p>"]}, 
+			"title"=>"<p class=\\\"medium-editor-p\\\">q1</p>"}
+
+	end
 	
 end
