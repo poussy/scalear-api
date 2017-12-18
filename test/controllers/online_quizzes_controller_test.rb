@@ -175,7 +175,17 @@ class OnlineQuizzesControllerTest < ActionDispatch::IntegrationTest
       assert_equal grade["review_vote"], false
     end
   end
-  
-  
+
+  test "hide_responses should hide/show free_online_quiz_grades" do
+
+    assert_changes 'FreeOnlineQuizGrade.find(1).hide', from: true, to: false do
+      post '/en/online_quizzes/2/hide_responses?course_id=3', params:{hide:{hide: false, id: 1}}, headers: @headers, as: :json
+    end
+
+    assert_changes 'FreeOnlineQuizGrade.find(1).hide', from: false, to: true do
+      post '/en/online_quizzes/2/hide_responses?course_id=3', params:{hide:{hide: true, id: 1}}, headers: @headers, as: :json
+    end
+    
+  end
 
 end
