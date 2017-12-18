@@ -83,8 +83,23 @@ class GroupsController < ApplicationController
 		render json: {:notice => [I18n.t("controller_msg.modules_sorted")]}
 	end
 
-	# def hide_invideo_quiz
-	# end
+	def hide_invideo_quiz  #updating an online quiz (hidden or not)
+		quiz_id= params[:quiz]
+		hide = params[:hide]
+		if hide
+			hidden=I18n.t("hidden")
+		else
+			hidden=I18n.t("visible")
+		end
+
+		to_update=OnlineQuiz.find(quiz_id)
+
+		if to_update.update_attributes(:hide => hide)
+			render :json => {:notice => ["#{I18n.t('controller_msg.quiz_is_now')} #{hidden}"]}
+		else
+			render :json => {:errors => [I18n.t("controller_msg.could_not_update_quiz")]}, :status => 400
+		end
+	end
 
 	# def hide_student_question
 	# end
