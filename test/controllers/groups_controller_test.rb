@@ -709,7 +709,7 @@ class GroupsControllerTest < ActionDispatch::IntegrationTest
 		
 	# end
 
-	test "hide invideo quiz should toggle hide of selected quiz" do
+	test "hide invideo quiz should toggle hide of selected quiz to true or false" do
 		assert_changes 'OnlineQuiz.find(1).hide', from: true, to: false do
 			post '/en/courses/3/groups/3/hide_invideo_quiz', params:{hide:false, quiz:1}, headers: @user3.create_new_auth_token
 		end

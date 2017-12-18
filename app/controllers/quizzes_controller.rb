@@ -283,8 +283,21 @@ class QuizzesController < ApplicationController
   # def new
   # end
   
-  # def show_question_inclass  #updating a survey question (hidden or not)
-  # end
+  def show_question_inclass  #updating a survey question (hidden or not)
+    ques_id= params[:question]
+    show = params[:show]
+    if show
+      visible=I18n.t("visible")
+    else
+      visible=I18n.t("hidden")
+    end
+    to_update=Question.find(ques_id)
+    if to_update.update_attributes(:show => show)
+      render :json => {:notice => ["#{I18n.t('controller_msg.question_successfully_updated')} - #{I18n.t('now')} #{visible}"]}
+    else
+      render :json => {:errors => [I18n.t("quizzes.could_not_update_question")]}, :status => 400
+    end
+  end
   
   # def show_question_student  #updating a survey question (hidden or not)
   # end

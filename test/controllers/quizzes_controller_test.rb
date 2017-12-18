@@ -611,6 +611,17 @@ class QuizzesControllerTest < ActionDispatch::IntegrationTest
       assert_equal QuizStatus.where(quiz_id:1, course_id: 3, user_id: 6).first["status"], "Submitted"
 
     end
+
+    test "show_question_inclass should toggle show of selected quiz to true or false" do
+      
+      assert_changes 'Question.find(1).show', from: false, to: true do
+        post '/en/courses/3/quizzes/1/show_question_inclass', params: {question: 1, show:true}, headers: @headers, as: :json
+      end
+
+      assert_changes 'Question.find(1).show', from: true, to: false do
+        post '/en/courses/3/quizzes/1/show_question_inclass', params: {question: 1, show:false}, headers: @headers, as: :json
+      end
+    end
     
 
 
