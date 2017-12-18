@@ -644,5 +644,68 @@ class GroupsControllerTest < ActionDispatch::IntegrationTest
 			"title"=>"<p class=\\\"medium-editor-p\\\">q1</p>"}
 
 	end
-	
+	test "get_module_progress" do 
+		get '/en/courses/3/groups/3/get_module_progress', headers: @user3.create_new_auth_token
+
+		assert_equal decode_json_response_body["lectures"]["3"]["confused"],  [[0.0, {"count"=>2, "show"=>true}], [30.0, {"count"=>1, "show"=>true}]]
+		assert_equal decode_json_response_body["lectures"]["3"]["really_confused"], [[45.0, {"count"=>1, "show"=>true}]]
+		assert_equal decode_json_response_body["lectures"]["3"]["discussion"], []
+		assert_equal decode_json_response_body["review_question_count"], 4
+		
+		charts = decode_json_response_body["lectures"]["3"]["charts"]
+		# ocq & mcq
+		assert_equal charts["1"],  [20.0,{
+			"title"=>"New Quiz",
+			"type"=>"OCQ",
+			"quiz_type"=>"Quiz",
+			"review"=>0,
+			"hide"=>true,
+			"id"=>1,
+			"answers"=>	{
+				"6"=>[1, "green", "answer1", 0],
+				"7"=>[0, "orange", "answer2", 0],
+				"8"=>[4, "gray", "Never tried"]}}]
+		# drag
+		assert_equal charts["5"], [50.0,{
+			"title"=>"DRAG Quiz",
+			"type"=>"drag",
+			"quiz_type"=>"Quiz",
+			"review"=>0,
+			"hide"=>true,
+			"id"=>5,
+			"answers"=>
+				{"11"=>[0, "green", "<p class=\"medium-editor-p\">answer1</p>", 0],
+				"12"=>[0, "green", "<p class=\"medium-editor-p\">answer2</p>", 0],
+				"13"=>[0, "green", "<p class=\"medium-editor-p\">answer3</p>", 0],
+				"14"=>[5, "gray", "Never tried"]}}]
+
+		# free text questions
+		free_questions = decode_json_response_body["lectures"]["3"]["free_question"]
+		assert_equal free_questions.size, 4
+		assert ["2","3","9","10"].all? {|s| free_questions.key? s}
+		assert_equal free_questions["2"], [50.0, {
+			"review"=>0,
+          	"title"=>"New Quiz",
+			"answers"=>
+				[{"id"=>1,
+					"user_id"=>6,
+					"online_quiz_id"=>2,
+					"online_answer"=>"answer1",
+					"grade"=>0.0,
+					"lecture_id"=>3,
+					"group_id"=>3,
+					"course_id"=>3,
+					"response"=>"",
+					"hide"=>true,
+					"review_vote"=>false,
+					"attempt"=>1,
+					"created_at"=>"2017-06-12T02:00:00.000+02:00",
+					"updated_at"=>"2017-06-12T02:00:00.000+02:00"}],
+				"show"=>false,
+				"id"=>2,
+				"quiz_type"=>"Quiz"}]
+
+		assert_equal decode_json_response_body["students_count"], Course.find(3).users.count
+		
+	end
 end
