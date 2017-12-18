@@ -644,4 +644,38 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
       
     end
 
+	test "confused should add confused to lecture" do
+
+		assert_changes 'Lecture.find(3).confuseds.where(time: 65).empty?', from: true, to: false do
+			post '/en/courses/3/lectures/3/confused', params: {time: 65}, headers: @headers2, as: :json
+		end
+	end
+
+	test "adding another confused in 15 seconds interval should update first to very " do
+		# confused at 30 already exists with very set to false
+		assert_changes 'Lecture.find(3).confuseds.where(time: 30).first.very', from: false, to: true do
+			post '/en/courses/3/lectures/3/confused', params: {time: 36}, headers: @headers2, as: :json
+			
+		end
+		assert_equal decode_json_response_body["msg"], "Saved"
+		# confused at 30 already exists with very set to TRUE already
+		post '/en/courses/3/lectures/3/confused', params: {time: 36}, headers: @headers2, as: :json
+		assert_equal decode_json_response_body["msg"], "ask"
+		
+	end
+
+	test "confused_show_inclass should show/hide confuseds" do
+		assert_changes 'Lecture.find(3).confuseds.where(time: 30).first.hide', from: false, to: true do
+			post '/en/courses/3/lectures/3/confused_show_inclass', params: {time: 30, hide: true, very: false}, headers: @headers, as: :json
+		end
+
+		assert_changes 'Lecture.find(3).confuseds.where(time: 30).first.hide', from: true, to: false do
+			post '/en/courses/3/lectures/3/confused_show_inclass', params: {time: 30, hide: false, very: false}, headers: @headers, as: :json
+		end
+		
+	end
+	
+	
+	
+
 end
