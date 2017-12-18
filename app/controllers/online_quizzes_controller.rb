@@ -130,8 +130,13 @@ class OnlineQuizzesController < ApplicationController
 	# def get_inclass_session_votes
 	# end
 	
-	# def update_grade
-	# end
+	def update_grade
+		if @online_quiz.free_online_quiz_grades.find(params[:answer_id]).update_attributes(:grade => params[:grade])
+			render :json => {:notice => I18n.t("controller_msg.grade_updated")}
+		else
+			render :json => {:errors => [I18n.t("controller_msg.grade_update_fail")]}, :status => 400
+		end
+	end
 private
 
 	def online_quiz_params
