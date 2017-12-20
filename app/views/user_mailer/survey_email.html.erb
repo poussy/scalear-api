@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
+  </head>
+  <body>
+  	
+    <p><%= t('user_mailer.dear') %> <%= @user_name %></p>
+    <p>
+      <%= t('user_mailer.recently_submitted') %> <b><%= @survey %></b></p>
+      <p><%= t('user_mailer.and_answered') %>: <b><%= @question %></b></p>
+      <p><%= t('user_mailer.with') %>: <b><%= @answer %></b>.<br/>
+    </p>
+    <p>
+      <%= t('user_mailer.teacher_responded') %>:
+    </p>
+    <p style="font-style: italic;">
+    	<%= @response %>
+    </p>
+    
+    <b><%= t('user_mailer.surveys_anonymous') %></b>
+  	<% if @course.discussion_link!=""%>
+  	<p>
+      <%= t('user_mailer.to_contact_use') %> <%= link_to t('user_mailer.online_course_forum'), url_with_protocol(@course.discussion_link), :target => '_blank' %>
+    </p>
+    <% end %>
+  </body>
+</html>

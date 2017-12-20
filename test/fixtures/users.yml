@@ -51,7 +51,7 @@ admin_user:
 student_in_course3:
   id: 6
   name: "saleh"
-  email: "saleh@gmail.com"
+  email: "okashoon@gmail.com"
   last_name: "aly"
   screen_name: "saleh"
   university: "cairo"

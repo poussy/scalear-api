@@ -622,7 +622,11 @@ class QuizzesControllerTest < ActionDispatch::IntegrationTest
         post '/en/courses/3/quizzes/1/show_question_inclass', params: {question: 1, show:false}, headers: @headers, as: :json
       end
     end
+
+    test "create_or_update_survey_responses should add response to free answer" do
+      FreeAnswer.create(id: 1,user_id: 6, quiz_id:1, question_id: 5,answer: '<p class=\"medium-editor-p\">ans1</p>', hide: true, grade: 0, student_hide: false, response:"")
+      post '/en/courses/3/quizzes/1/create_or_update_survey_responses', params: {groups: [1],response:"response to answer1"}, headers: @headers, as: :json
+      assert_equal FreeAnswer.find(1).response, "response to answer1"
+    end
     
-
-
 end
