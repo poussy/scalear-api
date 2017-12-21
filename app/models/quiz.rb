@@ -92,8 +92,32 @@ class Quiz < ApplicationRecord
   # def get_survey_data_angular(students_id)
   # end
 
-  # def get_quiz_display_data_angular(students_id)
-  # end
+  def get_quiz_display_data_angular(students_id)
+    data={}
+    questions.select{|v| v.question_type != 'Free Text Question' and v.question_type != 'header' and v.show==true}.each do |question|
+      answers={}
+      question.answers.each do |answer|
+        if question.question_type != "drag"
+          answers[answer.id] = [answer.quiz_grades.select{|grade| students_id.include?(grade.user_id)}.size, "grey", answer.content]
+          answers[answer.id][1] = "green" if self.quiz_type == 'quiz' && answer.correct
+        else
+          correct_answer=answer.content
+          question.free_answers.each do |grade|
+            correct_answer.each_with_index do |text,index|
+              answers[text]=[0,"green","#{text} in correct place"] if answers[text].nil?
+              answers[text][0] += 1 if grade.answer[index] == text
+            end
+          end
+        end
+      end
+      data[question.id]={}
+      data[question.id][:show] = question.show
+      data[question.id][:student_show] = question.student_show
+      data[question.id][:answers] = answers
+      data[question.id][:title] = question.content
+    end
+    return data
+  end
 
   # def get_quiz_free_text_angular
   # end
@@ -101,8 +125,13 @@ class Quiz < ApplicationRecord
   # def get_survey_free_text_angular
   # end
 
-  # def get_quiz_display_free_text_angular
-  # end
+  def get_quiz_display_free_text_angular
+    @data={}
+      questions.select{|v| v.question_type == 'Free Text Question' and v.show==true}.each do |question|
+        @data[question.id]= question.free_answers.select{|v| v.answer != '' and v.hide==false}
+    end
+    return @data
+  end
 
   # def get_survey_student_display_free_text_angular
   # end
