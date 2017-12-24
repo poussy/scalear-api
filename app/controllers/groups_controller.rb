@@ -690,8 +690,11 @@ class GroupsController < ApplicationController
 	# def get_inclass_student_status
 	# end
 
-	# def update_all_inclass_sessions
-	# end
+	def update_all_inclass_sessions
+		Group.find(params[:id]).inclass_sessions.update_all(:status => 0)
+		render json: {}
+	end
+
 
 	def get_module_summary
 		course = Course.find(params[:course_id])

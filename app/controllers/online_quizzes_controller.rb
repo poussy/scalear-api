@@ -121,8 +121,20 @@ class OnlineQuizzesController < ApplicationController
 		end
 	end
 	
-	# def update_inclass_session
-	# end
+	def update_inclass_session
+		quiz = OnlineQuiz.find(params[:id])
+		session = quiz.inclass_session
+		if !session.nil?
+			if session.update_attributes(:status => params[:status])
+				render :json => {:notice => [I18n.t("quizzes.updated")]}
+			else
+				render :json => {:errors => [I18n.t("quizzes.could_not_update")]}, :status => 400
+			end
+		else
+			render :json => {:errors => [I18n.t("quizzes.could_not_update")]}, :status => 400
+		end
+
+	end
 	
 	# def get_chart_data
 	# end
