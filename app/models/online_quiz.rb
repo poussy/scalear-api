@@ -37,30 +37,20 @@ class OnlineQuiz < ApplicationRecord
 	def get_chart(students_id)
 		data={}
 		quiz = self
-		# students_count = self.course.enrollments.count
 		students_count = students_id.size
 
 		if quiz.question_type=="OCQ" || quiz.question_type=="MCQ"
-			# quiz.online_answers.each do |answer|
-			#   answer_color = answer.correct ? "green" : "gray"
-			#   answers_count = self.online_quiz_grades.where(:online_answer_id => answer.id, :attempt => 1).group(:in_group).count
-			#   data[answer.id] = [answers_count[false], answer_color, answer.answer, answers_count[true]]
-			# end
 			if quiz.quiz_type.include?("survey")
-					# user_ids_attempt_online_answers  = quiz.online_quiz_grades.group(:user_id ).select('user_id as user_id , Max(attempt) as max').map{|a| [a.user_id ,  a.max.to_i ] }
 					s_g_user_id_max = {}
 					s_g_online_answer_raw = quiz.online_quiz_grades.group(:user_id , :in_group ).select('user_id as user_id, in_group as in_group , Max(attempt) as max').group_by{|a| a.in_group}
 					s_g_online_answer_raw.each{|a| s_g_user_id_max[a[0]] = a[1].map{|a| [a.user_id ,  a.max.to_i ] }}
 
-					# online_answers_list = quiz.online_quiz_grades.select{|a| user_ids_attempt_online_answers.include?([a.user_id , a.attempt.to_i]) }.map{|a| a.online_answer_id} || []
 					s_g_answer_list = {}
 					s_g_user_id_max.each{|answer_type| s_g_answer_list[answer_type[0]] =  quiz.online_quiz_grades.select{|a| answer_type[1].include?([a.user_id , a.attempt.to_i]) }.map{|a| a.online_answer_id} || []  }
 			end
 			quiz.online_answers.each do |answer|
-
 					grade_grouped_user_ids_list = {}
 					answer.online_quiz_grades.select{|a| students_id.include?(a.user_id) }.group_by{ |quiz_grade| [quiz_grade.attempt == 1 , quiz_grade.in_group]  }.each{|quiz_grade_group| grade_grouped_user_ids_list[quiz_grade_group[0]] =  quiz_grade_group[1].map{|e| e.user_id }.uniq  }
-					# answer.free_online_quiz_grades.group_by{ |quiz_grade| quiz_grade.attempt == 1 }.each{|quiz_grade_group| grade_grouped_user_ids_list[quiz_grade_group[0]] =  quiz_grade_group[1].map{|e| e.user_id }.uniq  }
 
 					max_attempt_ids = []
 					if answer.correct
@@ -86,7 +76,6 @@ class OnlineQuiz < ApplicationRecord
 					end
 					data[answer.id]= [self_first_try_grades_count, first_try_color, answer.answer , not_self_first_try_grades_count, group_first_try_grades_count, not_group_first_try_grades_count]
 			end
-			# did_not_try_count  = students_count - (quiz.online_quiz_grades.map{|e| e.user_id }.uniq.count)
 			did_not_user_ids_list = {}
 			quiz.online_quiz_grades.select{|a| students_id.include?(a.user_id) }.group_by{ |quiz_grade| quiz_grade.in_group }.each{|quiz_grade_group| did_not_user_ids_list[quiz_grade_group[0]] =  quiz_grade_group[1].map{|e| e.user_id }.uniq  }
 			if quiz.online_answers
@@ -109,9 +98,9 @@ class OnlineQuiz < ApplicationRecord
 					correct_answer.each_with_index do |answer_text,index|
 							data[answer_text]=[0,"green","#{answer_text} in correct place",0] if data[answer_text].nil?
 							if answer_text==u.online_answer[index] && u.attempt == 1
-									data[answer_text][0]+=1 # [ (data[e][0]||0) + 1, "green", "#{e} in correct place"]
+									data[answer_text][0]+=1 
 							end
-							data[answer_text][3] = tried_correct_ids_count - data[answer_text][0] # [ (data[e][0]||0) + 1, "green", "#{e} in correct place"]
+							data[answer_text][3] = tried_correct_ids_count - data[answer_text][0] 
 					end
 			end
 			did_not_try_count  = students_count - (quiz.free_online_quiz_grades.map{|e| e.user_id }.uniq.count)

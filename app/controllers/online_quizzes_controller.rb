@@ -136,11 +136,17 @@ class OnlineQuizzesController < ApplicationController
 
 	end
 	
-	# def get_chart_data
-	# end
+	def get_chart_data
+		students_ids = @online_quiz.course.users.map(&:id)
+		render json: {:chart => @online_quiz.get_chart(students_ids) }
+	end
 	
-	# def get_inclass_session_votes
-	# end
+	def get_inclass_session_votes
+		votes = OnlineQuizGrade.where(:online_quiz_id => params[:id], :in_group => params[:in_group] == "true", :attempt => 1).select("count(distinct user_id) as c")[0].c rescue 0 #needs to make sure its ok from karim
+		lecture_ids = Lecture.find(params[:lecture_id]).group.lectures.where(:inclass => true).pluck(:id)
+		max_votes = OnlineQuizGrade.where(:lecture_id => lecture_ids, :attempt => 1).select("count(distinct user_id) as c").group(:online_quiz_id, :in_group).order("c desc").limit(1).first["c"] rescue 0
+		render json: {votes: votes, max_votes: max_votes}
+	end
 	
 	def update_grade
 		if @online_quiz.free_online_quiz_grades.find(params[:answer_id]).update_attributes(:grade => params[:grade])

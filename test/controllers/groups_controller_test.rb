@@ -721,7 +721,7 @@ class GroupsControllerTest < ActionDispatch::IntegrationTest
 
 	test "get_module_inclass" do
 
-		OnlineQuiz.find(1).update_attributes(inclass: true, hide:false)
+		OnlineQuiz.find(1).update_attributes(inclass: true, hide:false, intro: 30, self: 60, in_group: 90, discussion: 120)
 		OnlineQuiz.find(2).update_attributes(hide:false)
 		get '/en/courses/3/groups/3/get_module_inclass', headers: @user3.create_new_auth_token
 		
@@ -732,6 +732,64 @@ class GroupsControllerTest < ActionDispatch::IntegrationTest
 		assert_equal lecture3["markers"], [[11.2, {"id"=>332392615, "title"=>"title", "show"=>true, "type"=>"marker"}]]
 		assert_equal lecture3["confused"],  [[0.0, {"count"=>2, "show"=>true}], [30.0, {"count"=>1, "show"=>true}]]
 		assert_equal lecture3["really_confused"], [[45.0, {"count"=>1, "show"=>true}]]
+
+		assert_equal lecture3["inclass"], [
+			[
+				20.0,
+				{"id"=>1,
+				"title"=>"New Quiz",
+				"type"=>"Quiz",
+				"start_time"=>100.0,
+				"end_time"=>120.0,
+				"question"=>"New Quiz",
+				"show"=>true,
+				"online_answers"=>
+					[{"id"=>6,
+					"online_quiz_id"=>1,
+					"answer"=>"answer1",
+					"xcoor"=>2.0,
+					"ycoor"=>3.0,
+					"correct"=>true,
+					"explanation"=>"explanation for answer1",
+					"width"=>3.0,
+					"height"=>2.0,
+					"pos"=>3,
+					"sub_ycoor"=>3.0,
+					"sub_xcoor"=>2.0,
+					"created_at"=>"2017-02-02T02:00:00.000+02:00",
+					"updated_at"=>"2017-02-02T02:00:00.000+02:00"},
+					{"id"=>7,
+					"online_quiz_id"=>1,
+					"answer"=>"answer2",
+					"xcoor"=>2.0,
+					"ycoor"=>6.0,
+					"correct"=>false,
+					"explanation"=>"explanation for answer2",
+					"width"=>3.0,
+					"height"=>2.0,
+					"pos"=>3,
+					"sub_ycoor"=>3.0,
+					"sub_xcoor"=>2.0,
+					"created_at"=>"2017-02-02T02:00:00.000+02:00",
+					"updated_at"=>"2017-02-02T02:00:00.000+02:00"}],
+				"question_type"=>"OCQ",
+				"quiz_type"=>"invideo",
+				"timers"=>
+					{"id"=>nil,
+					"intro"=>30,
+					"self"=>60,
+					"in_group"=>90,
+					"discussion"=>120,
+					"match_type"=>nil,
+					"solved_quiz"=>nil,
+					"reviewed"=>nil,
+					"votes_count"=>nil,
+					"online_answers"=>[],
+					"online_answers_drag"=>nil,
+					"inclass_session"=>nil},
+				"available"=>{"in_self"=>true, "in_group"=>true}}
+			]
+		]
 
 		assert_equal decode_json_response_body["students_count"], 5
 		assert_equal decode_json_response_body["review_question_count"], 15
