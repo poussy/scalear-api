@@ -130,11 +130,37 @@ class DiscussionsController < ApplicationController
 	# def remove_all_comment_flags
 	# end
 
-	# def hide_post
-	# end
+	def hide_post
+		if params[:hide]
+			hidden=I18n.t("hidden")
+		else
+			hidden=I18n.t("visible")
+		end
+		p = Forum::Post.find(params[:post_id])
+		p.hide = params[:hide]
+		p.save
+		if p.errors.empty?
+			render :json => {:notice => ["#{I18n.t('controller_msg.question_is_now')} #{hidden}"]}
+		else
+			render :json => p.errors.to_json, :status => 400
+		end
+	end
 
-	# def hide_comment
-	# end
+	def hide_comment
+		if params[:hide]
+			hidden=I18n.t("hidden")
+		else
+			hidden=I18n.t("visible")
+		end
+		c = Forum::Comment.find(params[:comment_id], :params => {:post_id => params[:post_id]})
+		c.hide = params[:hide]
+		c.save
+		if c.errors.empty?
+			render :json => {:notice => ["#{I18n.t('controller_msg.question_is_now')} #{hidden}"]}
+		else
+			render :json => c.errors.to_json, :status => 400
+		end
+	end
 
 	private
 		def show_400_errors(exception)

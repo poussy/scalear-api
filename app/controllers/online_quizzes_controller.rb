@@ -107,8 +107,19 @@ class OnlineQuizzesController < ApplicationController
 		end
 		render :json => {:done => true}
 	end
-	# def hide_responses
-	# end
+	def hide_responses
+		if params[:hide]["hide"]
+			hidden=I18n.t("hidden")
+		else
+			hidden=I18n.t("visible")
+		end
+
+		if FreeOnlineQuizGrade.find(params[:hide]["id"]).update_attributes(:hide => params[:hide]["hide"])
+			render :json => {:notice => ["#{I18n.t('controller_msg.response_is_now')} #{hidden}"]}
+		else
+			render :json => {:errors => [I18n.t("quizzes.could_not_update_response")]}, :status => 400
+		end
+	end
 	
 	# def update_inclass_session
 	# end
@@ -119,8 +130,13 @@ class OnlineQuizzesController < ApplicationController
 	# def get_inclass_session_votes
 	# end
 	
-	# def update_grade
-	# end
+	def update_grade
+		if @online_quiz.free_online_quiz_grades.find(params[:answer_id]).update_attributes(:grade => params[:grade])
+			render :json => {:notice => I18n.t("controller_msg.grade_updated")}
+		else
+			render :json => {:errors => [I18n.t("controller_msg.grade_update_fail")]}, :status => 400
+		end
+	end
 private
 
 	def online_quiz_params

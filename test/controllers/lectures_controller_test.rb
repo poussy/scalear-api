@@ -597,14 +597,15 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 		
 		get '/en/courses/3/lectures/3/get_lecture_data_angular', headers: @headers2
 		# same lecture_view but changed updated_at
-		assert_equal LectureView.where(lecture_id: 3).first.updated_at.to_i, Time.zone.now.to_i
+		## /10.floor to remove last digit because it fails because of seconds' differences, and we dont need to assert with that kind of precision
+		assert_equal LectureView.where(lecture_id: 3).first.updated_at.to_i/10.floor, Time.zone.now.to_i/10.floor
 		assert_equal LectureView.where(lecture_id: 3).first, old_lecture_view
 
 		LectureView.where(lecture_id: 3).destroy_all
 
 		get '/en/courses/3/lectures/3/get_lecture_data_angular', headers: @headers2
 		# new lecture_view
-		assert_equal LectureView.where(lecture_id: 3).first.updated_at.to_i, Time.zone.now.to_i
+		assert_equal LectureView.where(lecture_id: 3).first.updated_at.to_i/10.floor, Time.zone.now.to_i/10.floor
 		assert_not LectureView.where(lecture_id: 3).first == old_lecture_view
 		
 	end
@@ -642,5 +643,39 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
       
       
     end
+
+	test "confused should add confused to lecture" do
+
+		assert_changes 'Lecture.find(3).confuseds.where(time: 65).empty?', from: true, to: false do
+			post '/en/courses/3/lectures/3/confused', params: {time: 65}, headers: @headers2, as: :json
+		end
+	end
+
+	test "adding another confused in 15 seconds interval should update first to very " do
+		# confused at 30 already exists with very set to false
+		assert_changes 'Lecture.find(3).confuseds.where(time: 30).first.very', from: false, to: true do
+			post '/en/courses/3/lectures/3/confused', params: {time: 36}, headers: @headers2, as: :json
+			
+		end
+		assert_equal decode_json_response_body["msg"], "Saved"
+		# confused at 30 already exists with very set to TRUE already
+		post '/en/courses/3/lectures/3/confused', params: {time: 36}, headers: @headers2, as: :json
+		assert_equal decode_json_response_body["msg"], "ask"
+		
+	end
+
+	test "confused_show_inclass should show/hide confuseds" do
+		assert_changes 'Lecture.find(3).confuseds.where(time: 30).first.hide', from: false, to: true do
+			post '/en/courses/3/lectures/3/confused_show_inclass', params: {time: 30, hide: true, very: false}, headers: @headers, as: :json
+		end
+
+		assert_changes 'Lecture.find(3).confuseds.where(time: 30).first.hide', from: true, to: false do
+			post '/en/courses/3/lectures/3/confused_show_inclass', params: {time: 30, hide: false, very: false}, headers: @headers, as: :json
+		end
+		
+	end
+	
+	
+	
 
 end

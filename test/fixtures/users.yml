@@ -56,6 +56,42 @@ student_in_course3:
   screen_name: "saleh"
   university: "cairo"
   uid: "saleh@gmail.com"
+
+student7_in_course3:
+  id: 7
+  name: "Ahmed"
+  email: "Ahmed@gmail.com"
+  last_name: "aly"
+  screen_name: "Ahmed"
+  university: "cairo"
+  uid: "Ahmed@gmail.com"
+
+student8_in_course3:
+  id: 8
+  name: "Karim"
+  email: "Karim@gmail.com"
+  last_name: "aly"
+  screen_name: "Karim"
+  university: "cairo"
+  uid: "Karim@gmail.com"
+
+student9_in_course3:
+  id: 9
+  name: "Mohamed"
+  email: "Mohamed@gmail.com"
+  last_name: "aly"
+  screen_name: "Mohamed"
+  university: "cairo"
+  uid: "Mohamed@gmail.com"
+
+student10_in_course3:
+  id: 10
+  name: "Hossam"
+  email: "Hossam@gmail.com"
+  last_name: "aly"
+  screen_name: "Hossam"
+  university: "cairo"
+  uid: "Hossam@gmail.com"
   
 student1:
   name: "ahmed"

@@ -5,3 +5,19 @@ enrollment1:
   course: course1
   user: student1
   email_due_date: false
+
+student7_course3:
+  user_id: 7
+  course_id: 3
+
+student8_course3:
+  user_id: 8
+  course_id: 3
+
+student9_course3:
+  user_id: 9
+  course_id: 3
+
+student10_course3:
+  user_id: 10
+  course_id: 3

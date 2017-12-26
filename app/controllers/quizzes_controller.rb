@@ -283,8 +283,21 @@ class QuizzesController < ApplicationController
   # def new
   # end
   
-  # def show_question_inclass  #updating a survey question (hidden or not)
-  # end
+  def show_question_inclass  #updating a survey question (hidden or not)
+    ques_id= params[:question]
+    show = params[:show]
+    if show
+      visible=I18n.t("visible")
+    else
+      visible=I18n.t("hidden")
+    end
+    to_update=Question.find(ques_id)
+    if to_update.update_attributes(:show => show)
+      render :json => {:notice => ["#{I18n.t('controller_msg.question_successfully_updated')} - #{I18n.t('now')} #{visible}"]}
+    else
+      render :json => {:errors => [I18n.t("quizzes.could_not_update_question")]}, :status => 400
+    end
+  end
   
   # def show_question_student  #updating a survey question (hidden or not)
   # end
@@ -378,10 +391,154 @@ class QuizzesController < ApplicationController
     end
     render :json => {:errors => [I18n.t("controller_msg.transaction_rolled_back")]}, :status => 400
   end
-  
-  # def save_student_quiz_angular
-  # end
-  
+
+  def save_student_quiz_angular
+    return_value=""
+    correct_ans={}
+    explanation = {}
+     #if submitting, must make sure all questions were solved
+    group=@quiz.group
+    item_pos=@quiz.id# group.quizzes.index(@quiz)
+    group_pos= group.id#group.course.groups.index(group)
+    @quiz.current_user=current_user
+    #put transaction here
+    Quiz.transaction do
+
+      params[:student_quiz].each do |q,a|
+      
+      ques=Question.find(q)
+      if ques.question_type.upcase != "DRAG"
+        ques.answers.each do |answer|
+          explanation[answer.id] = answer.explanation
+        end
+      else
+        exp = []
+        drag_origin_answer =  ques.answers[0].content.clone
+        a.each do |drag|
+          exp.append(ques.answers[0].explanation[drag_origin_answer.index(drag)])
+        end
+        explanation[ques.answers[0].id]=exp
+
+      end
+
+      if ques.question_type != 'header'
+        current_user.quiz_grades.where(:question_id => ques.id, :quiz_id => params[:id]).destroy_all
+        current_user.free_answers.where(:question_id => ques.id, :quiz_id => params[:id]).destroy_all
+        correct=ques.answers.where(:correct => true).pluck(:id)
+
+        if ques.question_type=="MCQ"
+          #{"1":false,"2":true} is converted to [2]
+          chosen_correct=a.keys.map{|f| f.to_i}.select{|v| a["#{v}"]==true}.sort
+          if params[:commit]=="submit" and chosen_correct.empty?
+             return_value=I18n.t("controller_msg.unanswered_questions")
+             raise ActiveRecord::Rollback
+          end
+        elsif ques.question_type=="OCQ"
+          chosen_correct=[a.to_i] if !a.blank?
+          a={a => true} if !a.blank?
+          if params[:commit]=="submit" and a.blank?
+            return_value=I18n.t("controller_msg.unanswered_questions")
+            raise ActiveRecord::Rollback
+          end
+        elsif ques.question_type.upcase=="DRAG"
+          chosen_correct=a
+          correct=ques.answers[0].content
+
+        elsif ques.question_type=="Free Text Question"
+           if params[:commit]=="submit" and a.blank?
+            return_value=I18n.t("controller_msg.unanswered_questions")
+            raise ActiveRecord::Rollback
+           end
+        end
+
+        if !a.nil? and ["OCQ","MCQ"].include?ques.question_type.upcase
+          correct_ans[ques.id] = (correct==chosen_correct)? 1:0
+          a.each do |k,v|
+            if v==true
+              current_user.quiz_grades.create(:question_id => ques.id, :quiz_id => params[:id], :answer_id => k, :grade => correct_ans[ques.id])
+            end
+          end
+        elsif ques.question_type == "Free Text Question"
+          if @quiz.quiz_type == "survey"
+            correct_ans[ques.id] = 0
+          elsif ques.answers[0].content ==""
+            correct_ans[ques.id] = 0
+          else
+            match_string = ques.answers[0].content
+            if match_string =~ /^\/.*\/$/
+              match_string =match_string[1..match_string.length-2]
+              regex = Regexp.new match_string
+              correct_ans[ques.id] =  !!(a =~ regex)? 3:1
+            else
+              correct_ans[ques.id] = !!(a.downcase == match_string.downcase)? 3:1
+            end
+          end
+          if a != nil
+            current_user.free_answers.create(:question_id => ques.id, :quiz_id => params[:id], :answer => a, :grade => correct_ans[ques.id])
+          end
+        else #Drag
+          correct_ans[ques.id]=(correct==chosen_correct)? 1:0
+          current_user.free_answers.create(:question_id => ques.id, :quiz_id => params[:id], :answer => a, :grade => correct_ans[ques.id])
+        end
+      end
+    end
+
+    #finished saving
+    @status= current_user.quiz_statuses.where(:quiz_id => params[:id], :course_id => params[:course_id])[0]
+    if @status.nil?
+      @status=current_user.quiz_statuses.create(:group_id => @quiz.group_id,:quiz_id => params[:id], :course_id => params[:course_id], :status => "Saved")
+    end
+    #if submit
+    if params[:commit]=="submit"
+      #if haven't submitted or submitted but still have more retries.
+      if @status.status!= "Submitted" || @status.attempts <= @quiz.retries
+        @status.update_attributes!(:status => "Submitted", :attempts => @status.attempts + 1)
+      else
+        return_value=I18n.t("controller_msg.cant_submit_no_more_attempts")
+        raise ActiveRecord::Rollback
+        #rollback .. can't submit
+      end
+    else
+    #if save
+      if @status.status=="Submitted" #can't save if already submitted!
+        #rollback
+        return_value=I18n.t("controller_msg.cant_save_already_submitted")
+        raise ActiveRecord::Rollback
+      end
+      if @status.attempts <= @quiz.retries
+        @status.update_attributes!( :attempts => @status.attempts + 1)
+       else
+        return_value=I18n.t("controller_msg.cant_submit_no_more_attempts")
+        raise ActiveRecord::Rollback
+        #rollback .. can't submit
+      end
+
+    end
+    correct_ans={} if @status.status!="Submitted"
+    explanation = {} if @status.status!="Submitted"
+    alert_messages=get_alert_messages(@quiz,@status)
+
+    @quiz.current_user=current_user
+    if @quiz.is_done
+      next_i = @quiz.group.next_item(@quiz.position)
+      next_item={}
+      if !next_i.nil?
+        next_item[:id] = next_i.id
+        next_item[:class_name] = next_i.class.name.downcase
+        next_item[:group_id] = next_i.group.id
+      end
+    else
+      next_item=nil
+    end
+
+
+    render :json => {:status => @status,:next_item => next_item, :correct => correct_ans,:explanation => explanation, :alert_messages => alert_messages, :notice => [I18n.t("controller_msg.#{@quiz.quiz_type}_successfully_saved")], :done => [item_pos, group_pos, @quiz.is_done]} and return
+  end
+  #status= current_user.quiz_statuses.where(:quiz_id => params[:id], :course_id => params[:course_id])[0]
+  #alert_messages=get_alert_messages(@quiz,status)
+  render :json => {:errors => return_value.blank? ? [I18n.t("transaction_rolled_back")]:[return_value]}, :status => 400
+  end
+ 
   # def update_grade
   # end
   
