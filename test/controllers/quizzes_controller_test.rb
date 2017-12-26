@@ -24,23 +24,16 @@ class QuizzesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "should be able to create quiz" do
-
-    assert_equal Quiz.count, 4
-
-		post '/en/courses/3/quizzes/new_or_edit/', params:{:group => 3, :type => 'quiz'},headers: @user.create_new_auth_token
-
-    assert_equal Quiz.count, 5
-		
+    assert_difference 'Quiz.count' do
+		  post '/en/courses/3/quizzes/new_or_edit/', params:{:group => 3, :type => 'quiz'},headers: @user.create_new_auth_token
+		end
 	end
 
   test "should be able to create survey" do
 
-    assert_equal Quiz.count, 4
-
-		post '/en/courses/3/quizzes/new_or_edit/', params:{:group => 3, :type => 'survey'},headers: @user.create_new_auth_token
-
-    assert_equal Quiz.count, 5
-		
+    assert_difference 'Quiz.count' do 
+		  post '/en/courses/3/quizzes/new_or_edit/', params:{:group => 3, :type => 'survey'},headers: @user.create_new_auth_token
+		end
 	end
 
 
@@ -131,15 +124,11 @@ class QuizzesControllerTest < ActionDispatch::IntegrationTest
 	end
 
   test "should copy quiz" do
+    assert_difference ['Quiz.count', 'Event.count'] do
+		  post '/en/courses/3/quizzes/quiz_copy', params: {module_id: 3, quiz_id: 1}, headers: @headers, as: :json
+    end
 
-    assert_equal Quiz.count, 4
-    @evnet_counter = Event.count
-		post '/en/courses/3/quizzes/quiz_copy', params: {module_id: 3, quiz_id: 1}, headers: @headers, as: :json
-
-    assert_equal Quiz.count, 5
-    assert_equal Event.count , @evnet_counter + 1
-
-    	quiz_from = Quiz.find(1)
+   	quiz_from = Quiz.find(1)
     new_quiz = Quiz.last
 
     assert_equal quiz_from.name, new_quiz.name
@@ -194,9 +183,9 @@ class QuizzesControllerTest < ActionDispatch::IntegrationTest
 
   test "should update old answers if sent with id" do
     
-		put '/en/courses/3/quizzes/1/update_questions_angular', params: {questions: [{answers: [{id: 1, content:"a1", correct: true, explanation: "answer explanation" }],id: 1, content: '<p class="medium-editor-p">new mcq</p>', match_type: "Free Text", question_type: "MCQ", quiz_id: 1}]}, headers: @headers, as: :json
-    
-    answer = Question.first.answers.find(1)
+		put '/en/courses/3/quizzes/1/update_questions_angular', params: {questions: [{answers: [{id: 4, content:"a1", correct: true, explanation: "answer explanation" }],id: 1, content: '<p class="medium-editor-p">new mcq</p>', match_type: "Free Text", question_type: "MCQ", quiz_id: 1}]}, headers: @headers, as: :json
+    assert Question.first.answers.where(id: 5).empty?
+    answer = Question.first.answers.find(4)
     assert answer.correct
     assert_equal answer.content, "a1"
     assert_equal answer.explanation, "answer explanation"
@@ -243,7 +232,7 @@ class QuizzesControllerTest < ActionDispatch::IntegrationTest
         get  url ,headers: @user.create_new_auth_token , as: :json
         resp =  JSON.parse response.body
         assert_equal resp['quiz']['retries'] , 2
-        assert_equal resp['questions'].count , 4
+        assert_equal resp['questions'].count , 6
     end
 
     test 'validate validate_quiz_angular method ' do
@@ -284,20 +273,275 @@ class QuizzesControllerTest < ActionDispatch::IntegrationTest
         get '/en/courses/3/quizzes/1/get_questions_angular' ,headers: @headers2 , as: :json
 
         assert_equal decode_json_response_body["quiz"]["name"], quizzes(:quiz1)["name"]
-        assert_equal decode_json_response_body["questions"].size, 4
+        assert_equal decode_json_response_body["questions"].size, 6
         assert_equal decode_json_response_body["answers"][0], 
-            [{"id"=>1,"question_id"=>1,"content"=>"<p class=\"medium-editor-p\">a1</p>"},
-             {"id"=>225623090,"question_id"=>1,"content"=>"<p class=\"medium-editor-p\">a2</p>"}]
+            [{"id"=>4,"question_id"=>1,"content"=>"<p class=\"medium-editor-p\">a1</p>"},
+             {"id"=>5,"question_id"=>1,"content"=>"<p class=\"medium-editor-p\">a2</p>"}]
 
         assert_equal decode_json_response_body["answers"][1],  
-            [{"id"=>954619823,"question_id"=>2,"content"=>"<p class=\\\"medium-editor-p\\\">a1</p>"},
-              {"id"=>1047667971,"question_id"=>2,"content"=>"<p class=\\\"medium-editor-p\\\">a2</p>"}]
+            [{"id"=>1,"question_id"=>2,"content"=>"<p class=\\\"medium-editor-p\\\">a1</p>"},
+              {"id"=>2,"question_id"=>2,"content"=>"<p class=\\\"medium-editor-p\\\">a2</p>"}]
         
-        assert_equal decode_json_response_body["answers"][2], [{"id"=>863453129, "question_id"=>3, "content"=>"abcd"}]
+        assert_equal decode_json_response_body["answers"][2], [{"id"=>6, "question_id"=>3, "content"=>"abcd"}]
         #because it is shuffled we cannot predict the exact answer
-        assert decode_json_response_body["answers"][3] == [{"id"=>585904983,"question_id"=>4,"content"=>["<p class=\"medium-editor-p\">ans1</p>","<p class=\"medium-editor-p\">ans2</p>"],"explanation"=>[]}] || 
-                decode_json_response_body["answers"][3] == [{"id"=>585904983,"question_id"=>4,"content"=>["<p class=\"medium-editor-p\">ans2</p>","<p class=\"medium-editor-p\">ans1</p>"],"explanation"=>[]}]
+        assert decode_json_response_body["answers"][3] == [{"id"=>3,"question_id"=>4,"content"=>["<p class=\"medium-editor-p\">ans1</p>","<p class=\"medium-editor-p\">ans2</p>"],"explanation"=>[]}] || 
+                decode_json_response_body["answers"][3] == [{"id"=>3,"question_id"=>4,"content"=>["<p class=\"medium-editor-p\">ans2</p>","<p class=\"medium-editor-p\">ans1</p>"],"explanation"=>[]}]
        
+    end
+
+    test 'get_questions_angular shold return next_item if quiz was submitted' do    
+      # submit answer
+      post '/en/courses/3/quizzes/1/save_student_quiz_angular' , 
+        params: {
+          "student_quiz":{
+            "1":5,
+            "2":{"1":false, "2":true},
+            "3":"abcd",
+            "4": ["<p class=\"medium-editor-p\">ans1</p>","<p class=\"medium-editor-p\">ans2</p>"]
+          },
+          "commit":"submit"
+        }, 
+        headers: @headers2 , as: :json
+
+
+      get '/en/courses/3/quizzes/1/get_questions_angular' ,headers: @headers2 , as: :json
+
+      assert_equal decode_json_response_body["next_item"], {"id"=>3, "class_name"=>"lecture", "group_id"=>3}
+       
+    end
+
+    test "save_student_quiz_angular should return status" do
+      post '/en/courses/3/quizzes/1/save_student_quiz_angular' , 
+        params: {
+          "student_quiz":{
+            "1":5,
+            "2":{"1":false, "2":true},
+            "3":"abcd",
+            "4": ["<p class=\"medium-editor-p\">ans1</p>","<p class=\"medium-editor-p\">ans2</p>"]
+          },
+          "commit":"submit"
+        }, 
+        headers: @headers2 , as: :json
+
+        assert_equal decode_json_response_body["status"]["status"], "Submitted"
+        assert_equal decode_json_response_body["status"]["attempts"], 1
+    end
+    
+    test "save_student_quiz_angular should return result and explanations" do
+      post '/en/courses/3/quizzes/1/save_student_quiz_angular' , 
+        params: {
+          "student_quiz":{
+            "1":5,
+            "2":{"1":false, "2":true},
+            "3":"abcd",
+            "4": ["<p class=\"medium-editor-p\">ans1</p>","<p class=\"medium-editor-p\">ans2</p>"],
+            "5": "waterloo",
+            "6": "any asnwer here will give grade 0"
+          },
+          "commit":"submit"
+        }, 
+        headers: @headers2 , as: :json
+       
+        # all question are correct, 1 is correct for mcq, ocq or drag, 3 is correct for free text with match
+        assert_equal decode_json_response_body["correct"], {"1"=>1, "2"=>1, "3"=>3, "4"=>1, "5"=>3, "6"=>0}
+        assert_equal decode_json_response_body["explanation"], 
+        {
+          "4"=>"<p class=\"medium-editor-p\">exp1</p>",
+          "5"=>"<p class=\"medium-editor-p\">exp2</p>",
+          "1"=>"<p class=\\\"medium-editor-p\\\">exp 1</p>",
+          "2"=>"<p class=\\\"medium-editor-p\\\">exp 2</p>",
+          "6"=>"<p class=\"medium-editor-p\">exp free text</p>",
+          "3"=>
+            ["<p class=\"medium-editor-p\">exp1</p>",
+            "<p class=\"medium-editor-p\">exp2</p>"],
+          "7"=>"<p class=\"medium-editor-p\">exp free text</p>",
+          "8"=>"<p class=\"medium-editor-p\">exp free text</p>"
+        }
+    end
+
+    test "save_student_quiz_angular should create quiz_status with right number of attempts" do
+      # first attempt
+      post '/en/courses/3/quizzes/1/save_student_quiz_angular' , 
+        params: {
+          "student_quiz":{
+            "1":4,
+            "2":{"1":false, "2":true},
+            "3":"aaa",
+            "4": ["<p class=\"medium-editor-p\">ans1</p>","<p class=\"medium-editor-p\">ans2</p>"]
+          },
+          "commit":"submit"
+        }, 
+        headers: @headers2 , as: :json
+
+        assert_not QuizStatus.where(quiz_id:1, user_id:6).empty?
+        assert_equal QuizStatus.where(quiz_id:1, user_id:6).first["attempts"], 1
+
+        # second attempt
+        post '/en/courses/3/quizzes/1/save_student_quiz_angular' , 
+        params: {
+          "student_quiz":{
+            "1":5,
+            "2":{"1":false, "2":true},
+            "3":"abcd",
+            "4": ["<p class=\"medium-editor-p\">ans1</p>","<p class=\"medium-editor-p\">ans2</p>"]
+          },
+          "commit":"submit"
+        }, 
+        headers: @headers2 , as: :json
+
+        assert_equal QuizStatus.where(quiz_id:1, user_id:6).first["attempts"], 2
+    end
+
+    test "save_student_quiz_angular should create quiz_grades for mcq and ocq " do
+
+      post '/en/courses/3/quizzes/1/save_student_quiz_angular' , 
+        params: {
+          "student_quiz":{
+            "1":4,
+            "2":{"1":false, "2":true},
+            "3":"abcd",
+            "4": ["<p class=\"medium-editor-p\">ans1</p>","<p class=\"medium-editor-p\">ans2</p>"],
+            "5": "waterloo",
+            "6": "any asnwer here will give grade 0"
+          },
+          "commit":"submit"
+        }, 
+        headers: @headers2 , as: :json
+      
+
+      assert_equal QuizGrade.where(quiz_id:1, user_id:6).size, 2
+      assert_equal QuizGrade.where(quiz_id:1, question_id: 1).first.grade, 0
+      assert_equal QuizGrade.where(quiz_id:1, question_id: 2).first.grade, 1
+    end
+
+    test "save_student_quiz_angular should create free_answers for drag and free_text " do
+
+      post '/en/courses/3/quizzes/1/save_student_quiz_angular' , 
+        params: {
+          "student_quiz":{
+            "1":4,
+            "2":{"1":false, "2":true},
+            "3":"abcd",
+            "4": ["<p class=\"medium-editor-p\">ans1</p>","<p class=\"medium-editor-p\">ans2</p>"],
+            "5": "waterloo",
+            "6": "any asnwer here will give grade 0"
+          },
+          "commit":"submit"
+        }, 
+        headers: @headers2 , as: :json
+      assert_equal FreeAnswer.where(quiz_id:1, user_id:6).size, 4
+      # grade 1 is incorrect in free text, grade 3 is correct
+      assert_equal FreeAnswer.where(quiz_id:1, user_id:6, question_id: 3).first.grade, 3
+      # grade 1 is correct in drag, grade 0 is incorrect
+      assert_equal FreeAnswer.where(quiz_id:1, user_id:6, question_id: 4).first.grade, 1
+      assert_equal FreeAnswer.where(quiz_id:1, user_id:6, question_id: 5).first.grade, 3
+      assert_equal FreeAnswer.where(quiz_id:1, user_id:6, question_id: 6).first.grade, 0
+
+    end
+    
+    test "save_student_quiz_angular wrong answers" do
+
+      post '/en/courses/3/quizzes/1/save_student_quiz_angular' , 
+        params: {
+          "student_quiz":{
+            "1":4, 
+            "2":{"1":true, "2":true},
+            "3": "abcde", 
+            "4": ["<p class=\"medium-editor-p\">ans2</p>","<p class=\"medium-editor-p\">ans1</p>"],
+            "5": "waterlo",
+            "6": "any asnwer here will give grade 0"
+          },
+          "commit":"submit"
+        }, 
+        headers: @headers2 , as: :json
+      # mcq has quiz grade for every choice
+      assert_equal QuizGrade.where(quiz_id:1, user_id:6).size, 3
+      assert_equal FreeAnswer.where(quiz_id:1, user_id:6).size, 4
+      
+      assert_equal QuizGrade.where(quiz_id:1, question_id: 1).first.grade, 0
+      assert_equal QuizGrade.where(quiz_id:1, question_id: 2).first.grade, 0
+      # grade 1 is incorrect in free text, grade 3 is correct
+      assert_equal FreeAnswer.where(quiz_id:1, user_id:6, question_id: 3).first.grade, 1
+      # grade 1 is correct in drag, grade 0 is incorrect
+      assert_equal FreeAnswer.where(quiz_id:1, user_id:6, question_id: 4).first.grade, 0
+      assert_equal FreeAnswer.where(quiz_id:1, user_id:6, question_id: 5).first.grade, 1
+      assert_equal FreeAnswer.where(quiz_id:1, user_id:6, question_id: 6).first.grade, 0
+
+    end
+
+    test "save_student_quiz_angular any empty answer should rollback other answers grades" do
+
+      post '/en/courses/3/quizzes/1/save_student_quiz_angular' , 
+        params: {
+          "student_quiz":{
+            "1": '', 
+            "2":{"1":true, "2":true},
+            "3": "abcde", 
+            "4": ["<p class=\"medium-editor-p\">ans2</p>","<p class=\"medium-editor-p\">ans1</p>"],
+            "5": "waterlo",
+            "6": "any asnwer here will give grade 0"
+          },
+          "commit":"submit"
+        }, 
+        headers: @headers2 , as: :json
+      
+      assert_equal QuizGrade.where(quiz_id:1, user_id:6).size, 0
+      assert_equal FreeAnswer.where(quiz_id:1, user_id:6).size, 0
+
+      post '/en/courses/3/quizzes/1/save_student_quiz_angular' , 
+        params: {
+          "student_quiz":{
+            "1": 4, 
+            "2":{"1":false, "2":false},
+            "3": "abcde", 
+            "4": ["<p class=\"medium-editor-p\">ans2</p>","<p class=\"medium-editor-p\">ans1</p>"],
+            "5": "waterlo",
+            "6": "any asnwer here will give grade 0"
+          },
+          "commit":"submit"
+        }, 
+        headers: @headers2 , as: :json
+      
+      assert_equal QuizGrade.where(quiz_id:1, user_id:6).size, 0
+      assert_equal FreeAnswer.where(quiz_id:1, user_id:6).size, 0
+
+      post '/en/courses/3/quizzes/1/save_student_quiz_angular' , 
+        params: {
+          "student_quiz":{
+            "1": 4, 
+            "2":{"1":false, "2":false},
+            "3": "", 
+            "4": ["<p class=\"medium-editor-p\">ans2</p>","<p class=\"medium-editor-p\">ans1</p>"],
+            "5": "waterlo",
+            "6": "any asnwer here will give grade 0"
+          },
+          "commit":"submit"
+        }, 
+        headers: @headers2 , as: :json
+      
+      assert_equal QuizGrade.where(quiz_id:1, user_id:6).size, 0
+      assert_equal FreeAnswer.where(quiz_id:1, user_id:6).size, 0
+    end
+
+    test "save_student_quiz_angular should update quiz_status" do
+
+      assert QuizStatus.where(quiz_id:1, course_id: 3, user_id: 6).empty?
+      post '/en/courses/3/quizzes/1/save_student_quiz_angular' , 
+        params: {
+          "student_quiz":{
+            "1":4, 
+            "2":{"1":true, "2":true},
+            "3": "abcde", 
+            "4": ["<p class=\"medium-editor-p\">ans2</p>","<p class=\"medium-editor-p\">ans1</p>"],
+            "5": "waterlo",
+            "6": "any asnwer here will give grade 0"
+          },
+          "commit":"submit"
+        }, 
+        headers: @headers2 , as: :json
+      
+      assert_equal QuizStatus.where(quiz_id:1, course_id: 3, user_id: 6).first["status"], "Submitted"
+        
     end
 
     test "change_status_angular should change status assignment_item_status, or create new one with specified status" do
@@ -310,7 +554,73 @@ class QuizzesControllerTest < ActionDispatch::IntegrationTest
       assert_equal Quiz.find(1).assignment_item_statuses.first["status"], 1
       assert_equal Quiz.find(1).assignment_item_statuses.size, 1
       
+    end
       
+    test "save_student_quiz_angular student can save if not submitted" do
+
+      post '/en/courses/3/quizzes/1/save_student_quiz_angular' , 
+        params: {
+          "student_quiz":{
+            "1":4, 
+            "2":{"1":true, "2":true},
+            "3": "abcde", 
+            "4": ["<p class=\"medium-editor-p\">ans2</p>","<p class=\"medium-editor-p\">ans1</p>"],
+            "5": "waterlo",
+            "6": "any asnwer here will give grade 0"
+          },
+          "commit":"save"
+        }, 
+        headers: @headers2 , as: :json
+
+      assert_equal QuizStatus.where(quiz_id:1, course_id: 3, user_id: 6).first["status"], "Saved"
+
+    end
+
+    test "save_student_quiz_angular student cannot save if already submitted" do
+
+      post '/en/courses/3/quizzes/1/save_student_quiz_angular' , 
+        params: {
+          "student_quiz":{
+            "1":4, 
+            "2":{"1":true, "2":true},
+            "3": "abcde", 
+            "4": ["<p class=\"medium-editor-p\">ans2</p>","<p class=\"medium-editor-p\">ans1</p>"],
+            "5": "waterlo",
+            "6": "any asnwer here will give grade 0"
+          },
+          "commit":"submit"
+        }, 
+        headers: @headers2 , as: :json
+
+      post '/en/courses/3/quizzes/1/save_student_quiz_angular' , 
+        params: {
+          "student_quiz":{
+            "1":4, 
+            "2":{"1":true, "2":true},
+            "3": "abcde", 
+            "4": ["<p class=\"medium-editor-p\">ans2</p>","<p class=\"medium-editor-p\">ans1</p>"],
+            "5": "waterlo",
+            "6": "any asnwer here will give grade 0"
+          },
+          "commit":"save"
+        }, 
+        headers: @headers2 , as: :json
+
+      assert_equal decode_json_response_body["errors"], ["Can't Save - Already Submitted Quiz"]
+
+      assert_equal QuizStatus.where(quiz_id:1, course_id: 3, user_id: 6).first["status"], "Submitted"
+
+    end
+
+    test "show_question_inclass should toggle show of selected quiz to true or false" do
+      
+      assert_changes 'Question.find(1).show', from: false, to: true do
+        post '/en/courses/3/quizzes/1/show_question_inclass', params: {question: 1, show:true}, headers: @headers, as: :json
+      end
+
+      assert_changes 'Question.find(1).show', from: true, to: false do
+        post '/en/courses/3/quizzes/1/show_question_inclass', params: {question: 1, show:false}, headers: @headers, as: :json
+      end
     end
     
 

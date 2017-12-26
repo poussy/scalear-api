@@ -83,8 +83,23 @@ class GroupsController < ApplicationController
 		render json: {:notice => [I18n.t("controller_msg.modules_sorted")]}
 	end
 
-	# def hide_invideo_quiz
-	# end
+	def hide_invideo_quiz  #updating an online quiz (hidden or not)
+		quiz_id= params[:quiz]
+		hide = params[:hide]
+		if hide
+			hidden=I18n.t("hidden")
+		else
+			hidden=I18n.t("visible")
+		end
+
+		to_update=OnlineQuiz.find(quiz_id)
+
+		if to_update.update_attributes(:hide => hide)
+			render :json => {:notice => ["#{I18n.t('controller_msg.quiz_is_now')} #{hidden}"]}
+		else
+			render :json => {:errors => [I18n.t("controller_msg.could_not_update_quiz")]}, :status => 400
+		end
+	end
 
 	# def hide_student_question
 	# end
@@ -275,7 +290,7 @@ class GroupsController < ApplicationController
 
 		today = Time.zone.now
 		if (group.nil? || group.appearance_time >today) &&  !current_user.is_preview?
-			render json: {errors: [t('controller_msg.no_such_module')]}, :status => 404 and return
+			render json: {errors: [I18n.t('controller_msg.no_such_module')]}, :status => 404 and return
 		else
 			if current_user.is_preview?
 				lectures = group.lectures.sort{|x,y| ( x.position and y.position ) ? x.position <=> y.position : ( x.position ? -1 : 1 )  }
@@ -336,16 +351,192 @@ class GroupsController < ApplicationController
 
 	# def get_quiz_charts_inclass
 	# end
+	def get_quiz_charts
+		charts_data ={}
+		_module=Group.where(:id => params[:id], :course_id => params[:course_id]).includes({:quizzes => [{:questions => [:free_answers, {:answers => :quiz_grades}]}, :quiz_statuses]}).first
 
-	# def get_quiz_charts
-	# end
+		if _module.nil?
+			render json: {:errors => ["controller_msg.no_such_module"]}, status: 404 and return
+		end
 
-	# def get_survey_charts
-	# end
+		non_guest_students = _module.course.users.map(&:id)
 
-	# def get_module_progress
-	# end
+		quizzes={}
+		review_quiz_count = 0
 
+		_module.quizzes.select{|q| q.quiz_type == "quiz"}.each do |quiz|
+
+			submitted_students = quiz.quiz_statuses.select{|qs| qs.status == "Submitted"}.map(&:user_id)
+			students = submitted_students & non_guest_students #intersection
+
+			quizzes[quiz.id] = {:meta => quiz}
+			chart_questions={}
+			questions= quiz.questions.select{|q| q.question_type !='header'}#.where("question_type !='header'")
+			quizzes[quiz.id][:questions]= questions.map{|obj| {:question => obj.content, :type => obj.question_type, :id => obj.id, :show => obj.show}}
+			review_quiz_count += questions.select{|q| q.show }.size
+			# quiz_free_questions = #.where("question_type = 'Free Text Question'")#.map{|obj| obj={:id => obj.id, :content => obj.content, :show => obj.show} }
+			# quiz_free_answers= quiz.get_quiz_free_text_angular(students)
+
+			quizzes[quiz.id][:free_question]={}
+			questions.select{|q| q.question_type == 'Free Text Question'}.each_with_index do |q, ind|
+				id = q[:id]
+				answers = q.free_answers.select{|a| students.include?(a.user_id)}
+				quizzes[quiz.id][:free_question][id]={:title => q[:content], :answers => answers, :show => q[:show]}
+			end
+
+			chart_data={}   #only count those that submitted their answers
+			questions.select{|v| v.question_type!="Free Text Question"}.each do |question|
+			chart_data[question.id]={:answers =>{}}
+			if question.question_type.downcase!="drag"
+				question.answers.each do |answer|
+					chart_data[question.id][:answers][answer.id]=[0,answer.correct,answer.content]
+					chart_data[question.id][:answers][answer.id][0]= answer.quiz_grades.select{|v| students.include?(v.user_id)}.size
+				end
+			else  #if drag
+				question.answers.first.content.each_with_index do |answer, index|  #if drag
+					chart_data[question.id][:answers][answer]=[0,true,"#{answer} "+I18n.t('controller_msg.in_correct_place')]
+					chart_data[question.id][:answers][answer][0]=question.free_answers.select{|v| students.include?(v.user_id) && answer == v.answer[index]}.size
+				end
+			end
+			end
+
+			quizzes[quiz.id]["charts"]=Hash[chart_data.sort]
+		end
+		render json: {:quizzes => quizzes, :review_quiz_count => review_quiz_count}
+	end
+
+	def get_survey_charts
+		_module=Group.where(:id => params[:id], :course_id => params[:course_id]).includes({:quizzes => [{:questions => [:free_answers, {:answers => :quiz_grades}]}, :quiz_statuses]}).first
+
+		if _module.nil?
+			render json: {:errors => ["controller_msg.no_such_module"]}, status: 404 and return
+		end
+		review_survey_count = 0
+		surveys={}
+		non_guest_students = _module.course.users.map(&:id)
+
+		_module.quizzes.select{|q| q.quiz_type == "survey"}.each do |survey|
+			saved_students = survey.quiz_statuses.select{|qs| qs.status == "Saved"}.map(&:user_id)
+			students = saved_students & non_guest_students #intersection
+
+			questions = survey.questions.select{|q| q.question_type !='header'}#.where("question_type !='header'")
+			review_survey_count += questions.select{|q| q.show }.size
+
+			chart_data ={}
+			questions.select{|v| v.question_type != 'Free Text Question'}.each do |question|
+				answers={}
+				question.answers.each do |answer|
+					answers[answer.id] = [answer.quiz_grades.select{|v| students.include?(v.user_id)}.size, answer.content]
+				end
+				chart_data[question.id]={}
+				chart_data[question.id][:show] = question.show
+				chart_data[question.id][:student_show] = question.student_show
+				chart_data[question.id][:answers] = answers
+				chart_data[question.id][:title] = question.content
+			end
+
+			surveys[survey.id] = {
+			:meta => survey,
+			:charts => chart_data,
+			:questions => questions.map{|obj| {:question => obj.content, :type => obj.question_type, :id => obj.id}}
+			}
+
+			# survey_free_questions = survey.questions.where("question_type = 'Free Text Question'")#.map{|obj| obj={:id => obj.id, :content => obj.content, :show => obj.show} }
+			# survey_free_answers = survey.get_survey_free_text_angular
+
+			surveys[survey.id][:free_question]={}
+			questions.select{|q| q.question_type == 'Free Text Question'}.each do |q|
+				id = q[:id]
+				answers = q.free_answers.select{|v| v.answer != '' && students.include?(v.user_id)}
+				surveys[survey.id][:free_question][id]={:title => q[:content], :answers => answers, :show => q[:show]}
+			end
+		end
+
+		render :json => {:surveys => surveys, :review_survey_count => review_survey_count}
+	end
+
+ def get_module_progress
+
+  _module=Group.where(:id => params[:id], :course_id => params[:course_id]).includes([
+    {:course => :users},
+    {:lectures =>
+      {:online_quizzes => [
+        {:online_answers => :online_quiz_grades},
+        :free_online_quiz_grades,
+        :online_quiz_grades
+      ]}
+    },
+    :online_quizzes
+  ]).first
+
+  if _module.nil?
+    render json: {:errors => ["controller_msg.no_such_module"]}, status: 404 and return
+  end
+  students = _module.course.users
+  students_ids = students.map(&:id)
+  lectures={}
+
+  review_question_count = 0
+  review_quizzes_count = _module.online_quizzes.select{|q| !q.hide && !q.inclass}.size
+  inclass_quizzes_count= _module.online_quizzes.select{|q| !q.hide && q.inclass}.size
+
+  _module.lectures.each do |lec|
+    lecture_charts = lec.get_charts_all(students_ids)
+    lecture_questions = lec.get_questions
+    lecture_chart_checked = lec.get_checked_quizzes
+    free_questions_collection = lec.get_free_text_question_and_answers(students_ids)
+    # quiz_free_questions = lec.get_free_text_questions
+    # quiz_free_answers= lec.get_free_text_answers
+
+
+    lectures[lec.id] = {:meta => lec, :charts => {}, :free_question => {}}
+
+    lecture_questions.each do |id, q|
+      if q[:type]!= "Free Text Question"
+        lectures[lec.id][:charts][id]=[q[:time], {
+          :title => q[:title],
+          :type => q[:type],
+          :quiz_type =>(q[:quiz_type]=='survey' || q[:quiz_type]=='html_survey')? 'Survey' : 'Quiz',
+          :review => q[:review],
+          :hide => lecture_chart_checked[id],
+          :id => id,
+          :answers => lecture_charts[id]
+        }]
+        if q[:inclass]
+          lectures[lec.id][:charts][id][1][:inclass] = true
+          lectures[lec.id][:charts][id][1][:timers] = OnlineQuiz.where(:id => id).select([:intro, :self, :in_group, :discussion]).first
+        end
+      end
+    end
+
+    if !free_questions_collection.empty?
+      free_questions_collection.each do |id, q|
+        # id = q[:id]
+        question = q[:question]
+        answer = q[:answer]
+        lectures[lec.id][:free_question][id] = [question[:time],{
+          :review => question[:review],
+          :title => question[:title],
+          :answers => answer,
+          :show => !question[:hide],
+          :id => id,
+          :quiz_type => (question[:quiz_type]=='survey' || question[:quiz_type]=='html_survey')? 'Survey' : 'Quiz'
+        }]
+      end
+    end
+
+    stat= lec.get_statistics(students)
+    lectures[lec.id]["confused"]= Confused.get_rounded_time_lecture(stat[:confused]) #right now I round up. [[234,5],[238,6]]
+    lectures[lec.id]["really_confused"]= Confused.get_rounded_time_lecture(stat[:really_confused]) #right now I round up. [[234,5],[238,6]]
+    discussion = Forum::Post.get_rounded_time(stat[:discussion])
+    lectures[lec.id]["discussion"] = discussion.to_a.map{|v| v=[v[0],v[1][1]]} #lec.posts_all_teacher
+    review_question_count += stat[:discussion].select{|v| v.hide == false}.count
+  end
+  students_count = students.size
+  first_lecture = _module.lectures.first if !_module.lectures.empty?
+
+  render json: { :lectures => lectures, :students_count => students_count, :first_lecture => first_lecture, :review_question_count => review_question_count, :review_video_quiz_count => review_quizzes_count, :inclass_quizzes_count => inclass_quizzes_count}
+ end
 	# def last_watched
 	# end
 
@@ -355,12 +546,24 @@ class GroupsController < ApplicationController
 	# def update_all_inclass_sessions
 	# end
 
-	# def get_module_summary
-	# end
-
-	# def get_online_quiz_summary
-	# end
-
+	def get_module_summary
+		course = Course.find(params[:course_id])
+		if course.is_student(current_user)
+			group = Group.find(params[:id])
+			data = group.get_module_summary_student(current_user)
+		else
+			group = Group.includes([:course, :lectures,{:online_quizzes => :online_answers}, {:quizzes => [:quiz_grades, :free_answers]}, :online_quiz_grades, :free_online_quiz_grades, :lecture_views ]).find(params[:id])
+			data = group.get_module_summary_teacher
+		end
+		render :json => {:module =>data }
+	end
+	
+	def get_online_quiz_summary
+		group = Group.includes(:course).find(params[:id])
+		course = group.course
+		data = course.is_student(current_user)? group.get_completion_summary_student(current_user) : group.get_online_quiz_summary_teacher
+		render :json => {:module =>data }
+	end
 	# def get_discussion_summary
 	# end
 

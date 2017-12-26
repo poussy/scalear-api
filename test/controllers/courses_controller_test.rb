@@ -765,8 +765,18 @@ class CoursesControllerTest <  ActionDispatch::IntegrationTest
 		assert_equal decode_json_response_body['groups'][0]['total_time'], 390
 		assert_equal decode_json_response_body['groups'][0]['sub_items_size'], 3
 
-		assert_equal decode_json_response_body['next_item']['module'], -1
-		assert_equal decode_json_response_body['next_item']['item'], -1
+		assert_equal decode_json_response_body['next_item']['module'], 3
+		assert_equal decode_json_response_body['next_item']['item'], {"id"=>3, "class_name"=>"lecture"}
+		
+	end
+
+	test "courseware_angular response should have last viewed item" do
+		user = users(:student_in_course3)
+		
+		get '/en/courses/3/courseware_angular', headers: user.create_new_auth_token
+		
+		assert_equal decode_json_response_body['next_item']['module'], 3
+		assert_equal decode_json_response_body['next_item']['item'], {"id"=>3, "class_name"=>"lecture"}
 		
 	end
 	
