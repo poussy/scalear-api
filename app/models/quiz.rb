@@ -56,8 +56,17 @@ class Quiz < ApplicationRecord
   # def is_done_summary_table
   # end
 
-  # def is_done_user(st)
-  # end
+  def is_done_user(st)
+    assign= st.get_assignment_status(self)
+    assign_quiz = st.get_quiz_status(self)
+    if (!assign.nil? && assign.status==1) || (!assign_quiz.nil? && assign_quiz.status==1)#modified status and marked as done on time
+      return true
+    elsif quiz_type == 'quiz'
+      return st.quiz_statuses.select{|v| v.quiz_id == id and v.status == "Submitted"}.size!=0
+    else
+      return st.quiz_statuses.select{|v| v.quiz_id == id and v.status == "Saved"}.size!=0
+    end
+  end
 
   # def is_done?(user_asking)
   # end

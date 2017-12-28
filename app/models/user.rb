@@ -133,8 +133,9 @@ class User < ActiveRecord::Base
   # def is_ta?(course)
   # end
 
-  # def is_administrator?
-  # end
+  def is_administrator?
+    role_ids.include?5
+  end
 
   def is_preview?
     role_ids.include?6
@@ -310,8 +311,16 @@ class User < ActiveRecord::Base
     return grades
   end
 
-  # def finished_quiz_test?(quiz)
-  # end
+  def finished_quiz_test?(quiz)
+    inst=self.quiz_statuses.select{|v| v.quiz_id==quiz.id and v.status=="Submitted"}[0]
+    if inst.nil?
+      return -1
+    elsif inst.created_at < quiz.due_date
+      return 0
+    else
+      return (inst.created_at.to_date - quiz.due_date.to_date).to_i  #solved after lecture due date
+    end
+  end
 
   def finished_quiz_test_with_correct_question_count?(quiz)
     inst=self.quiz_statuses.select{|v| v.quiz_id==quiz.id and v.status=="Submitted"}[0]
