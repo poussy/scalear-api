@@ -564,8 +564,13 @@ class GroupsController < ApplicationController
 		data = course.is_student(current_user)? group.get_completion_summary_student(current_user) : group.get_online_quiz_summary_teacher
 		render :json => {:module =>data }
 	end
-	# def get_discussion_summary
-	# end
+	
+	def get_discussion_summary
+		group = Group.includes(:course).find(params[:id])
+		course = group.course
+		data = course.is_student(current_user)? group.get_discussion_summary_student(current_user) : group.get_discussion_summary_teacher
+		render :json => {:module =>data }
+	end
 
 
 

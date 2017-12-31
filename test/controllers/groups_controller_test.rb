@@ -718,5 +718,19 @@ class GroupsControllerTest < ActionDispatch::IntegrationTest
 			post '/en/courses/3/groups/3/hide_invideo_quiz', params:{hide:true, quiz:1}, headers: @user3.create_new_auth_token
 		end
 	end
+
+	## waiting for discussion
+	test "get_discussion_summary should" do 
+		get '/en/courses/3/groups/3/get_discussion_summary', headers: @user3.create_new_auth_token
+
+		assert decode_json_response_body['module'].key? 'posts_total'
+		assert decode_json_response_body['module'].key? 'unanswered_questions_count'
+
+		get '/en/courses/3/groups/3/get_discussion_summary', headers: @student.create_new_auth_token
+
+		assert decode_json_response_body['module'].key? 'posts_total'
+		assert_not decode_json_response_body['module'].key? 'unanswered_questions_count'
+	end
+	
 	
 end

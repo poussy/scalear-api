@@ -65,6 +65,6 @@ class DashboardControllerTest < ActionDispatch::IntegrationTest
 
     get '/en/dashboard/get_dashboard', headers: @school_admin.create_new_auth_token
     assert decode_json_response_body['events'].size, 1
-    pp decode_json_response_body
+    
   end
 end
