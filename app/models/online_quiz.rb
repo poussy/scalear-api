@@ -18,6 +18,7 @@ class OnlineQuiz < ApplicationRecord
 	attribute :votes_count
 	attribute :online_answers
 	attribute :online_answers_drag
+	attribute :inclass_session
 
 	# def formatted_time
 	# end

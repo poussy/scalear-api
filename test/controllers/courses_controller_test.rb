@@ -67,6 +67,17 @@ class CoursesControllerTest <  ActionDispatch::IntegrationTest
 		assert_equal resp['total'] , 5
 	end		
 
+	test "show" do
+		user = users(:student_in_course3)
+
+		TeacherEnrollment.create(course_id: 3, user_id: 6, role_id: 3)
+
+		get "/en/courses/3", headers: user.create_new_auth_token
+		assert_equal decode_json_response_body["teachers"], [{"id"=>6,"name"=>"saleh aly",  "role"=>"Professor",  "email"=>"saleh@gmail.com"}]
+		assert_equal decode_json_response_body["course"]["id"], 3
+		assert_equal decode_json_response_body["course"]["name"], "course3"
+	end
+
 	test 'validate new method for teacher' do
 		url = '/en/courses/new'
 		get  url ,headers: @user1.create_new_auth_token 

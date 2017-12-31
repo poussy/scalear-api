@@ -731,6 +731,26 @@ class GroupsControllerTest < ActionDispatch::IntegrationTest
 		assert decode_json_response_body['module'].key? 'posts_total'
 		assert_not decode_json_response_body['module'].key? 'unanswered_questions_count'
 	end
-	
+
+	test "get_module_data_angular" do
+		get "/en/courses/3/groups/3/get_module_data_angular", headers:  @student.create_new_auth_token
+
+		assert_equal decode_json_response_body["module_lectures"].size, 2
+
+		lecture = decode_json_response_body["module_lectures"][0]
+		
+
+		assert_equal lecture["id"], 3
+		assert_equal lecture["name"], "lecture3"
+		assert_equal lecture["user_confused"].size, 4
+		assert_equal lecture["title_markers"].size, 1
+		assert_equal lecture["video_quizzes"].size, 10
+
+		assert_equal lecture["video_quizzes"][0]["id"], 1
+		assert_equal lecture["video_quizzes"][0]["online_answers"].map{|ans| ans["id"]}, [6,7]
+		
+
+	end
+
 	
 end
