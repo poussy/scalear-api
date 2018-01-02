@@ -301,9 +301,23 @@ class QuizzesController < ApplicationController
   
   # def show_question_student  #updating a survey question (hidden or not)
   # end
-  
-  # def create_or_update_survey_responses
-  # end
+
+  def create_or_update_survey_responses
+    groups=params[:groups]
+    response=params[:response]
+    if response.blank?
+      FreeAnswer.where({:id => groups}).update_all({:response => response})
+      render :json => {:notice => [I18n.t("controller_msg.response_successfully_deleted")]}
+    else
+      FreeAnswer.where(:id => groups).update_all({:response => response})
+      survey = Quiz.find(params[:id]).name
+      groups.each do |g|
+        answer=FreeAnswer.find(g)
+        UserMailer.delay.survey_email(answer.user_id,Question.find(answer.question_id).content,answer.answer,survey,@course,response, I18n.locale)#.deliver
+      end
+      render :json => {:notice => [I18n.t("controller_msg.response_saved")]}
+    end
+  end
   
   # def hide_responses
   # end
