@@ -822,12 +822,31 @@ class LecturesController < ApplicationController
 	# def confused_show_inclass
 	# end
 
-	# def check_if_invited_distance_peer
-	# end
+	def check_if_invited_distance_peer
+			course=Course.find(params[:course_id])
+
+			invatations = current_user.user_distance_peers.includes(:distance_peer).select{|d| d.distance_peer.lecture_id == params[:id].to_i  && d.status ==0}
+			if invatations.select { |d| current_user.id != d.distance_peer.user_id }.count != 0
+					online_names = invatations.map{|u_dis| [u_dis.distance_peer.user.screen_name ,  u_dis.distance_peer.id]}
+					render json: {:invite => online_names ,:invite_status=>"invited_by" }
+			elsif invatations.select { |d| current_user.id == d.distance_peer.user_id }.count == 1
+					online_names =  DistancePeer.find(invatations.first.distance_peer_id).user_distance_peers.select{|d| d.status ==0 && current_user.id != d.user_id}.map{|u_dis| u_dis.user.screen_name }
+					render json: {:invite => online_names[0] ,:invite_status=>"invited" , :distance_peer_id => invatations.first.distance_peer_id }
+			else
+					students = course.enrolled_students.select("users.email,users.last_name,users.name, LOWER(users.name)").order("LOWER(users.name)") #enrolled
+					students.each do |s|
+							s[:full_name] = s.full_name
+							s[:email] = s.email
+					end
+					students = students.select{|s| s.email != current_user.email}
+
+					render json:{ :invite_status => "no_invitation", :students => students}
+			end
+	end
 
 	def check_if_in_distance_peer_session
 		session = current_user.user_distance_peers.includes(:distance_peer).order('updated_at DESC').select{|d| d.distance_peer.lecture_id == params[:id].to_i && !(d.status == 0 || d.status == 6 )}
-		# user_email = session.first.select { |d| current_user.id != d.distance_peer.user_id }
+		
 		if session.count != 0
 			user_distance_peer = DistancePeer.find(session.first.distance_peer_id).user_distance_peers.select{|d| d.status !=0 && current_user.id == d.user_id}
 			online_names =  DistancePeer.find(session.first.distance_peer_id).user_distance_peers.select{|d| d.status !=0 && current_user.id != d.user_id}.map{|u_dis| u_dis.user.screen_name }
@@ -837,26 +856,98 @@ class LecturesController < ApplicationController
 		end
   	end
 
-	# def invite_student_distance_peer
-	# end
+	def invite_student_distance_peer
+			@lecture= Lecture.find(params[:id])
+			user_distance_peer = current_user.user_distance_peers.includes(:distance_peer).select{|d| d.distance_peer.lecture_id == params[:id].to_i  && d.status ==0 && d.distance_peer.user_id == User.find_by_email(params[:email]).id }
+			if user_distance_peer.select { |d| current_user.id != d.distance_peer.user_id }.count != 0
+					distance_peer = user_distance_peer.first.distance_peer
+					distance_peer.user_distance_peers.update_all(status: 1)
 
-	# def check_invited_student_accepted_distance_peer
-	# end
+			else
+					distance_peer = DistancePeer.create(:user_id => current_user.id, :course_id => params[:course_id] ,  :group_id =>@lecture.group.id , :lecture_id => params[:id])
+					UserDistancePeer.create(:distance_peer_id=>distance_peer.id , :user_id => User.find_by_email(params[:email]).id, :status => 0 ,  :online =>false )
+					UserDistancePeer.create(:distance_peer_id=>distance_peer.id , :user_id => current_user.id, :status => 0 ,  :online =>false )
+			end
+			render json: {:notice => "wait_for_student" , :distance_peer_id => distance_peer.id}
+	end
 
-	# def accept_invation_distance_peer
-	# end
+	def check_invited_student_accepted_distance_peer
+			user = User.find_by_email(params[:email])
+			status = nil
+			if user
+					status = UserDistancePeer.find_by_distance_peer_id_and_user_id(params[:distance_peer_id] , user.id)
+			# else
+					# render json: {:status => "no_peer_session"}
+			end
+			if status
+					render json: {:status => status.status}
+			else
+					render json: {:status => "denied"}
+			end
+	end
 
-	# def cancel_session_distance_peer
-	# end
+	def accept_invation_distance_peer
+			if DistancePeer.exists?(id: params[:distance_peer_id])
+					DistancePeer.find(params[:distance_peer_id]).user_distance_peers.update_all(status: 1)
+					# UserDistancePeer.find_by_distance_peer_id(params[:distance_peer_id])
+					render json: {:status => 0}
+			else
+					render json: {:status => "cancelled"}
+			end
+	end
 
-	# def change_status_distance_peer
-	# end
+	def cancel_session_distance_peer
+			if DistancePeer.exists?(id: params[:distance_peer_id])
+					DistancePeer.find(params[:distance_peer_id]).destroy
+			end
+			render json:{:distance_peer=> 'deleted'}
+	end
 
-	# def check_if_distance_peer_status_is_sync
-	# end
+	def change_status_distance_peer
+			session = UserDistancePeer.includes(:distance_peer).select{|d| d.distance_peer_id == params[:distance_peer_id].to_i && d.user_id == current_user.id}
+			if session.count != 0
+					if params[:online_quiz_id]=="do_not_updated"
+							session.first.update_attributes(:status => params[:status])
+					else
+							session.first.update_attributes(:status => params[:status],:online_quiz_id=> params[:online_quiz_id])
+					end
+					render json: {:status =>  "done" }
+			else
+					render json:{ :distance_peer => "no_peer_session"}
+			end
 
-	# def check_if_distance_peer_is_alive
-	# end
+	end
+
+	def check_if_distance_peer_status_is_sync
+			session = UserDistancePeer.includes(:distance_peer).select{|d| d.distance_peer_id == params[:distance_peer_id].to_i }
+			user_student = session.select{|d| d.user_id == current_user.id}
+			second_student = session.select{|d| d.user_id  != current_user.id}
+			if session.count == 2
+					if ( user_student.first.status == second_student.first.status )# && (second_student.first.status != 6)
+							render json: {:status =>  "start" }
+					else
+							render json:{ :status => "wait"}
+					end
+			else
+					render json:{ :distance_peer => "no_peer_session"}
+			end
+	end
+
+	def check_if_distance_peer_is_alive
+			session = UserDistancePeer.includes(:distance_peer).select{|d| d.distance_peer_id == params[:distance_peer_id].to_i }
+			user_student = session.select{|d| d.user_id == current_user.id}
+			second_student = session.select{|d| d.user_id  != current_user.id}
+			if session.count == 2
+					if second_student.first.status == 6
+							user_student.first.update_attributes(:status => 6)
+							render json: {:status =>  "dead" }
+					else
+							render json:{ :status => "alive"}
+					end
+			else
+					render json:{ :distance_peer => "no_peer_session"}
+			end
+	end
 
 	# # def end_distance_peer_session
 	# # end
