@@ -17,3 +17,5 @@ quiz2_grade:
   hide: true
   review_vote: false
   attempt: 1
+  created_at: '2017-6-12'
+  updated_at: '2017-6-12'

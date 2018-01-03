@@ -24,23 +24,16 @@ class QuizzesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "should be able to create quiz" do
-
-    assert_equal Quiz.count, 4
-
-		post '/en/courses/3/quizzes/new_or_edit/', params:{:group => 3, :type => 'quiz'},headers: @user.create_new_auth_token
-
-    assert_equal Quiz.count, 5
-		
+    assert_difference 'Quiz.count' do
+		  post '/en/courses/3/quizzes/new_or_edit/', params:{:group => 3, :type => 'quiz'},headers: @user.create_new_auth_token
+		end
 	end
 
   test "should be able to create survey" do
 
-    assert_equal Quiz.count, 4
-
-		post '/en/courses/3/quizzes/new_or_edit/', params:{:group => 3, :type => 'survey'},headers: @user.create_new_auth_token
-
-    assert_equal Quiz.count, 5
-		
+    assert_difference 'Quiz.count' do 
+		  post '/en/courses/3/quizzes/new_or_edit/', params:{:group => 3, :type => 'survey'},headers: @user.create_new_auth_token
+		end
 	end
 
 
@@ -131,15 +124,11 @@ class QuizzesControllerTest < ActionDispatch::IntegrationTest
 	end
 
   test "should copy quiz" do
+    assert_difference ['Quiz.count', 'Event.count'] do
+		  post '/en/courses/3/quizzes/quiz_copy', params: {module_id: 3, quiz_id: 1}, headers: @headers, as: :json
+    end
 
-    assert_equal Quiz.count, 4
-    @evnet_counter = Event.count
-		post '/en/courses/3/quizzes/quiz_copy', params: {module_id: 3, quiz_id: 1}, headers: @headers, as: :json
-
-    assert_equal Quiz.count, 5
-    assert_equal Event.count , @evnet_counter + 1
-
-    	quiz_from = Quiz.find(1)
+   	quiz_from = Quiz.find(1)
     new_quiz = Quiz.last
 
     assert_equal quiz_from.name, new_quiz.name
@@ -555,6 +544,18 @@ class QuizzesControllerTest < ActionDispatch::IntegrationTest
         
     end
 
+    test "change_status_angular should change status assignment_item_status, or create new one with specified status" do
+      # will create one if empty
+      assert Quiz.find(1).assignment_item_statuses.empty?
+      post "/en/courses/3/quizzes/1/change_status_angular", params:{user_id:6, status: 2}, headers: @headers, as: :json
+      assert_equal Quiz.find(1).assignment_item_statuses.first["status"], 2
+      # will change existing if present
+      post "/en/courses/3/quizzes/1/change_status_angular", params:{user_id:6, status: 1}, headers: @headers, as: :json
+      assert_equal Quiz.find(1).assignment_item_statuses.first["status"], 1
+      assert_equal Quiz.find(1).assignment_item_statuses.size, 1
+      
+    end
+      
     test "save_student_quiz_angular student can save if not submitted" do
 
       post '/en/courses/3/quizzes/1/save_student_quiz_angular' , 
@@ -609,6 +610,17 @@ class QuizzesControllerTest < ActionDispatch::IntegrationTest
 
       assert_equal QuizStatus.where(quiz_id:1, course_id: 3, user_id: 6).first["status"], "Submitted"
 
+    end
+
+    test "show_question_inclass should toggle show of selected quiz to true or false" do
+      
+      assert_changes 'Question.find(1).show', from: false, to: true do
+        post '/en/courses/3/quizzes/1/show_question_inclass', params: {question: 1, show:true}, headers: @headers, as: :json
+      end
+
+      assert_changes 'Question.find(1).show', from: true, to: false do
+        post '/en/courses/3/quizzes/1/show_question_inclass', params: {question: 1, show:false}, headers: @headers, as: :json
+      end
     end
     
 

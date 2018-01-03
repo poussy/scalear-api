@@ -283,8 +283,21 @@ class QuizzesController < ApplicationController
   # def new
   # end
   
-  # def show_question_inclass  #updating a survey question (hidden or not)
-  # end
+  def show_question_inclass  #updating a survey question (hidden or not)
+    ques_id= params[:question]
+    show = params[:show]
+    if show
+      visible=I18n.t("visible")
+    else
+      visible=I18n.t("hidden")
+    end
+    to_update=Question.find(ques_id)
+    if to_update.update_attributes(:show => show)
+      render :json => {:notice => ["#{I18n.t('controller_msg.question_successfully_updated')} - #{I18n.t('now')} #{visible}"]}
+    else
+      render :json => {:errors => [I18n.t("quizzes.could_not_update_question")]}, :status => 400
+    end
+  end
   
   # def show_question_student  #updating a survey question (hidden or not)
   # end
@@ -531,10 +544,19 @@ class QuizzesController < ApplicationController
   
   # def quiz_copy
   # end
-  
-  # def change_status_angular
-  # end
-  
+
+  def change_status_angular
+   status=params[:status].to_i
+   assign= @quiz.assignment_item_statuses.where(:user_id => params[:user_id]).first
+   if !assign.nil?
+    #0 original
+    (status==0)? assign.destroy : assign.update_attributes(:status => status)
+   elsif status!=0
+     @quiz.assignment_item_statuses<< AssignmentItemStatus.create(:user_id => params[:user_id], :course_id => params[:course_id], :status => status ,  :group_id =>@quiz.group.id , :quiz_id => @quiz.id)
+   end
+   render :json => {:success => true, :notice => [I18n.t("courses.status_successfully_changed")]}
+  end
+
 
 private
 

@@ -3,6 +3,7 @@ ocq1:
   quiz_id: 1
   content: <p class=\"medium-editor-p\">ocq</p>
   question_type: OCQ
+  show: false
 
 mcq1:
   id: 2

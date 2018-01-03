@@ -481,8 +481,38 @@ class LecturesController < ApplicationController
     end
   end
 
-	# def confused #can be atmost confused twice within 15 seconds. when once -> very false, when twice -> very true, if more will not save and alert you to ask a question instead.
-	# end
+	def confused #can be atmost confused twice within 15 seconds. when once -> very false, when twice -> very true, if more will not save and alert you to ask a question instead.
+
+			x=0
+			#check first if more more than 2 already.. then don't add a new one.
+			user_confused= Confused.where(:lecture_id => params[:id], :course_id => params[:course_id], :user_id => current_user.id)
+			user_confused_rounded= Confused.get_rounded_time_check(user_confused)
+			current_confused_rounded= Time.zone.parse(Time.seconds_to_time(params[:time].to_i)).floor(15.seconds).to_i
+
+			@msg=""
+			flag=false
+			user_confused_rounded.each do |key,value|
+					if key==current_confused_rounded  #if not here then this will be the first time.
+							flag=true
+							x=Confused.find(value[1])
+							if value[0]==1 and x.very == false #only done it once before.
+									x.update_attributes(:very => true) #now twice.
+									@message=I18n.t('groups.saved')
+							elsif value[0]=1 and x.very == true #done it twice before
+									#will not create a new one, just notify them that they could ask a question instead.
+									@message="ask"#t('controller_msg.really_confused_use_question')
+							end
+					end
+			end
+
+			if flag==false #not confused before in this 15 sec interval.
+					x=Confused.new(:lecture_id => params[:id], :course_id => params[:course_id], :user_id => current_user.id, :time => params[:time], :very => false)
+					x.save
+					@message=I18n.t('groups.saved')
+			end
+			#should probably rescue if an exception occurs.
+			render json: {:msg => @message, :flag => flag, :id => x.id, :item => x}
+	end
 
 	# def pause
 	# end
@@ -502,8 +532,8 @@ class LecturesController < ApplicationController
 		end
 		if lec_destory
 			## waitin for shared item table
-			# SharedItem.delete_dependent("lecture",params[:id].to_i, current_user.id)
-			# Post.delete("destroy_all_by_lecture", {:lecture_id => params[:id]})
+			SharedItem.delete_dependent("lecture",params[:id].to_i, current_user.id)
+			Forum::Post.delete("destroy_all_by_lecture", {:lecture_id => params[:id]})
 			render json: {:notice => [I18n.t("controller_msg.lecture_successfully_deleted")]}
 		else
 			render json: {:errors => [I18n.t("lectures.could_not_delete_lecture")]}, :status => 400
@@ -816,11 +846,25 @@ class LecturesController < ApplicationController
 	# def export_notes
 	# end
 
-	# def change_status_angular
-	# end
+  def change_status_angular
+   status=params[:status].to_i
+   assign= @lecture.assignment_item_statuses.where(:user_id => params[:user_id]).first
+   if !assign.nil?
+     #0 original
+     (status == 0)? assign.destroy : assign.update_attributes(:status => status)
+   elsif status!=0
+     @lecture.assignment_item_statuses<< AssignmentItemStatus.create(:user_id => params[:user_id], :course_id => params[:course_id], :status => status ,  :group_id =>@lecture.group.id , :lecture_id => params[:id])
+   end
 
-	# def confused_show_inclass
-	# end
+   render :json => {:success => true, :notice => [I18n.t("courses.status_successfully_changed")]}
+  end
+	
+	def confused_show_inclass
+			start_time = params[:time] - (params[:time]%15)
+			end_time = start_time + 14.99
+			@lecture.confuseds.where("time between ? and ?",start_time ,end_time).update_all(:hide => params[:hide])
+			render :json => {}
+	end
 
 	def check_if_invited_distance_peer
 			course=Course.find(params[:course_id])
