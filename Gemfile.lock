@@ -1,3 +1,12 @@
+GIT
+  remote: git://github.com/karimAlaa/ruby-saml.git
+  revision: 85e1ac74d4a57a68b7db1ebd2acd96781f327ced
+  specs:
+    ruby-saml (0.4.7)
+      addressable
+      canonix (~> 0.1)
+      uuid (~> 2.3)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -46,11 +55,14 @@ GEM
       i18n (~> 0.7)
       minitest (~> 5.1)
       tzinfo (~> 1.1)
+    addressable (2.5.2)
+      public_suffix (>= 2.0.2, < 4.0)
     arel (8.0.0)
     bcrypt (3.1.11)
     builder (3.2.3)
     byebug (9.1.0)
     cancancan (2.0.0)
+    canonix (0.1.5)
     concurrent-ruby (1.0.5)
     crass (1.0.2)
     delayed_job (4.1.3)
@@ -81,6 +93,8 @@ GEM
     loofah (2.1.1)
       crass (~> 1.0.2)
       nokogiri (>= 1.5.9)
+    macaddr (1.7.1)
+      systemu (~> 2.6.2)
     mail (2.6.6)
       mime-types (>= 1.16, < 4)
     method_source (0.9.0)
@@ -95,6 +109,7 @@ GEM
       mini_portile2 (~> 2.3.0)
     orm_adapter (0.5.0)
     pg (0.21.0)
+    public_suffix (3.0.1)
     puma (3.10.0)
     rack (2.0.3)
     rack-cors (1.0.1)
@@ -150,11 +165,14 @@ GEM
       actionpack (>= 4.0)
       activesupport (>= 4.0)
       sprockets (>= 3.0.0)
+    systemu (2.6.5)
     thor (0.20.0)
     thread_safe (0.3.6)
     timeliness (0.3.8)
     tzinfo (1.2.3)
       thread_safe (~> 0.1)
+    uuid (2.3.8)
+      macaddr (~> 1.0)
     validates_timeliness (4.0.2)
       timeliness (~> 0.3.7)
     warden (1.2.7)
@@ -179,6 +197,7 @@ DEPENDENCIES
   puma (~> 3.7)
   rack-cors (~> 1.0.1)
   rails (~> 5.1.4)
+  ruby-saml!
   rubyzip (>= 1.0.0)
   settingslogic
   simplecov
