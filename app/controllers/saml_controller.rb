@@ -1,69 +1,135 @@
+
+# encoding: utf-8
 class SamlController < ApplicationController
+#   skip_before_action :authenticate_user!
+#   skip_authorize_resource
+#   skip_before_action :check_user_signed_in?
 
-	# skip_before_filter :authenticate_user!
-	# skip_authorize_resource
-	# skip_before_filter :check_user_signed_in?
 
-	def saml_signin
-		connect_to =params[:idp]
-		session[:connect_to] = connect_to
-		$connect_to= connect_to
-		$settings = saml_settings
-		request = Onelogin::Saml::Authrequest.new($settings)
+  def saml_signin
+    connect_to =params[:idp]
+    session[:connect_to] = connect_to
+    $connect_to= connect_to
+    $settings = saml_settings
+    request = Onelogin::Saml::Authrequest.new($settings)
 
-		action, content = request.create({},connect_to)
-		render json: {saml_url: content, action: action}
-	end
+    action, content = request.create({},connect_to)
+    render json: {saml_url: content, action: action}
+  end
 
-	def get_domain
-			render json: {domains: JSON.load(open("https://md.nordu.net/swamid.json?role=idp"))}
-	end
+  def get_domain
+    render json: {domains: JSON.load(open("https://md.nordu.net/swamid.json?role=idp"))}
+  end
 
-	# def consume
-	# end
+  def consume
+    @response = Onelogin::Saml::Response.new(params[:SAMLResponse])
+    @response.settings = $settings
 
-	# def metadata
-	# end
-	
-	private
-		def saml_settings
-				settings = Onelogin::Saml::Settings.new
+    connect_to = $connect_to.to_s
+    @response.decrypt(Rails.application.config.saml[:keys][:private])
 
-				settings.assertion_consumer_service_url = "https://#{request.host}/saml/consume"
-				settings.issuer                         = "https://#{request.host}"
-				#settings.idp_sso_target_url             = "https://app.onelogin.com/saml/signon/" #{OneLoginAppId}
-				settings.idp_cert_fingerprint           = "12:60:D7:09:6A:D9:C1:43:AD:31:88:14:3C:A8:C4:B7:33:8A:4F:CB"#OneLoginAppCertFingerPrint
-				#settings.name_identifier_format         = "urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress"
-				# Optional for most SAML IdPs
-				settings.idp_metadata = "http://md.nordu.net/entities/#{CGI.escape($connect_to ||'')}"#File.join(Rails.root, 'lib','assets', Rails.application.config.saml[:idp_metadata]) #"http://md.swamid.se/md/swamid-idp.xml" #has all!!
-				#settings.idp_metadata="https://swamid.user.uu.se/idp/shibboleth"
-				#settings.authn_context = "urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport"
-				settings.display_name="Scalable Learning"
-				settings.description={}
-				settings.description["en"]="Blended learning platform for interactive in-class and online education."
-				settings.description["sv"]="Plattform för stöd av \"flipped classroom\" utbildning."
-				settings.information_url="https://#{request.host}/home/about"
-				settings.privacy_url="https://#{request.host}/home/privacy"
-				settings.logo="https://#{request.host}/assets/logo-a66e557f3f93b4d5195033ba1a1527a3.png"
-				settings.sp_cert = Rails.application.config.saml[:keys][:public]
-				settings.org_name="Scalable Learning"
-				settings.org_display_name="Scalable Learning"
-				settings.org_url ="#{request.host}"
+    action = validate_and_sign_in_user(@response.attributes)
+    ## waiting for deployment 
+    render :json=>action
+  end
 
-				settings.contact = []
-				settings.contact << { :type =>  "technical", :company => "ScalableLearning", :email => "support@scalable-learning.com" }
-				settings.contact << { :type =>  "administrative", :company => "ScalableLearning", :email => "support@scalable-learning.com" }
+  def metadata
+    $settings = saml_settings
+    meta = Onelogin::Saml::Metadata.new($settings,nil)
+    render :xml => meta.generate
+  end
 
-				settings.requested_attributes =[]
-				settings.requested_attributes << {:name => "1.3.6.1.4.1.5923.1.1.1.6", :required => true} #eduPersonPrincipalName
-				settings.requested_attributes << {:name => "0.9.2342.19200300.100.1.3", :required => true} #mail
-				settings.requested_attributes << {:name => "2.5.4.42", :required => true} #givenName
-				settings.requested_attributes << {:name => "2.5.4.4", :required => true} #sn
-				settings.requested_attributes << {:name => "2.5.4.10", :required => true} #o
-				settings.requested_attributes << {:name => "1.3.6.1.4.1.5923.1.1.1.9", :required => true} #eduPersonScopedAffiliation
+  private
 
-				settings.edugain=true
+    def validate_and_sign_in_user(response_attributes)
+      attributes_names = {
+        "urn:oid:1.3.6.1.4.1.5923.1.1.1.6"  => "eduPersonPrincipalName",
+        "urn:oid:0.9.2342.19200300.100.1.3" => "mail",
+        "urn:oid:2.5.4.42" => "givenName",
+        "urn:oid:2.5.4.4"  => "sn",
+        "urn:oid:2.5.4.10" => "o",
+        "urn:oid:1.3.6.1.4.1.5923.1.1.1.9"  => "eduPersonScopedAffiliation",
+        "urn:oid:1.3.6.1.4.1.5923.1.1.1.10" => "eduPersonTargetedID"
+      }
 
-				settings
-		end
+      attributes = {}
+      if(!response_attributes.nil?)
+        response_attributes.each do |k,v|
+          if !attributes_names[k].nil?
+            attributes[attributes_names[k]]= v[1]
+          elsif !v[0].nil?
+            attributes[v[0]]= v[1]
+          end
+        end
+      end
+
+      if( (attributes["mail"].nil? || attributes["mail"].empty?))
+        if(!attributes["email"].nil? && !attributes["email"].empty?)
+          attributes["mail"] = attributes["email"]
+        elsif(!attributes["eduPersonPrincipalName"].nil? && !attributes["eduPersonPrincipalName"].empty?)
+          attributes["mail"] = attributes["eduPersonPrincipalName"]
+        end
+      end
+
+      # add university from email domain if missings
+      if attributes["o"].nil? || attributes["o"].empty?
+        attributes["o"] = attributes["mail"].split('@')[1].match(/(\w+\.\w+$)/)[1]
+      end
+
+      email = attributes["mail"].downcase rescue ""
+      saml_user = User.find_by_email(email)
+      if saml_user.nil?
+        return {:redirect_to=>"#/users/signup?#{attributes.to_query}&saml=true"}
+        # redirect_to "#/users/signup?#{attributes.to_query}&saml=true"
+      else
+        if !saml_user.saml
+          saml_user.name        = attributes["givenName"] || saml_user.name
+          saml_user.last_name   = attributes["sn"]        || saml_user.last_name
+          saml_user.university  = attributes["o"]         || saml_user.university
+          saml_user.saml = true
+          saml_user.skip_confirmation!
+          saml_user.save
+        end
+        return {:sign_in=> saml_user, :token=> saml_user.create_new_auth_token}
+        
+        # sign_in saml_user
+        # redirect_to current_user
+      end
+    end
+
+    def saml_settings
+      settings = Onelogin::Saml::Settings.new
+
+      settings.assertion_consumer_service_url = "https://#{request.host}/saml/consume"
+      settings.issuer                         = "https://#{request.host}"
+      settings.idp_cert_fingerprint           = "12:60:D7:09:6A:D9:C1:43:AD:31:88:14:3C:A8:C4:B7:33:8A:4F:CB"
+      settings.idp_metadata = "http://md.nordu.net/entities/#{CGI.escape($connect_to ||'')}"
+      settings.display_name="Scalable Learning"
+      settings.description={}
+      settings.description["en"]="Blended learning platform for interactive in-class and online education."
+      settings.description["sv"]="Plattform för stöd av \"flipped classroom\" utbildning."
+      settings.information_url="https://#{request.host}/home/about"
+      settings.privacy_url="https://#{request.host}/home/privacy"
+      settings.logo="https://#{request.host}/assets/logo-a66e557f3f93b4d5195033ba1a1527a3.png"
+      settings.sp_cert = Rails.application.config.saml[:keys][:public]
+      settings.org_name="Scalable Learning"
+      settings.org_display_name="Scalable Learning"
+      settings.org_url ="#{request.host}"
+
+      settings.contact = []
+      settings.contact << { :type =>  "technical", :company => "ScalableLearning", :email => "support@scalable-learning.com" }
+      settings.contact << { :type =>  "administrative", :company => "ScalableLearning", :email => "support@scalable-learning.com" }
+
+      settings.requested_attributes =[]
+      settings.requested_attributes << {:name => "1.3.6.1.4.1.5923.1.1.1.6", :required => true} #eduPersonPrincipalName
+      settings.requested_attributes << {:name => "0.9.2342.19200300.100.1.3", :required => true} #mail
+      settings.requested_attributes << {:name => "2.5.4.42", :required => true} #givenName
+      settings.requested_attributes << {:name => "2.5.4.4", :required => true} #sn
+      settings.requested_attributes << {:name => "2.5.4.10", :required => true} #o
+      settings.requested_attributes << {:name => "1.3.6.1.4.1.5923.1.1.1.9", :required => true} #eduPersonScopedAffiliation
+
+      settings.edugain=true
+
+      settings
+    end
 end

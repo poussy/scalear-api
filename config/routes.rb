@@ -61,8 +61,7 @@ Rails.application.routes.draw do
     end
 
     match 'saml/(:action)' => 'saml#(:action)', :via => [:get, :post]
-
-
+    
     resources :courses do
         member do
             post 'remove_student'
