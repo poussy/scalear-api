@@ -779,5 +779,25 @@ class CoursesControllerTest <  ActionDispatch::IntegrationTest
 		assert_equal decode_json_response_body['next_item']['item'], {"id"=>3, "class_name"=>"lecture"}
 		
 	end
+
+	test "export csv" do
+		user = users(:user3)
+		user.roles << Role.find(1)
+		TeacherEnrollment.create(user_id:3,course_id:3,role_id:3)
+
 	
+		assert_difference 'ActionMailer::Base.deliveries.size' do
+			## force mail to be sent immediately
+			Delayed::Worker.delay_jobs = false
+			get '/en/courses/3/export_csv', headers: user.create_new_auth_token
+		end
+		
+		attachment =  ActionMailer::Base.deliveries[0].attachments[0]
+		assert_equal attachment.content_type, "application/zip; filename=c3.zip"
+		assert_equal attachment.filename, "c3.zip"
+
+	end
+	
+
+
 end
