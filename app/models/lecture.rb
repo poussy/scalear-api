@@ -98,8 +98,18 @@ class Lecture < ApplicationRecord
 	# def is_done_summary_table
 	# end
 
-	# def is_done_user(st)
-	# end
+	def is_done_user(st)
+		assign= st.get_assignment_status(self)
+		assign_lecture = st.get_lecture_status(self)
+		if (!assign.nil? && assign.status==1) || (!assign_lecture.nil? && assign_lecture.status==1)#modified status and marked as done on time
+			return true
+		else
+			lecture_quizzes=online_quizzes.includes(:online_answers).select{|f| f.online_answers.size!=0 && f.graded}.map{|v| v.id}.sort #ids of lecture quizzes
+			user_quizzes=st.get_online_quizzes_solved(self)   #stubbed in lec_spec
+			viewed=st.get_lectures_viewed(self)
+			return ( user_quizzes&lecture_quizzes == lecture_quizzes and !viewed.empty? and viewed.first.percent == 100)
+		end
+	end
 
 	# def is_done?(user_asking) #marks lecture as done IF all quizzes solved AND passed all 25/50/75 marks.
 	# end

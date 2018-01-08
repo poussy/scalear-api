@@ -67,6 +67,17 @@ class CoursesControllerTest <  ActionDispatch::IntegrationTest
 		assert_equal resp['total'] , 5
 	end		
 
+	test "show" do
+		user = users(:student_in_course3)
+
+		TeacherEnrollment.create(course_id: 3, user_id: 6, role_id: 3)
+
+		get "/en/courses/3", headers: user.create_new_auth_token
+		assert_equal decode_json_response_body["teachers"], [{"id"=>6,"name"=>"saleh aly",  "role"=>"Professor",  "email"=>"saleh@gmail.com"}]
+		assert_equal decode_json_response_body["course"]["id"], 3
+		assert_equal decode_json_response_body["course"]["name"], "course3"
+	end
+
 	test 'validate new method for teacher' do
 		url = '/en/courses/new'
 		get  url ,headers: @user1.create_new_auth_token 
@@ -795,6 +806,25 @@ class CoursesControllerTest <  ActionDispatch::IntegrationTest
 		attachment =  ActionMailer::Base.deliveries[0].attachments[0]
 		assert_equal attachment.content_type, "application/zip; filename=c3.zip"
 		assert_equal attachment.filename, "c3.zip"
+
+	end
+
+	test "send_system_announcement" do
+		
+		Delayed::Worker.delay_jobs = false
+		post '/en/courses/send_system_announcement', params:{list_type: '1', message:'<p class="medium-editor-p">hello</p>', subject:'System announcement'}, headers: @admin_user.create_new_auth_token
+		## teachers
+		assert_equal ActionMailer::Base.deliveries.last["bcc"].value, ["a.hossam.2010@gmail.com", "a.hossam.2012@gmailll.com"]
+		assert_equal ActionMailer::Base.deliveries.last["subject"].value, "System announcement"
+		assert ActionMailer::Base.deliveries.last.encoded.include?('<p class="medium-editor-p">hello</p>')
+		## students
+		post '/en/courses/send_system_announcement', params:{list_type: '2', message:'<p class="medium-editor-p">hello</p>', subject:'System announcement'}, headers: @admin_user.create_new_auth_token
+		assert_equal ActionMailer::Base.deliveries.last["bcc"].value, ["saleh@gmail.com", "Ahmed@gmail.com", "Karim@gmail.com", "Mohamed@gmail.com", "Hossam@gmail.com", "student_a.hossam.2010@gmail.com"]
+
+		## teachers & students
+		post '/en/courses/send_system_announcement', params:{list_type: '3', message:'<p class="medium-editor-p">hello</p>', subject:'System announcement'}, headers: @admin_user.create_new_auth_token
+		assert_equal ActionMailer::Base.deliveries.last["bcc"].value, ["a.hossam.2010@gmail.com", "a.hossam.2012@gmailll.com", "a.hossam.2011@gmail.com", "okasha@gmail.com", "okashaaa@gmail.com", 
+			"saleh@gmail.com", "Ahmed@gmail.com", "Karim@gmail.com", "Mohamed@gmail.com", "Hossam@gmail.com", "student_a.hossam.2010@gmail.com", "school_admin@gmailll.com", "admin@gmailll.com"]
 
 	end
 	
