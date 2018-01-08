@@ -192,6 +192,43 @@ class OnlineQuizzesControllerTest < ActionDispatch::IntegrationTest
       post '/en/online_quizzes/2/update_grade?course=3', params: {answer_id: 1, grade: 3}, headers:@headers, as: :json
     end
   end
+
+   test "get_chart_data should " do
+   		OnlineQuiz.find(1).update_attributes(inclass: true, hide:false, intro: 30, self: 60, in_group: 90, discussion: 120)
+      OnlineQuizGrade.create(lecture_id:3, group_id:3, course_id:3, user_id:6, online_quiz_id:1, online_answer_id:6, grade:1, inclass:true, attempt:1,in_group:true)
+      OnlineQuizGrade.create(lecture_id:3, group_id:3, course_id:3, user_id:7, online_quiz_id:1, online_answer_id:6, grade:1, inclass:true, attempt:1,in_group:false)
+      OnlineQuizGrade.create(lecture_id:3, group_id:3, course_id:3, user_id:8, online_quiz_id:1, online_answer_id:7, grade:0, inclass:true, attempt:1,in_group:true)
+      OnlineQuizGrade.create(lecture_id:3, group_id:3, course_id:3, user_id:8, online_quiz_id:1, online_answer_id:7, grade:0, inclass:true, attempt:2,in_group:false)
+      get '/en/online_quizzes/1/get_chart_data', headers:@headers
+
+    #  [self_first_try_grades_count, first_try_color, answer.answer , not_self_first_try_grades_count, group_first_try_grades_count, not_group_first_try_grades_count]
+      assert_equal  decode_json_response_body, {"chart"=>
+          {"6"=>[2, "green", "answer1", 0, 1, 0],
+          "7"=>[0, "orange", "answer2", 1, 1, 0],
+          "8"=>[2, "gray", "Never tried", 0, 3]}}
+  end
+
+  test "get_inclass_session_votes" do
+    OnlineQuizGrade.find(1).destroy
+
+    OnlineQuiz.find(1).update_attributes(inclass: true, hide:false, intro: 30, self: 60, in_group: 90, discussion: 120)
+    Lecture.find(3).update_attribute('inclass',true)
+
+    OnlineQuizGrade.create(lecture_id:3, group_id:3, course_id:3, user_id:6, online_quiz_id:1, online_answer_id:6, grade:1, inclass:true, attempt:1,in_group:true)
+    OnlineQuizGrade.create(lecture_id:3, group_id:3, course_id:3, user_id:7, online_quiz_id:1, online_answer_id:6, grade:1, inclass:true, attempt:1,in_group:true)
+    OnlineQuizGrade.create(lecture_id:3, group_id:3, course_id:3, user_id:8, online_quiz_id:1, online_answer_id:6, grade:1, inclass:true, attempt:1,in_group:true)
+    OnlineQuizGrade.create(lecture_id:3, group_id:3, course_id:3, user_id:7, online_quiz_id:1, online_answer_id:6, grade:1, inclass:true, attempt:1,in_group:false)
+
+    # self votes
+    get '/en/online_quizzes/1/get_inclass_session_votes',params:{in_group:false,lecture_id:3}, headers: @headers
+
+    assert_equal decode_json_response_body, {"votes"=>1, "max_votes"=>3}
+    #in_group votes
+    get '/en/online_quizzes/1/get_inclass_session_votes',params:{in_group:true,lecture_id:3}, headers: @headers
+
+    assert_equal decode_json_response_body, {"votes"=>3, "max_votes"=>3}
+  end
+  
   
 
 end

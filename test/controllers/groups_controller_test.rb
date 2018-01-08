@@ -752,5 +752,122 @@ class GroupsControllerTest < ActionDispatch::IntegrationTest
 
 	end
 
+	test "get_module_inclass" do
+
+		OnlineQuiz.find(1).update_attributes(inclass: true, hide:false, intro: 30, self: 60, in_group: 90, discussion: 120)
+		OnlineQuiz.find(2).update_attributes(hide:false)
+		get '/en/courses/3/groups/3/get_module_inclass', headers: @user3.create_new_auth_token
+		
+		assert_equal decode_json_response_body["lectures"].keys, ["3","4"]
+
+		lecture3 = decode_json_response_body["lectures"]["3"]
+
+		assert_equal lecture3["markers"], [[11.2, {"id"=>332392615, "title"=>"title", "show"=>true, "type"=>"marker"}]]
+		assert_equal lecture3["confused"],  [[0.0, {"count"=>2, "show"=>true}], [30.0, {"count"=>1, "show"=>true}]]
+		assert_equal lecture3["really_confused"], [[45.0, {"count"=>1, "show"=>true}]]
+
+		assert_equal lecture3["inclass"], [
+			[
+				20.0,
+				{"id"=>1,
+				"title"=>"New Quiz",
+				"type"=>"Quiz",
+				"start_time"=>100.0,
+				"end_time"=>120.0,
+				"question"=>"New Quiz",
+				"show"=>true,
+				"online_answers"=>
+					[{"id"=>6,
+					"online_quiz_id"=>1,
+					"answer"=>"answer1",
+					"xcoor"=>2.0,
+					"ycoor"=>3.0,
+					"correct"=>true,
+					"explanation"=>"explanation for answer1",
+					"width"=>3.0,
+					"height"=>2.0,
+					"pos"=>3,
+					"sub_ycoor"=>3.0,
+					"sub_xcoor"=>2.0,
+					"created_at"=>"2017-02-02T02:00:00.000+02:00",
+					"updated_at"=>"2017-02-02T02:00:00.000+02:00"},
+					{"id"=>7,
+					"online_quiz_id"=>1,
+					"answer"=>"answer2",
+					"xcoor"=>2.0,
+					"ycoor"=>6.0,
+					"correct"=>false,
+					"explanation"=>"explanation for answer2",
+					"width"=>3.0,
+					"height"=>2.0,
+					"pos"=>3,
+					"sub_ycoor"=>3.0,
+					"sub_xcoor"=>2.0,
+					"created_at"=>"2017-02-02T02:00:00.000+02:00",
+					"updated_at"=>"2017-02-02T02:00:00.000+02:00"}],
+				"question_type"=>"OCQ",
+				"quiz_type"=>"invideo",
+				"timers"=>
+					{"id"=>nil,
+					"intro"=>30,
+					"self"=>60,
+					"in_group"=>90,
+					"discussion"=>120,
+					"match_type"=>nil,
+					"solved_quiz"=>nil,
+					"reviewed"=>nil,
+					"votes_count"=>nil,
+					"online_answers"=>[],
+					"online_answers_drag"=>nil,
+					"inclass_session"=>nil},
+				"available"=>{"in_self"=>true, "in_group"=>true}}
+			]
+		]
+
+		assert_equal decode_json_response_body["students_count"], 5
+		assert_equal decode_json_response_body["review_question_count"], 15
+		assert_equal decode_json_response_body["review_video_quiz_count"], 1 #inclass: false, hide: false
+		assert_equal decode_json_response_body["inclass_quizzes_count"], 1 #inclass: true, hide: false
+		assert_equal decode_json_response_body["markers_count"], 1
+
+	end
+
+	test "get_quiz_charts_inclass" do
+
+		Question.find(1).update_attributes(show: true) #ocq
+		Question.find(4).update_attributes(show: true) #drag
+		Question.find(3).update_attributes(show: true) #drag
+
+		QuizGrade.create(id: 1, user_id: 6, quiz_id: 1, question_id:1, answer_id: 4, grade: 1)
+		FreeAnswer.create(id:1, user_id:6, quiz_id:1, question_id:4, answer: ["<p class=\"medium-editor-p\">ans1</p>", "<p class=\"medium-editor-p\">ans2</p>"], hide: false, grade: 3, student_hide: false)
+		FreeAnswer.create(id:2, user_id:6, quiz_id:1, question_id:3, answer: "answer to free text 3", hide: false, grade: 3, student_hide: false, created_at:'2017-1-1', updated_at:'2017-1-1')
+		get '/en/courses/3/groups/3/get_quiz_charts_inclass', headers: @user3.create_new_auth_token
+		
+		quiz1 = decode_json_response_body["quizzes"]["1"]
+		assert_equal quiz1["answers"]["1"],  {
+			"show"=>true,
+         	"student_show"=>true,
+         	"answers"=>{
+				"4"=>[1, "grey", "<p class=\"medium-editor-p\">a1</p>"],
+				"5"=>[0, "green", "<p class=\"medium-editor-p\">a2</p>"]
+			},
+         	"title"=>"<p class=\\\"medium-editor-p\\\">ocq</p>"}
+
+		assert_equal quiz1["answers"]["4"],  {
+			"show"=>true,
+        	"student_show"=>true,
+         	"answers"=>{
+				"<p class=\"medium-editor-p\">ans1</p>"=> [1,"green", "<p class=\"medium-editor-p\">ans1</p> in correct place"],
+           		"<p class=\"medium-editor-p\">ans2</p>"=> [1,"green", "<p class=\"medium-editor-p\">ans2</p> in correct place"]},
+         	"title"=>"<p class=\\\"medium-editor-p\\\">drag quiz</p>"}
+
+		assert_equal quiz1["answers"]["3"]["answers"][0]["answer"], "answer to free text 3"
+		assert_equal quiz1["questions"], [
+			{"question"=>"<p class=\\\"medium-editor-p\\\">drag quiz</p>","type"=>"drag","id"=>4},
+			{"question"=>"<p class=\\\"medium-editor-p\\\">free text</p>","type"=>"Free Text Question","id"=>3},
+			{"question"=>"<p class=\\\"medium-editor-p\\\">ocq</p>","type"=>"OCQ","id"=>1}]
+		
+	end
+	
 	
 end

@@ -131,8 +131,13 @@ class Lecture < ApplicationRecord
 		return data
 	end
 
-	# def get_questions_visible
-	# end
+	def get_questions_visible
+		data={}
+		online_quizzes.where("hide = 'f' or inclass = 't'").select{|f| !f.online_answers.empty?}.each do |quiz|
+			data[quiz.id] = {:title => quiz.question,:start_time => quiz.start_time, :time => quiz.time , :end_time => quiz.end_time, :type => quiz.question_type, :quiz_type => quiz.quiz_type, :inclass => quiz.inclass, :hide =>quiz.hide}
+		end
+		return data
+	end
 
 	# def get_question_ids
 	# end
@@ -153,11 +158,10 @@ class Lecture < ApplicationRecord
 			return get_charts(students_id ,online_q)
 	end
 
-	# def get_charts_visible(students_id)
-	# end
-
-	# def get_charts_all(students_id)
-	# end
+	def get_charts_visible(students_id)
+		online_q= self.online_quizzes.where(:hide => false)
+		return get_charts(students_id ,online_q)
+	end
 
 	def get_charts(students_id,online_q)
 		data={}
@@ -272,8 +276,14 @@ class Lecture < ApplicationRecord
 	# def get_free_text_answers
 	# end
 
-	# def get_visible_free_text
-	# end
+	def get_visible_free_text
+		@data={}
+		self.online_quizzes.select{|v| v.question_type == 'Free Text Question'}.each do |question|
+			@data[question.id]= question.free_online_quiz_grades.select{|v| v.online_answer != '' && !v.hide }
+		end
+		return @data
+	end
+
 
 	# def get_free_text_questions
 	# end

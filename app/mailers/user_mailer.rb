@@ -46,11 +46,32 @@ class UserMailer < ApplicationMailer
 	# def contact_us_email(url, user, comment, agent)
 	# end
 
-	# def survey_email(user,question,answer,survey,course,response, locale)
-	# end
+	def survey_email(user,question,answer,survey,course,response, locale)
+		I18n.locale=locale
+		@from =  "\"#{course.short_name} - #{course.name}\" <info@scalable-learning.com>"
+		@user= User.find(user)
+		@user_name= @user.name
+		@user_email= @user.email
+		@question=question
+		@answer=answer
+		@response=response
+		@survey=survey
+		@course=course
+		mail(:to => @user_email , :subject => "#{t('response_to')} #{survey}", :from => @from)
+	end
 
-	# def attachment_email(user, file_name, file_path, locale)
-	# end
+	def attachment_email(user, file_name, file_path, locale)
+		# puts "in email mailer"
+		I18n.locale=locale
+		@from =  "\"Scalable Learning\" <info@scalable-learning.com>"
+		@user_name= user.name
+		@user_email= user.email
+		attachments[file_name]= File.read(file_path)
+		# puts "file is "
+		# puts file.inspect
+
+		mail(:to => @user_email , :subject => "Exported File", :from => @from)
+	end
 
 	def progress_days_late(user, file_name, file_path, locale,course)
 		I18n.locale=locale

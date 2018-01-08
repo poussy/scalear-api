@@ -571,8 +571,10 @@ class CoursesController < ApplicationController
 	# def courseware
 	# end  
 
-	# def export_csv
-	# end  
+	def export_csv
+		@course.export_course(current_user)
+		render :json => {:notice => ['Course wil be exported to CSV and sent to your Email']}
+	end
 
 	# def export_student_csv
 	# end  

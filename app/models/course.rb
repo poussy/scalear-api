@@ -118,8 +118,189 @@ class Course < ApplicationRecord
 		return role
 	end
 
-	# def export_course(current_user)
-	# end
+	def export_course(current_user)
+			@course = Course.where(:id => id).includes([:groups , :custom_links, {:quizzes => [{:questions => :answers}, :quiz_statuses, :quiz_grades, :free_answers]},:lectures, :lecture_views, :confuseds, :free_online_quiz_grades, :online_quiz_grades, {:online_quizzes => :online_answers}, :announcements, :assignment_statuses])[0]
+
+			csv_files={}
+
+			csv_files[:course]= CSV.generate do |csv_course|
+			csv_files[:groups]= CSV.generate do |csv_group|
+			csv_files[:lectures] = CSV.generate do |csv_lecture|
+			csv_files[:quizzes] = CSV.generate do |csv_quiz|
+			csv_files[:online_quizzes] = CSV.generate do |csv_online_quiz|
+			csv_files[:online_answers] = CSV.generate do |csv_online_answer|
+			csv_files[:questions]= CSV.generate do |csv_question|
+			csv_files[:answers]= CSV.generate do |csv_answer|
+			csv_files[:custom_links]= CSV.generate do |csv_link|
+			csv_files[:lecture_views]= CSV.generate do |csv_lecture_view|
+			csv_files[:online_quiz_grades]= CSV.generate do |csv_online_quiz_grade|
+			csv_files[:free_online_quiz_grades]= CSV.generate do |csv_free_online_quiz_grade|
+			csv_files[:confused]= CSV.generate do |csv_confused|
+			csv_files[:lecture_questions]= CSV.generate do |csv_lecture_question|
+			csv_files[:discussions] = CSV.generate do |csv_discussion|
+			csv_files[:pauses]= CSV.generate do |csv_pause|
+			csv_files[:backs]= CSV.generate do |csv_back|
+			csv_files[:quiz_statuses]= CSV.generate do |csv_quiz_status|
+			csv_files[:quiz_grades]= CSV.generate do |csv_quiz_grade|
+			csv_files[:free_answers]= CSV.generate do |csv_free_answer|
+			csv_files[:announcements]= CSV.generate do |csv_announcement|
+			csv_files[:assignment_statuses]= CSV.generate do |csv_assignment_status|
+			csv_files[:enrollments]= CSV.generate do |csv_enrollment|
+			csv_files[:teacher_enrollments]= CSV.generate do |csv_teacher_enrollment|
+			csv_files[:events]= CSV.generate do |csv_events|
+
+					csv_course << Course.column_names
+					csv_course << @course.attributes.values_at(*Course.column_names)
+
+					csv_group << Group.column_names
+					csv_lecture << Lecture.column_names
+					csv_quiz << Quiz.column_names
+					csv_online_quiz << OnlineQuiz.column_names
+					csv_online_answer << OnlineAnswer.column_names
+					csv_question << Question.column_names
+					csv_answer << Answer.column_names
+					csv_link << CustomLink.column_names
+					csv_lecture_view << LectureView.column_names
+					csv_online_quiz_grade << OnlineQuizGrade.column_names
+					csv_free_online_quiz_grade << FreeOnlineQuizGrade.column_names
+					csv_confused << Confused.column_names
+					# csv_lecture_question << LectureQuestion.column_names
+					csv_discussion << Forum::Post.get('column_names')
+					csv_pause << VideoEvent.column_names
+					csv_back<< VideoEvent.column_names
+					csv_quiz_status << QuizStatus.column_names
+					csv_assignment_status << AssignmentStatus.column_names
+					csv_quiz_grade << QuizGrade.column_names
+					csv_free_answer << FreeAnswer.column_names
+					csv_announcement << Announcement.column_names
+					csv_enrollment << Enrollment.column_names
+					csv_teacher_enrollment  << TeacherEnrollment.column_names
+					csv_events  << Event.column_names
+
+					@course.assignment_statuses.each do |assignment_status|
+							csv_assignment_status << assignment_status.attributes.values_at(* AssignmentStatus.column_names)
+					end
+					@course.announcements.each do |announcement|
+							csv_announcement << announcement.attributes.values_at(* Announcement.column_names)
+					end
+					# @course.groups.each
+					@course.groups.each do |g|
+							csv_group << g.attributes.values_at(* Group.column_names)
+					end
+
+					@course.lectures.each do |l|
+									csv_lecture << l.attributes.values_at(* Lecture.column_names)
+									Forum::Post.find(:all, :params => {lecture_id: l.id}).each do |p|
+											csv_discussion << p.attributes.values_at(* Forum::Post.get('column_names'))
+									end
+					end
+
+					@course.online_quizzes.each do |quiz|
+							csv_online_quiz << quiz.attributes.values_at(* OnlineQuiz.column_names)
+							quiz.online_answers.each do |answer|
+									csv_online_answer << answer.attributes.values_at(* OnlineAnswer.column_names)
+							end
+					end
+
+					@course.lecture_views.each do |lecture_view|
+							csv_lecture_view << lecture_view.attributes.values_at(* LectureView.column_names)
+					end
+					@course.online_quiz_grades.each do |online_quiz_grade|
+							csv_online_quiz_grade << online_quiz_grade.attributes.values_at(* OnlineQuizGrade.column_names)
+					end
+					@course.free_online_quiz_grades.each do |free_online_quiz_grade|
+							csv_free_online_quiz_grade << free_online_quiz_grade.attributes.values_at(* FreeOnlineQuizGrade.column_names)
+					end
+					@course.confuseds.each do |confused|
+							csv_confused << confused.attributes.values_at(* Confused.column_names)
+					end
+					# @course.lecture_questions.each do |lecture_question|
+					# 		csv_lecture_question << lecture_question.attributes.values_at(* LectureQuestion.column_names)
+					# end
+					@course.video_events.where(:event_type => 2).each do |pause|
+							csv_pause << pause.attributes.values_at(* VideoEvent.column_names)
+					end
+					@course.video_events.where("event_type = 3 and (from_time - to_time) <= 15 and (from_time - to_time) >= 1").each do |back|
+							csv_back << back.attributes.values_at(* VideoEvent.column_names)
+					end
+
+					@course.quizzes.each do |q|
+									csv_quiz << q.attributes.values_at(* Quiz.column_names)
+									q.questions.each do |question|
+											csv_question << question.attributes.values_at(* Question.column_names)
+											question.answers.each do |answer|
+													csv_answer << answer.attributes.values_at(* Answer.column_names)
+											end
+									end
+									q.quiz_statuses.each do |quiz_status|
+					csv_quiz_status << quiz_status.attributes.values_at(* QuizStatus.column_names)
+									end
+									q.quiz_grades.each do |quiz_grade|
+					csv_quiz_grade << quiz_grade.attributes.values_at(* QuizGrade.column_names)
+									end
+									q.free_answers.each do |free_answer|
+					csv_free_answer << free_answer.attributes.values_at(* FreeAnswer.column_names)
+									end
+					end
+					@course.custom_links.each do |d|
+							csv_link << d.attributes.values_at(* CustomLink.column_names)
+					end
+
+					@course.enrollments.each do |d|
+							csv_enrollment << d.attributes.values_at(* Enrollment.column_names)
+					end
+
+					@course.teacher_enrollments.each do |d|
+							csv_teacher_enrollment << d.attributes.values_at(* TeacherEnrollment.column_names)
+					end
+
+					@course.events.each do |d|
+							csv_events << d.attributes.values_at(* Event.column_names)
+					end
+
+			end
+			end
+			end
+			end
+			end
+			end
+			end
+			end
+			end
+			end
+			end
+			end
+			end
+			end
+			end
+			end
+			end
+			end
+			end
+			end
+			end
+			end
+			end
+			end
+			end
+
+			######## This is working - creates csv's and then puts them in zip #############
+			file_name = @course.short_name.gsub(" ","_")+".zip"#{}"course.zip"
+			t = Tempfile.new(file_name)
+			Zip::ZipOutputStream.open(t.path) do |z|
+					csv_files.each do |key,value|
+						z.put_next_entry("#{key}.csv")
+						z.write(value)
+					end
+			end
+			#send_file t.path, :type => 'application/zip',
+			#                  :disposition => 'attachment',
+			#                  :filename => file_name
+			UserMailer.delay.attachment_email(current_user, file_name, t.path, I18n.locale)#.deliver
+			t.close
+	end
+	handle_asynchronously :export_course, :run_at => Proc.new { 5.seconds.from_now }
+
 
 	# def export_student_csv(current_user)
 	# end
