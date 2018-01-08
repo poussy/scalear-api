@@ -337,5 +337,12 @@ Rails.application.routes.draw do
       end
     end
 
+    resources :impressionate do
+      collection do
+        delete :destroy
+        get 'impressionate_as'
+      end
+    end
+
   end
 end

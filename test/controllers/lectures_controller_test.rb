@@ -631,6 +631,195 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 		assert_equal  VideoNote.where(lecture_id:3, user_id:6).size, notes
 	end
 
+	test "check_if_invited_distance_peer should respond with enrolled students if no invitations" do
+		get "/en/courses/3/lectures/3/check_if_invited_distance_peer", headers: @headers2
+		assert_equal decode_json_response_body["students"], [
+			{"id"=>nil, "name"=>"Ahmed", "email"=>"Ahmed@gmail.com", "last_name"=>"aly", "full_name"=>"Ahmed aly", "status"=>nil, "lower"=>"ahmed"}, 
+			{"id"=>nil, "name"=>"Hossam", "email"=>"Hossam@gmail.com", "last_name"=>"aly", "full_name"=>"Hossam aly", "status"=>nil, "lower"=>"hossam"}, 
+			{"id"=>nil, "name"=>"Karim", "email"=>"Karim@gmail.com", "last_name"=>"aly", "full_name"=>"Karim aly", "status"=>nil,"lower"=>"karim"}, 
+			{"id"=>nil, "name"=>"Mohamed", "email"=>"Mohamed@gmail.com", "last_name"=>"aly", "full_name"=>"Mohamed aly", "status"=>nil, "lower"=>"mohamed"}]
+		
+		assert_equal decode_json_response_body["invite_status"], "no_invitation"
+	end
+
+	test "check_if_invited_distance_peer should respond with invited users" do
+		Enrollment.create(user_id:3, course_id:3)
+		Enrollment.create(user_id:4, course_id:3)
+		Lecture.find(3).update_attribute('distance_peer',true)
+		DistancePeer.create(id:1,course_id:3,group_id:3,lecture_id:3,user_id:6)
+		@student.user_distance_peers.create(online_quiz_id:4,distance_peer_id:1,status:0,online:false)
+		UserDistancePeer.create(user_id:3,online_quiz_id:4,distance_peer_id:1,status:0,online:false)
+		get "/en/courses/3/lectures/3/check_if_invited_distance_peer", headers: @headers2
+		
+		assert_equal decode_json_response_body["invite"],"a.okasha"
+		assert_equal decode_json_response_body["invite_status"],"invited"
+		assert_equal decode_json_response_body["distance_peer_id"],1
+	end
+
+	test "check_if_in_distance_peer_session" do
+		Enrollment.create(user_id:3, course_id:3)
+		Enrollment.create(user_id:4, course_id:3)
+		Lecture.find(3).update_attribute('distance_peer',true)
+		DistancePeer.create(id:1,course_id:3,group_id:3,lecture_id:3,user_id:6)
+		@student.user_distance_peers.create(id:1,online_quiz_id:4,distance_peer_id:1,status:1,online:false)
+		UserDistancePeer.create(id:2,user_id:3,online_quiz_id:4,distance_peer_id:1,status:1,online:false)
+
+		get "/en/courses/3/lectures/3/check_if_in_distance_peer_session", headers: @headers2
+
+		assert_equal decode_json_response_body["distance_peer"]["id"], 1
+		assert_equal decode_json_response_body["distance_peer"]["status"], 1
+
+		assert_equal decode_json_response_body["user_distance_peer"]["id"], 1
+		assert_equal decode_json_response_body["user_distance_peer"]["status"], 1
+	end
+
+	test "invite_student_distance_peer if not already invited" do
+		Enrollment.create(user_id:3, course_id:3)
+		Enrollment.create(user_id:4, course_id:3)
+		Lecture.find(3).update_attribute('distance_peer',true)
+
+		get "/en/courses/3/lectures/3/invite_student_distance_peer", params:{email:"okasha@gmail.com"}, headers: @headers2
+
+		assert_equal UserDistancePeer.all.map{|u|u.status},[0,0]
+	end
+
+	test "invite_student_distance_peer if already invited should change status to 1" do
+		Enrollment.create(user_id:3, course_id:3)
+		Enrollment.create(user_id:4, course_id:3)
+		Lecture.find(3).update_attribute('distance_peer',true)
+		DistancePeer.create(id:5,course_id:3,group_id:3,lecture_id:3,user_id:3)
+		@student.user_distance_peers.create(id:10,online_quiz_id:4,distance_peer_id:5,status:0,online:false)
+		UserDistancePeer.create(id:11,user_id:3,online_quiz_id:4,distance_peer_id:5,status:0,online:false)
+
+		get "/en/courses/3/lectures/3/invite_student_distance_peer", params:{email:"okasha@gmail.com"}, headers: @headers2
+
+		assert_equal UserDistancePeer.all.map{|u|u.status},[1,1]
+	end
+
+	test "check_invited_student_accepted_distance_peer " do
+		Enrollment.create(user_id:3, course_id:3)
+		Enrollment.create(user_id:4, course_id:3)
+		Lecture.find(3).update_attribute('distance_peer',true)
+		DistancePeer.create(id:5,course_id:3,group_id:3,lecture_id:3,user_id:3)
+		@student.user_distance_peers.create(id:10,online_quiz_id:4,distance_peer_id:5,status:1,online:false)
+		UserDistancePeer.create(id:11,user_id:3,online_quiz_id:4,distance_peer_id:5,status:1,online:false)
+
+		get "/en/courses/3/lectures/3/check_invited_student_accepted_distance_peer", params:{distance_peer_id:5, email:"okasha@gmail.com"}, headers: @headers2
+
+		assert_equal decode_json_response_body["status"], 1
+
+		## denied (other user cancelled)
+		UserDistancePeer.find(11).destroy
+		get "/en/courses/3/lectures/3/check_invited_student_accepted_distance_peer", params:{distance_peer_id:5, email:"okasha@gmail.com"}, headers: @headers2
+		assert_equal decode_json_response_body["status"],"denied"
+	end
+
+	test "accept_invation_distance_peer should update status to 1" do
+		Enrollment.create(user_id:3, course_id:3)
+		Enrollment.create(user_id:4, course_id:3)
+		Lecture.find(3).update_attribute('distance_peer',true)
+		DistancePeer.create(id:5,course_id:3,group_id:3,lecture_id:3,user_id:3)
+		@student.user_distance_peers.create(id:10,online_quiz_id:4,distance_peer_id:5,status:0,online:false)
+		UserDistancePeer.create(id:11,user_id:3,online_quiz_id:4,distance_peer_id:5,status:0,online:false)
+
+		get "/en/courses/3/lectures/3/accept_invation_distance_peer", params:{distance_peer_id:5, email:"okasha@gmail.com"}, headers: @headers2
+
+		assert_equal decode_json_response_body["status"], 0
+		assert_equal UserDistancePeer.all.map{|u|u.status},[1,1]
+		
+	end
+
+	test "cancel_session_distance_peer should delete distance_peer" do
+		Enrollment.create(user_id:3, course_id:3)
+		Enrollment.create(user_id:4, course_id:3)
+		Lecture.find(3).update_attribute('distance_peer',true)
+		DistancePeer.create(id:5,course_id:3,group_id:3,lecture_id:3,user_id:3)
+		@student.user_distance_peers.create(id:10,online_quiz_id:4,distance_peer_id:5,status:0,online:false)
+		UserDistancePeer.create(id:11,user_id:3,online_quiz_id:4,distance_peer_id:5,status:0,online:false)
+
+		get "/en/courses/3/lectures/3/cancel_session_distance_peer", params:{distance_peer_id:5}, headers: @headers2
+
+		assert_not DistancePeer.exists?(id:5)
+		
+		## distance peer doesnt exists
+		
+		get "/en/courses/3/lectures/3/cancel_session_distance_peer", params:{distance_peer_id:5}, headers: @headers2
+		assert_equal decode_json_response_body["distance_peer"],"deleted"
+	end
+
+	test "change_status_distance_peer" do
+		Enrollment.create(user_id:3, course_id:3)
+		Enrollment.create(user_id:4, course_id:3)
+		Lecture.find(3).update_attribute('distance_peer',true)
+		DistancePeer.create(id:5,course_id:3,group_id:3,lecture_id:3,user_id:3)
+		@student.user_distance_peers.create(id:10,online_quiz_id:4,distance_peer_id:5,status:0,online:false)
+		UserDistancePeer.create(id:11,user_id:3,online_quiz_id:4,distance_peer_id:5,status:0,online:false)
+
+		get "/en/courses/3/lectures/3/change_status_distance_peer", params:{distance_peer_id:5, online_quiz_id:5, status:3}, headers: @headers2
+
+		assert_equal UserDistancePeer.find(10).status, 3
+		assert_equal UserDistancePeer.find(10).online_quiz_id, 5
+
+		## no distance_peer
+		UserDistancePeer.find(10).destroy
+		get "/en/courses/3/lectures/3/change_status_distance_peer", params:{distance_peer_id:5, online_quiz_id:5, status:3}, headers: @headers2
+		assert_equal decode_json_response_body["distance_peer"], "no_peer_session"
+		
+	end
+
+	test "check_if_distance_peer_status_is_sync" do
+		Enrollment.create(user_id:3, course_id:3)
+		Enrollment.create(user_id:4, course_id:3)
+		Lecture.find(3).update_attribute('distance_peer',true)
+		DistancePeer.create(id:5,course_id:3,group_id:3,lecture_id:3,user_id:3)
+		@student.user_distance_peers.create(id:10,online_quiz_id:4,distance_peer_id:5,status:1,online:false)
+		UserDistancePeer.create(id:11,user_id:3,online_quiz_id:4,distance_peer_id:5,status:1,online:false)
+
+		## same status for both users
+		get "/en/courses/3/lectures/3/check_if_distance_peer_status_is_sync", params:{distance_peer_id:5}, headers: @headers2
+		assert_equal decode_json_response_body["status"],"start"
+
+		UserDistancePeer.find(11).update_attribute('status',2)
+		get "/en/courses/3/lectures/3/check_if_distance_peer_status_is_sync", params:{distance_peer_id:5}, headers: @headers2
+		assert_equal decode_json_response_body["status"],"wait"
+
+		## no session
+		UserDistancePeer.find(11).destroy
+		get "/en/courses/3/lectures/3/check_if_distance_peer_status_is_sync", params:{distance_peer_id:5}, headers: @headers2
+		assert_equal decode_json_response_body["distance_peer"],"no_peer_session"
+		
+	end
+
+	test "check_if_distance_peer_is_alive should end session if second user state is 6" do
+		Enrollment.create(user_id:3, course_id:3)
+		Enrollment.create(user_id:4, course_id:3)
+		Lecture.find(3).update_attribute('distance_peer',true)
+		DistancePeer.create(id:5,course_id:3,group_id:3,lecture_id:3,user_id:3)
+		@student.user_distance_peers.create(id:10,online_quiz_id:4,distance_peer_id:5,status:1,online:false)
+		UserDistancePeer.create(id:11,user_id:3,online_quiz_id:4,distance_peer_id:5,status:6,online:false)
+
+		## one user ended session
+		get "/en/courses/3/lectures/3/check_if_distance_peer_is_alive", params:{distance_peer_id:5}, headers: @headers2
+		assert_equal decode_json_response_body["status"],"dead"
+		assert_equal UserDistancePeer.find(10).status, 6
+
+		## session is alive
+		UserDistancePeer.find(11).update_attribute('status',1)
+		UserDistancePeer.find(10).update_attribute('status',1)
+		get "/en/courses/3/lectures/3/check_if_distance_peer_is_alive", params:{distance_peer_id:5}, headers: @headers2
+		assert_equal decode_json_response_body["status"],"alive"
+
+		## no session
+		UserDistancePeer.find(11).destroy
+		get "/en/courses/3/lectures/3/check_if_distance_peer_is_alive", params:{distance_peer_id:5}, headers: @headers2
+		assert_equal decode_json_response_body["distance_peer"],"no_peer_session"
+		
+	end
+
+
+	
+	
+	
 	test "change_status_angular should change status assignment_item_status, or create new one with specified status" do
 		# will create one if empty
 		assert Lecture.find(3).assignment_item_statuses.empty?
