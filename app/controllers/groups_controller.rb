@@ -687,8 +687,22 @@ class GroupsController < ApplicationController
 	# def last_watched
 	# end
 
-	# def get_inclass_student_status
-	# end
+	def get_inclass_student_status
+		json = {:status => 0, :updated => false}
+		group = Group.find(params[:id])
+		session = group.inclass_session
+		if !session.nil?
+			json[:status] = session.status
+			if (params[:status].to_i == 0 && session.status != 0) || (params[:quiz_id].to_i!=-1 && params[:quiz_id].to_i != session.online_quiz_id)
+				q = session.online_quiz
+				l = q.lecture
+				json[:quiz] ={:time => q.time,:question_title => q.question, :question_type => q.question_type,  :id => q.id, :answers => q.online_answers.select([:id, :answer]) }
+				json[:lecture] = {:id =>l.id,:name => l.name}
+				json[:updated] = true
+			end
+		end
+		render json: json
+	end
 
 	def update_all_inclass_sessions
 		Group.find(params[:id]).inclass_sessions.update_all(:status => 0)
