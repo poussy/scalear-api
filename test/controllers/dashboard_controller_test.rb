@@ -19,7 +19,7 @@ class DashboardControllerTest < ActionDispatch::IntegrationTest
     assert_equal decode_json_response_body['events'].size, Event.where(course_id:3).size
     event1=decode_json_response_body['events'][0]
     assert_equal event1['title'], 'New Module due'
-    assert_equal Time.parse(event1['start']).to_i/10.floor, (Time.now+1.days).to_i/10.floor 
+    assert_equal Time.parse(event1['start']).to_i/60.floor, (Time.now+1.days).to_i/60.floor 
     assert_equal event1['color'], '#d1ddf0'
     assert_equal event1['textColor'], '#546d8e'
     assert_equal event1['status'], 0
