@@ -96,9 +96,7 @@ class DashboardController < ApplicationController
 	def dynamic_url
 			key = params[:key].tr(" ","+")
 			id =  AESCrypt.decrypt(key,ENV["user_ase_key"])
-			puts id
 			current_user = User.find(id)
-			puts current_user
 			user = User.where(:id => current_user.id).includes({:online_quiz_grades => [:online_quiz, :lecture]}, {:free_online_quiz_grades => [:online_quiz , :lecture] }, {:lecture_views => :lecture }, :assignment_item_statuses, {:quiz_statuses => :quiz})[0]
 			teacher_events = []
 			student_events = []

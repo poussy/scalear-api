@@ -66,8 +66,14 @@ class DashboardControllerTest < ActionDispatch::IntegrationTest
     
   end
 
-  test "dynamic_url" do
+  test "dynamic_url should not return event of courses already ended" do
+    get '/en/dashboard/dynamic_url', params:{tz:"Africa",key:"rzmk3chbkS3K0QxERP3QFg=="}, headers: @student.create_new_auth_token #key for id 6
+    assert_not response.body.include? "DESCRIPTION:c3: New Module"
+  
+  end
 
+   test "dynamic_url shold return events of courses which didnt end" do
+    Course.find(3).update_attribute('end_date',Time.now + 10.days)
     get '/en/dashboard/dynamic_url', params:{tz:"Africa",key:"rzmk3chbkS3K0QxERP3QFg=="}, headers: @student.create_new_auth_token #key for id 6
     assert response.body.include? "DESCRIPTION:c3: New Module"
     assert response.body.include? "DTSTART:20170909T000000\r"

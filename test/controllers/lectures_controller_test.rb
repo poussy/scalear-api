@@ -536,7 +536,7 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 	test "html free text should create quiz grade 1 if answer is right" do
 		
 		post '/en/courses/3/lectures/3/save_html', params: {quiz: 10, answer: "answer free text", distance_peer:false, in_group: false}, headers: @headers2, as: :json
-		assert_equal FreeOnlineQuizGrade.where(online_quiz_id:10).first["grade"], 1
+		assert_equal FreeOnlineQuizGrade.where(online_quiz_id:10).first["grade"], 3
 		assert_equal decode_json_response_body["explanation"], {"10"=>"<p class=\"medium-editor-p\">explanation free text</p>"}
 	end
 
