@@ -54,3 +54,4 @@ gem 'zip-zip' # will load compatibility for old rubyzip API.
 gem 'settingslogic'
 gem 'activeresource'
 gem 'aescrypt'
+gem 'ruby-saml', :git => "git://github.com/karimAlaa/ruby-saml.git"
