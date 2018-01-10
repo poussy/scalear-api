@@ -129,21 +129,23 @@ class DashboardController < ApplicationController
 					time_zone = params[:tz]
 			end
 
-			calendar_event = "BEGIN:VCALENDAR\r\nVERSION:2.0\r\n"
-			calendar_event += "BEGIN:VTIMEZONE\r\n"
-			calendar_event += "TZID:"+time_zone+"\r\n"
-			calendar_event += "END:VTIMEZONE\r\n"
+			calendar_event = "BEGIN:VCALENDAR\nVERSION:2.0\n" 
+			calendar_event += "BEGIN:VTIMEZONE\n" 
+			calendar_event += "TZID:"+time_zone+"\n" 
+			calendar_event += "END:VTIMEZONE\n" 
 			events_all.each do |course_events|
-					course_events.each do |event|
+					course_events.each_with_index do |event , index| 
 							start_at_time_zone = event.start_at.in_time_zone(time_zone)
-							calendar_event += "BEGIN:VEVENT\r\nCLASS:PUBLIC\r\n"
-							calendar_event += "DESCRIPTION:"+event.course.short_name+": "+event.name.split(" due")[0]+" "+I18n.t("controller_msg.due").capitalize+" "+I18n.t("at")+" "+start_at_time_zone.strftime("%H:%M")+" "+root_url.split("en")[0]+"#/courses/"+event.course_id.to_s+"\r\n" #/modules/2308/progress\r\n"
-							calendar_event += "DTSTART:"+start_at_time_zone.strftime("%Y%m%d")+"T"+start_at_time_zone.strftime("%H%M%S")+"\r\n"
-							calendar_event += "DTEND:"+start_at_time_zone.strftime("%Y%m%d")+"T"+start_at_time_zone.strftime("%H%M%S")+"\r\n"
-							calendar_event += "LOCATION:Scalable-Learning\r\n"
-							calendar_event += "SUMMARY;LANGUAGE=en-us:"+event.course.short_name+": "+event.name.split(" due")[0]+"\r\n"
-							calendar_event += "TRANSP:TRANSPARENT\r\n"
-							calendar_event += "END:VEVENT\r\n"
+							calendar_event += "BEGIN:VEVENT\nCLASS:PUBLIC\n" 
+							calendar_event += "DESCRIPTION:"+event.course.short_name+": "+event.name.split(" due")[0]+" "+I18n.t("controller_msg.due").capitalize+" "+I18n.t("at")+" "+start_at_time_zone.strftime("%H:%M")+" "+root_url.split("en")[0]+"#/courses/"+event.course_id.to_s+"\n" #/modules/2308/progress\r\n" 
+							calendar_event += "UID:Scalable-Learning"+index.to_s+"\n" 
+							calendar_event += "DTSTAMP:"+start_at_time_zone.strftime("%Y%m%d")+"T"+start_at_time_zone.strftime("%H%M%S")+"\n" 
+							calendar_event += "DTSTART:"+start_at_time_zone.strftime("%Y%m%d")+"T"+start_at_time_zone.strftime("%H%M%S")+"\n" 
+							calendar_event += "DTEND:"+start_at_time_zone.strftime("%Y%m%d")+"T"+start_at_time_zone.strftime("%H%M%S")+"\n" 
+							calendar_event += "LOCATION:Scalable-Learning\n" 
+							calendar_event += "SUMMARY;LANGUAGE=en-us:"+event.course.short_name+": "+event.name.split(" due")[0]+"\n" 
+							calendar_event += "TRANSP:TRANSPARENT\n" 
+							calendar_event += "END:VEVENT\n" 
 					end
 			end
 			calendar_event += "END:VCALENDAR"
