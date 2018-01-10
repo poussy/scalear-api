@@ -828,7 +828,7 @@ class GroupsControllerTest < ActionDispatch::IntegrationTest
 		assert_equal decode_json_response_body["review_question_count"], 15
 		assert_equal decode_json_response_body["review_video_quiz_count"], 1 #inclass: false, hide: false
 		assert_equal decode_json_response_body["inclass_quizzes_count"], 1 #inclass: true, hide: false
-		assert_equal decode_json_response_body["markers_count"], 1
+		assert decode_json_response_body["markers_count"].nil?
 
 	end
 
