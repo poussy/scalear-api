@@ -254,6 +254,8 @@ class CoursesControllerTest <  ActionDispatch::IntegrationTest
 		# compare new and imported groups
 		new_course.groups.each_with_index do |new_group, i|
 			assert_equal  course_from.groups[i].name, new_group.name
+			assert_equal  course_from.groups[i].appearance_time+65.days, new_group.appearance_time
+
 			# compare new and imported lectures
 			lectures_from = course_from.groups[i].lectures
 			new_group.lectures.each_with_index do |new_lecture, j|
@@ -265,6 +267,8 @@ class CoursesControllerTest <  ActionDispatch::IntegrationTest
 			quizzes_from = course_from.groups[i].quizzes
 			new_group.quizzes.each_with_index do |new_quiz, k|
 				assert_equal quizzes_from[k].name, new_quiz.name
+				## now quiz appearance time is like the old group appearance time
+				assert_equal new_quiz.appearance_time, course_from.groups[i].appearance_time
 			end
 			#compare custom_links
 			links_from = course_from.groups[i].custom_links
@@ -823,8 +827,8 @@ class CoursesControllerTest <  ActionDispatch::IntegrationTest
 
 		## teachers & students
 		post '/en/courses/send_system_announcement', params:{list_type: '3', message:'<p class="medium-editor-p">hello</p>', subject:'System announcement'}, headers: @admin_user.create_new_auth_token
-		assert_equal ActionMailer::Base.deliveries.last["bcc"].value, ["a.hossam.2010@gmail.com", "a.hossam.2012@gmailll.com", "a.hossam.2011@gmail.com", "okasha@gmail.com", "okashaaa@gmail.com", 
-			"saleh@gmail.com", "Ahmed@gmail.com", "Karim@gmail.com", "Mohamed@gmail.com", "Hossam@gmail.com", "student_a.hossam.2010@gmail.com", "school_admin@gmailll.com", "admin@gmailll.com"]
+		assert_equal ActionMailer::Base.deliveries.last["bcc"].value.sort, ["a.hossam.2010@gmail.com", "a.hossam.2012@gmailll.com", "a.hossam.2011@gmail.com", "okasha@gmail.com", "okashaaa@gmail.com", 
+			"saleh@gmail.com", "Ahmed@gmail.com", "Karim@gmail.com", "Mohamed@gmail.com", "Hossam@gmail.com", "student_a.hossam.2010@gmail.com", "school_admin@gmailll.com", "admin@gmailll.com"].sort
 
 	end
 	

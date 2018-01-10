@@ -370,7 +370,7 @@ class Course < ApplicationRecord
 				if from.end_date.to_time < q.appearance_time 
 					new_quiz.appearance_time =  Date.today + 200.years
 				else
-					new_quiz.appearance_time =  new_group.appearance_time
+					new_quiz.appearance_time =  g.appearance_time
 				end
 				new_quiz.due_date = new_quiz.due_date + addition_days
 				new_quiz.save(:validate => false)
