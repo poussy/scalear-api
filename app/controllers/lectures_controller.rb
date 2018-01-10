@@ -231,16 +231,16 @@ class LecturesController < ApplicationController
         if match_string =~ /^\/.*\/$/
           match_string =match_string[1..match_string.length-2]
           regex = Regexp.new match_string
-          @grade =  !!(@answer =~ regex)? 1:0
+          @grade =  !!(@answer =~ regex)? 3:1 
         else
-          @grade = !!(@answer.downcase == match_string.downcase)? 1:0
+          @grade = !!(@answer.downcase == match_string.downcase)? 3:1
         end
         review = false
       end
       # if FreeOnlineQuizGrade.where(:user_id => current_user.id, :online_quiz_id => @quiz).empty?
       FreeOnlineQuizGrade.create(:lecture_id => params[:id],:course_id => params[:course_id], :group_id => @lecture.group_id , :user_id => current_user.id, :online_quiz_id => @quiz, :online_answer => @answer , :grade => @grade, :attempt => attempt+1)
       # end
-      render json: {:msg => I18n.t('controller_msg.succefully_submitted'), :correct => @grade==1 , :explanation => @exp, :done => [item_pos, group_pos, @lecture.is_done], :review => review}
+      render json: {:msg => I18n.t('controller_msg.succefully_submitted'), :correct => @grade==3 , :explanation => @exp, :done => [item_pos, group_pos, @lecture.is_done], :review => review}
     else #OCQ
       quiz_grades = OnlineQuizGrade.where(:user_id => current_user.id, :online_quiz_id => @quiz, :in_group => answered_in_group )
       attempt = quiz_grades.sort{|x,y| x.attempt <=> y.attempt }.last.attempt rescue 0

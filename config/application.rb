@@ -32,7 +32,7 @@ module ScalearApi
     config.api_only = true
     config.active_job.queue_adapter = :delayed_job
     
-     config.middleware.use Rack::Cors do
+    config.middleware.use Rack::Cors do
       allow do
         origins 'http://localhost:9000'
         resource '*',
@@ -41,5 +41,6 @@ module ScalearApi
           :methods => [:get, :post, :options, :delete, :put]
       end
     end
+    config.domain_account_block = ["uu.nl"]
   end
 end

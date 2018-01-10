@@ -102,19 +102,19 @@ class DashboardController < ApplicationController
 			user = User.where(:id => current_user.id).includes({:online_quiz_grades => [:online_quiz, :lecture]}, {:free_online_quiz_grades => [:online_quiz , :lecture] }, {:lecture_views => :lecture }, :assignment_item_statuses, {:quiz_statuses => :quiz})[0]
 			teacher_events = []
 			student_events = []
+			today = Time.now 
 			if user.is_administrator?
-					teacher_courses = Course.pluck(:id)
+					teacher_courses = Course.where("end_date > ?", today).pluck(:id) 
 					student_courses = []
 			elsif current_user.is_school_administrator?
 					email = current_user.email.split('@')[1]
-					teacher_courses = Course.includes([:user,:teachers]).all.select{|c| c.teachers.map{|e| e.email.split("@")[1]}.include?(email) }.map { |e| e.id }
+					 teacher_courses = Course.includes([:user,:teachers]).where("end_date > ?", today).select{|c| c.teachers.map{|e| e.email.split("@")[1]}.include?(email) }.map { |e| e.id } 
 					student_courses = []
 			else
-					teacher_courses = user.subjects_to_teach.pluck("courses.id")
-					student_courses = user.courses.pluck("courses.id")
+				teacher_courses = user.subjects_to_teach.where("end_date > ?", today).pluck("courses.id") 
+      			student_courses = user.courses.where("end_date > ?", today).pluck("courses.id") 
 			end
 
-			today = Time.now
 			filter = lambda{|ev|
 					(ev.start_at < today+100.years) &&
 					(!ev.lecture_id && !ev.quiz_id && ev.group.appearance_time <= today) ||
