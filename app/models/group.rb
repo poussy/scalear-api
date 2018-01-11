@@ -20,7 +20,7 @@ class Group < ApplicationRecord
 	after_destroy :clean_up
 
 	validates :appearance_time, :course_id, :name, :due_date, :position , :presence => true
-	validates_inclusion_of :graded , :required, :in => [true, false] #not in presence because boolean false considered not present.
+	validates_inclusion_of :graded , :required, :skip_ahead, :in => [true, false] #not in presence because boolean false considered not present.
 
 	@quiz_not_empty = Proc.new{|f| !f.online_answers.empty? or f.question_type=="Free Text Question"}
 	
@@ -40,6 +40,7 @@ class Group < ApplicationRecord
 	attribute :has_inclass
 	attribute :has_distance_peer
 	attribute :sub_items_size
+	attribute :skip_ahead
 
 	attr_accessor :current_user
 

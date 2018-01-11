@@ -47,6 +47,7 @@ class GroupsController < ApplicationController
 				l.due_date = @group.due_date if l.due_date_module
 				l.required = @group.required if l.required_module
 				l.graded = @group.graded if l.graded_module
+				l.skip_ahead = @group.skip_ahead if l.skip_ahead_module
 				l.save
 			end
 

@@ -42,6 +42,10 @@ class LecturesController < ApplicationController
 		if params[:lecture][:graded_module]== true 
 			params[:lecture][:graded]=@lecture.group.graded
 		end
+		if params[:lecture][:skip_ahead_module]== true 
+			params[:lecture][:skip_ahead]=@lecture.group.skip_ahead 
+		end 
+
 		did_he_change_lecture_type = @lecture.inclass != params[:lecture][:inclass]
 
 		if @lecture.update_attributes(lecture_params)
@@ -567,11 +571,12 @@ class LecturesController < ApplicationController
 		if !items.empty?
 			position = items.last.position + 1
 		end
-		@lecture = @course.lectures.build(:name => "New Lecture", :appearance_time => group.appearance_time, 
-			:due_date => group.due_date, :appearance_time_module => true, :due_date_module => true, 
-			:required_module => true, :graded_module => true,:url => "none", :group_id => params[:group], 
-			:slides => "none", :position => position, :start_time => 0, :end_time => 0, :inclass => params[:inclass] ,
-			:distance_peer => params[:distance_peer] , :required=>group.required , :graded=>group.graded )
+		@lecture = @course.lectures.build(:name => "New Lecture", :appearance_time => group.appearance_time, :due_date => group.due_date, 
+				:appearance_time_module => true, :due_date_module => true, :required_module => true, 
+				:graded_module => true, :skip_ahead_module => true,:url => "none", 
+				:group_id => params[:group], :slides => "none", :position => position, 
+				:start_time => 0, :end_time => 0, :inclass => params[:inclass] ,
+				:distance_peer => params[:distance_peer] , :required=>group.required , :graded=>group.graded ) 
 		@lecture['class_name']='lecture'
 		if @lecture.save
 			render json:{lecture: @lecture, :notice => [I18n.t("controller_msg.lecture_successfully_created")]}
@@ -800,6 +805,7 @@ class LecturesController < ApplicationController
 		copy_lecture.due_date_module = true
 		copy_lecture.required_module = true
 		copy_lecture.graded_module = true
+		copy_lecture.skip_ahead_module = true
 
 
 		copy_lecture.save(:validate => false)
