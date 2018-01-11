@@ -353,6 +353,7 @@ en:
     correct_because: "Correct because"
     incorrect_because: "Incorrect because"
     enter_explanation: "Please Enter Explanation"
+    deleted_user: "Deleted User"
   courses:
     could_not_delete_course: "Could not delete course"
     lecture_quizzes: "Lecture Quizzes"

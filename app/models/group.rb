@@ -939,7 +939,11 @@ end
 				post[1].each_with_index do |comment,index|
 					if comment['comment_content']
 						questions[lecture_id]['questions'][post_content]['comments'][index] = {}
-						questions[lecture_id]['questions'][post_content]['comments'][index]['name'] = User.find(comment['user_id']).screen_name
+						if User.exists?(comment['user_id']) 
+							questions[lecture_id]['questions'][post_content]['comments'][index]['name'] = User.find(comment['user_id']).screen_name 
+						else 
+							questions[lecture_id]['questions'][post_content]['comments'][index]['name'] = I18n.t('groups.deleted_user') 
+						end
 						questions[lecture_id]['questions'][post_content]['comments'][index]['content'] = comment['comment_content']
 					end
 				end

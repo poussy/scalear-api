@@ -335,6 +335,7 @@ sv:
     correct_because: "Korrekt eftersom"
     incorrect_because: "Felaktigt eftersom"
     enter_explanation: "Ange förklaring"
+    deleted_user: "Borttagen Användare"
   courses:
     could_not_delete_course: "Kunde inte radera kurs"
     lecture_quizzes: "Föreläsnings-Quiz-frågor"
