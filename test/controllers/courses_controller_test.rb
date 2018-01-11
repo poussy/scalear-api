@@ -60,6 +60,32 @@ class CoursesControllerTest <  ActionDispatch::IntegrationTest
 		assert_equal resp['total'] , 2
 	end
 
+	test 'index method for student' do
+		user = users(:student_in_course3)
+		url = '/en/courses'
+		get  url ,headers:user.create_new_auth_token 
+		assert_equal decode_json_response_body, {
+				"total"=>1,
+				"teacher_courses"=>[],
+				"student_courses"=>[
+					{"end_date"=>"2017-10-09",
+					"id"=>3,
+					"importing"=>false,
+					"image_url"=>
+					"https://pbs.twimg.com/profile_images/839721704163155970/LI_TRk1z_400x400.jpg",
+					"name"=>"course3",
+					"short_name"=>"c3",
+					"start_date"=>"2017-09-04",
+					"user_id"=>3,
+					"ended"=>true,
+					"duration"=>5,
+					"teacher_enrollments"=>[]}
+				]}
+
+	end
+
+
+
 	test 'validate index method for Admin' do
 		url = '/en/courses'
 		get  url ,headers: @admin_user.create_new_auth_token 

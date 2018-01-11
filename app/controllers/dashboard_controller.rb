@@ -69,7 +69,15 @@ class DashboardController < ApplicationController
 		end
 
 		student_events.each do |event|
-			event_coloring = event.get_color(user)
+			event_coloring = {} 
+			if event.course.ended 
+					event_coloring[:background] = "gray" 
+					event_coloring[:text] = "white" 
+					event_coloring[:status] = -1 
+					event_coloring[:days] = 0 
+			else 
+					event_coloring = event.get_color(user) 
+			end
 			final_events << {
 				id: event.id,
 				course_id: event.course_id,

@@ -14,17 +14,38 @@ class DashboardControllerTest < ActionDispatch::IntegrationTest
       e.save
     end
     
+    Course.find(3).update_attribute('end_date',Time.now+10.days)
     get '/en/dashboard/get_dashboard', headers: @student.create_new_auth_token
 
     assert_equal decode_json_response_body['events'].size, Event.where(course_id:3).size
     event1=decode_json_response_body['events'][0]
     assert_equal event1['title'], 'New Module due'
-    assert_equal Time.parse(event1['start']).to_i/10.floor, (Time.now+1.days).to_i/10.floor 
+    assert_equal Time.parse(event1['start']).to_i/60.floor, (Time.now+1.days).to_i/60.floor 
     assert_equal event1['color'], '#d1ddf0'
     assert_equal event1['textColor'], '#546d8e'
     assert_equal event1['status'], 0
     assert_equal event1['days'], -1
     assert_equal event1['role'], 2
+
+  end
+
+  test "get_dashboard should change event colors and status if course has ended" do
+    Event.all.each do |e|
+      e.start_at = Time.now+1.days
+      e.save
+    end
+    
+    get '/en/dashboard/get_dashboard', headers: @student.create_new_auth_token
+
+    assert_equal decode_json_response_body['events'].size, Event.where(course_id:3).size
+    event1=decode_json_response_body['events'][0]
+    ## this event is in course 3 which has an end date = 2017-10-09
+    assert_equal event1['title'], 'New Module due'
+    assert_equal Time.parse(event1['start']).to_i/60.floor, (Time.now+1.days).to_i/60.floor 
+    assert_equal event1['color'], 'gray'
+    assert_equal event1['textColor'], 'white'
+    assert_equal event1['status'], -1
+    assert_equal event1['days'], 0
 
   end
 
