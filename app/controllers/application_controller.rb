@@ -22,7 +22,18 @@ class ApplicationController < ActionController::API
 	
   rescue_from CanCan::AccessDenied do |exception|
 		render json: {:errors=>[ I18n.t("controller_msg.you_are_not_authorized") ]}, status: 403
-	end
+  end
+
+
+ 
+  def routing_error 
+    raise ActionController::RoutingError.new(params[:path]) 
+  end 
+  rescue_from ActionController::RoutingError, :with => :render_not_found 
+ 
+  def render_not_found 
+    render json: {:errors=>["URL '#{params[:path]}' does not exist"]}, status: 404
+  end 
 
   def record_not_found
     render :json => {errors:[I18n.t("controller_msg.record_not_found")]}, status:404

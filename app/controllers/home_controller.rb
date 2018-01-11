@@ -47,8 +47,9 @@ class HomeController < ApplicationController
 		end		
 	end
 
-	# def index
-	# end
+	def index 
+			render json:{} 
+	end
 
 	# def technical_problem
 	# end
