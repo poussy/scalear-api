@@ -7,7 +7,11 @@ class UsersController < ApplicationController
   end
 
   def get_current_user    
-    result = {:user => current_user.to_json(:include => {:roles=>{:only => :id}}, :methods => [:info_complete, :intro_watched]), :signed_in => user_signed_in?}
+    if !current_user.is_school_administrator? 
+      result = {:user => current_user.to_json(:include => {:roles=>{:only => :id}}, :methods => [:info_complete, :intro_watched]), :signed_in => user_signed_in?} 
+    else 
+      result = {:user => current_user.to_json(:include => {:roles=>{:only => :id}}, :methods => [:info_complete, :intro_watched, :get_school_administrator_domain] ), :signed_in => user_signed_in?}       
+    end 
     if user_signed_in?
       result[:profile_image] = Digest::MD5.hexdigest(current_user.email);
       result[:invitations] = Invitation.where("lower(email) = ?", current_user.email.downcase).count
@@ -45,7 +49,47 @@ class UsersController < ApplicationController
   # def saml_signup
   # end
 
-  # def get_subdomains
-  # end
+  def get_subdomains
+    subdomains = []
+    domain = "empty_domain"
+    if !current_user.is_administrator?
+      user_role = UsersRole.where(:user_id => current_user.id, :role_id => 9)[0]
+      domain = user_role.admin_school_domain
+      if  domain == "all"
+        email = user_role.organization.domain
+        subdomains = current_user.get_subdomains(email)
+        subdomains = subdomains.select {|domain| !domain.include?("stud") }
+      else
+        subdomains.append(domain)
+      end
+    end
+    if domain.blank?
+      render json: {errors: "please contact the scalable learning team."}, :status => 500
+    else
+      render json: {subdomains: subdomains}
+    end
+  end
+  
+  def get_welcome_message 
+    if current_user.is_school_administrator? 
+      render json: {welcome_message: current_user.organizations[0].welcome_message, domain: current_user.organizations[0].domain} 
+    else 
+      organization = Organization.all.detect { |organization| current_user.email.end_with?(organization.domain) } 
+      if organization 
+        render json: {welcome_message: organization.welcome_message } 
+      else 
+        render json: {}         
+      end 
+    end 
+
+  end 
+
+  def submit_welcome_message 
+    if current_user.organizations[0].update_attributes(:welcome_message => params[:welcome_message]) 
+      render json: {organization: current_user.organizations[0]} 
+    else 
+      render json: {:errors => current_user.organizations[0].errors }, :status => :unprocessable_entity 
+    end 
+  end 
 
 end

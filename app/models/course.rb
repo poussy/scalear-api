@@ -63,7 +63,11 @@ class Course < ApplicationRecord
 	def is_school_administrator(user)
 		user_role = UsersRole.where(:user_id => user.id, :role_id => 9)[0]
 		if user_role
-			email = user_role.admin_school_domain || nil
+			if user_role.admin_school_domain != 'all' 
+					email = user_role.admin_school_domain || nil 
+			else 
+					email = user_role.organization.domain || nil 
+			end 
 		end
 		return user.has_role?('School Administrator') && self.teachers.select{|t| t.email.split("@").last.include?(email) }.size>0
 	end
