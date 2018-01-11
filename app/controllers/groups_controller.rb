@@ -152,7 +152,7 @@ class GroupsController < ApplicationController
 		end
 		due= app + 1.week
 
-		@group = @course.groups.build(:name => "New Module", :appearance_time => app, :due_date => due, :position => @course.groups.size+1) #added to_date so it won't have time.
+		@group = @course.groups.build(:name => "New Module", :appearance_time => app, :due_date => due, :position => @course.groups.size+1, :skip_ahead => true) #added to_date so it won't have time.
 		@group.events << Event.new(:name => "#{@group.name} "+ I18n.t('controller_msg.due'), :start_at => due, :end_at => due, :all_day => false, :color => "red", :course_id => @course.id)
 
 		if @group.save

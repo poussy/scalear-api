@@ -235,7 +235,7 @@ Rails.application.routes.draw do
             post 'confused_question'
             get 'seen'
             get 'new_quiz'
-            get 'new_marker'
+            post 'new_marker'
             get 'save_duration'
             post 'back'
             post 'pause'

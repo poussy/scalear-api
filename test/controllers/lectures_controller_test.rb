@@ -246,21 +246,20 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 	
 	test "should add new_marker " do
 		url = '/en/courses/'+@course1.id.to_s+'/lectures/'+@lecture1.id.to_s+'/new_marker'
-		get url , params: {time: 11.2},headers: @user1.create_new_auth_token 
+		post url , params: { marker: {time:15,duration:5,xcoor:0.5,ycoor:0.2,height:1.1,width:2.3}},headers: @user1.create_new_auth_token 
 		resp =  JSON.parse response.body
 		assert_response :success
-		assert_equal resp['marker']['time'] , 11.2	
+		assert_equal resp['marker']['time'] , 15.0	
+		assert_equal resp['marker']['duration'] , 5
+		assert_equal resp['marker']['xcoor'] , 0.5
+		assert_equal resp['marker']['ycoor'] , 0.2
+		assert_equal resp['marker']['height'] , 1.1
+		assert_equal resp['marker']['width'] , 2.3
 	end
-	test "should new_marker for empty params" do
-		url = '/en/courses/'+@course1.id.to_s+'/lectures/'+@lecture1.id.to_s+'/new_marker'
-		get url , params: {},headers: @user1.create_new_auth_token 
-		resp =  JSON.parse response.body
-		assert_response 400		
-		assert_equal resp['errors']['time'][0] , "can't be blank"	
-	end
+
 	test "should new_marker for invalid time" do
 		url = '/en/courses/'+@course1.id.to_s+'/lectures/'+@lecture1.id.to_s+'/new_marker'
-		get url , params: { time: "dsadasd"},headers: @user1.create_new_auth_token 
+		post url , params: { marker: {time:'aaa'}},headers: @user1.create_new_auth_token 
 		resp =  JSON.parse response.body
 		assert_response 400		
 		assert_equal resp['errors']['time'][0] , "is not a number"
