@@ -892,9 +892,18 @@ class LecturesController < ApplicationController
 		session = current_user.user_distance_peers.includes(:distance_peer).order('updated_at DESC').select{|d| d.distance_peer.lecture_id == params[:id].to_i && !(d.status == 0 || d.status == 6 )}
 		
 		if session.count != 0
-			user_distance_peer = DistancePeer.find(session.first.distance_peer_id).user_distance_peers.select{|d| d.status !=0 && current_user.id == d.user_id}
-			online_names =  DistancePeer.find(session.first.distance_peer_id).user_distance_peers.select{|d| d.status !=0 && current_user.id != d.user_id}.map{|u_dis| u_dis.user.screen_name }
-			render json: {:distance_peer => session.first, :user_distance_peer => user_distance_peer[0] ,:name => online_names[0] }
+			distance_peer = DistancePeer.find(session.first.distance_peer_id).user_distance_peers 
+      user_distance_peer = distance_peer.select{|d| current_user.id == d.user_id}[0] 
+      other_user_distance_peer = distance_peer.select{|d| current_user.id != d.user_id}[0] 
+      online_names =  other_user_distance_peer.user.screen_name  
+ 
+      if user_distance_peer.status != other_user_distance_peer.status && (user_distance_peer.updated_at > other_user_distance_peer.updated_at ) 
+        # status = "wait" 
+        render json: {:distance_peer => other_user_distance_peer ,:name => online_names } 
+      else 
+        render json: {:distance_peer => user_distance_peer ,:name => online_names } 
+      end 
+      # render json: {:distance_peer => session.first, :user_distance_peer => user_distance_peer ,:name => online_names } 
 		else
 			render json:{ :distance_peer => "no_peer_session"}
 		end
