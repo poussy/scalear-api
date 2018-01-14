@@ -35,7 +35,7 @@ class OnlineMarkersController < ApplicationController
 	# end
 
 	def online_marker_params
-		params.require(:online_marker).permit(:lecture_id,:group_id,:course_id,:time,:annotation,:title,:hide)
+		params.require(:online_marker).permit(:lecture_id,:group_id,:course_id,:time,:annotation,:title,:hide,:duration, :height, :width, :xcoor, :ycoor)
 	end
 
 end

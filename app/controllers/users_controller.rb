@@ -7,7 +7,7 @@ class UsersController < ApplicationController
   end
 
   def get_current_user    
-    if !current_user.is_school_administrator? 
+    if current_user && !current_user.is_school_administrator? 
       result = {:user => current_user.to_json(:include => {:roles=>{:only => :id}}, :methods => [:info_complete, :intro_watched]), :signed_in => user_signed_in?} 
     else 
       result = {:user => current_user.to_json(:include => {:roles=>{:only => :id}}, :methods => [:info_complete, :intro_watched, :get_school_administrator_domain] ), :signed_in => user_signed_in?}       
