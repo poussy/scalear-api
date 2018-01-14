@@ -487,11 +487,157 @@ class Course < ApplicationRecord
 	end
 	# handle_asynchronously :export_modules_progress, :run_at => Proc.new { 5.seconds.from_now }
 
-	# def self.school_admin_statistics_course_ids(raw_start_date, raw_end_date, domain = 'All', current_user)
-	# end
+	def self.school_admin_statistics_course_ids(raw_start_date, raw_end_date, domain = 'All', current_user)
+			# raw_start_date = "01-December-2016" #start_date
+			# raw_end_date = "10-January-2017" #end_date
+			if domain.nil?
+					domain == 'All'
+			end
+			start_date = DateTime.parse(raw_start_date).midnight
+			end_date = DateTime.parse(raw_end_date).midnight
 
-	# def self.school_admin_statistics_course_data(raw_start_date, raw_end_date, active_courses_ids)
-	# end
+			school_course = Course.includes([:user,:teachers])
+			if (!current_user.is_administrator? &&  domain.downcase == 'all')
+					domain = UsersRole.where(:user_id => current_user.id, :role_id => 9)[0].admin_school_domain
+					if domain == 'all'
+							email = user_role.organization.domain || nil
+					end
+
+			end
+
+			if(domain.downcase != "all")
+					school_course = school_course.select{|c| c.teachers.select{|t| t.email.split("@").last.include?(domain) }.size>0}
+			end
+			course_ids = school_course.map{|c| c.id}
+
+			course_quizzes = Quiz.select("id, course_id, updated_at").where(:course_id => course_ids)
+			course_quizzes_ids = course_quizzes.map(&:id)
+			course_quizzes_map = {}
+			course_quizzes.each{|q| course_quizzes_map[q.id] = q.course_id}
+
+			course_lectures = Lecture.select("id, course_id, updated_at").where(:course_id => course_ids)
+			course_lectures_ids = course_lectures.map(&:id)
+			course_lectures_map = {}
+			course_lectures.each{|l| course_lectures_map[l.id] = l.course_id}
+
+			new_updated_courses = school_course.map{|c|  c.id if c.updated_at.between?(start_date,end_date) }
+			course_quiz_solved = QuizGrade.where("updated_at between ? and ? and quiz_id in (?)", start_date, end_date, course_quizzes_ids).pluck("distinct quiz_id").map{|quiz_id| course_quizzes_map[quiz_id]}
+			course_updated_note = VideoNote.where("updated_at between ? and ? and lecture_id in (?)", start_date, end_date, course_lectures_ids).pluck("distinct lecture_id").map{|lecture_id| course_lectures_map[lecture_id]}
+			course_created_lec_views = LectureView.where("created_at between ? and ? AND course_id IN (?)", start_date, end_date, course_ids).pluck("distinct course_id")
+			course_updated_confused = Confused.where("updated_at between ? and ? AND course_id IN (?)", start_date, end_date, course_ids).pluck("distinct course_id")
+			course_updated_modules = Group.where("updated_at between ? and ? AND course_id IN (?)", start_date, end_date, course_ids).pluck("distinct course_id")
+			course_updated_lectures = course_lectures.map{|l|  l.course_id if l.updated_at.between?(start_date,end_date) }
+			course_updated_quizzes = course_quizzes.map{|q|  q.course_id if q.updated_at.between?(start_date,end_date) }
+			course_updated_links = CustomLink.where("updated_at between ? and ? AND course_id IN (?)", start_date, end_date, course_ids).pluck("distinct course_id")
+			course_announcements = Announcement.where("updated_at between ? and ? AND course_id IN (?)", start_date, end_date, course_ids).pluck("distinct course_id")
+
+			course_online_quiz_grade = OnlineQuizGrade.where("updated_at between ? and ? AND course_id IN (?) AND attempt = 1", start_date, end_date, course_ids).pluck("distinct course_id")
+			course_free_online_quiz_grades = FreeOnlineQuizGrade.where("updated_at between ? and ? AND course_id IN (?) AND attempt = 1", start_date, end_date, course_ids).pluck("distinct course_id")
+
+			active_courses_ids = (new_updated_courses + course_created_lec_views + course_quiz_solved + course_updated_note + course_updated_confused + course_updated_modules + course_updated_lectures + course_updated_quizzes + course_updated_links + course_announcements +course_online_quiz_grade +course_free_online_quiz_grades).uniq
+			active_courses_ids = active_courses_ids.compact
+
+			total_teachers_count  = TeacherEnrollment.select("distinct user_id").where(:course_id => active_courses_ids).count    
+			total_students_count  = Enrollment.select("distinct user_id").where(:course_id => active_courses_ids).count
+
+			active_courses_count = active_courses_ids.size
+			total_lectures_count = course_lectures_ids.size
+
+			totals={
+					total_courses: active_courses_count,
+					total_students: total_students_count,
+					total_teachers: total_teachers_count,
+					total_lectures: total_lectures_count,
+					course_ids: active_courses_ids,
+			}
+			return totals
+	end
+
+	def self.school_admin_statistics_course_data(raw_start_date, raw_end_date, active_courses_ids)
+			# raw_start_date = "01-December-2016" #start_date
+			# raw_end_date = "10-January-2017" #end_date
+			start_date = DateTime.parse(raw_start_date).midnight
+			end_date = DateTime.parse(raw_end_date).midnight
+			total_teachers = TeacherEnrollment.where(:course_id => active_courses_ids).group_by{|a| a.course_id}
+			total_teachers.each{|course_id,teacher_list| total_teachers[course_id] = teacher_list.map{|teacher| teacher.user_id}}
+
+			total_students = Enrollment.where(:course_id => active_courses_ids).group_by{|a| a.course_id}
+			total_students_course = {}
+			total_students.each{|course_id,student_list| list = student_list.map{|student| student.user_id}; total_students[course_id] = list; total_students_course[course_id] =list.count  }
+
+			questions ={'active_courses' => {},'total_courses' => {}, 'total_questions' => 0, 'comments_user_id'=> {}}
+			active_courses_ids.in_groups_of(50 ,false) do |course_ids|
+					part_question = Post.get("posts_count", {:start_date =>raw_start_date, :end_date => raw_end_date, :course_ids => course_ids })
+					questions["active_courses"] = questions["active_courses"].merge(part_question['active_courses'])
+					questions["total_courses"] = questions["total_courses"].merge(part_question['total_courses'])
+					questions["total_questions"] += part_question['total_questions']
+					questions["comments_user_id"] = questions["comments_user_id"].merge(part_question['comments_user_id'])
+			end
+
+
+			total_questions_answered_students = 0
+			total_questions_answered_teachers = 0
+			questions["comments_user_id"].each do |course_id, comment_users|
+					teachers = total_teachers[course_id.to_i]||[]
+					students = total_students[course_id.to_i]||[]
+					users = {}
+					counts = {"teacher" => 0, "student" => 0 ,  "missing" => 0}
+
+					teachers.each_with_object(users){ |user_id, obj| obj[user_id] = "teacher" }
+					students.each_with_object(users){ |user_id, obj| obj[user_id] = "student" }
+					comment_users.each{ |cu| counts[users[cu.to_i] || "missing"] += 1 }
+
+					total_questions_answered_teachers += counts["teacher"]
+					total_questions_answered_students += counts["student"]
+			end
+
+			group_lec_views_by_course = LectureView.joins(:lecture).where("lecture_views.created_at between ? and ? AND lecture_views.course_id IN (?)", start_date, end_date, active_courses_ids).group('lecture_views.course_id, lecture_views.lecture_id').select('lecture_views.lecture_id, lecture_views.course_id , ( (SUM(percent)/100) * (SUM(duration)/count(*)) ) as views ').group_by(&:course_id)
+			total_group_lec_views_by_course = LectureView.joins(:lecture).where("lecture_views.course_id IN (?)", active_courses_ids).group('lecture_views.course_id, lecture_views.lecture_id').select('lecture_views.lecture_id, lecture_views.course_id , ( (SUM(percent)/100) * (SUM(duration)/count(*)) ) as views ').group_by(&:course_id)
+			active_courses = Course.where(id: active_courses_ids)
+
+			course_data ={}
+			active_courses.each do |course|
+					course_data[course.id] = {
+							'short_name' => course.short_name,
+							'start_date' => course.start_date,
+							'end_date' => course.end_date,
+							'full_name' => course.user.full_name_reverse,
+							'email' => course.user.email,
+							'teachers' => course.teachers.size || 0,
+							'students' => total_students_course[course.id] || 0,
+							'active_questions' => questions['active_courses'][course.id.to_s] || 0,
+							'total_questions' => questions['total_courses'][course.id.to_s] || 0,
+							'active_solved_online_quiz' => 0,
+							'total_solved_online_quiz' => 0,
+							'active_view' => (group_lec_views_by_course[course.id].map{|l| l.views.to_i}.sum rescue 0),
+							'total_view' => (total_group_lec_views_by_course[course.id].map{|l| l.views.to_i}.sum rescue 0)
+					}
+			end
+
+			active_sum_online_quiz_grade = OnlineQuizGrade.where("updated_at between ? and ? AND course_id IN (?) AND attempt = 1", start_date, end_date, active_courses_ids).group('course_id').select('course_id , (COUNT(*)) as count ')
+			active_sum_free_online_quiz_grades = FreeOnlineQuizGrade.where("updated_at between ? and ? AND course_id IN (?)  AND attempt = 1", start_date, end_date, active_courses_ids).group('course_id').select('course_id , (COUNT(*)) as count ')
+			active_sum_online_quiz_grade.each{|course_count| course_data[course_count.course_id]['active_solved_online_quiz'] += course_count.count.to_i}
+			active_sum_free_online_quiz_grades.each{|course_count| course_data[course_count.course_id]['active_solved_online_quiz'] += course_count.count.to_i}
+
+			total_online_quiz_grade = OnlineQuizGrade.where("course_id IN (?) AND attempt = 1", active_courses_ids ).group('course_id').select('course_id , (COUNT(*)) as count')
+			total_free_online_quiz_grades = FreeOnlineQuizGrade.where("course_id IN (?) AND attempt = 1", active_courses_ids ).group('course_id').select('course_id , (COUNT(*)) as count')
+			total_online_quiz_grade.each{|course_count| course_data[course_count.course_id]['total_solved_online_quiz'] += course_count.count.to_i}
+			total_free_online_quiz_grades.each{|course_count| course_data[course_count.course_id]['total_solved_online_quiz'] += course_count.count.to_i}
+
+			total_hours = course_data.map { |e| e[1]["active_view"] }.sum
+			total_online_quiz_solved_count = active_sum_online_quiz_grade.map { |e| e.count.to_i }.sum + active_sum_free_online_quiz_grades.map { |e| e.count.to_i }.sum
+
+			totals={
+					total_hours: total_hours,
+					total_online_quiz_solved: total_online_quiz_solved_count ,
+					total_questions: questions['total_questions'] ,
+					total_questions_answered_students: total_questions_answered_students,
+					total_questions_answered_teachers: total_questions_answered_teachers,
+
+					course_data: course_data
+			}
+			return totals
+	end
 
 	# class << self
 	# 	def export_school_data(start_date, end_date, domain, current_user)

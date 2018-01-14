@@ -355,6 +355,21 @@ Rails.application.routes.draw do
       end
     end
 
+    resources :kpis do
+    collection do
+      post 'init_series'
+      delete 'destroy_series'
+      post 'kpi_job'
+      get 'read_data'
+      get 'read_totals'
+      get 'read_totals_for_duration'
+      post 'get_report_data_course_duration'
+      get 'read_series'
+      post 'init_data'
+      get 'export_school_statistics'
+    end
+  end
+
   end
   get "*path", :to => "application#routing_error" 
 end
