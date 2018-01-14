@@ -377,8 +377,9 @@ class Group < ApplicationRecord
   	end
 
 
-	# def inclass_session
-	# end
+	def inclass_session
+			self.inclass_sessions.order("updated_at DESC").first
+	end
 
 def get_module_summary_teacher
 	course = self.course
