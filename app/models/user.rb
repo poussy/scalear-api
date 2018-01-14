@@ -621,8 +621,13 @@ class User < ActiveRecord::Base
     end    
   end
 
-  # def full_name_reverse
-  # end
+  def full_name_reverse
+    if !self.last_name.nil?
+      return self.last_name + ' ' + self.name
+    else
+      return self.name
+    end
+  end
 
   # def reset_password!(new_password, new_password_confirmation)
   # end

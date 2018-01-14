@@ -567,7 +567,7 @@ class Course < ApplicationRecord
 
 			questions ={'active_courses' => {},'total_courses' => {}, 'total_questions' => 0, 'comments_user_id'=> {}}
 			active_courses_ids.in_groups_of(50 ,false) do |course_ids|
-					part_question = Post.get("posts_count", {:start_date =>raw_start_date, :end_date => raw_end_date, :course_ids => course_ids })
+					part_question = Forum::Post.get("posts_count", {:start_date =>raw_start_date, :end_date => raw_end_date, :course_ids => course_ids })
 					questions["active_courses"] = questions["active_courses"].merge(part_question['active_courses'])
 					questions["total_courses"] = questions["total_courses"].merge(part_question['total_courses'])
 					questions["total_questions"] += part_question['total_questions']
