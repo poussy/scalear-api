@@ -370,6 +370,7 @@ Rails.application.routes.draw do
     end
   end
 
+  resources :news_feed
   end
   get "*path", :to => "application#routing_error" 
 end
