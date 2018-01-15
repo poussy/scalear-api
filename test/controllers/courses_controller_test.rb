@@ -857,7 +857,13 @@ class CoursesControllerTest <  ActionDispatch::IntegrationTest
 			"saleh@gmail.com", "Ahmed@gmail.com", "Karim@gmail.com", "Mohamed@gmail.com", "Hossam@gmail.com", "student_a.hossam.2010@gmail.com", "school_admin@gmailll.com", "admin@gmailll.com"].sort
 
 	end
-	
 
-
+	test "unenroll student" do
+		@student1.roles<<Role.find(1)
+		assert_difference 'Enrollment.where(course_id:@course1.id,user_id:@student1.id).size', -1 do
+			post "/en/courses/"+@course1.id.to_s+"/unenroll",headers: @student1.create_new_auth_token
+		end
+		
+		assert_equal decode_json_response_body["deleted"], true
+	end
 end

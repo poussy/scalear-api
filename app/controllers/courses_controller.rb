@@ -353,8 +353,16 @@ class CoursesController < ApplicationController
 		end
 	end  
 
-	# def unenroll
-	# end  
+	def unenroll
+		@course = params[:id]
+		@student=current_user
+		@student_name=@student.name
+		if @student.remove_student(@course)
+			render json: {:deleted => true, :notice =>["#{@student_name} #{I18n.t('controller_msg.was_removed_from')} #{I18n.t('groups.course')}"]}
+		else
+			render json: {:deleted => false, :errors => [I18n.t("controller_msg.could_not_remove_from_course", {student: @student_name})]}, :status => 400
+		end
+	end
 
 	def enrolled_students
 		@students = @course.enrolled_students.select("users.*, LOWER(users.name)").order("LOWER(users.name)") #enrolled
