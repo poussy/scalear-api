@@ -868,6 +868,22 @@ class GroupsControllerTest < ActionDispatch::IntegrationTest
 			{"question"=>"<p class=\\\"medium-editor-p\\\">ocq</p>","type"=>"OCQ","id"=>1}]
 		
 	end
+
+	test "get_inclass_student_status" do
+		InclassSession.create(online_quiz_id: 3, lecture_id: 3, group_id:3, course_id: 3, status: 2)
+		
+		get '/en/courses/3/groups/3/get_inclass_student_status', params:{quiz_id:3,status:0},headers: @student.create_new_auth_token
+		assert_equal decode_json_response_body, {"status"=>2,
+			"updated"=>true,
+			"quiz"=>{
+				"time"=>50.0,
+				"question_title"=>"New Quiz",
+				"question_type"=>"Free Text Question",
+				"id"=>3,
+				"answers"=>[{"id"=>1, "answer"=>"answer for free text"}]},
+				"lecture"=>{"id"=>3, "name"=>"lecture3"}
+			}
+	end
 	
 	
 end
