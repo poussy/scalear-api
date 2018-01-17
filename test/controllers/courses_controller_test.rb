@@ -866,4 +866,19 @@ class CoursesControllerTest <  ActionDispatch::IntegrationTest
 		
 		assert_equal decode_json_response_body["deleted"], true
 	end
+
+	test "get_student_duedate_email" do
+		@student1.roles<<Role.find(1)
+		get "/en/courses/"+@course1.id.to_s+"/get_student_duedate_email",headers: @student1.create_new_auth_token
+		assert_equal decode_json_response_body["email_due_date"], false
+	end
+
+	test "update_student_duedate_email" do
+		@student1.roles<<Role.find(1)
+		assert_equal  Enrollment.where(user_id:@student1.id).first.email_due_date, false
+		post "/en/courses/"+@course1.id.to_s+"/update_student_duedate_email",params:{email_due_date:true},headers: @student1.create_new_auth_token
+		assert_equal Enrollment.where(user_id:@student1.id).first.email_due_date, true
+	end
+	
+	
 end

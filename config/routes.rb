@@ -48,6 +48,8 @@ Rails.application.routes.draw do
         # post "update_intro_watched"
         post "update_completion_wizard"
         get "get_subdomains"
+        get "get_welcome_message"
+        post "submit_welcome_message"
       end
       collection do
         get "student"

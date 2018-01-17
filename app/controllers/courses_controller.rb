@@ -231,8 +231,11 @@ class CoursesController < ApplicationController
 		render json: {:notice => [ I18n.t("groups.saved")]}
 	end
 
-	# def update_student_duedate_email
-	# end  
+	def update_student_duedate_email
+		enrolled_student = Enrollment.where(:course_id => params[:id] , :user_id => current_user.id)
+		enrolled_student.update_all(:email_due_date => params[:"email_due_date"])  unless enrolled_student.nil?
+		render json: {}
+  	end 
 
 	def update_teacher_discussion_email
 		enrolled_teacher = TeacherEnrollment.where(:course_id => params[:id] , :user_id => current_user.id)
@@ -240,8 +243,12 @@ class CoursesController < ApplicationController
 		render json: {}
 	end  
 
-	# def get_student_duedate_email
-	# end  
+	def get_student_duedate_email
+		enrolled_student = Enrollment.where(:course_id => params[:id] , :user_id => current_user.id).first
+		due_date_check = false
+		due_date_check = enrolled_student.email_due_date unless enrolled_student.nil?
+		render json: {:email_due_date => due_date_check}
+	end
 
 	def save_teachers
 		teacher = params[:new_teacher]
