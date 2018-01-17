@@ -67,6 +67,51 @@ class CoursesControllerTest <  ActionDispatch::IntegrationTest
 		assert_equal resp['total'] , 5
 	end		
 
+	test "index should get all courses whose teachers have the same domain as admin_school_domain of admin's role" do
+		admin = users(:school_administrator)
+		admin.roles<<Role.find(1)
+		## admin_school_domain of admin's role is ".edu.eg"
+		u = User.find(6)
+		u.email='any_name@bar.edu.eg'
+		u.save
+		u.confirm
+		TeacherEnrollment.create(user_id:6,course_id:3,role_id:3,email_discussion: false)
+		get '/en/courses',params:{limit:10,offset:0} ,headers: admin.create_new_auth_token
+		assert_equal decode_json_response_body["total"], 1
+		assert_equal decode_json_response_body["teacher_courses"], [
+			{
+				"end_date"=>"2017-10-09",
+				"id"=>3,
+				"importing"=>false,
+				"image_url"=>
+				"https://pbs.twimg.com/profile_images/839721704163155970/LI_TRk1z_400x400.jpg",
+				"name"=>"course3",
+				"short_name"=>"c3",
+				"start_date"=>"2017-09-04",
+				"user_id"=>3,
+				"ended"=>true,
+				"duration"=>5,
+				"enrollments"=>5,
+				"lectures"=>2,
+				"quiz"=>1,
+				"survey"=>0,
+				"teacher_enrollments"=>
+				[{"user"=>{"name"=>"saleh", "email"=>"any_name@bar.edu.eg"}}]
+			}
+		]
+	end
+
+	test "show" do
+		user = users(:student_in_course3)
+
+		TeacherEnrollment.create(course_id: 3, user_id: 6, role_id: 3)
+
+		get "/en/courses/3", headers: user.create_new_auth_token
+		assert_equal decode_json_response_body["teachers"], [{"id"=>6,"name"=>"saleh aly",  "role"=>"Professor",  "email"=>"saleh@gmail.com"}]
+		assert_equal decode_json_response_body["course"]["id"], 3
+		assert_equal decode_json_response_body["course"]["name"], "course3"
+	end
+
 	test 'validate new method for teacher' do
 		url = '/en/courses/new'
 		get  url ,headers: @user1.create_new_auth_token 
@@ -779,5 +824,44 @@ class CoursesControllerTest <  ActionDispatch::IntegrationTest
 		assert_equal decode_json_response_body['next_item']['item'], {"id"=>3, "class_name"=>"lecture"}
 		
 	end
+
+	test "export csv" do
+		user = users(:user3)
+		user.roles << Role.find(1)
+		TeacherEnrollment.create(user_id:3,course_id:3,role_id:3)
+
 	
+		assert_difference 'ActionMailer::Base.deliveries.size' do
+			## force mail to be sent immediately
+			Delayed::Worker.delay_jobs = false
+			get '/en/courses/3/export_csv', headers: user.create_new_auth_token
+		end
+		
+		attachment =  ActionMailer::Base.deliveries[0].attachments[0]
+		assert_equal attachment.content_type, "application/zip; filename=c3.zip"
+		assert_equal attachment.filename, "c3.zip"
+
+	end
+
+	test "send_system_announcement" do
+		
+		Delayed::Worker.delay_jobs = false
+		post '/en/courses/send_system_announcement', params:{list_type: '1', message:'<p class="medium-editor-p">hello</p>', subject:'System announcement'}, headers: @admin_user.create_new_auth_token
+		## teachers
+		assert_equal ActionMailer::Base.deliveries.last["bcc"].value, ["a.hossam.2010@gmail.com", "a.hossam.2012@gmailll.com"]
+		assert_equal ActionMailer::Base.deliveries.last["subject"].value, "System announcement"
+		assert ActionMailer::Base.deliveries.last.encoded.include?('<p class="medium-editor-p">hello</p>')
+		## students
+		post '/en/courses/send_system_announcement', params:{list_type: '2', message:'<p class="medium-editor-p">hello</p>', subject:'System announcement'}, headers: @admin_user.create_new_auth_token
+		assert_equal ActionMailer::Base.deliveries.last["bcc"].value, ["saleh@gmail.com", "Ahmed@gmail.com", "Karim@gmail.com", "Mohamed@gmail.com", "Hossam@gmail.com", "student_a.hossam.2010@gmail.com"]
+
+		## teachers & students
+		post '/en/courses/send_system_announcement', params:{list_type: '3', message:'<p class="medium-editor-p">hello</p>', subject:'System announcement'}, headers: @admin_user.create_new_auth_token
+		assert_equal ActionMailer::Base.deliveries.last["bcc"].value.sort, ["a.hossam.2010@gmail.com", "a.hossam.2012@gmailll.com", "a.hossam.2011@gmail.com", "okasha@gmail.com", "okashaaa@gmail.com", 
+			"saleh@gmail.com", "Ahmed@gmail.com", "Karim@gmail.com", "Mohamed@gmail.com", "Hossam@gmail.com", "student_a.hossam.2010@gmail.com", "school_admin@gmailll.com", "admin@gmailll.com"].sort
+
+	end
+	
+
+
 end

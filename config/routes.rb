@@ -339,5 +339,19 @@ Rails.application.routes.draw do
       end
     end
 
+    resources :dashboard do
+      collection do
+        get 'get_dashboard'
+        get 'dynamic_url'
+      end
+    end
+    
+    resources :impressionate do
+      collection do
+        delete :destroy
+        get 'impressionate_as'
+      end
+    end
+
   end
 end

@@ -133,8 +133,21 @@ class CoursesController < ApplicationController
 		render json: {:course => @course, :importing => @import, :timezones => @timezones , :subdomains=>subdomains} 
 	end
 
-	# def show
-	# end  
+	def show
+		@course = Course.find_by_id(params[:id])
+		zones=ActiveSupport::TimeZone.all.sort{|v1,v2| v2.formatted_offset <=> v1.formatted_offset}
+		@timezones=[]
+		zones.each do |v|
+			@timezones << {:value => v.to_s, :name => v.name, :offset => v.utc_offset()/3600}
+		end
+		teachers =[]
+		@course.teacher_enrollments.each do |e|
+			teachers<<{:id => e.user_id, :name => User.find(e.user_id).full_name, :role => e.role.name, :email => User.find(e.user_id).email}
+		end
+		course = @course.as_json
+		course[:duration] = @course.duration
+		render json: {course: course, timezones: @timezones, teachers: teachers}
+	end
 
 	def teachers
 		@teachers=[]
@@ -366,8 +379,22 @@ class CoursesController < ApplicationController
 	# def send_email_through
 	# end  
 
-	# def send_system_announcement
-	# end  
+	def send_system_announcement
+			list_type = params[:list_type].to_i
+			if(list_type == 1)
+					users = User.where( id: TeacherEnrollment.all.map(&:user_id).uniq ).map{|u| u.email}
+			elsif(list_type == 2)
+					users = User.where( id: Enrollment.all.map(&:user_id).uniq ).map{|u| u.email}
+			elsif(list_type == 3)
+					users = User.select(:email).all.map{|u| u.email}
+			else
+					users = params[:emails]
+			end
+			users.each_slice(50).to_a.each do |user|
+					UserMailer.delay.system_announcement(user, params[:subject], params[:message], params[:reply_to])
+			end
+			render json: {:nothing => true, :notice => [I18n.t("controller_msg.email_sent_shortly")]}
+	end 
 
 	def course_editor_angular
 		groups = @course.groups.all
@@ -558,8 +585,10 @@ class CoursesController < ApplicationController
 	# def courseware
 	# end  
 
-	# def export_csv
-	# end  
+	def export_csv
+		@course.export_course(current_user)
+		render :json => {:notice => ['Course wil be exported to CSV and sent to your Email']}
+	end
 
 	# def export_student_csv
 	# end  

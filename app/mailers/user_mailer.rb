@@ -60,8 +60,18 @@ class UserMailer < ApplicationMailer
 		mail(:to => @user_email , :subject => "#{t('response_to')} #{survey}", :from => @from)
 	end
 
-	# def attachment_email(user, file_name, file_path, locale)
-	# end
+	def attachment_email(user, file_name, file_path, locale)
+		# puts "in email mailer"
+		I18n.locale=locale
+		@from =  "\"Scalable Learning\" <info@scalable-learning.com>"
+		@user_name= user.name
+		@user_email= user.email
+		attachments[file_name]= File.read(file_path)
+		# puts "file is "
+		# puts file.inspect
+
+		mail(:to => @user_email , :subject => "Exported File", :from => @from)
+	end
 
 	def progress_days_late(user, file_name, file_path, locale,course)
 		I18n.locale=locale
@@ -117,8 +127,11 @@ class UserMailer < ApplicationMailer
 	# def due_date_email(user , course , group , group_type ,locale)
 	# end
 
-	# def system_announcement(user, subject, message, reply_to)
-	# end
+	def system_announcement(user, subject, message, reply_to)
+			@from =  "<info@scalable-learning.com>"
+			@message = message
+			mail(:bcc => user, :subject => subject, :from => @from, :reply_to => reply_to)
+	end
 
 	# def course_end_date_email(user, course, locale)	
 	# end

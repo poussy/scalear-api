@@ -719,6 +719,39 @@ class GroupsControllerTest < ActionDispatch::IntegrationTest
 		end
 	end
 
+	## waiting for discussion
+	test "get_discussion_summary should" do 
+		get '/en/courses/3/groups/3/get_discussion_summary', headers: @user3.create_new_auth_token
+
+		assert decode_json_response_body['module'].key? 'posts_total'
+		assert decode_json_response_body['module'].key? 'unanswered_questions_count'
+
+		get '/en/courses/3/groups/3/get_discussion_summary', headers: @student.create_new_auth_token
+
+		assert decode_json_response_body['module'].key? 'posts_total'
+		assert_not decode_json_response_body['module'].key? 'unanswered_questions_count'
+	end
+
+	test "get_module_data_angular" do
+		get "/en/courses/3/groups/3/get_module_data_angular", headers:  @student.create_new_auth_token
+
+		assert_equal decode_json_response_body["module_lectures"].size, 2
+
+		lecture = decode_json_response_body["module_lectures"][0]
+		
+
+		assert_equal lecture["id"], 3
+		assert_equal lecture["name"], "lecture3"
+		assert_equal lecture["user_confused"].size, 4
+		assert_equal lecture["title_markers"].size, 1
+		assert_equal lecture["video_quizzes"].size, 10
+
+		assert_equal lecture["video_quizzes"][0]["id"], 1
+		assert_equal lecture["video_quizzes"][0]["online_answers"].map{|ans| ans["id"]}, [6,7]
+		
+
+	end
+
 	test "get_module_inclass" do
 
 		OnlineQuiz.find(1).update_attributes(inclass: true, hide:false, intro: 30, self: 60, in_group: 90, discussion: 120)
@@ -834,6 +867,22 @@ class GroupsControllerTest < ActionDispatch::IntegrationTest
 			{"question"=>"<p class=\\\"medium-editor-p\\\">free text</p>","type"=>"Free Text Question","id"=>3},
 			{"question"=>"<p class=\\\"medium-editor-p\\\">ocq</p>","type"=>"OCQ","id"=>1}]
 		
+	end
+
+	test "get_inclass_student_status" do
+		InclassSession.create(online_quiz_id: 3, lecture_id: 3, group_id:3, course_id: 3, status: 2)
+		
+		get '/en/courses/3/groups/3/get_inclass_student_status', params:{quiz_id:3,status:0},headers: @student.create_new_auth_token
+		assert_equal decode_json_response_body, {"status"=>2,
+			"updated"=>true,
+			"quiz"=>{
+				"time"=>50.0,
+				"question_title"=>"New Quiz",
+				"question_type"=>"Free Text Question",
+				"id"=>3,
+				"answers"=>[{"id"=>1, "answer"=>"answer for free text"}]},
+				"lecture"=>{"id"=>3, "name"=>"lecture3"}
+			}
 	end
 	
 	

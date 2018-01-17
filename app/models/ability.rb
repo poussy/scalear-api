@@ -96,6 +96,10 @@ class Ability
               online_marker.course.correct_teacher(user)
         end
     end
+    if(user.has_role?'Administrator')
+      can [:send_system_announcement], Course
+    end
+    
     if !(user.has_role? 'User') && !(user.has_role? :admin) && !(user.has_role? :administrator)
       #can :index, Course  #so that people without role can live until they get a role.
       #can [:sign_angular_in,:get_current_user], User

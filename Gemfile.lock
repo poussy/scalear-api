@@ -57,6 +57,7 @@ GEM
       tzinfo (~> 1.1)
     addressable (2.5.2)
       public_suffix (>= 2.0.2, < 4.0)
+    aescrypt (1.0.0)
     arel (8.0.0)
     bcrypt (3.1.11)
     builder (3.2.3)
@@ -188,6 +189,7 @@ PLATFORMS
 
 DEPENDENCIES
   activeresource
+  aescrypt
   byebug
   cancancan (~> 2.0)
   delayed_job_active_record
