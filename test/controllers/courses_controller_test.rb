@@ -67,6 +67,40 @@ class CoursesControllerTest <  ActionDispatch::IntegrationTest
 		assert_equal resp['total'] , 5
 	end		
 
+	test "index should get all courses whose teachers have the same domain as admin_school_domain of admin's role" do
+		admin = users(:school_administrator)
+		admin.roles<<Role.find(1)
+		## admin_school_domain of admin's role is ".edu.eg"
+		u = User.find(6)
+		u.email='any_name@bar.edu.eg'
+		u.save
+		u.confirm
+		TeacherEnrollment.create(user_id:6,course_id:3,role_id:3,email_discussion: false)
+		get '/en/courses',params:{limit:10,offset:0} ,headers: admin.create_new_auth_token
+		assert_equal decode_json_response_body["total"], 1
+		assert_equal decode_json_response_body["teacher_courses"], [
+			{
+				"end_date"=>"2017-10-09",
+				"id"=>3,
+				"importing"=>false,
+				"image_url"=>
+				"https://pbs.twimg.com/profile_images/839721704163155970/LI_TRk1z_400x400.jpg",
+				"name"=>"course3",
+				"short_name"=>"c3",
+				"start_date"=>"2017-09-04",
+				"user_id"=>3,
+				"ended"=>true,
+				"duration"=>5,
+				"enrollments"=>5,
+				"lectures"=>2,
+				"quiz"=>1,
+				"survey"=>0,
+				"teacher_enrollments"=>
+				[{"user"=>{"name"=>"saleh", "email"=>"any_name@bar.edu.eg"}}]
+			}
+		]
+	end
+
 	test "show" do
 		user = users(:student_in_course3)
 
@@ -823,8 +857,8 @@ class CoursesControllerTest <  ActionDispatch::IntegrationTest
 
 		## teachers & students
 		post '/en/courses/send_system_announcement', params:{list_type: '3', message:'<p class="medium-editor-p">hello</p>', subject:'System announcement'}, headers: @admin_user.create_new_auth_token
-		assert_equal ActionMailer::Base.deliveries.last["bcc"].value, ["a.hossam.2010@gmail.com", "a.hossam.2012@gmailll.com", "a.hossam.2011@gmail.com", "okasha@gmail.com", "okashaaa@gmail.com", 
-			"saleh@gmail.com", "Ahmed@gmail.com", "Karim@gmail.com", "Mohamed@gmail.com", "Hossam@gmail.com", "student_a.hossam.2010@gmail.com", "school_admin@gmailll.com", "admin@gmailll.com"]
+		assert_equal ActionMailer::Base.deliveries.last["bcc"].value.sort, ["a.hossam.2010@gmail.com", "a.hossam.2012@gmailll.com", "a.hossam.2011@gmail.com", "okasha@gmail.com", "okashaaa@gmail.com", 
+			"saleh@gmail.com", "Ahmed@gmail.com", "Karim@gmail.com", "Mohamed@gmail.com", "Hossam@gmail.com", "student_a.hossam.2010@gmail.com", "school_admin@gmailll.com", "admin@gmailll.com"].sort
 
 	end
 	
