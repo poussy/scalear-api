@@ -378,7 +378,7 @@ class Group < ApplicationRecord
 
 
 	def inclass_session
-			self.inclass_sessions.order("updated_at DESC").first
+		self.inclass_sessions.order("updated_at DESC").first
 	end
 
 def get_module_summary_teacher
