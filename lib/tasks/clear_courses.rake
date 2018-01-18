@@ -95,4 +95,15 @@ namespace :clear_courses do
 
     end
 
+    task :clear_answers => :environment do
+        FreeOnlineQuizGrade.destroy_all
+        Confused.destroy_all
+        FreeAnswer.destroy_all
+        LectureView.destroy_all
+        OnlineQuizGrade.destroy_all
+        QuizGrade.destroy_all
+        QuizStatus.destroy_all
+        VideoEvent.destroy_all
+    end
+
 end
