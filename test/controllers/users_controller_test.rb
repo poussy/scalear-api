@@ -59,6 +59,17 @@ class UsersControllerTest < ActionController::TestCase
 
 
   end
+
+  test 'alter_pref should update discussion_pref of user' do
+
+    user = users(:user4)
+
+    request.headers.merge! user.create_new_auth_token
+    assert_changes 'User.find(4).discussion_pref', from:1, to: 0 do
+      post :alter_pref, {params: {privacy: 0}}
+    end
+    
+  end
   
 
 

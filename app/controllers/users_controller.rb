@@ -43,8 +43,12 @@ class UsersController < ApplicationController
   # def get_user_angular
   # end
 
-  # def alter_pref
-  # end
+  def alter_pref
+    user = User.find(current_user.id)
+    user.discussion_pref = params[:privacy]
+    user.save(:validate => false)
+    render :json =>{}
+  end
 
   # def saml_signup
   # end
