@@ -877,6 +877,14 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 		end
 		
 	end
+
+	test "delete_note" do
+		VideoNote.create(lecture_id:3, user_id:6, data: "new note", id: 6)
+		assert_difference 'Lecture.find(3).video_notes.size', -1 do
+			delete '/en/courses/3/lectures/3/delete_note', params: {note_id:6}, headers: @headers2
+		end
+		assert_equal VideoNote.where(id:6).size, 0
+	end
 	
 	
 	

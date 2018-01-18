@@ -788,8 +788,14 @@ class LecturesController < ApplicationController
 		
 	end
 
-	# def delete_note
-	# end
+	def delete_note
+			note=@lecture.video_notes.find(params[:note_id])
+			if note.destroy
+					render json: {:notice => [I18n.t("notes.successfully_deleted")]}
+			else
+					render json: {:errors => [I18n.t("notes.could_not_delete_note")]}, :status => 400
+			end
+	end
 
 	# def load_note
 	# end
