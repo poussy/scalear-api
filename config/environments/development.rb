@@ -2,10 +2,13 @@ Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
 
   config.middleware.insert_before 0, Rack::Cors do
-      puts "in middleware"
       allow do
         origins 'http://localhost:9000' #'http://scalear-staging.s3-website-eu-west-1.amazonaws.com'  #* #angular-edu.herokuapp.com
-        resource '*', :headers => :any,:expose  => ['X-Flash-Notice','X-Flash-Error','X-Flash-Warning','X-Flash-Message'], :credentials => true, :methods => [:get, :post, :options, :put, :delete]
+        resource '*', 
+        :headers => :any,
+        :expose  => ['access-token', 'expiry', 'token-type', 'uid', 'client'], 
+        :credentials => true, 
+        :methods => [:get, :post, :options, :put, :delete]
       end
   end
 

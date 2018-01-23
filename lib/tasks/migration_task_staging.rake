@@ -39,9 +39,13 @@ namespace :db do
     "20171108155358",
     "20171108155921",
     "20171108160438",
+    "20180111112749",
+    "20180111141818",
+    "20180111141928",
+    "20180111151134"
   ]
 
-  task :skip_migrations_staging2 => :environment do
+  task :skip_migrations => :environment do
     puts "Start `skip_migrations`"
     versions_to_skip.each do |version|
       puts "skipping #{version}"
