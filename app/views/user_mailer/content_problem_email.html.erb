@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
+  </head>
+  <body>
+
+    <p>Dear Teacher,</p>
+    <p>
+      Your student <%=@user_name%> [ <%=@user_email%> ] reported an issue with the content for your course <%=@course.short_name%> on ScalableLearning. If you need help from the ScalableLearning team resolving this issue, please forward it to support@scalable-learning.com
+      <br>
+      <br>
+  	 <% if @course %>
+  	   <%= "#{t('courses.course_name')}: #{@course.name}" %><br>
+  	 <% end %>
+  	 <% if @group %>
+  	   <%= "#{t('groups.module_name')}: #{@group.name}" %><br>
+  	 <% end %>
+  	 <% if @lecture %>
+  	   <%= "#{t('lectures.lecture_title')}: #{@lecture.name}" %><br>
+  	 <% end %>
+  	 <% if @quiz %>
+  	   <%= "#{t('quizzes.quiz_title')}: #{@quiz.name}" %><br>
+  	 <% end %>
+     <br>
+     <br>
+      <%= "#{t('user_mailer.student_comment')}: #{@problem}" %>
+      <br>
+      <% if @url %>
+        <%= "(#{t('user_mailer.technical_details')}: #{root_url+@url}" %>
+        <br>
+        <%= "#{t('agent')}: #{@agent})" %><br/>
+        <%= "#{t('version')}: #{@version}" %><br/>
+
+     <% end %>
+
+    </p>
+  </body>
+</html>
