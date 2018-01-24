@@ -2,8 +2,6 @@ class ApplicationController < ActionController::API
   include DeviseTokenAuth::Concerns::SetUserByToken
   include CanCan::ControllerAdditions
 
-  include CanCan::ControllerAdditions
-
   before_action :configure_permitted_parameters, if: :devise_controller?
   rescue_from ActiveRecord::RecordNotFound, :with => :record_not_found
 
@@ -11,7 +9,7 @@ class ApplicationController < ActionController::API
   def configure_permitted_parameters
     devise_parameter_sanitizer.permit(:sign_up, keys: [:last_name, :university, :user, :name, :screen_name, :registration])
     devise_parameter_sanitizer.permit(:account_update, keys: 
-      [:last_name, :university, :user, :name, :screen_name, :registration, :link, :bio, :first_day])
+      [:last_name, :university, :user, :name, :screen_name, :registration, :link, :bio, :first_day, :email])
   end
 
   def check_user_signed_in? #401 not authenticated(devise) #403 not authorized/not allowed (cancan)
