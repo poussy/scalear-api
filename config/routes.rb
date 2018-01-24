@@ -37,8 +37,6 @@ Rails.application.routes.draw do
     post "discussions/hide_comment"
     post "discussions/update_post"
 
-
-
     # devise_for :users 
     resources :users, only: [] do
       member do
@@ -64,7 +62,8 @@ Rails.application.routes.draw do
       end
     end
 
-    match 'saml/(:action)' => 'saml#(:action)', :via => [:get, :post]
+    get 'saml/(:action)' => 'saml#(:action)', :via => [:get, :post]
+    get 'lti/(:action)' => 'lti#(:action)', :via => [:get, :post]
     
     resources :courses do
         member do
@@ -291,7 +290,7 @@ Rails.application.routes.draw do
           end
     end
 
-
+    get '/events(/:year(/:month))' => 'events#index', :as => :event, :constraints => {:year => /\d{4}/, :month => /\d{1,2}/}
     resources :announcements
     end    
     
