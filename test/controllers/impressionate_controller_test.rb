@@ -17,7 +17,7 @@ class ImpressionateControllerTest < ActionDispatch::IntegrationTest
 
     assert_equal User.last["name"], "preview"
     assert_equal User.last["email"], "okasha_preview@scalable-learning.com"
-    assert_equal User.last.roles.map{|role| role.id},[1,2,6]
+    assert_includes User.last.roles.map{|role| role.id} , 6
 
     assert_not decode_json_response_body["token"].nil?
     

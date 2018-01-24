@@ -588,28 +588,30 @@ end
 		unanswered_posts['posts'].each do |lecture|
 			lecture_id = lecture[0].to_i
 			questions[lecture_id] = {}
-			questions[lecture_id]['name'] = Lecture.find(lecture_id).name
-			questions[lecture_id]['lecture_id'] = lecture_id
-			questions[lecture_id]['questions'] = {}
-			lecture[1].group_by{|post| post['post_content']}.each do |post|
-				post_content = post[0]
-				questions[lecture_id]['questions'][post_content] = {}
-				questions[lecture_id]['questions'][post_content]['content'] = post_content
-				questions[lecture_id]['questions'][post_content]['privacy'] = post[1][0]['privacy']
-				questions[lecture_id]['questions'][post_content]['time'] = post[1][0]['time']
-				questions[lecture_id]['questions'][post_content]['group_id'] = post[1][0]['group_id']
-				questions[lecture_id]['questions'][post_content]['lecture_id'] = post[1][0]['lecture_id']
-				questions[lecture_id]['questions'][post_content]['id'] = post[1][0]['id']
+			if Lecture.exists?(id: lecture_id)
+				questions[lecture_id]['name'] = Lecture.find(lecture_id).name
+				questions[lecture_id]['lecture_id'] = lecture_id
+				questions[lecture_id]['questions'] = {}
+				lecture[1].group_by{|post| post['post_content']}.each do |post|
+					post_content = post[0]
+					questions[lecture_id]['questions'][post_content] = {}
+					questions[lecture_id]['questions'][post_content]['content'] = post_content
+					questions[lecture_id]['questions'][post_content]['privacy'] = post[1][0]['privacy']
+					questions[lecture_id]['questions'][post_content]['time'] = post[1][0]['time']
+					questions[lecture_id]['questions'][post_content]['group_id'] = post[1][0]['group_id']
+					questions[lecture_id]['questions'][post_content]['lecture_id'] = post[1][0]['lecture_id']
+					questions[lecture_id]['questions'][post_content]['id'] = post[1][0]['id']
 
-				questions[lecture_id]['questions'][post_content]['comments_count'] = 0
+					questions[lecture_id]['questions'][post_content]['comments_count'] = 0
 
-				questions[lecture_id]['questions'][post_content]['comments'] = {}
-				post[1].each_with_index do |comment,index|
-					if comment['comment_content']
-						questions[lecture_id]['questions'][post_content]['comments_count'] = 1
-						questions[lecture_id]['questions'][post_content]['comments'][index] = {}
-						questions[lecture_id]['questions'][post_content]['comments'][index]['name'] = User.find(comment['user_id']).screen_name
-						questions[lecture_id]['questions'][post_content]['comments'][index]['content'] = comment['comment_content']
+					questions[lecture_id]['questions'][post_content]['comments'] = {}
+					post[1].each_with_index do |comment,index|
+						if comment['comment_content']
+							questions[lecture_id]['questions'][post_content]['comments_count'] = 1
+							questions[lecture_id]['questions'][post_content]['comments'][index] = {}
+							questions[lecture_id]['questions'][post_content]['comments'][index]['name'] = User.find(comment['user_id']).screen_name
+							questions[lecture_id]['questions'][post_content]['comments'][index]['content'] = comment['comment_content']
+						end
 					end
 				end
 			end
