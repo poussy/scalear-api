@@ -15,7 +15,6 @@ class ImpressionateController < ApplicationController
 			else
 				user =User.new(:email => current_user.email.split('@')[0]+'_preview@scalable-learning.com', :password => 'studentpreview1', :name => 'preview', :last_name => 'student', :screen_name =>'preview_student'+current_user.id.to_s, :university => 'preview univerisity', :completion_wizard =>{:intro_watched => true, :all => true}) #User.find(params[:user_id])
 				user.skip_confirmation!
-				user.roles << Role.find(2)
 				user.roles << Role.find(6)
 				if user.save
 					course.users<<user

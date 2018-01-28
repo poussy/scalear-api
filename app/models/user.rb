@@ -9,14 +9,13 @@ class User < ActiveRecord::Base
   devise :database_authenticatable, :registerable,
           :recoverable, :rememberable, :trackable, :validatable,
           :confirmable
-          # :omniauthable
 
   attr_accessor :info_complete
 
-  has_many :subjects, :class_name => "Course", :dependent => :destroy  # to get this call user.subjects
+  has_many :subjects, :class_name => "Course", :dependent => :destroy
 
   has_many :enrollments, :dependent => :destroy
-  has_many :courses, -> { distinct }, :through => :enrollments, :source => :course  # to get this call user.subjects
+  has_many :courses, -> { distinct }, :through => :enrollments, :source => :course
 
   has_many :teacher_enrollments, :dependent => :destroy
   has_many :subjects_to_teach, -> { distinct }, :through => :teacher_enrollments, :source => :course
@@ -24,11 +23,8 @@ class User < ActiveRecord::Base
   has_many :guest_enrollments, :dependent => :destroy
   has_many :guest_courses, -> { distinct }, :through => :guest_enrollments, :source => :course
 
-  has_many :users_roles, :dependent => :destroy
-  has_many :roles, -> { distinct }, :through => :users_roles
-  has_many :organizations, -> { distinct }, :through => :users_roles
-
-  # has_and_belongs_to_many :roles, -> {uniq} ,:join_table => :users_roles  
+  has_and_belongs_to_many :organizations, :join_table => :users_roles  
+  has_and_belongs_to_many :roles, :join_table => :users_roles
   has_many :shared_bys, :class_name => "SharedItem", :foreign_key => 'shared_by_id', :dependent => :destroy
   has_many :shared_withs, :class_name => "SharedItem", :foreign_key => 'shared_with_id', :dependent => :destroy
 
@@ -43,7 +39,7 @@ class User < ActiveRecord::Base
   has_many :free_online_quiz_grades, :dependent => :destroy
   has_many :lecture_views, :dependent => :destroy
   has_many :online_quiz_grades, :dependent => :destroy
-  has_many :quiz_grades, :dependent=> :destroy#, :conditions => :user kda its like im defining a method called quiz grades, which returns something when user = ... not what i want.
+  has_many :quiz_grades, :dependent=> :destroy
   has_many :user_distance_peers, :dependent => :destroy
   has_many :video_events, :dependent => :destroy
   has_many :video_notes, :dependent => :destroy
@@ -106,30 +102,6 @@ class User < ActiveRecord::Base
   end
 
   # def password_complexity
-  # end
-
-  # def self.teachers
-  # end
-
-  # def self.find_or_create_for_doorkeeper_oauth(oauth_data)
-  # end
-
-  # def update_doorkeeper_credentials(oauth_data)
-  # end
-
-  # def is_student?
-  # end
-
-  # def is_teacher?
-  # end
-
-  # def is_teacher_or_admin?
-  # end
-
-  # def is_prof?(course)
-  # end
-
-  # def is_ta?(course)
   # end
 
   def is_administrator?
@@ -658,11 +630,10 @@ class User < ActiveRecord::Base
   end  
 
   private
-      def add_default_user_role_to_user
-        if !self.has_role?('User') 
-          self.users_roles.build(role_id:1)
-        end
-        return true
+    def add_default_user_role_to_user
+      if !self.has_role?('User') 
+        self.roles << Role.find(1)
       end
+    end
 
 end
