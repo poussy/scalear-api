@@ -885,8 +885,40 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 		end
 		assert_equal VideoNote.where(id:6).size, 0
 	end
-	
-	
-	
+
+	test "export_notes after adding 1 note in lecture" do
+		VideoNote.create(lecture_id:3, user_id:6, data: "new note", id: 6)
+		get '/en/courses/3/lectures/3/export_notes', params: {}, headers: @headers2
+		resp =  JSON.parse(JSON.parse(response.body)['notes'][0])
+		assert_response :success
+		assert_equal resp.count , 1
+	end	
+	test "export_notes after adding 2 note in lecture" do
+		VideoNote.create(lecture_id:3, user_id:6, data: "new note", id: 6)
+		VideoNote.create(lecture_id:3, user_id:6, data: "new note", id: 7)
+		get '/en/courses/3/lectures/3/export_notes', params: {}, headers: @headers2
+		assert_response :success
+		resp =  JSON.parse(JSON.parse(response.body)['notes'][0])
+		assert_equal resp.count , 2
+
+	end	
+	test "export_notes after adding 2 note in lecture from 1 student and 1 note from different student" do
+		VideoNote.create(lecture_id:3, user_id:6, data: "new note", id: 6)
+		VideoNote.create(lecture_id:3, user_id:6, data: "new note", id: 7)
+		VideoNote.create(lecture_id:3, user_id:8, data: "new note", id: 8)
+		get '/en/courses/3/lectures/3/export_notes', params: {}, headers: @headers2
+		resp =  JSON.parse(JSON.parse(response.body)['notes'][0])
+		assert_response :success
+		assert_equal resp.count , 2
+	end	
+	test "export_notes after adding 2 note in lecture and then deleting 1 note  " do
+		VideoNote.create(lecture_id:3, user_id:6, data: "new note", id: 6)
+		VideoNote.create(lecture_id:3, user_id:6, data: "new note", id: 7)
+		delete '/en/courses/3/lectures/3/delete_note', params: {note_id:6}, headers: @headers2
+		get '/en/courses/3/lectures/3/export_notes', params: {}, headers: @headers2
+		resp =  JSON.parse(JSON.parse(response.body)['notes'][0])
+		assert_response :success
+		assert_equal resp.count , 1
+	end	
 
 end
