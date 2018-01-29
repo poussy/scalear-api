@@ -93,7 +93,25 @@ class OnlineMarkersControllerTest < ActionDispatch::IntegrationTest
 		resp =  JSON.parse response.body
 		assert_response :success
 		assert_equal @course1.reload.online_markers.count , 0
-		assert_equal resp['notice'][0] , "Note was successfully deleted."		
+		assert_equal resp['notice'][0] , "Note was successfully deleted."
+	end
+
+	test "should update_hide " do
+		url = '/en/online_markers/'+@online_marker1.id.to_s+'/update_hide' 
+		post url , params: { hide: true }, headers: @user1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_response :success
+		assert_equal @online_marker1.reload.hide , true
+		url = '/en/online_markers/'+@online_marker1.id.to_s+'/update_hide' 
+		post url , params: { hide: false },headers: @user1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_response :success
+		assert_equal @online_marker1.reload.hide , false
+		url = '/en/online_markers/'+@online_marker1.id.to_s+'/update_hide' 
+		post url , params: { hide: false },headers: @user1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_response :success
+		assert_equal @online_marker1.reload.hide , false		
 	end
 
 	test "should get_marker_list" do

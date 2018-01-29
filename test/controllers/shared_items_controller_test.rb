@@ -152,5 +152,13 @@ class SharedItemsControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "should update_shared_data shared_item and check data is updated and correct in database " do
+    assert_equal SharedItem.first.reload.data['modules'] , [4, 3, 5] 
+    post  '/en/shared_items/1/update_shared_data', params: {data:{modules:[{id:4}], customlinks:[], quizzes:[], lectures: [] } } , headers: @headers, as: :json
+    assert_response :success
+    assert_equal SharedItem.first.reload.data['modules'] , [4]
+    resp =  JSON.parse(response.body)
+    assert_equal resp , {}
+  end
 
 end
