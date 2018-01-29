@@ -6,6 +6,13 @@ class ApplicationController < ActionController::API
   before_action :set_locale
   rescue_from ActiveRecord::RecordNotFound, :with => :record_not_found
 
+  def append_info_to_payload(payload)
+    super
+    payload[:ip] = request.remote_ip
+    if !current_user.nil?
+      payload[:user_id] = current_user.id if current_user.id
+    end
+  end
 
   def configure_permitted_parameters
     devise_parameter_sanitizer.permit(:sign_up, keys: [:last_name, :university, :user, :name, :screen_name, :registration])

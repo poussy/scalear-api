@@ -84,7 +84,7 @@ Rails.application.configure do
     end
     opts[:params] = params
     opts[:user_id] = event.payload[:user_id]
-    opts[:user_role] = event.payload[:user_role]
+    opts[:ip] = event.payload[:ip]
     if event.payload[:exception]
       opts[:stacktrace] = %Q('#{Array(event.payload[:stacktrace]).to_json}')
     end

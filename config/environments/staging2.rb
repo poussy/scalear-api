@@ -18,7 +18,7 @@ Rails.application.configure do
    config.consider_all_requests_local       = false
    config.action_controller.perform_caching = true
 
-   config.eager_load = true
+   config.eager_load = false
 
    config.consider_all_requests_local = true
 
@@ -114,7 +114,7 @@ Rails.application.configure do
     end
     opts[:params] = params
     opts[:user_id] = event.payload[:user_id]
-    opts[:user_role] = event.payload[:user_role]
+    opts[:ip] = event.payload[:ip]
     if event.payload[:exception]
       opts[:stacktrace] = %Q('#{Array(event.payload[:stacktrace]).to_json}')
     end

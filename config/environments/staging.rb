@@ -11,7 +11,7 @@ Rails.application.configure do
   # Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
   config.force_ssl = true
 
-  config.eager_load = true
+  config.eager_load = false
 
   # See everything in the log (default is :info)
   # config.log_level = :debug
@@ -77,7 +77,7 @@ Rails.application.configure do
     end
     opts[:params] = params
     opts[:user_id] = event.payload[:user_id]
-    opts[:user_role] = event.payload[:user_role]
+    opts[:ip] = event.payload[:ip]
     if event.payload[:exception]
       opts[:stacktrace] = %Q('#{Array(event.payload[:stacktrace]).to_json}')
     end
