@@ -22,6 +22,12 @@ class SamlControllerTest < ActionDispatch::IntegrationTest
       }
     
     assert_match /\#\/users\/login\?access-token.*uid\=okasha%40gmail\.com/, saml_controller.send(:validate_and_sign_in_user,response_attributes)
-   
+    
+    #updated user name and last name
+    assert_equal User.find(3).name, "saleh"
+    assert_equal User.find(3).last_name, "aly"
+    assert_equal User.find(3).saml, true
+    
   end
 end
+
