@@ -8,7 +8,7 @@ class SamlControllerTest < ActionDispatch::IntegrationTest
         "urn:oid:2.5.4.10"=>["university","Cairo"]
       }
 
-    assert_equal saml_controller.send(:validate_and_sign_in_user,response_attributes), {:redirect_to=>"#/users/signup?mail=hany%40gmail.com&o=Cairo&saml=true"}
+    assert_equal saml_controller.send(:validate_and_sign_in_user,response_attributes), "#/users/signup?mail=hany%40gmail.com&o=Cairo&saml=true"
 
   end
 
@@ -20,15 +20,8 @@ class SamlControllerTest < ActionDispatch::IntegrationTest
         "urn:oid:2.5.4.42"=>["givenName","saleh"],
         "uurn:oid:2.5.4.4"=>["sn","aly"],
       }
-
-      # "urn:oid:1.3.6.1.4.1.5923.1.1.1.6"=>["eduPersonPrincipalName","Prinicipal_1"],
-    assert_equal saml_controller.send(:validate_and_sign_in_user,response_attributes)[:sign_in]["id"],3
-    assert_equal saml_controller.send(:validate_and_sign_in_user,response_attributes)[:sign_in]["name"],"saleh"
-    assert_equal saml_controller.send(:validate_and_sign_in_user,response_attributes)[:sign_in]["last_name"],"aly"
-    assert_equal saml_controller.send(:validate_and_sign_in_user,response_attributes)[:sign_in]["university"],"Cairo"
-    assert_equal saml_controller.send(:validate_and_sign_in_user,response_attributes)[:sign_in]["saml"],true
-
-    assert_not saml_controller.send(:validate_and_sign_in_user,response_attributes)[:token].nil?
+    
+    assert_match /\#\/users\/login\?access-token.*uid\=okasha%40gmail\.com/, saml_controller.send(:validate_and_sign_in_user,response_attributes)
    
   end
 end

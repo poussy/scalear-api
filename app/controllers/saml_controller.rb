@@ -28,7 +28,8 @@ class SamlController < ApplicationController
     connect_to = $connect_to.to_s
     @response.decrypt(Rails.application.config.saml[:keys][:private])
 
-    validate_and_sign_in_user(@response.attributes)
+    redirect_url = validate_and_sign_in_user(@response.attributes)
+    redirect_to redirect_url
    
   end
 
@@ -78,7 +79,7 @@ class SamlController < ApplicationController
       email = attributes["mail"].downcase rescue ""
       saml_user = User.find_by_email(email)
       if saml_user.nil?
-       redirect_to "#/users/signup?#{attributes.to_query}&saml=true"
+       return "#/users/signup?#{attributes.to_query}&saml=true"
       else
         if !saml_user.saml
           saml_user.name        = attributes["givenName"] || saml_user.name
@@ -90,7 +91,7 @@ class SamlController < ApplicationController
         end
         token = saml_user.create_new_auth_token
         
-        redirect_to "#/users/login?#{token.to_query}"
+        return "#/users/login?#{token.to_query}"
       end
     end
 
