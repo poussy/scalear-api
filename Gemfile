@@ -53,5 +53,6 @@ gem 'rubyzip', '>= 1.0.0' # will load new rubyzip version
 gem 'zip-zip' # will load compatibility for old rubyzip API.
 gem 'settingslogic'
 gem 'activeresource'
-gem 'ruby-saml', :git => "git://github.com/karimAlaa/ruby-saml.git"
 gem 'aescrypt'
+gem 'ruby-saml', :git => "git://github.com/karimAlaa/ruby-saml.git"
+gem 'ims-lti', '~>1.2'

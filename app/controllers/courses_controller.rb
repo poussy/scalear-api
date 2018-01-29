@@ -63,14 +63,16 @@ class CoursesController < ApplicationController
 			@total_teacher = current_user.subjects_to_teach.count
 			teacher_courses = current_user.subjects_to_teach.order("start_date DESC").limit(params[:limit]).offset(params[:offset]).includes([{:teacher_enrollments => [:user,:role]}, :enrollments, :lectures, :quizzes])
 		end
-		teacher_courses = teacher_courses.map do|c|
-			{
-				"end_date"=>c.end_date,"id"=>c.id,"importing"=>c.importing,"image_url"=>c.image_url,"name"=>c.name,"short_name"=>c.short_name,
-				"start_date"=>c.start_date,"user_id"=>c.user_id,"ended"=>c.ended,"duration"=>c.duration,'enrollments'=>c.enrollments.size ,'lectures'=>c.lectures.size ,
-				'quiz'=>c.quizzes.select{|q| q.quiz_type =='quiz'}.size ,'survey'=>c.quizzes.select{|q| q.quiz_type !='quiz'}.size,
-				"teacher_enrollments"=> c.teacher_enrollments.map { |u| { "user" => { "name" => u.user.name , "email" => u.user.email } } }
-			}
-		end
+		if teacher_courses 
+			teacher_courses = teacher_courses.map do|c| 
+				{ 
+					"end_date"=>c.end_date,"id"=>c.id,"importing"=>c.importing,"image_url"=>c.image_url,"name"=>c.name,"short_name"=>c.short_name, 
+					"start_date"=>c.start_date,"user_id"=>c.user_id,"ended"=>c.ended,"duration"=>c.duration,'enrollments'=>c.enrollments.size ,'lectures'=>c.lectures.size , 
+					'quiz'=>c.quizzes.select{|q| q.quiz_type =='quiz'}.size ,'survey'=>c.quizzes.select{|q| q.quiz_type !='quiz'}.size, 
+					"teacher_enrollments"=> c.teacher_enrollments.map { |u| { "user" => { "name" => u.user.name , "email" => u.user.email } } } 
+				} 
+			end 
+		end 
 		@total_student = (current_user.courses + current_user.guest_courses).count
 		student_courses = (current_user.courses.order("start_date DESC").limit(params[:limit]).offset(params[:offset]) + current_user.guest_courses.order("start_date DESC").limit(params[:limit]).offset(params[:offset])).map do|c|
 			{
@@ -229,8 +231,11 @@ class CoursesController < ApplicationController
 		render json: {:notice => [ I18n.t("groups.saved")]}
 	end
 
-	# def update_student_duedate_email
-	# end  
+	def update_student_duedate_email
+		enrolled_student = Enrollment.where(:course_id => params[:id] , :user_id => current_user.id)
+		enrolled_student.update_all(:email_due_date => params[:"email_due_date"])  unless enrolled_student.nil?
+		render json: {}
+  	end 
 
 	def update_teacher_discussion_email
 		enrolled_teacher = TeacherEnrollment.where(:course_id => params[:id] , :user_id => current_user.id)
@@ -238,8 +243,12 @@ class CoursesController < ApplicationController
 		render json: {}
 	end  
 
-	# def get_student_duedate_email
-	# end  
+	def get_student_duedate_email
+		enrolled_student = Enrollment.where(:course_id => params[:id] , :user_id => current_user.id).first
+		due_date_check = false
+		due_date_check = enrolled_student.email_due_date unless enrolled_student.nil?
+		render json: {:email_due_date => due_date_check}
+	end
 
 	def save_teachers
 		teacher = params[:new_teacher]
@@ -351,8 +360,16 @@ class CoursesController < ApplicationController
 		end
 	end  
 
-	# def unenroll
-	# end  
+	def unenroll
+		@course = params[:id]
+		@student=current_user
+		@student_name=@student.name
+		if @student.remove_student(@course)
+			render json: {:deleted => true, :notice =>["#{@student_name} #{I18n.t('controller_msg.was_removed_from')} #{I18n.t('groups.course')}"]}
+		else
+			render json: {:deleted => false, :errors => [I18n.t("controller_msg.could_not_remove_from_course", {student: @student_name})]}, :status => 400
+		end
+	end
 
 	def enrolled_students
 		@students = @course.enrolled_students.select("users.*, LOWER(users.name)").order("LOWER(users.name)") #enrolled

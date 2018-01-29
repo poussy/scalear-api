@@ -27,11 +27,13 @@ class KpisController < ApplicationController
 	# def read_totals
 	# end
 
-	# def read_totals_for_duration
-	# end
+	def read_totals_for_duration
+		render json: Course.school_admin_statistics_course_ids(params[:start_date],params[:end_date], params[:domain], current_user)
+	end
 
-	# def get_report_data_course_duration
-	# end
+	def get_report_data_course_duration
+		render json: Course.school_admin_statistics_course_data(params[:start_date],params[:end_date], params[:course_ids] )
+	end
 
 	# def read_series
 	# end

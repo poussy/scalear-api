@@ -628,5 +628,13 @@ class QuizzesControllerTest < ActionDispatch::IntegrationTest
       post '/en/courses/3/quizzes/1/create_or_update_survey_responses', params: {groups: [1],response:"response to answer1"}, headers: @headers, as: :json
       assert_equal FreeAnswer.find(1).response, "response to answer1"
     end
+
+    test "make_visible should make survey visible" do
+      Quiz.find(1).update_attributes({quiz_type:'survey',visible:false})
+      assert_changes 'Quiz.find(1).visible', from: false, to: true do
+        post '/en/courses/3/quizzes/1/make_visible', params: {visible: true}, headers: @headers, as: :json
+      end
+      assert_equal decode_json_response_body, {"notice"=>["Survey is now visible"]}
+    end
     
 end

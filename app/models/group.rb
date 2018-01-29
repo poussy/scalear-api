@@ -20,7 +20,7 @@ class Group < ApplicationRecord
 	after_destroy :clean_up
 
 	validates :appearance_time, :course_id, :name, :due_date, :position , :presence => true
-	validates_inclusion_of :graded , :required, :in => [true, false] #not in presence because boolean false considered not present.
+	validates_inclusion_of :graded , :required, :skip_ahead, :in => [true, false] #not in presence because boolean false considered not present.
 
 	@quiz_not_empty = Proc.new{|f| !f.online_answers.empty? or f.question_type=="Free Text Question"}
 	
@@ -40,6 +40,7 @@ class Group < ApplicationRecord
 	attribute :has_inclass
 	attribute :has_distance_peer
 	attribute :sub_items_size
+	attribute :skip_ahead
 
 	attr_accessor :current_user
 
@@ -587,28 +588,30 @@ end
 		unanswered_posts['posts'].each do |lecture|
 			lecture_id = lecture[0].to_i
 			questions[lecture_id] = {}
-			questions[lecture_id]['name'] = Lecture.find(lecture_id).name
-			questions[lecture_id]['lecture_id'] = lecture_id
-			questions[lecture_id]['questions'] = {}
-			lecture[1].group_by{|post| post['post_content']}.each do |post|
-				post_content = post[0]
-				questions[lecture_id]['questions'][post_content] = {}
-				questions[lecture_id]['questions'][post_content]['content'] = post_content
-				questions[lecture_id]['questions'][post_content]['privacy'] = post[1][0]['privacy']
-				questions[lecture_id]['questions'][post_content]['time'] = post[1][0]['time']
-				questions[lecture_id]['questions'][post_content]['group_id'] = post[1][0]['group_id']
-				questions[lecture_id]['questions'][post_content]['lecture_id'] = post[1][0]['lecture_id']
-				questions[lecture_id]['questions'][post_content]['id'] = post[1][0]['id']
+			if Lecture.exists?(id: lecture_id)
+				questions[lecture_id]['name'] = Lecture.find(lecture_id).name
+				questions[lecture_id]['lecture_id'] = lecture_id
+				questions[lecture_id]['questions'] = {}
+				lecture[1].group_by{|post| post['post_content']}.each do |post|
+					post_content = post[0]
+					questions[lecture_id]['questions'][post_content] = {}
+					questions[lecture_id]['questions'][post_content]['content'] = post_content
+					questions[lecture_id]['questions'][post_content]['privacy'] = post[1][0]['privacy']
+					questions[lecture_id]['questions'][post_content]['time'] = post[1][0]['time']
+					questions[lecture_id]['questions'][post_content]['group_id'] = post[1][0]['group_id']
+					questions[lecture_id]['questions'][post_content]['lecture_id'] = post[1][0]['lecture_id']
+					questions[lecture_id]['questions'][post_content]['id'] = post[1][0]['id']
 
-				questions[lecture_id]['questions'][post_content]['comments_count'] = 0
+					questions[lecture_id]['questions'][post_content]['comments_count'] = 0
 
-				questions[lecture_id]['questions'][post_content]['comments'] = {}
-				post[1].each_with_index do |comment,index|
-					if comment['comment_content']
-						questions[lecture_id]['questions'][post_content]['comments_count'] = 1
-						questions[lecture_id]['questions'][post_content]['comments'][index] = {}
-						questions[lecture_id]['questions'][post_content]['comments'][index]['name'] = User.find(comment['user_id']).screen_name
-						questions[lecture_id]['questions'][post_content]['comments'][index]['content'] = comment['comment_content']
+					questions[lecture_id]['questions'][post_content]['comments'] = {}
+					post[1].each_with_index do |comment,index|
+						if comment['comment_content']
+							questions[lecture_id]['questions'][post_content]['comments_count'] = 1
+							questions[lecture_id]['questions'][post_content]['comments'][index] = {}
+							questions[lecture_id]['questions'][post_content]['comments'][index]['name'] = User.find(comment['user_id']).screen_name
+							questions[lecture_id]['questions'][post_content]['comments'][index]['content'] = comment['comment_content']
+						end
 					end
 				end
 			end
@@ -940,7 +943,11 @@ end
 				post[1].each_with_index do |comment,index|
 					if comment['comment_content']
 						questions[lecture_id]['questions'][post_content]['comments'][index] = {}
-						questions[lecture_id]['questions'][post_content]['comments'][index]['name'] = User.find(comment['user_id']).screen_name
+						if User.exists?(comment['user_id']) 
+							questions[lecture_id]['questions'][post_content]['comments'][index]['name'] = User.find(comment['user_id']).screen_name 
+						else 
+							questions[lecture_id]['questions'][post_content]['comments'][index]['name'] = I18n.t('groups.deleted_user') 
+						end
 						questions[lecture_id]['questions'][post_content]['comments'][index]['content'] = comment['comment_content']
 					end
 				end

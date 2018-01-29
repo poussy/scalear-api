@@ -60,6 +60,32 @@ class CoursesControllerTest <  ActionDispatch::IntegrationTest
 		assert_equal resp['total'] , 2
 	end
 
+	test 'index method for student' do
+		user = users(:student_in_course3)
+		url = '/en/courses'
+		get  url ,headers:user.create_new_auth_token 
+		assert_equal decode_json_response_body, {
+				"total"=>1,
+				"teacher_courses"=>[],
+				"student_courses"=>[
+					{"end_date"=>"2017-10-09",
+					"id"=>3,
+					"importing"=>false,
+					"image_url"=>
+					"https://pbs.twimg.com/profile_images/839721704163155970/LI_TRk1z_400x400.jpg",
+					"name"=>"course3",
+					"short_name"=>"c3",
+					"start_date"=>"2017-09-04",
+					"user_id"=>3,
+					"ended"=>true,
+					"duration"=>5,
+					"teacher_enrollments"=>[]}
+				]}
+
+	end
+
+
+
 	test 'validate index method for Admin' do
 		url = '/en/courses'
 		get  url ,headers: @admin_user.create_new_auth_token 
@@ -288,6 +314,8 @@ class CoursesControllerTest <  ActionDispatch::IntegrationTest
 		# compare new and imported groups
 		new_course.groups.each_with_index do |new_group, i|
 			assert_equal  course_from.groups[i].name, new_group.name
+			assert_equal  course_from.groups[i].appearance_time+65.days, new_group.appearance_time
+
 			# compare new and imported lectures
 			lectures_from = course_from.groups[i].lectures
 			new_group.lectures.each_with_index do |new_lecture, j|
@@ -299,6 +327,8 @@ class CoursesControllerTest <  ActionDispatch::IntegrationTest
 			quizzes_from = course_from.groups[i].quizzes
 			new_group.quizzes.each_with_index do |new_quiz, k|
 				assert_equal quizzes_from[k].name, new_quiz.name
+				## now quiz appearance time is like the old group appearance time
+				assert_equal new_quiz.appearance_time, course_from.groups[i].appearance_time
 			end
 			#compare custom_links
 			links_from = course_from.groups[i].custom_links
@@ -853,7 +883,7 @@ class CoursesControllerTest <  ActionDispatch::IntegrationTest
 		assert ActionMailer::Base.deliveries.last.encoded.include?('<p class="medium-editor-p">hello</p>')
 		## students
 		post '/en/courses/send_system_announcement', params:{list_type: '2', message:'<p class="medium-editor-p">hello</p>', subject:'System announcement'}, headers: @admin_user.create_new_auth_token
-		assert_equal ActionMailer::Base.deliveries.last["bcc"].value, ["saleh@gmail.com", "Ahmed@gmail.com", "Karim@gmail.com", "Mohamed@gmail.com", "Hossam@gmail.com", "student_a.hossam.2010@gmail.com"]
+		assert_equal ActionMailer::Base.deliveries.last["bcc"].value.sort, ["saleh@gmail.com", "Ahmed@gmail.com", "Karim@gmail.com", "Mohamed@gmail.com", "Hossam@gmail.com", "student_a.hossam.2010@gmail.com"].sort
 
 		## teachers & students
 		post '/en/courses/send_system_announcement', params:{list_type: '3', message:'<p class="medium-editor-p">hello</p>', subject:'System announcement'}, headers: @admin_user.create_new_auth_token
@@ -861,7 +891,28 @@ class CoursesControllerTest <  ActionDispatch::IntegrationTest
 			"saleh@gmail.com", "Ahmed@gmail.com", "Karim@gmail.com", "Mohamed@gmail.com", "Hossam@gmail.com", "student_a.hossam.2010@gmail.com", "school_admin@gmailll.com", "admin@gmailll.com"].sort
 
 	end
+
+	test "unenroll student" do
+		@student1.roles<<Role.find(1)
+		assert_difference 'Enrollment.where(course_id:@course1.id,user_id:@student1.id).size', -1 do
+			post "/en/courses/"+@course1.id.to_s+"/unenroll",headers: @student1.create_new_auth_token
+		end
+		
+		assert_equal decode_json_response_body["deleted"], true
+	end
+
+	test "get_student_duedate_email" do
+		@student1.roles<<Role.find(1)
+		get "/en/courses/"+@course1.id.to_s+"/get_student_duedate_email",headers: @student1.create_new_auth_token
+		assert_equal decode_json_response_body["email_due_date"], false
+	end
+
+	test "update_student_duedate_email" do
+		@student1.roles<<Role.find(1)
+		assert_equal  Enrollment.where(user_id:@student1.id).first.email_due_date, false
+		post "/en/courses/"+@course1.id.to_s+"/update_student_duedate_email",params:{email_due_date:true},headers: @student1.create_new_auth_token
+		assert_equal Enrollment.where(user_id:@student1.id).first.email_due_date, true
+	end
 	
-
-
+	
 end

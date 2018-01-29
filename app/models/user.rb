@@ -18,16 +18,15 @@ class User < ActiveRecord::Base
   has_many :enrollments, :dependent => :destroy
   has_many :courses, -> { distinct }, :through => :enrollments, :source => :course  # to get this call user.subjects
 
-
   has_many :teacher_enrollments, :dependent => :destroy
   has_many :subjects_to_teach, -> { distinct }, :through => :teacher_enrollments, :source => :course
 
   has_many :guest_enrollments, :dependent => :destroy
   has_many :guest_courses, -> { distinct }, :through => :guest_enrollments, :source => :course
-  
 
   has_many :users_roles, :dependent => :destroy
   has_many :roles, -> { distinct }, :through => :users_roles
+  has_many :organizations, -> { distinct }, :through => :users_roles
 
   # has_and_belongs_to_many :roles, -> {uniq} ,:join_table => :users_roles  
   has_many :shared_bys, :class_name => "SharedItem", :foreign_key => 'shared_by_id', :dependent => :destroy
@@ -144,8 +143,25 @@ class User < ActiveRecord::Base
   # def tutorials_taken
   # end
 
-  # def add_admin_school_domain(domain)
-  # end
+  ### For university enter all , for deparment input subdomain&&domain  e.g'it.uu.se' 
+  def add_admin_school_domain(domain)
+    if domain.blank?
+      errors.add :admin_school_domain, "can not be empty"
+    else
+      if !self.role_ids.include?(9)
+        self.roles << Role.find(9)
+      end 
+      UsersRole.where(:user_id => self.id, :role_id => 9).update_all(:admin_school_domain => domain)
+    end
+  end
+
+  def get_school_administrator_domain
+    user_role = UsersRole.where(:user_id => self.id, :role_id => 9)
+    if user_role
+      return UsersRole.where(:user_id => self.id, :role_id => 9)[0].admin_school_domain
+    end
+    return nil
+  end
 
   # def get_exact_stats(group)
   # end
@@ -605,8 +621,13 @@ class User < ActiveRecord::Base
     end    
   end
 
-  # def full_name_reverse
-  # end
+  def full_name_reverse
+    if !self.last_name.nil?
+      return self.last_name + ' ' + self.name
+    else
+      return self.name
+    end
+  end
 
   # def reset_password!(new_password, new_password_confirmation)
   # end

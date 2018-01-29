@@ -47,6 +47,7 @@ class GroupsController < ApplicationController
 				l.due_date = @group.due_date if l.due_date_module
 				l.required = @group.required if l.required_module
 				l.graded = @group.graded if l.graded_module
+				l.skip_ahead = @group.skip_ahead if l.skip_ahead_module
 				l.save
 			end
 
@@ -151,7 +152,7 @@ class GroupsController < ApplicationController
 		end
 		due= app + 1.week
 
-		@group = @course.groups.build(:name => "New Module", :appearance_time => app, :due_date => due, :position => @course.groups.size+1) #added to_date so it won't have time.
+		@group = @course.groups.build(:name => "New Module", :appearance_time => app, :due_date => due, :position => @course.groups.size+1, :skip_ahead => true) #added to_date so it won't have time.
 		@group.events << Event.new(:name => "#{@group.name} "+ I18n.t('controller_msg.due'), :start_at => due, :end_at => due, :all_day => false, :color => "red", :course_id => @course.id)
 
 		if @group.save
@@ -361,7 +362,7 @@ class GroupsController < ApplicationController
 		review_question_count = 0
 		review_quizzes_count = OnlineQuiz.where(:hide => false, :course_id => params[:course_id], :group_id => params[:id], :inclass => false).count
 		inclass_quizzes_count= OnlineQuiz.where(:hide => false, :course_id => params[:course_id], :group_id => params[:id], :inclass => true ).count
-		markers_count = 0
+		
 		# all = _module.lectures + _module.quizzes.where(:quiz_type => "survey")
 		# all.sort!{|x,y| ( x.position and y.position ) ? x.position <=> y.position : ( x.position ? -1 : 1 )  }
 		# all.each do |s|
@@ -375,7 +376,6 @@ class GroupsController < ApplicationController
 			lec_quiz_free_answers= lec.get_visible_free_text
 			lec_quiz_free_questions = lec.online_quizzes.where(:question_type => 'Free Text Question', :hide => false).map{|obj| obj={:id => obj.id, :question => obj.question, :hide => obj.hide, :start_time =>obj.start_time, :time => obj.time, :end_time =>obj.end_time, :inclass => obj.inclass} }
 			lec_markers = lec.online_markers.map{|obj| [obj.time, {:id => obj.id, :title => obj.title, :show => !obj.hide, :type => 'marker'}]}
-			markers_count += lec_markers.count 
 			lectures[lec.id] = {}
 			# if lec.titled_markers.count>0
 			lectures[lec.id][:markers] = lec_markers
@@ -438,7 +438,7 @@ class GroupsController < ApplicationController
 		end
 		students_count = @course.users.size
 
-		render json: { :lectures => lectures, :students_count => students_count, :review_question_count => review_question_count, :review_video_quiz_count => review_quizzes_count, :inclass_quizzes_count => inclass_quizzes_count, :markers_count => markers_count}
+		render json: { :lectures => lectures, :students_count => students_count, :review_question_count => review_question_count, :review_video_quiz_count => review_quizzes_count, :inclass_quizzes_count => inclass_quizzes_count}
 	end
 
 	def get_quiz_charts_inclass

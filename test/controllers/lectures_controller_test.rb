@@ -246,21 +246,20 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 	
 	test "should add new_marker " do
 		url = '/en/courses/'+@course1.id.to_s+'/lectures/'+@lecture1.id.to_s+'/new_marker'
-		get url , params: {time: 11.2},headers: @user1.create_new_auth_token 
+		post url , params: { marker: {time:15,duration:5,xcoor:0.5,ycoor:0.2,height:1.1,width:2.3}},headers: @user1.create_new_auth_token 
 		resp =  JSON.parse response.body
 		assert_response :success
-		assert_equal resp['marker']['time'] , 11.2	
+		assert_equal resp['marker']['time'] , 15.0	
+		assert_equal resp['marker']['duration'] , 5
+		assert_equal resp['marker']['xcoor'] , 0.5
+		assert_equal resp['marker']['ycoor'] , 0.2
+		assert_equal resp['marker']['height'] , 1.1
+		assert_equal resp['marker']['width'] , 2.3
 	end
-	test "should new_marker for empty params" do
-		url = '/en/courses/'+@course1.id.to_s+'/lectures/'+@lecture1.id.to_s+'/new_marker'
-		get url , params: {},headers: @user1.create_new_auth_token 
-		resp =  JSON.parse response.body
-		assert_response 400		
-		assert_equal resp['errors']['time'][0] , "can't be blank"	
-	end
+
 	test "should new_marker for invalid time" do
 		url = '/en/courses/'+@course1.id.to_s+'/lectures/'+@lecture1.id.to_s+'/new_marker'
-		get url , params: { time: "dsadasd"},headers: @user1.create_new_auth_token 
+		post url , params: { marker: {time:'aaa'}},headers: @user1.create_new_auth_token 
 		resp =  JSON.parse response.body
 		assert_response 400		
 		assert_equal resp['errors']['time'][0] , "is not a number"
@@ -536,7 +535,7 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 	test "html free text should create quiz grade 1 if answer is right" do
 		
 		post '/en/courses/3/lectures/3/save_html', params: {quiz: 10, answer: "answer free text", distance_peer:false, in_group: false}, headers: @headers2, as: :json
-		assert_equal FreeOnlineQuizGrade.where(online_quiz_id:10).first["grade"], 1
+		assert_equal FreeOnlineQuizGrade.where(online_quiz_id:10).first["grade"], 3
 		assert_equal decode_json_response_body["explanation"], {"10"=>"<p class=\"medium-editor-p\">explanation free text</p>"}
 	end
 
@@ -656,7 +655,7 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 		assert_equal decode_json_response_body["distance_peer_id"],1
 	end
 
-	test "check_if_in_distance_peer_session" do
+	test "check_if_in_distance_peer_session should return user_distance_peer of user if same status" do
 		Enrollment.create(user_id:3, course_id:3)
 		Enrollment.create(user_id:4, course_id:3)
 		Lecture.find(3).update_attribute('distance_peer',true)
@@ -669,8 +668,23 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 		assert_equal decode_json_response_body["distance_peer"]["id"], 1
 		assert_equal decode_json_response_body["distance_peer"]["status"], 1
 
-		assert_equal decode_json_response_body["user_distance_peer"]["id"], 1
-		assert_equal decode_json_response_body["user_distance_peer"]["status"], 1
+	
+	end
+
+	test "check_if_in_distance_peer_session should return other user's distance peer if different statuses and updated after" do
+		Enrollment.create(user_id:3, course_id:3)
+		Enrollment.create(user_id:4, course_id:3)
+		Lecture.find(3).update_attribute('distance_peer',true)
+		DistancePeer.create(id:1,course_id:3,group_id:3,lecture_id:3,user_id:6)
+		@student.user_distance_peers.create(id:1,online_quiz_id:4,distance_peer_id:1,status:1,online:false,updated_at:'2017-03-02')
+		UserDistancePeer.create(id:2,user_id:3,online_quiz_id:4,distance_peer_id:1,status:2,online:false,updated_at:'2017-03-01')
+
+		get "/en/courses/3/lectures/3/check_if_in_distance_peer_session", headers: @headers2
+
+		assert_equal decode_json_response_body["distance_peer"]["id"], 2
+		assert_equal decode_json_response_body["distance_peer"]["status"], 2
+
+	
 	end
 
 	test "invite_student_distance_peer if not already invited" do
@@ -862,6 +876,14 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 			post '/en/courses/3/lectures/3/confused_show_inclass', params: {time: 30, hide: false, very: false}, headers: @headers, as: :json
 		end
 		
+	end
+
+	test "delete_note" do
+		VideoNote.create(lecture_id:3, user_id:6, data: "new note", id: 6)
+		assert_difference 'Lecture.find(3).video_notes.size', -1 do
+			delete '/en/courses/3/lectures/3/delete_note', params: {note_id:6}, headers: @headers2
+		end
+		assert_equal VideoNote.where(id:6).size, 0
 	end
 	
 	

@@ -47,14 +47,33 @@ class HomeController < ApplicationController
 		end		
 	end
 
-	# def index
-	# end
+	def index 
+			render json:{} 
+	end
 
-	# def technical_problem
-	# end
+	def technical_problem
+		if !user_signed_in?
+			reporting_user = User.new()
+			reporting_user.name = params[:name]
+			reporting_user.email = params[:email]
+		else
+			reporting_user = current_user
+		end
+		if params[:issue_type]=='content'
+			UserMailer.content_problem_email(  params[:url], reporting_user, params[:problem], params[:course].to_i,  params[:module].to_i, params[:lecture].to_i, params[:quiz].to_i, params[:agent] ,params[:version]).deliver
+		else
+			UserMailer.technical_problem_email(params[:url], reporting_user, params[:problem], params[:course].to_i,  params[:module].to_i, params[:lecture].to_i, params[:quiz].to_i, params[:agent] , params[:issue_website_type],params[:version]).deliver
+		end
+		render :json => {:done => true}
+	end
 
-	# def contact_us
-	# end
+	def contact_us
+		reporting_user = User.new()
+		reporting_user.name = params[:name]
+		reporting_user.email = params[:email]
+		UserMailer.contact_us_email(params[:url], reporting_user, params[:comment], params[:agent]).deliver
+		render :json => {:done => true}  
+	end
 
 	def privacy
 		redirect_to "#/privacy"

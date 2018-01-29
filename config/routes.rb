@@ -1,5 +1,7 @@
 Rails.application.routes.draw do
   # For details on the DSL available within this file, see http://guides.rubyonrails.org/routing.html
+  root :to => "home#index"
+  
   scope "/en" do
     mount_devise_token_auth_for 'User', at: 'users', controllers: {
       registrations: 'devise/registrations',
@@ -35,8 +37,6 @@ Rails.application.routes.draw do
     post "discussions/hide_comment"
     post "discussions/update_post"
 
-
-
     # devise_for :users 
     resources :users, only: [] do
       member do
@@ -46,6 +46,8 @@ Rails.application.routes.draw do
         # post "update_intro_watched"
         post "update_completion_wizard"
         get "get_subdomains"
+        get "get_welcome_message"
+        post "submit_welcome_message"
       end
       collection do
         get "student"
@@ -60,7 +62,8 @@ Rails.application.routes.draw do
       end
     end
 
-    match 'saml/(:action)' => 'saml#(:action)', :via => [:get, :post]
+    get 'saml/(:action)' => 'saml#(:action)', :via => [:get, :post]
+    get 'lti/(:action)' => 'lti#(:action)', :via => [:get, :post]
     
     resources :courses do
         member do
@@ -233,7 +236,7 @@ Rails.application.routes.draw do
             post 'confused_question'
             get 'seen'
             get 'new_quiz'
-            get 'new_marker'
+            post 'new_marker'
             get 'save_duration'
             post 'back'
             post 'pause'
@@ -287,7 +290,7 @@ Rails.application.routes.draw do
           end
     end
 
-
+    get '/events(/:year(/:month))' => 'events#index', :as => :event, :constraints => {:year => /\d{4}/, :month => /\d{1,2}/}
     resources :announcements
     end    
     
@@ -353,5 +356,22 @@ Rails.application.routes.draw do
       end
     end
 
+    resources :kpis do
+    collection do
+      post 'init_series'
+      delete 'destroy_series'
+      post 'kpi_job'
+      get 'read_data'
+      get 'read_totals'
+      get 'read_totals_for_duration'
+      post 'get_report_data_course_duration'
+      get 'read_series'
+      post 'init_data'
+      get 'export_school_statistics'
+    end
   end
+
+  resources :news_feed
+  end
+  get "*path", :to => "application#routing_error" 
 end
