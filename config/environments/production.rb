@@ -37,7 +37,7 @@ Rails.application.configure do
   # config.action_cable.allowed_request_origins = [ 'http://example.com', /http:\/\/example.*/ ]
 
   # Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
-  # config.force_ssl = true
+  config.force_ssl = true
 
   # Use the lowest log level to ensure availability of diagnostic information
   # when problems arise.
@@ -68,19 +68,61 @@ Rails.application.configure do
   # Use default logging formatter so that PID and timestamp are not suppressed.
   config.log_formatter = ::Logger::Formatter.new
 
+  config.logger = Logger.new(STDOUT)
+
   # Use a different logger for distributed setups.
   # require 'syslog/logger'
   # config.logger = ActiveSupport::TaggedLogging.new(Syslog::Logger.new 'app-name')
 
-  if ENV["RAILS_LOG_TO_STDOUT"].present?
-    logger           = ActiveSupport::Logger.new(STDOUT)
-    logger.formatter = config.log_formatter
-    config.logger    = ActiveSupport::TaggedLogging.new(logger)
-  end
+  # if ENV["RAILS_LOG_TO_STDOUT"].present?
+  #   logger           = ActiveSupport::Logger.new(STDOUT)
+  #   logger.formatter = config.log_formatter
+  #   config.logger    = ActiveSupport::TaggedLogging.new(logger)
+  # end
 
   # Do not dump schema after migrations.
   config.active_record.dump_schema_after_migration = false
 
   config.frontend_host = "https://www.scalable-learning.com/#"
   config.action_mailer.default_url_options = {:host => 'www.scalable-learning.com/#' , :protocol => 'https'}
+
+  config.saml={
+    :keys => {
+      :private => ENV['RSA_PRIVATE'],
+      :public => ENV['RSA_PUBLIC']
+    },
+    :idp_metadata => ENV['SAML_IDP']
+  }
+
+  ActiveSupport::Deprecation.silenced = true
+  Rack::Timeout::Logger.disable
+  config.active_record.logger = nil
+  config.lograge.enabled = true
+  config.lograge.formatter = Lograge::Formatters::Logstash.new
+  config.lograge.custom_options = lambda do |event|
+    params = event.payload[:params].reject do |k|
+      ['controller', 'action', 'locale'].include? k
+    end
+    opts={}
+    if !event.payload[:params]["id"].nil?
+      opts[event.payload[:params]["controller"].singularize+'_id' ] = event.payload[:params]["id"]
+      params.delete("id")
+    end
+    opts[:params] = params
+    opts[:user_id] = event.payload[:user_id]
+    opts[:user_role] = event.payload[:user_role]
+    opts[:ip] = event.payload[:ip]
+    if event.payload[:exception]
+      opts[:stacktrace] = %Q('#{Array(event.payload[:stacktrace]).to_json}')
+    end
+    opts
+  end
+  module Kernel; def puts(*args) end end
 end
+
+ENV['INFLUXDB_USER']='root'
+ENV['INFLUXDB_PASSWORD']='root'
+ENV['INFLUXDB_DATABASE']='production_statistics'
+# ENV['INFLUXDB_DATABASE']='staging_statistics'
+ENV['INFLUXDB_HOST']='54.172.25.46'
+ENV['INFLUXDB_PORT']='8086'

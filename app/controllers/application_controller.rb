@@ -3,6 +3,7 @@ class ApplicationController < ActionController::API
   include CanCan::ControllerAdditions
 
   before_action :configure_permitted_parameters, if: :devise_controller?
+  before_action :set_locale
   rescue_from ActiveRecord::RecordNotFound, :with => :record_not_found
 
 
@@ -36,6 +37,14 @@ class ApplicationController < ActionController::API
   def record_not_found
     render :json => {errors:[I18n.t("controller_msg.record_not_found")]}, status:404
     true
+  end
+
+  def set_locale
+    I18n.locale = params[:locale]||I18n.default_locale
+  end
+
+  def self.default_url_options
+    { locale: I18n.locale }
   end
 
 end

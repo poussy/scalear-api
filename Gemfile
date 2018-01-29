@@ -56,3 +56,10 @@ gem 'activeresource'
 gem 'aescrypt'
 gem 'ruby-saml', :git => "git://github.com/karimAlaa/ruby-saml.git"
 gem 'ims-lti', '~>1.2'
+gem 'roboto'
+gem 'newrelic_rpm'
+gem 'influxdb'
+gem "lograge"
+gem "logstash-event"
+gem "rack-timeout"
+gem "rack-block"
