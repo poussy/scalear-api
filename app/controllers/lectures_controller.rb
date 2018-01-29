@@ -765,8 +765,14 @@ class LecturesController < ApplicationController
 	# # def get_progress_lecture
 	# # end
 
-	# def delete_confused
-	# end
+	def delete_confused
+			c=@lecture.confuseds.where(:id => params[:confused_id], :user_id => current_user.id)[0]
+			if c.destroy
+					render json: {:notice => [I18n.t("controller_msg.successfully_deleted")]}
+			else
+					render json: {:errors => [I18n.t("controller_msg.could_not_delete_confused")]}, :status => 400
+			end
+	end
 
 	def save_note
 			lecture= Lecture.find(params[:id])

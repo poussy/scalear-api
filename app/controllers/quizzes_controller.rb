@@ -299,8 +299,21 @@ class QuizzesController < ApplicationController
     end
   end
   
-  # def show_question_student  #updating a survey question (hidden or not)
-  # end
+  def show_question_student  #updating a survey question (hidden or not)
+    ques_id= params[:question]
+    show = params[:show]
+    if show
+      visible=I18n.t("visible")
+    else
+      visible=I18n.t("hidden")
+    end
+    to_update=Question.find(ques_id)
+    if to_update.update_attributes(:student_show => show)
+      render :json => {:notice => ["#{I18n.t('controller_msg.question_successfully_updated')} - #{I18n.t('now')} #{visible}"]}
+    else
+      render :json => {:errors => [I18n.t("quizzes.could_not_update_question")]}, :status => 400
+    end
+  end
 
   def create_or_update_survey_responses
     groups=params[:groups]
@@ -319,18 +332,57 @@ class QuizzesController < ApplicationController
     end
   end
   
-  # def hide_responses
-  # end
+  def hide_responses
+      if params[:hide]["hide"]
+        hidden=I18n.t("hidden")
+      else
+        hidden=I18n.t("visible")
+      end
+
+      if FreeAnswer.find(params[:hide]["id"]).update_attributes(:hide => params[:hide]["hide"])
+        render :json => {:notice => ["#{I18n.t('controller_msg.response_is_now')} #{hidden}"]}
+      else
+        render :json => {:errors => [I18n.t("quizzes.could_not_update_response")]}, :status => 400
+      end
+  end
   
-  # def hide_response_student
-  # end
+  def hide_response_student
+    if params[:hide]["hide"]
+      hidden=I18n.t("hidden")
+    else
+      hidden=I18n.t("visible")
+    end
+    if FreeAnswer.find(params[:hide]["id"]).update_attributes(:student_hide => params[:hide]["hide"])
+      render :json => {:notice => ["#{I18n.t('controller_msg.response_is_now')} #{hidden}"]}
+    else
+      render :json => {:errors => [I18n.t("quizzes.could_not_update_response")]}, :status => 400
+    end
+  end
   
-  # def delete_response
-  # end
+  def delete_response
+      answer=params[:answer]
+      if FreeAnswer.find(answer).update_attributes(:response => "")
+        render :json => {:notice => [I18n.t("controller_msg.response_successfully_deleted")]}
+      else
+        render :json => {:errors => [I18n.t("controller_msg.could_not_delete_response")]}, :status => 400
+      end
+  end
   
-  # def make_visible
-  # end
-  
+  def make_visible
+    if params[:visible]
+      hidden=I18n.t("visible")
+    else
+      hidden=I18n.t("hidden")
+    end
+    x=Quiz.find(params[:id])
+    if x.update_attributes(:visible => params[:visible], :retries =>0)
+      msg= I18n.t("controller_msg.#{x.quiz_type}_is_now")
+      render :json => {:notice => ["#{msg} #{hidden}"]}
+    else
+      render :json => {:errors => [I18n.t("controller_msg.could_not_update_#{x.quiz_type}")]}, :status => 400
+    end
+  end
+    
   def update_questions_angular
 
     @questions = params[:questions]
@@ -553,8 +605,13 @@ class QuizzesController < ApplicationController
   render :json => {:errors => return_value.blank? ? [I18n.t("transaction_rolled_back")]:[return_value]}, :status => 400
   end
  
-  # def update_grade
-  # end
+  def update_grade
+    if @quiz.free_answers.find(params[:answer_id]).update_attributes(:grade => params[:grade])
+      render :json => {:notice => I18n.t("controller_msg.grade_updated")}
+    else
+      render :json => {:errors => [I18n.t("controller_msg.grade_update_fail")]}, :status => 400
+    end
+  end
   
   # def quiz_copy
   # end

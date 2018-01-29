@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
+  </head>
+  <body>
+  	
+    <h3><%= t('user_mailer.technical_problem') %> </h3>
+    <p>
+      <b style="color: red;"><%= t('user_mailer.issue') %> <%= t('user_mailer.system')%></b>
+      <br><br>
+      <%= t('user_mailer.problem_reported', name: @user_name, email: @user_email, url: root_url+@url ) %>
+	<br>
+	<% if @course %>
+	  <%= "#{t('courses.course_name')}: #{@course.name}" %><br>
+	<% end %>
+	<% if @group %>
+	  <%= "#{t('groups.module_name')}: #{@group.name}" %><br>
+	<% end %>
+	<% if @lecture %>
+	  <%= "#{t('lectures.lecture_title')}: #{@lecture.name}" %><br>
+	<% end %>
+	<% if @quiz %>
+	  <%= "#{t('quizzes.quiz_title')}: #{@quiz.name}" %><br/>
+	<% end %>
+    <%= "#{t('agent')}: #{@agent}" %><br/>
+    <%= "#{t('version')}: #{@version}" %><br/>
+<br/>
+
+  Problem Type: <%=  @problem_type %>
+<br/>
+<br/>
+      <%= @problem %>
+    </p>
+  </body>
+</html>
