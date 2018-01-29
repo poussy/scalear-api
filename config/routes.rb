@@ -61,8 +61,9 @@ Rails.application.routes.draw do
       end
     end
 
-    get 'saml/(:action)' => 'saml#(:action)', :via => [:get, :post]
-    get 'lti/(:action)' => 'lti#(:action)', :via => [:get, :post]
+    get 'lti/(:action)' => 'lti#(:action)'
+    get  'saml/(:action)' => 'saml#(:action)'
+    post 'saml/consume' => 'saml#consume'
     
     resources :courses do
       member do
