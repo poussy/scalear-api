@@ -83,6 +83,9 @@ Rails.application.configure do
   # Do not dump schema after migrations.
   config.active_record.dump_schema_after_migration = false
 
+  config.active_record.migration_error = :page_load
+
+
   config.frontend_host = "https://www.scalable-learning.com/#"
   config.action_mailer.default_url_options = {:host => 'www.scalable-learning.com/#' , :protocol => 'https'}
 

@@ -14,7 +14,7 @@
 !/tmp/.keep
 
 .byebug_history
-
+.ruby-version
 
 /config/config.yml
 /config/database.yml

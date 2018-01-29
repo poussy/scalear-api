@@ -83,3 +83,11 @@ production:
   database: scalear_api_production
   username: scalear_api
   password: <%= ENV['SCALEAR-API_DATABASE_PASSWORD'] %>
+
+staging:
+  <<: *default
+  database: scalear_api_development
+
+staging2:
+  <<: *default
+  database: scalear_api_development

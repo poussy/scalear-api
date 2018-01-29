@@ -18,21 +18,10 @@ Rails.application.configure do
    config.consider_all_requests_local       = false
    config.action_controller.perform_caching = true
 
+   config.eager_load = true
 
-  # # Disable Rails's static asset server (Apache or nginx will already do this)
-   config.serve_static_assets = false
+   config.consider_all_requests_local = true
 
-  # # Compress JavaScripts and CSS
-   config.assets.compress = false
-
-  # # Don't fallback to assets pipeline if a precompiled asset is missed
-   config.assets.compile = false
-
-  # # Generate digests for assets URLs
-   config.assets.digest = true
-
-  # Defaults to nil and saved in location specified by config.assets.prefix
-  # config.assets.manifest = YOUR_PATH
 
   # Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
   config.force_ssl = true
@@ -40,7 +29,7 @@ Rails.application.configure do
   # See everything in the log (default is :info)
   # config.log_level = :debug
 
-   config.logger = Logger.new(STDOUT)
+  config.logger = Logger.new(STDOUT)
 
   # Prepend all log lines with the following tags
   # config.log_tags = [ :subdomain, :uuid ]
@@ -67,7 +56,7 @@ Rails.application.configure do
 
   # Enable locale fallbacks for I18n (makes lookups for any locale fall back to
   # the I18n.default_locale when a translation can not be found)
-  # config.i18n.fallbacks = true
+  config.i18n.fallbacks = true
 
   # Send deprecation notices to registered listeners
   config.active_support.deprecation = :notify
@@ -102,6 +91,10 @@ Rails.application.configure do
     :idp_metadata => ENV['SAML_IDP']
   }
 
+  config.active_record.migration_error = :page_load
+
+  config.frontend_host = "http://scalear-staging2.herokuapp/#/"
+
   # Log the query plan for queries taking more than this (works
   # with SQLite, MySQL, and PostgreSQL)
   # config.active_record.auto_explain_threshold_in_seconds = 0.5
@@ -128,3 +121,10 @@ Rails.application.configure do
     opts
   end
 end
+
+
+ENV['INFLUXDB_USER']='root'
+ENV['INFLUXDB_PASSWORD']='root'
+ENV['INFLUXDB_DATABASE']='staging_statistics'
+ENV['INFLUXDB_HOST']='54.172.25.46'
+ENV['INFLUXDB_PORT']='8086'
