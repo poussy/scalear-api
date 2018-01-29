@@ -255,7 +255,7 @@ class CoursesControllerTest <  ActionDispatch::IntegrationTest
 	test 'validate update method ' do
 		url = '/en/courses/'+ @course1.id.to_s+'/'
 		put  url , params: {"course"=>{"user_id"=> @user1.id , "short_name"=>"aa", "name"=>"a", "time_zone"=>"UTC", "start_date"=>"2017-11-05", "end_date"=>"2018-01-14", 
-			"disable_registration"=>"2018-01-14", "description"=>nil, "prerequisites"=>nil, "discussion_link"=>"", "image_url"=>nil, "importing"=>false, "parent_id"=>nil}, "id"=>"1"} ,
+			"disable_registration"=>"2018-01-14", "description"=>nil, "prerequisites"=>nil, "discussion_link"=>"", "image_url"=>nil, "importing"=>false}, "id"=>"1"} ,
 			headers: @user1.create_new_auth_token 
 		assert_response :success
 		resp =  JSON.parse response.body

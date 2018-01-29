@@ -1,10 +1,10 @@
 class CreateTeacherEnrollments < ActiveRecord::Migration[5.1]
   def up
     create_table :teacher_enrollments do |t|
-		t.integer  :user_id    	
-		t.integer  :course_id
-		t.integer  :role_id
-		t.boolean :email_discussion, :default => false
+      t.integer  :user_id     
+      t.integer  :course_id
+      t.integer  :role_id
+      t.boolean :email_discussion, :default => false
 
       t.timestamps
     end
@@ -14,6 +14,6 @@ class CreateTeacherEnrollments < ActiveRecord::Migration[5.1]
   end
 
   def down 
-  	drop_table :teacher_enrollments
+    drop_table :teacher_enrollments
   end
 end

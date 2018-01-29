@@ -1,32 +1,32 @@
 class CreateQuizzes < ActiveRecord::Migration[5.1]
   def up
     create_table :quizzes do |t|
-		t.string   :name
-		t.integer   :retries
+      t.string   :name
+      t.integer  :retries
 
-		t.integer  :group_id
-		t.integer  :course_id
+      t.integer  :group_id
+      t.integer  :course_id
 
-		t.boolean  :appearance_time_module, :default => true
-		t.datetime  :appearance_time
-		t.boolean  :due_date_module, :default => true
-		t.datetime  :due_date
+      t.boolean  :appearance_time_module, :default => true
+      t.datetime :appearance_time
+      t.boolean  :due_date_module,        :default => true
+      t.datetime :due_date
 
-		t.integer  :position
-		t.boolean  :required, :default => true
-		t.boolean  :graded, :default => true
+      t.integer  :position
+      t.boolean  :required,               :default => true
+      t.boolean  :graded,                 :default => true
 
-		t.boolean  :required_module, :default => true
-		t.boolean  :graded_module, :default => true
+      t.boolean  :required_module,        :default => true
+      t.boolean  :graded_module,          :default => true
 
-		t.boolean  :visible, :default => false
-		t.string  :quiz_type
-		
-		t.text     :instructions
+      t.boolean  :visible,                :default => false
+      t.string   :quiz_type
+
+      t.text     :instructions
 
       t.timestamps
-      	t.integer  :parent_id
     end
+
     add_index :quizzes, :course_id
     add_index :quizzes, :group_id
     add_index :quizzes, :updated_at 
@@ -34,6 +34,6 @@ class CreateQuizzes < ActiveRecord::Migration[5.1]
   end
 
   def down
-  	drop_table :quizzes
+    drop_table :quizzes
   end
 end

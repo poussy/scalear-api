@@ -31,16 +31,6 @@ module ScalearApi
     # Skip views, helpers and assets when generating a new resource.
     config.api_only = true
     config.active_job.queue_adapter = :delayed_job
-    
-    config.middleware.use Rack::Cors do
-      allow do
-        origins 'http://localhost:9000'
-        resource '*',
-          :headers => :any,
-          :expose  => ['access-token', 'expiry', 'token-type', 'uid', 'client'],
-          :methods => [:get, :post, :options, :delete, :put]
-      end
-    end
     config.domain_account_block = ["uu.nl"]
   end
 end
