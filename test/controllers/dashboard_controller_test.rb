@@ -41,7 +41,7 @@ class DashboardControllerTest < ActionDispatch::IntegrationTest
     event1=decode_json_response_body['events'].select{|event| event["id"]==1}[0]
     ## this event is in course 3 which has an end date = 2017-10-09
     assert_equal event1['title'], 'New Module due'
-    assert_equal Time.parse(event1['start']).to_i/60.floor, (Time.now+1.days).to_i/60.floor 
+    assert_equal Time.parse(event1['start']).to_i/120.floor, (Time.now+1.days).to_i/120.floor 
     assert_equal event1['color'], 'gray'
     assert_equal event1['textColor'], 'white'
     assert_equal event1['status'], -1
