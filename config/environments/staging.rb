@@ -2,11 +2,14 @@ Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb
 
   # # Code is not reloaded between requests
-   config.cache_classes = true
-   config.static_cache_control = "no-cache"
+  config.cache_classes = true
   # # Full error reports are disabled and caching is turned on
-   config.consider_all_requests_local       = false
-   config.action_controller.perform_caching = true
+  config.consider_all_requests_local       = false
+  config.action_controller.perform_caching = true
+  config.cache_store = :memory_store
+  config.public_file_server.headers = {
+    'Cache-Control' => "public, max-age=#{1.year.seconds.to_i}"
+  }
 
   # Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
   config.force_ssl = true
@@ -16,7 +19,7 @@ Rails.application.configure do
   # See everything in the log (default is :info)
   # config.log_level = :debug
 
-   config.logger = Logger.new(STDOUT)
+  config.logger = Logger.new(STDOUT)
 
   # Enable locale fallbacks for I18n (makes lookups for any locale fall back to
   # the I18n.default_locale when a translation can not be found)
