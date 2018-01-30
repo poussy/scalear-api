@@ -884,6 +884,38 @@ class GroupsControllerTest < ActionDispatch::IntegrationTest
 				"lecture"=>{"id"=>3, "name"=>"lecture3"}
 			}
 	end
+
+	test "get_survey_chart_angular" do
+		Quiz.find(1).update_attribute('quiz_type','survey')
+		get '/en/courses/3/groups/3/get_survey_chart_angular', params:{display_only:'display_only',survey_id:1},headers: @student.create_new_auth_token
+		assert_equal decode_json_response_body["chart_data"], 
+		{"1"=>
+			{"show"=>false,
+			"student_show"=>true,
+			"answers"=>
+			{"4"=>[0, "<p class=\"medium-editor-p\">a1</p>"],
+			"5"=>[0, "<p class=\"medium-editor-p\">a2</p>"]},
+			"title"=>"<p class=\\\"medium-editor-p\\\">ocq</p>"},
+		"2"=>
+			{"show"=>false,
+			"student_show"=>true,
+			"answers"=>
+			{"1"=>[0, "<p class=\\\"medium-editor-p\\\">a1</p>"],
+			"2"=>[0, "<p class=\\\"medium-editor-p\\\">a2</p>"]},
+			"title"=>"<p class=\\\"medium-editor-p\\\">q1</p>"},
+		"4"=>
+			{"show"=>false,
+			"student_show"=>true,
+			"answers"=>
+			{"3"=>
+				[0,
+				["<p class=\"medium-editor-p\">ans1</p>",
+				"<p class=\"medium-editor-p\">ans2</p>"]]},
+			"title"=>"<p class=\\\"medium-editor-p\\\">drag quiz</p>"}}
+		
+		assert_equal decode_json_response_body["students_count"], 5
+		assert_equal decode_json_response_body["chart_questions"][0],{"question"=>"<p class=\\\"medium-editor-p\\\">ocq</p>", "type"=>"OCQ"}
+	end
 	
 	
 end

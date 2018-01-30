@@ -496,7 +496,7 @@ class GroupsController < ApplicationController
 
 				if !questions.empty?
 						quizzes[quiz.id]['questions']= questions
-						quizzes[quiz.id]['questions'].sort{|x,y| ( x.position and y.position ) ? x.position <=> y.position : ( x.position ? -1 : 1 )  }
+						quizzes[quiz.id]['questions'].sort!{|x,y| ( x.position and y.position ) ? x.position <=> y.position : ( x.position ? -1 : 1 )  }
 						quizzes[quiz.id]['questions'].map!{|obj| {:question => obj.content, :type => obj.question_type, :id => obj.id}}
 						quiz_free_questions = quiz.questions.select{|v| v.question_type == 'Free Text Question' and v.show==true}.map{|obj| obj={:id => obj.id, :content => obj.content, :show => obj.show} }
 
