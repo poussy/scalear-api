@@ -4,12 +4,14 @@ class CoursesControllerTest <  ActionDispatch::IntegrationTest
 	def setup
 		@user1 = users(:user1)
 		@user2 = users(:user2)
+		@user3 = users(:user3)
 		@user4 = users(:user4)
 		@admin_user = users(:admin_user)
 		@invitated_user = users(:invitated_user)
 
 		@course1 = courses(:course1)
 		@course2 = courses(:course2)
+		@course3 = courses(:course3)
 
 		@course_domain1 = course_domains(:course_domain_1)
 
@@ -79,7 +81,7 @@ class CoursesControllerTest <  ActionDispatch::IntegrationTest
 					"user_id"=>3,
 					"ended"=>true,
 					"duration"=>5,
-					"teacher_enrollments"=>[]}
+					"teacher_enrollments"=>[{"user"=>{"name"=>"ahmed", "email"=>"okasha@gmail.com"}}]}
 				]}
 
 	end
@@ -96,6 +98,8 @@ class CoursesControllerTest <  ActionDispatch::IntegrationTest
 	test "index should get all courses whose teachers have the same domain as admin_school_domain of admin's role" do
 		admin = users(:school_administrator)
 		admin.roles<<Role.find(1)
+		@course = courses(:course3)
+        @course.teacher_enrollments.where({:user_id => 3}).destroy_all
 		## admin_school_domain of admin's role is ".edu.eg"
 		u = User.find(6)
 		u.email='any_name@bar.edu.eg'
@@ -129,7 +133,8 @@ class CoursesControllerTest <  ActionDispatch::IntegrationTest
 
 	test "show" do
 		user = users(:student_in_course3)
-
+		@course = courses(:course3)
+        @course.teacher_enrollments.where({:user_id => 3}).destroy_all
 		TeacherEnrollment.create(course_id: 3, user_id: 6, role_id: 3)
 
 		get "/en/courses/3", headers: user.create_new_auth_token
@@ -878,17 +883,16 @@ class CoursesControllerTest <  ActionDispatch::IntegrationTest
 		Delayed::Worker.delay_jobs = false
 		post '/en/courses/send_system_announcement', params:{list_type: '1', message:'<p class="medium-editor-p">hello</p>', subject:'System announcement'}, headers: @admin_user.create_new_auth_token
 		## teachers
-		assert_equal ActionMailer::Base.deliveries.last["bcc"].value, ["a.hossam.2010@gmail.com", "a.hossam.2012@gmailll.com"]
+		assert_equal ActionMailer::Base.deliveries.last["bcc"].value, ["a.hossam.2010@gmail.com", "a.hossam.2012@gmailll.com", "okasha@gmail.com"]
 		assert_equal ActionMailer::Base.deliveries.last["subject"].value, "System announcement"
 		assert ActionMailer::Base.deliveries.last.encoded.include?('<p class="medium-editor-p">hello</p>')
 		## students
 		post '/en/courses/send_system_announcement', params:{list_type: '2', message:'<p class="medium-editor-p">hello</p>', subject:'System announcement'}, headers: @admin_user.create_new_auth_token
-		assert_equal ActionMailer::Base.deliveries.last["bcc"].value.sort, ["saleh@gmail.com", "Ahmed@gmail.com", "Karim@gmail.com", "Mohamed@gmail.com", "Hossam@gmail.com", "student_a.hossam.2010@gmail.com"].sort
+		assert_equal ActionMailer::Base.deliveries.last["bcc"].value.sort, ["saleh@gmail.com", "ahmed@gmail.com", "Karim@gmail.com", "Mohamed@gmail.com", "Hossam@gmail.com", "student_a.hossam.2010@gmail.com"].sort
 
 		## teachers & students
 		post '/en/courses/send_system_announcement', params:{list_type: '3', message:'<p class="medium-editor-p">hello</p>', subject:'System announcement'}, headers: @admin_user.create_new_auth_token
-		assert_equal ActionMailer::Base.deliveries.last["bcc"].value.sort, ["a.hossam.2010@gmail.com", "a.hossam.2012@gmailll.com", "a.hossam.2011@gmail.com", "okasha@gmail.com", "okashaaa@gmail.com", 
-			"saleh@gmail.com", "Ahmed@gmail.com", "Karim@gmail.com", "Mohamed@gmail.com", "Hossam@gmail.com", "student_a.hossam.2010@gmail.com", "school_admin@gmailll.com", "admin@gmailll.com"].sort
+		assert_equal ActionMailer::Base.deliveries.last["bcc"].value.sort, User.pluck(:email).sort
 
 	end
 
@@ -914,5 +918,32 @@ class CoursesControllerTest <  ActionDispatch::IntegrationTest
 		assert_equal Enrollment.where(user_id:@student1.id).first.email_due_date, true
 	end
 	
-	
+	test 'validate destroy course admin_user' do
+		remaing_enrollments = Enrollment.count - @course3.enrollments.count
+		remaing_lectures = Lecture.count - @course3.lectures.count
+		url = '/en/courses/3'
+		delete url ,params: {}, headers: @admin_user.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_equal resp['notice'][0] , "Course was successfully deleted."
+		assert_equal Enrollment.count , remaing_enrollments
+		assert_equal Lecture.count , remaing_lectures
+	end
+
+	test 'validate destroy course' do
+		remaing_enrollments = Enrollment.count - @course3.enrollments.count
+		remaing_lectures = Lecture.count - @course3.lectures.count
+		url = '/en/courses/3'
+		delete url ,params: {}, headers: @user3.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_equal resp['notice'][0] , "Course was successfully deleted."
+		assert_equal Enrollment.count , remaing_enrollments
+		assert_equal Lecture.count , remaing_lectures
+	end		
+
+	test 'can not destroy course ' do
+		url = '/en/courses/3'
+		delete url ,params: {email: "a"},headers: @user1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_equal resp['errors'][0] , "You are not authorized to see requested page"
+	end		
 end

@@ -16,11 +16,11 @@ class OnlineQuizzesControllerTest < ActionDispatch::IntegrationTest
 
     @student = users(:student_in_course3)
 		@headers2 = @student.create_new_auth_token
-		@headers2['content-type']="application/json"
+		@headers2['content-type']="ap
+ plication/json"
   end
 
   test "should update online_quiz with sent paramaters" do
-
     assert_equal @online_quiz1.display_text, true
     assert_equal @online_quiz1.start_time, 100
     assert_equal @online_quiz1.time, 20
@@ -229,6 +229,31 @@ class OnlineQuizzesControllerTest < ActionDispatch::IntegrationTest
     assert_equal decode_json_response_body, {"votes"=>3, "max_votes"=>3}
   end
   
-  
+  test "should delete " do
+    online_quiz_count = OnlineQuiz.count 
+    url = '/en/online_quizzes/1/'
+    delete url ,params: {},headers: @user3.create_new_auth_token 
+    resp =  JSON.parse response.body
+    assert_response :success
+    assert_equal resp['notice'][0] , "Quiz was successfully deleted"    
+    assert_equal OnlineQuiz.count , online_quiz_count - 1
+  end
+
+  test "should not update_inclass_session -- no inclass session for online quiz" do
+    url = '/en/online_quizzes/1/update_inclass_session'
+    post url ,params: { status: 1},headers: @user3.create_new_auth_token 
+    resp =  JSON.parse response.body
+    assert_response 400
+    assert_equal resp['errors'][0] , "Could not update online quiz"    
+  end
+
+  test "should update_inclass_session" do
+    @online_quiz1.create_inclass_session(:status => 0, :lecture_id => @online_quiz1.lecture_id, :group_id => @online_quiz1.group_id, :course_id => @online_quiz1.course_id)
+    url = '/en/online_quizzes/1/update_inclass_session'
+    post url ,params: { status: 1},headers: @user3.create_new_auth_token 
+    resp =  JSON.parse response.body
+    assert_response :success
+    assert_equal resp['notice'][0] , "Online quiz was successfully updated."    
+  end
 
 end

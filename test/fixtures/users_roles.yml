@@ -30,4 +30,18 @@ user6_role1:
 school_admin:
   user_id: 11
   role_id: 9
-  admin_school_domain: .edu.eg
+  admin_school_domain: '.edu.eg'
+
+school_administrator:
+  user_id: 12
+  role_id: 9
+  admin_school_domain: 'all'
+  organization_id: 1 
+
+student7_in_course3_role1:
+  user_id: 7
+  role_id: 1
+
+user3_role1:
+  user_id: 3
+  role_id: 1  

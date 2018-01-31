@@ -60,11 +60,12 @@ student_in_course3:
 student7_in_course3:
   id: 7
   name: "Ahmed"
-  email: "Ahmed@gmail.com"
+  email: "ahmed@gmail.com"
   last_name: "aly"
   screen_name: "Ahmed"
   university: "cairo"
-  uid: "Ahmed@gmail.com"
+  uid: "ahmed@gmail.com"
+  completion_wizard: "{\"intro_watched\":true,\"all\":true}"
 
 student8_in_course3:
   id: 8
@@ -106,6 +107,24 @@ school_administrator:
   name: "ahmed"
   email: "school_admin@gmailll.com"
   last_name: "hossam"
-  screen_name: "ahmed"
+  screen_name: "school_administrator"
   university: "cairo"
   uid: "school_admin@gmailll.com"
+
+school_administrator_eg:
+  id: 12
+  name: "ahmed"
+  email: "school_admin@edu.eg.com"
+  last_name: "hossam"
+  screen_name: "school_administrator_eg"
+  university: "cairo"
+  uid: "school_admin@edu.eg.com"
+
+eg_domain_user_1:
+  id: 13
+  name: "ahmed"
+  email: "eg_domain_user_1@eu.eg"
+  last_name: "hossam"
+  screen_name: "eg_domain_user_1"
+  university: "cairo"
+  uid: "eg_domain_user_1@eu.eg"
