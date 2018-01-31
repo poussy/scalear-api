@@ -15,6 +15,7 @@
 
 .byebug_history
 .ruby-version
+.ruby-gemset
 
 /config/config.yml
 /config/database.yml
