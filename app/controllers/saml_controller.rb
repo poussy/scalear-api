@@ -28,9 +28,9 @@ class SamlController < ApplicationController
     connect_to = $connect_to.to_s
     @response.decrypt(Rails.application.config.saml[:keys][:private])
 
-    action = validate_and_sign_in_user(@response.attributes)
-    ## waiting for deployment 
-    render :json=>action
+    redirect_url = validate_and_sign_in_user(@response.attributes)
+    redirect_to redirect_url
+   
   end
 
   def metadata
@@ -79,8 +79,7 @@ class SamlController < ApplicationController
       email = attributes["mail"].downcase rescue ""
       saml_user = User.find_by_email(email)
       if saml_user.nil?
-        return {:redirect_to=>"#/users/signup?#{attributes.to_query}&saml=true"}
-        # redirect_to "#/users/signup?#{attributes.to_query}&saml=true"
+       return "#/users/signup?#{attributes.to_query}&saml=true"
       else
         if !saml_user.saml
           saml_user.name        = attributes["givenName"] || saml_user.name
@@ -90,10 +89,9 @@ class SamlController < ApplicationController
           saml_user.skip_confirmation!
           saml_user.save
         end
-        return {:sign_in=> saml_user, :token=> saml_user.create_new_auth_token}
+        token = saml_user.create_new_auth_token
         
-        # sign_in saml_user
-        # redirect_to current_user
+        return "#/users/login?#{token.to_query}"
       end
     end
 
