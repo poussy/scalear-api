@@ -61,9 +61,6 @@ class GroupTest < ActiveSupport::TestCase
 			assert item.respond_to? :class_name
 			assert_equal item.class.name.downcase, item['class_name']
 		end
-		
-		
-				
 	end
 
 	test "get_items function should return quizzez, lectures and custom_links sorted according to position" do
@@ -76,9 +73,4 @@ class GroupTest < ActiveSupport::TestCase
 		end
 	end
 	
-
-
-
-
-
 end

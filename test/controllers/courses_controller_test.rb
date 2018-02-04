@@ -77,10 +77,10 @@ class CoursesControllerTest <  ActionDispatch::IntegrationTest
 					"https://pbs.twimg.com/profile_images/839721704163155970/LI_TRk1z_400x400.jpg",
 					"name"=>"course3",
 					"short_name"=>"c3",
-					"start_date"=>"2017-09-04",
+					"start_date"=>"2017-07-04",
 					"user_id"=>3,
 					"ended"=>true,
-					"duration"=>5,
+					"duration"=>13,
 					"teacher_enrollments"=>[{"user"=>{"name"=>"ahmed", "email"=>"okasha@gmail.com"}}]}
 				]}
 
@@ -117,10 +117,10 @@ class CoursesControllerTest <  ActionDispatch::IntegrationTest
 				"https://pbs.twimg.com/profile_images/839721704163155970/LI_TRk1z_400x400.jpg",
 				"name"=>"course3",
 				"short_name"=>"c3",
-				"start_date"=>"2017-09-04",
+				"start_date"=>"2017-07-04",
 				"user_id"=>3,
 				"ended"=>true,
-				"duration"=>5,
+				"duration"=>13,
 				"enrollments"=>5,
 				"lectures"=>2,
 				"quiz"=>1,
@@ -280,7 +280,7 @@ class CoursesControllerTest <  ActionDispatch::IntegrationTest
 		url = '/en/courses/'+ @course1.id.to_s+'/course_editor_angular'
 		get  url  ,headers: @user1.create_new_auth_token 
 		resp =  JSON.parse response.body
-		assert_equal resp['course']['duration'] , 5
+		assert_equal resp['course']['duration'] , 13
 		assert_equal resp['groups'].count , 3
 	end
 
@@ -290,7 +290,7 @@ class CoursesControllerTest <  ActionDispatch::IntegrationTest
 		url = '/en/courses/'+ @course1.id.to_s+'/course_editor_angular'
 		get  url  ,headers: @user1.create_new_auth_token 
 		resp =  JSON.parse response.body
-		assert_equal resp['course']['duration'] , 5
+		assert_equal resp['course']['duration'] , 13
 		assert_equal resp['groups'].count , 4
 	end
 
@@ -319,14 +319,14 @@ class CoursesControllerTest <  ActionDispatch::IntegrationTest
 		# compare new and imported groups
 		new_course.groups.each_with_index do |new_group, i|
 			assert_equal  course_from.groups[i].name, new_group.name
-			assert_equal  course_from.groups[i].appearance_time+65.days, new_group.appearance_time
+			assert_equal  course_from.groups[i].appearance_time+127.days, new_group.appearance_time
 
 			# compare new and imported lectures
 			lectures_from = course_from.groups[i].lectures
 			new_group.lectures.each_with_index do |new_lecture, j|
 				assert_equal lectures_from[j].name, new_lecture.name
-				## difference between courses start_date is 65 days
-				assert_equal lectures_from[j].appearance_time.to_date + 65.days, new_lecture.appearance_time.to_date
+				## difference between courses start_date is 127 days
+				assert_equal lectures_from[j].appearance_time.to_date + 127.days, new_lecture.appearance_time.to_date
 			end
 			# compare quizzes
 			quizzes_from = course_from.groups[i].quizzes
