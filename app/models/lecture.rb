@@ -61,6 +61,23 @@ class Lecture < ApplicationRecord
 	# def titled_markers
 	# end
 
+	## override as_json to remove virtual attributes if they are null
+	def as_json (options= {})
+		h = super(options)
+		h.delete("class_name") unless h["class_name"]
+		h.delete("done") unless h["done"]
+		h.delete("user_confused") unless h["user_confused"]
+		h.delete("posts") unless h["posts"]
+		h.delete("lecture_notes") unless h["lecture_notes"]
+		h.delete("title_markers") unless h["title_markers"]
+		h.delete("video_quizzes") unless h["video_quizzes"]
+		h.delete("annotations") unless h["annotations"]
+		h.delete("requirements") unless h["requirements"]
+		h.delete("skip_ahead") unless h["skip_ahead"]
+		h
+	end
+	
+
 	def posts_public
 		posts = Forum::Post.find(:all, :params => {lecture_id: self.id, user_id:current_user.id, privacy: 1})
 		posts.each do |x|
