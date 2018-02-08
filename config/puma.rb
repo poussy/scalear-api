@@ -4,13 +4,15 @@
 # the maximum value specified for Puma. Default is set to 5 threads for minimum
 # and maximum; this matches the default thread size of Active Record.
 #
-threads_count = ENV.fetch("RAILS_MAX_THREADS") { 5 }
+workers Integer(ENV['WEB_CONCURRENCY'] || 2)
+threads_count = ENV.fetch("MAX_THREADS") { 1 }
 threads threads_count, threads_count
 
+preload_app!
 # Specifies the `port` that Puma will listen on to receive requests; default is 3000.
 #
 port        ENV.fetch("PORT") { 3000 }
-
+rackup      DefaultRackup
 # Specifies the `environment` that Puma will run in.
 #
 environment ENV.fetch("RAILS_ENV") { "development" }
@@ -54,3 +56,14 @@ environment ENV.fetch("RAILS_ENV") { "development" }
 
 # Allow puma to be restarted by `rails restart` command.
 plugin :tmp_restart
+
+
+on_worker_boot do
+  # Valid on Rails up to 4.1 the initializer method of setting `pool` size
+  ActiveSupport.on_load(:active_record) do
+    config = ActiveRecord::Base.configurations[Rails.env] ||
+                Rails.application.config.database_configuration[Rails.env]
+    config['pool'] = ENV['DB_POOL'] || 5 #ENV['MAX_THREADS'] ||
+    ActiveRecord::Base.establish_connection(config)
+  end
+end
