@@ -82,7 +82,7 @@ class LecturesController < ApplicationController
 				online_quiz.update_attributes(:inclass => @lecture.inclass)
 			end
 
-			render json: {lecture: @lecture, :notice => [I18n.t("controller_msg.lecture_successfully_updated")] }
+			render json: {lecture: @lecture.remove_null_virtual_attributes, :notice => [I18n.t("controller_msg.lecture_successfully_updated")] }
 		else
 			render json: {:errors => @lecture.errors , :appearance_time =>@lecture.appearance_time.strftime('%Y-%m-%d')}, :status => :unprocessable_entity
 		end

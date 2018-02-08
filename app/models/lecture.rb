@@ -61,9 +61,8 @@ class Lecture < ApplicationRecord
 	# def titled_markers
 	# end
 
-	## override as_json to remove virtual attributes if they are null
-	def as_json (options= {})
-		h = super(options)
+	def remove_null_virtual_attributes
+		h = self.as_json({})
 		h.delete("class_name") unless h["class_name"]
 		h.delete("done") unless h["done"]
 		h.delete("user_confused") unless h["user_confused"]
