@@ -568,8 +568,6 @@ class CoursesController < ApplicationController
 			g[:has_inclass] = false
 			g[:has_distance_peer] = false
 			all = (filteredItems[g.id][:lectures] + filteredItems[g.id][:quizzes] + filteredItems[g.id][:custom_links]).sort{|a,b| a.position <=> b.position}
-			pp g.id
-			pp all
 			all.each do |q|
 				q[:class_name]= q.class.name.downcase
 				if q[:class_name] != 'customlink'

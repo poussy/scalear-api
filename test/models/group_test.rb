@@ -54,27 +54,27 @@ class GroupTest < ActiveSupport::TestCase
 
 	end
 
-	test "items function should return quizzez, lectures and custom_links of a course, with class_name attribute on them" do
-		group = groups(:group3)
+	# test "items function should return quizzez, lectures and custom_links of a course, with class_name attribute on them" do
+	# 	group = groups(:group3)
 		
-		group.items.each do |item|
-			assert item.respond_to? :class_name
-			assert_equal item.class.name.downcase, item['class_name']
-		end
+	# 	group.items.each do |item|
+	# 		assert item.respond_to? :class_name
+	# 		assert_equal item.class.name.downcase, item['class_name']
+	# 	end
 		
 		
 				
-	end
+	# end
 
-	test "get_items function should return quizzez, lectures and custom_links sorted according to position" do
-		group = groups(:group3)
+	# test "get_items function should return quizzez, lectures and custom_links sorted according to position" do
+	# 	group = groups(:group3)
 		
-		group.items.each_with_index do |item, index|
-			if index<group.items.length-1
-				assert_operator group.items[index].position, :<, group.items[index+1].position
-			end
-		end
-	end
+	# 	group.items.each_with_index do |item, index|
+	# 		if index<group.items.length-1
+	# 			assert_operator group.items[index].position, :<, group.items[index+1].position
+	# 		end
+	# 	end
+	# end
 	
 
 
