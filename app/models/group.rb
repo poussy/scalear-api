@@ -287,7 +287,7 @@ class Group < ApplicationRecord
 		(quizzes+lectures+custom_links).sort{|a,b| a.position <=> b.position}
 	end
 
-	def items
+	def get_all_items
 		all = self.get_items
 		all.each do |s|
 			s[:class_name]= s.class.name.downcase
