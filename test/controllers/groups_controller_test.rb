@@ -311,7 +311,6 @@ class GroupsControllerTest < ActionDispatch::IntegrationTest
 		get  url , params: {group: { name:'' }} ,headers: @user3.create_new_auth_token 
 		assert_response :success
 		resp =  JSON.parse response.body
-		assert_equal resp['items'].count , 5
 		assert_equal resp['total_questions'] , 10
 		assert_equal resp['total_quiz_questions'] , 6
 		assert_equal resp['total_survey_questions'] , 0

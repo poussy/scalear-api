@@ -414,7 +414,7 @@ class CoursesController < ApplicationController
 	def course_editor_angular
 		groups = @course.groups.all
 		groups.each do |g|
-			g['items'] = g.items
+			g['items'] = g.get_all_items
 			g['total_time'] = g.total_time
 		end
 
@@ -529,23 +529,28 @@ class CoursesController < ApplicationController
 		course[:duration] = course.duration
 		is_preview_user = current_user.is_preview?
 		today = Time.now
+		filteredItems = {}
+		initalGroups = course.groups.includes(:lectures, :quizzes, :custom_links)
 		if is_preview_user
-		groups = course.groups.includes(:lectures, :quizzes, :custom_links).select{|v|
-			v.lectures.size > 0 ||
-			v.quizzes.size > 0 ||
-			v.custom_links.size > 0
-		}
+			groups = initalGroups.select{|v|
+				v.lectures.size > 0 ||
+				v.quizzes.size > 0 ||
+				v.custom_links.size > 0
+			}
 		else
-		groups = course.groups.includes(:lectures, :quizzes, :custom_links).select{|v|
-			v.appearance_time <= today &&
-			(
-			l =v.lectures.where("appearance_time <= ? or inclass = true", today );
-			q = v.quizzes.where( "appearance_time <= ?", today );
-			l.size > 0 ||
-			q.size > 0 ||
-			v.custom_links.size > 0
-			)
-		}
+			groups =initalGroups.select{|g|
+				g.appearance_time <= today &&
+				(
+					filteredItems[g.id] = {
+						:lectures => g.lectures.select{|l| l.appearance_time<=today || l.inclass = true},
+						:quizzes => g.quizzes.select{ |q| q.appearance_time<=today},
+						:custom_links => g.custom_links
+					};
+					filteredItems[g.id][:lectures].size > 0 ||
+					filteredItems[g.id][:quizzes].size > 0 ||
+					filteredItems[g.id][:custom_links].size > 0
+				)
+			}
 		end
 
 		groups.sort!{|x,y| ( x.position and y.position ) ? x.position <=> y.position : ( x.position ? -1 : 1 )  }
@@ -560,7 +565,7 @@ class CoursesController < ApplicationController
 			g.current_user= current_user
 			g[:has_inclass] = false
 			g[:has_distance_peer] = false
-			all = g.get_items
+			all = (filteredItems[g.id][:lectures] + filteredItems[g.id][:quizzes] + filteredItems[g.id][:custom_links]).sort{|a,b| a.position <=> b.position}
 			all.each do |q|
 				q[:class_name]= q.class.name.downcase
 				if q[:class_name] != 'customlink'
@@ -579,7 +584,7 @@ class CoursesController < ApplicationController
 				end
 			end
 			g[:items] = all
-			g[:sub_items_size] = g.lectures.size + g.quizzes.size
+			g[:sub_items_size] = filteredItems[g.id][:lectures].size + filteredItems[g.id][:quizzes].size
 			g[:total_time] = g.total_time
 		end
 		next_item={}
