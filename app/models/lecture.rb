@@ -63,16 +63,8 @@ class Lecture < ApplicationRecord
 
 	def remove_null_virtual_attributes
 		h = self.as_json({})
-		h.delete("class_name") unless h["class_name"]
-		h.delete("done") unless h["done"]
-		h.delete("user_confused") unless h["user_confused"]
-		h.delete("posts") unless h["posts"]
-		h.delete("lecture_notes") unless h["lecture_notes"]
-		h.delete("title_markers") unless h["title_markers"]
-		h.delete("video_quizzes") unless h["video_quizzes"]
-		h.delete("annotations") unless h["annotations"]
-		h.delete("requirements") unless h["requirements"]
-		h.delete("skip_ahead") unless h["skip_ahead"]
+		["class_name", "done", "user_confused", "posts", "lecture_notes", 
+		"title_markers", "video_quizzes","annotations","requirements","skip_ahead" ].each{|attr| h.delete(attr) unless h[attr]}
 		h
 	end
 	
