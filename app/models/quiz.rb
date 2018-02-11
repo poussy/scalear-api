@@ -24,12 +24,9 @@ class Quiz < ApplicationRecord
   after_destroy :clean_up
 
   def remove_null_virtual_attributes
-    h = self.as_json({})
-    h.delete("class_name") unless h["class_name"]
-    h.delete("current_user") unless h["current_user"]
-    h.delete("requirements") unless h["requirements"]
-    h.delete("done") unless h["done"]
-    h
+    quiz = self.as_json({})
+    ["class_name","current_user","requirements","done"].each{|attr| quiz.delete(attr) unless quiz[attr]}
+    quiz
   end
 
   def is_done
