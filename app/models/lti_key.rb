@@ -1,8 +1,8 @@
 class LtiKey < ApplicationRecord
 	belongs_to :user , optional: true
 	belongs_to :organization, optional: true
-	validates_uniqueness_of :user_id
-	validates_uniqueness_of :organization_id	
+	validates_uniqueness_of :user_id, :allow_blank => true, :allow_nil => true
+	validates_uniqueness_of :organization_id, :allow_blank => true, :allow_nil => true
 
 	validate :user_xor_organization
 	before_create :create_consumer_key

@@ -341,8 +341,6 @@ class CoursesController < ApplicationController
 	end  
 
 	def destroy
-		@course = Course.find(params[:id])
-		# if @course.groups.empty?
 		if @course.destroy
 			render :json => {:notice => [I18n.t('controller_msg.course_successfully_deleted')]}
 		else

@@ -498,6 +498,7 @@ en:
     could_not_delete_answer: "Could not delete answer"
     could_not_create_answer: "Could not create answer"
     could_not_update_question: "Could not update question"
+    could_not_update_online_quiz: "Could not update online quiz"    
     could_not_remove_from_course: "Could not remove %{student} from course"
     could_not_delete_post: "Could not delete post"
     could_not_delete_comment: "Could not delete comment"
