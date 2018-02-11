@@ -607,7 +607,7 @@ class User < ActiveRecord::Base
   def async_destroy
     self.destroy
   end
-  handle_asynchronously :async_destroy, :run_at => Proc.new { 5.seconds.from_now }
+  # handle_asynchronously :async_destroy, :run_at => Proc.new { 5.seconds.from_now }
 
   def delete_student_data(course_id)
     ActiveRecord::Base.transaction do

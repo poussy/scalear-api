@@ -633,7 +633,7 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 	test "check_if_invited_distance_peer should respond with enrolled students if no invitations" do
 		get "/en/courses/3/lectures/3/check_if_invited_distance_peer", headers: @headers2
 		assert_equal decode_json_response_body["students"], [
-			{"id"=>nil, "name"=>"Ahmed", "email"=>"Ahmed@gmail.com", "last_name"=>"aly", "full_name"=>"Ahmed aly", "status"=>nil, "lower"=>"ahmed"}, 
+			{"id"=>nil, "name"=>"Ahmed", "email"=>"ahmed@gmail.com", "last_name"=>"aly", "full_name"=>"Ahmed aly", "status"=>nil, "lower"=>"ahmed"}, 
 			{"id"=>nil, "name"=>"Hossam", "email"=>"Hossam@gmail.com", "last_name"=>"aly", "full_name"=>"Hossam aly", "status"=>nil, "lower"=>"hossam"}, 
 			{"id"=>nil, "name"=>"Karim", "email"=>"Karim@gmail.com", "last_name"=>"aly", "full_name"=>"Karim aly", "status"=>nil,"lower"=>"karim"}, 
 			{"id"=>nil, "name"=>"Mohamed", "email"=>"Mohamed@gmail.com", "last_name"=>"aly", "full_name"=>"Mohamed aly", "status"=>nil, "lower"=>"mohamed"}]

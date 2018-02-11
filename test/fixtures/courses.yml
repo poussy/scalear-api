@@ -3,7 +3,7 @@ course1:
   short_name: 'short_name' 
   user: user1 
   time_zone: "Cairo" 
-  start_date: '2017-9-4'
+  start_date: '2017-7-4'
   end_date: '2017-10-9' 
   image_url: 'https://pbs.twimg.com/profile_images/839721704163155970/LI_TRk1z_400x400.jpg'
   unique_identifier: "FDVSE-44758"
@@ -24,7 +24,7 @@ course3:
   short_name: 'c3' 
   user_id: 3
   time_zone: "Cairo" 
-  start_date: '2017-9-4' 
+  start_date: '2017-7-4' 
   end_date: '2017-10-9' 
   image_url: 'https://pbs.twimg.com/profile_images/839721704163155970/LI_TRk1z_400x400.jpg'
 

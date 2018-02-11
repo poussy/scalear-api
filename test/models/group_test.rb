@@ -76,9 +76,4 @@ class GroupTest < ActiveSupport::TestCase
 	# 	end
 	# end
 	
-
-
-
-
-
 end

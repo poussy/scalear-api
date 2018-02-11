@@ -23,7 +23,7 @@ class GroupsControllerTest < ActionDispatch::IntegrationTest
 		@assignment_statuses_course1 =  assignment_statuses(:assignment_statuses_course1)
 
 		@student = users(:student_in_course3)
-
+		@lecture1 = lectures(:lecture1)
 	end
 
 	test "Validate abilities for user1" do
@@ -832,7 +832,7 @@ class GroupsControllerTest < ActionDispatch::IntegrationTest
 
 	end
 
-	test "get_quiz_charts_inclass" do
+	test "get_quiz_charts_inclass for teacher" do
 
 		Question.find(1).update_attributes(show: true) #ocq
 		Question.find(4).update_attributes(show: true) #drag
@@ -869,7 +869,7 @@ class GroupsControllerTest < ActionDispatch::IntegrationTest
 		
 	end
 
-	test "get_inclass_student_status" do
+	test "get_inclass_student_status for student" do
 		InclassSession.create(online_quiz_id: 3, lecture_id: 3, group_id:3, course_id: 3, status: 2)
 		
 		get '/en/courses/3/groups/3/get_inclass_student_status', params:{quiz_id:3,status:0},headers: @student.create_new_auth_token
@@ -885,7 +885,7 @@ class GroupsControllerTest < ActionDispatch::IntegrationTest
 			}
 	end
 
-	test "get_survey_chart_angular" do
+	test "get_survey_chart_angular for student" do
 		Quiz.find(1).update_attribute('quiz_type','survey')
 		get '/en/courses/3/groups/3/get_survey_chart_angular', params:{display_only:'display_only',survey_id:1},headers: @student.create_new_auth_token
 		assert_equal decode_json_response_body["chart_data"], 
@@ -917,5 +917,146 @@ class GroupsControllerTest < ActionDispatch::IntegrationTest
 		assert_equal decode_json_response_body["chart_questions"][0],{"question"=>"<p class=\\\"medium-editor-p\\\">ocq</p>", "type"=>"OCQ"}
 	end
 	
+	test "should get_module_summary for teacher 3" do
+		get '/en/courses/3/groups/3/get_module_summary', params:{},headers: @user3.create_new_auth_token
+		resp =  JSON.parse response.body
+		assert_response :success
+		assert_equal resp['module']['duration'] , 390
+		assert_equal resp['module']['quiz_count'] , 11
+		assert_equal resp['module']['type'] , 'teacher'
+		assert_equal resp['module']['students_count'] , 5
+		assert_equal resp['module']['students_completion']['incomplete'] , 5
+	end
 	
+	test "should get_module_summary for teacher 1" do
+		url = '/en/courses/'+ @course1.id.to_s+'/groups/'+@group1.id.to_s+'/get_module_summary'
+		get url, params: {} ,headers: @user1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_response :success
+		assert_equal resp['module']['duration'] , 240
+		assert_equal resp['module']['quiz_count'] , 2
+		assert_equal resp['module']['type'] , 'teacher'
+		assert_equal resp['module']['students_count'] , 1
+		assert_equal resp['module']['students_completion']['on_time'] , 1
+	end
+
+	test "should get_module_summary for teacher 1 after deleting student1 answer" do
+		online_quiz_grade1 =  online_quiz_grades(:online_quiz_grade1)
+		online_quiz_grade1.destroy
+		url = '/en/courses/'+ @course1.id.to_s+'/groups/'+@group1.id.to_s+'/get_module_summary'
+		get url, params: {} ,headers: @user1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_response :success
+		assert_equal resp['module']['duration'] , 240
+		assert_equal resp['module']['quiz_count'] , 2
+		assert_equal resp['module']['type'] , 'teacher'
+		assert_equal resp['module']['students_count'] , 1
+		assert_equal resp['module']['students_completion']['incomplete'] , 1
+	end
+
+	test "should get_module_summary for teacher 1 after deleting online_quiz" do
+		html_free_text_quiz_with_answer1 =  online_quizzes(:html_ocq_online_quiz1)
+		html_free_text_quiz_with_answer1.destroy
+		url = '/en/courses/'+ @course1.id.to_s+'/groups/'+@group1.id.to_s+'/get_module_summary'
+		get url, params: {} ,headers: @user1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_response :success
+		assert_equal resp['module']['duration'] , 240
+		assert_equal resp['module']['quiz_count'] , 1
+		assert_operator resp['module']['due_date'] , :<=, 0		
+		assert_equal resp['module']['type'] , 'teacher'
+		assert_equal resp['module']['students_count'] , 1
+		assert_equal resp['module']['students_completion']['on_time'] , 1
+	end
+
+	test "should get_module_summary for teacher 1 after edit the group in the future" do
+		@group1.update_attributes(appearance_time: Time.zone.now + 2.day, due_date: Time.zone.now + 3.day)
+		url = '/en/courses/'+ @course1.id.to_s+'/groups/'+@group1.id.to_s+'/get_module_summary'
+		get url, params: {} ,headers: @user1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_response :success
+		assert_equal resp['module']['duration'] , 240
+		assert_equal resp['module']['quiz_count'] , 2
+		assert_operator resp['module']['due_date'] , :>=, 0
+		assert_equal resp['module']['type'] , 'teacher'
+		assert_equal resp['module']['students_count'] , 1
+		assert_equal resp['module']['students_completion']['completed'] , 1
+	end
+
+	test "should get_module_summary for student1" do
+		url = '/en/courses/'+ @course1.id.to_s+'/groups/'+@group1.id.to_s+'/get_module_summary'
+		get url, params: {} ,headers: @student1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_response :success
+		assert_equal resp['module']['duration'] , 240
+		assert_equal resp['module']['quiz_count'] , 2
+		assert_equal resp['module']['type'] , 'student'
+		assert_equal resp['module']['module_done_perc'] , 100
+		assert_operator resp['module']['due_date'] , :<=, 0
+	end
+
+	test "should get_module_summary for student1 after deleting student1 answer" do
+		online_quiz_grade1 =  online_quiz_grades(:online_quiz_grade1)
+		online_quiz_grade1.destroy
+
+		online_quiz_grade1 =  online_quiz_grades(:online_quiz_grade1)
+		online_quiz_grade1.destroy
+		url = '/en/courses/'+ @course1.id.to_s+'/groups/'+@group1.id.to_s+'/get_module_summary'
+		get url, params: {} ,headers: @student1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_response :success
+		assert_equal resp['module']['duration'] , 240
+		assert_equal resp['module']['quiz_count'] , 2
+		assert_equal resp['module']['type'] , 'student'
+		assert_equal resp['module']['module_done_perc'] , 100
+		assert_operator resp['module']['due_date'] , :<=, 0
+	end
+
+	test "should get_module_summary for student1 after deleting online_quiz" do
+		html_free_text_quiz_with_answer1 =  online_quizzes(:html_ocq_online_quiz1)
+		html_free_text_quiz_with_answer1.destroy
+		url = '/en/courses/'+ @course1.id.to_s+'/groups/'+@group1.id.to_s+'/get_module_summary'
+		get url, params: {} ,headers: @student1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_response :success
+		assert_equal resp['module']['duration'] , 240
+		assert_equal resp['module']['quiz_count'] , 1
+		assert_equal resp['module']['type'] , 'student'
+		assert_equal resp['module']['module_done_perc'] , 100
+		assert_operator resp['module']['due_date'] , :<=, 0
+	end
+
+	test "should get_module_summary for student1 after edit the group in the future" do
+		@group1.update_attributes(appearance_time: Time.zone.now + 2.day, due_date: Time.zone.now + 3.day)
+		url = '/en/courses/'+ @course1.id.to_s+'/groups/'+@group1.id.to_s+'/get_module_summary'
+		get url, params: {} ,headers: @student1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_response :success
+		assert_equal resp['module']['duration'] , 240
+		assert_equal resp['module']['quiz_count'] , 2
+		assert_equal resp['module']['type'] , 'student'
+		assert_equal resp['module']['module_done_perc'] , 100
+		assert_operator resp['module']['due_date'] , :>=, 0
+	end
+
+	test "should copy/paste group after updating lecture to inclass" do
+		url = '/en/courses/'+ @course1.id.to_s+'/lectures/'+@lecture1.id.to_s
+		put url, params: {:lecture => { inclass: true}}, headers: @user1.create_new_auth_token, as: :json
+		assert_response :success
+
+		url = '/en/courses/'+ @course1.id.to_s+'/groups/module_copy'
+		group_id = @group1.id
+		post url, params: {module_id: group_id} ,headers: @user1.create_new_auth_token 	
+		assert_response :success
+		new_group = Group.last
+
+		assert @group1.name == new_group.name
+		assert @group1.inclass_sessions.count == new_group.inclass_sessions.count
+	end	
+
+	test "should update_all_inclass_sessions" do
+		url = '/en/courses/'+ @course1.id.to_s+'/groups/'+@group1.id.to_s+'/update_all_inclass_sessions'
+		post url, params: {}, headers: @user1.create_new_auth_token, as: :json
+		assert_response :success
+	end
 end
