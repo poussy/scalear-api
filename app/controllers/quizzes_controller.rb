@@ -192,7 +192,7 @@ class QuizzesController < ApplicationController
        if @quiz.due_date.to_formatted_s(:long) != group.due_date.to_formatted_s(:long)
            @quiz.events << Event.new(:name => "#{@quiz.name} "+I18n.t('controller_msg.due'), :start_at => params[:quiz][:due_date], :end_at => params[:quiz][:due_date], :all_day => false, :color => "red", :course_id => @course.id, :group_id => group.id)
        end
-       render json: {quiz: @quiz, :notice => [I18n.t("controller_msg.#{@quiz.quiz_type}_successfully_updated")] }
+       render json: {quiz: @quiz.remove_null_virtual_attributes, :notice => [I18n.t("controller_msg.#{@quiz.quiz_type}_successfully_updated")] }
     else
       render json: {:errors => @quiz.errors , :appearance_time =>@quiz.appearance_time.strftime('%Y-%m-%d') }, :status => :unprocessable_entity
     end

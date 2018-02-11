@@ -23,6 +23,12 @@ class Quiz < ApplicationRecord
 
   after_destroy :clean_up
 
+  def remove_null_virtual_attributes
+    quiz = self.as_json({})
+    ["class_name","current_user","requirements","done"].each{|attr| quiz.delete(attr) unless quiz[attr]}
+    quiz
+  end
+
   def is_done
     st=current_user
     assign= st.get_assignment_status(self)
