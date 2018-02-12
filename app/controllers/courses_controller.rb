@@ -565,7 +565,11 @@ class CoursesController < ApplicationController
 			g.current_user= current_user
 			g[:has_inclass] = false
 			g[:has_distance_peer] = false
-			all = (filteredItems[g.id][:lectures] + filteredItems[g.id][:quizzes] + filteredItems[g.id][:custom_links]).sort{|a,b| a.position <=> b.position}
+			if is_preview_user
+				all = g.get_items
+			else
+				all = (filteredItems[g.id][:lectures] + filteredItems[g.id][:quizzes] + filteredItems[g.id][:custom_links]).sort{|a,b| a.position <=> b.position}
+			end
 			all.each do |q|
 				q[:class_name]= q.class.name.downcase
 				if q[:class_name] != 'customlink'
@@ -584,7 +588,11 @@ class CoursesController < ApplicationController
 				end
 			end
 			g[:items] = all
-			g[:sub_items_size] = filteredItems[g.id][:lectures].size + filteredItems[g.id][:quizzes].size
+			if is_preview_user
+				 g[:sub_items_size] = g.lectures.size + g.quizzes.size 
+			else
+				g[:sub_items_size] = filteredItems[g.id][:lectures].size + filteredItems[g.id][:quizzes].size
+			end
 			g[:total_time] = g.total_time
 		end
 		next_item={}
