@@ -192,8 +192,11 @@ class UserMailer < ApplicationMailer
 		mail(:to => @teacher.email, :subject => "Question in #{course.short_name}: #{lecture.name}", :from => @from)
 	end
 
-	# def password_changed_email(user,locale)
-	# end
+	def password_changed_email(user,locale)
+			@user = user
+			@from =  "\"Scalable Learning\" <info@scalable-learning.com>"
+			mail(:to => @user.email, :subject => "Password changed", :from => @from)
+	end
 
 	def due_date_email(user , course , group , group_type ,locale)
 		I18n.locale=locale
