@@ -117,13 +117,12 @@ class CoursesController < ApplicationController
 		if current_user.has_role?('Administrator')
 			@import= Course.all
 		elsif current_user.has_role?('School Administrator')
-			user_role = UsersRole.where(:user_id => user.id, :role_id => 9)[0]
-			if user_role
-				email = user_role.admin_school_domain || nil
+			user_role = UsersRole.where(:user_id => current_user.id, :role_id => 9)[0]
+      		email = user_role.admin_school_domain
+			if email == "all"
+				email = user_role.organization.domain || nil
 			end
-			if email
-				@import= Course.includes([:user,:teachers]).select{|c| ( c.teachers.select{|t| t.email.include?(email) }.size>0 ) }
-			end
+			@import= Course.includes([:user,:teachers]).select{|c| ( c.teachers.select{|t| t.email.include?(email) }.size>0 ) }
 		else
 			@import= current_user.subjects_to_teach
 		end
