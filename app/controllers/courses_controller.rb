@@ -590,11 +590,7 @@ class CoursesController < ApplicationController
 				end
 			end
 			g[:items] = all
-			if is_preview_user
-				 g[:sub_items_size] = g.lectures.size + g.quizzes.size 
-			else
-				g[:sub_items_size] = filteredItems[g.id][:lectures].size + filteredItems[g.id][:quizzes].size
-			end
+			g[:sub_items_size] = filteredItems[g.id][:lectures].size + filteredItems[g.id][:quizzes].size
 			g[:total_time] = g.total_time
 		end
 		next_item={}
