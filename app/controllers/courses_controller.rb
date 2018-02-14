@@ -533,19 +533,25 @@ class CoursesController < ApplicationController
 		initalGroups = course.groups.includes(:lectures, :quizzes, :custom_links)
 		if is_preview_user
 			groups = initalGroups.select{|v|
+				filteredItems[g.id] = {
+					:lectures => g.lectures,
+					:quizzes => g.quizzes,
+					:custom_links => g.custom_links
+				};
 				v.lectures.size > 0 ||
 				v.quizzes.size > 0 ||
 				v.custom_links.size > 0
 			}
 		else
 			groups =initalGroups.select{|g|
+				filteredItems[g.id] = {
+					:lectures => g.lectures.select{|l| l.appearance_time<=today || l.inclass = true},
+					:quizzes => g.quizzes.select{ |q| q.appearance_time<=today},
+					:custom_links => g.custom_links
+				};
 				g.appearance_time <= today &&
 				(
-					filteredItems[g.id] = {
-						:lectures => g.lectures.select{|l| l.appearance_time<=today || l.inclass = true},
-						:quizzes => g.quizzes.select{ |q| q.appearance_time<=today},
-						:custom_links => g.custom_links
-					};
+					
 					filteredItems[g.id][:lectures].size > 0 ||
 					filteredItems[g.id][:quizzes].size > 0 ||
 					filteredItems[g.id][:custom_links].size > 0
@@ -565,11 +571,7 @@ class CoursesController < ApplicationController
 			g.current_user= current_user
 			g[:has_inclass] = false
 			g[:has_distance_peer] = false
-			if is_preview_user
-				all = g.get_items
-			else
-				all = (filteredItems[g.id][:lectures] + filteredItems[g.id][:quizzes] + filteredItems[g.id][:custom_links]).sort{|a,b| a.position <=> b.position}
-			end
+			all = (filteredItems[g.id][:lectures] + filteredItems[g.id][:quizzes] + filteredItems[g.id][:custom_links]).sort{|a,b| a.position <=> b.position}
 			all.each do |q|
 				q[:class_name]= q.class.name.downcase
 				if q[:class_name] != 'customlink'
