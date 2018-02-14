@@ -51,13 +51,18 @@ class CoursesController < ApplicationController
 			@total_teacher = Course.where("id is not null").count
 			teacher_courses= Course.where("id is not null").order("start_date DESC").limit(params[:limit]).offset(params[:offset]).includes([{:teacher_enrollments => [:user,:role]}, :enrollments, :lectures, :quizzes])#.all
 		elsif current_user.is_school_administrator?
-			email = UsersRole.where(:user_id => current_user.id, :role_id => 9)[0].admin_school_domain
-			if email.blank?
+			user_role = UsersRole.where(:user_id => current_user.id, :role_id => 9)[0]
+      		school_domain = user_role.admin_school_domain
+			if school_domain.blank?
 				@total_teacher = 0
 				teacher_courses = {}
 			else
-				@total_teacher = Course.select{|c| c.teachers.select{|t| t.email.include?(email) }.size>0}.count
-				teacher_courses = Course.order("start_date DESC").includes([:user,:teachers,{:teacher_enrollments => [:user,:role]}, :enrollments, :lectures, :quizzes]).select{|c| c.teachers.select{|t| t.email.include?(email) }.size>0}[params[:offset].to_i .. params[:offset].to_i+params[:limit].to_i ]
+				if school_domain == "all"
+					school_domain = user_role.organization.domain || nil
+				end
+				
+				@total_teacher = Course.select{|c| c.teachers.select{|t| t.email.include?(school_domain) }.size>0}.count
+				teacher_courses = Course.order("start_date DESC").includes([:user,:teachers,{:teacher_enrollments => [:user,:role]}, :enrollments, :lectures, :quizzes]).select{|c| c.teachers.select{|t| t.email.include?(school_domain) }.size>0}[params[:offset].to_i .. params[:offset].to_i+params[:limit].to_i ]
 			end
 		else
 			@total_teacher = current_user.subjects_to_teach.count
@@ -112,13 +117,12 @@ class CoursesController < ApplicationController
 		if current_user.has_role?('Administrator')
 			@import= Course.all
 		elsif current_user.has_role?('School Administrator')
-			user_role = UsersRole.where(:user_id => user.id, :role_id => 9)[0]
-			if user_role
-				email = user_role.admin_school_domain || nil
+			user_role = UsersRole.where(:user_id => current_user.id, :role_id => 9)[0]
+      		email = user_role.admin_school_domain
+			if email == "all"
+				email = user_role.organization.domain || nil
 			end
-			if email
-				@import= Course.includes([:user,:teachers]).select{|c| ( c.teachers.select{|t| t.email.include?(email) }.size>0 ) }
-			end
+			@import= Course.includes([:user,:teachers]).select{|c| ( c.teachers.select{|t| t.email.include?(email) }.size>0 ) }
 		else
 			@import= current_user.subjects_to_teach
 		end
