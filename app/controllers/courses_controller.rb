@@ -532,15 +532,15 @@ class CoursesController < ApplicationController
 		filteredItems = {}
 		initalGroups = course.groups.includes(:lectures, :quizzes, :custom_links)
 		if is_preview_user
-			groups = initalGroups.select{|v|
+			groups = initalGroups.select{|g|
 				filteredItems[g.id] = {
 					:lectures => g.lectures,
 					:quizzes => g.quizzes,
 					:custom_links => g.custom_links
 				};
-				v.lectures.size > 0 ||
-				v.quizzes.size > 0 ||
-				v.custom_links.size > 0
+				g.lectures.size > 0 ||
+				g.quizzes.size > 0 ||
+				g.custom_links.size > 0
 			}
 		else
 			groups =initalGroups.select{|g|
