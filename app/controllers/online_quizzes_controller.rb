@@ -157,7 +157,7 @@ private
 
 	def online_quiz_params
 		params.require(:online_quiz).permit(:time ,:start_time ,:end_time ,:graded ,:intro ,
-			:self ,:in_group ,:discussion ,:display_text, :inclass, :question)
+			:self ,:in_group ,:discussion ,:display_text, :inclass, :question, :xcoor, :ycoor, :height,:width )
 	end
 	
 end
