@@ -620,8 +620,10 @@ class CoursesController < ApplicationController
 		render :json => {:notice => ['Course wil be exported to CSV and sent to your Email']}
 	end
 
-	# def export_student_csv
-	# end  
+	def export_student_csv
+		@course.export_student_csv(current_user)
+		render :json => {:notice => ['Student list wil be exported to CSV and sent to your Email']}
+	end
 
 	# def export_for_transfer
 	# end  
