@@ -312,7 +312,7 @@ class Course < ApplicationRecord
 		csv_files[:student_list]= CSV.generate do |csv_student_list|
 			csv_student_list  << [:email ,:name , :last_name ,:screen_name,:university]
 			enrolled.each do |d|
-			csv_student_list << [d.email ,d.name , d.last_name ,d.screen_name , d.university]
+				csv_student_list << [d.email ,d.name , d.last_name ,d.screen_name , d.university]
 			end
 		end
 
@@ -329,10 +329,10 @@ class Course < ApplicationRecord
 		#send_file t.path, :type => 'application/zip',
 		#                  :disposition => 'attachment',
 		#                  :filename => file_name
-		UserMailer.attachment_email(current_user, file_name, t.path, I18n.locale).deliver
+		UserMailer.delay.attachment_email(current_user, file_name, t.path, I18n.locale)#.deliver
 		t.close
 	end
-	# handle_asynchronously :export_student_csv, :run_at => Proc.new { 5.seconds.from_now }
+	handle_asynchronously :export_student_csv, :run_at => Proc.new { 5.seconds.from_now }
 	
 
 	def import_course(import_from)
