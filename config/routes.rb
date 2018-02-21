@@ -48,6 +48,7 @@ Rails.application.routes.draw do
         get "get_subdomains"
         get "get_welcome_message"
         post "submit_welcome_message"
+        post "agree_to_privacy_policy"
       end
       collection do
         get "student"
