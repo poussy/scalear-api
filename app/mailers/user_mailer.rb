@@ -224,4 +224,11 @@ class UserMailer < ApplicationMailer
 		mail(:to => user.email, :subject => "End Date of Course: #{course.name}", :from => @from)
 	end
 
+	def inactive_user(user, locale)
+		I18n.locale=locale
+		@from =  "\"ScalableLearning \" <no-reply@scalable-learning.com>"
+		@user = user
+		mail(:to => user.email, :subject => "Time to delete or update your ScalableLearning account", :from => @from)
+	end
+
 end
