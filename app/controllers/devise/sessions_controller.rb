@@ -7,7 +7,7 @@ class Devise::SessionsController < DeviseTokenAuth::SessionsController
         encrypted_email = Digest::SHA256.hexdigest (email)
 
         user = User.find_by_encrypted_email(encrypted_email)
-        if !user.nil?
+        if !user.nil? &&  user.valid_password?(resource_params[:password])
             
             user.email = resource_params[:email]
             ## use user's email to decrypt information
