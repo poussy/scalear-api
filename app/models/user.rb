@@ -1,7 +1,7 @@
 class User < ActiveRecord::Base
 
   include DeviseTokenAuth::Concerns::User
-  
+
 
   before_create :add_default_user_role_to_user
 
@@ -23,7 +23,7 @@ class User < ActiveRecord::Base
   has_many :guest_enrollments, :dependent => :destroy
   has_many :guest_courses, -> { distinct }, :through => :guest_enrollments, :source => :course
 
-  has_and_belongs_to_many :organizations, :join_table => :users_roles  
+  has_and_belongs_to_many :organizations, :join_table => :users_roles
   has_and_belongs_to_many :roles, :join_table => :users_roles
   has_many :shared_bys, :class_name => "SharedItem", :foreign_key => 'shared_by_id', :dependent => :destroy
   has_many :shared_withs, :class_name => "SharedItem", :foreign_key => 'shared_with_id', :dependent => :destroy
@@ -59,14 +59,14 @@ class User < ActiveRecord::Base
   attribute :status
 
   def has_role?(role)
-    self.roles.pluck(:name).include?(role)      
+    self.roles.pluck(:name).include?(role)
   end
 
    # override devise function, to include methods with response
   def token_validation_response
     self.as_json(:methods => [:info_complete, :intro_watched])
   end
-    
+
   def get_subdomains(email)
     subdomains = []
     subdomains = User.select(:email)
@@ -96,7 +96,7 @@ class User < ActiveRecord::Base
   def get_assignment_status(item)
     return self.assignment_statuses.select{|a| a.group_id == item.group_id}.first
   end
-  
+
   def get_quiz_status(item)
     return self.assignment_item_statuses.select{|a| a.group_id == item.group_id && a.quiz_id == item.id && !a.lecture_id}.first
   end
@@ -115,14 +115,14 @@ class User < ActiveRecord::Base
   # def tutorials_taken
   # end
 
-  ### For university enter all , for deparment input subdomain&&domain  e.g'it.uu.se' 
+  ### For university enter all , for deparment input subdomain&&domain  e.g'it.uu.se'
   def add_admin_school_domain(domain)
     if domain.blank?
       errors.add :admin_school_domain, "can not be empty"
     else
       if !self.role_ids.include?(9)
         self.roles << Role.find(9)
-      end 
+      end
       UsersRole.where(:user_id => self.id, :role_id => 9).update_all(:admin_school_domain => domain)
     end
   end
@@ -145,12 +145,12 @@ class User < ActiveRecord::Base
   # def get_summary_table_online_quizzes_solved(lecture)
   # end
 
-  
+
   def get_lecture_status(item)
     return self.assignment_item_statuses.select{|a| a.group_id == item.group_id && a.lecture_id == item.id && !a.quiz_id}.first
 
   end
-  
+
   # def count_online_quizzes_solved(group)
   # end
 
@@ -180,7 +180,7 @@ class User < ActiveRecord::Base
   # end
 
   # def calculate_quizzes_late_days(quizzes)     #
-  # end  
+  # end
 
   # def calculate_late_days(lecture)
   # end
@@ -201,7 +201,7 @@ class User < ActiveRecord::Base
   # end
 
   # def finished_group?(group)
-  # end  
+  # end
 
   # def finished_group_stats?(group)
   # end
@@ -219,7 +219,7 @@ class User < ActiveRecord::Base
   # end
 
   # def finished_quizzes_on_time(quizzes)
-  # end  
+  # end
 
   # def finished_quiz_on_time(quiz)
   # end
@@ -267,7 +267,7 @@ class User < ActiveRecord::Base
   # end
 
   # def get_detailed_lecture_grade(lecture)  #old
-  # end  
+  # end
 
   # def grades_angular_quiz_test(group)           #
   # end
@@ -391,7 +391,7 @@ class User < ActiveRecord::Base
     item.groups.each do |g|
       grades<<[g.id, self.finished_group_test?(g),0,0]
     end
-    return grades    
+    return grades
   end
 
   def group_grades_test(course)
@@ -415,7 +415,7 @@ class User < ActiveRecord::Base
       else
         return quiz_prog
       end
-    end    
+    end
   end
 
   def finished_quizzes_test(group)
@@ -446,7 +446,7 @@ class User < ActiveRecord::Base
         max= new_max if new_max>max
       end
       return max.to_i
-    end    
+    end
   end
 
   # def finished_lectures_test_percent(group) #called per student
@@ -562,11 +562,11 @@ class User < ActiveRecord::Base
         max= new_max if new_max>max
       end
     end
-    return max.to_i    
+    return max.to_i
   end
 
   # def grades_angular(item)          #
-  # end      
+  # end
 
   # def self.delete_demo_users(course) #change according to course.
   # end
@@ -590,7 +590,7 @@ class User < ActiveRecord::Base
       return self.name + ' ' + self.last_name
     else
       return self.name
-    end    
+    end
   end
 
   def full_name_reverse
@@ -610,6 +610,8 @@ class User < ActiveRecord::Base
   handle_asynchronously :async_destroy, :run_at => Proc.new { 5.seconds.from_now }
 
   def delete_student_data(course_id)
+
+
     ActiveRecord::Base.transaction do
       Confused.where(:user_id => id, :course_id => course_id).destroy_all
       LectureView.where(:user_id => id, :course_id => course_id).destroy_all
@@ -625,13 +627,14 @@ class User < ActiveRecord::Base
         OnlineQuizGrade.where(:user_id => id, :lecture_id => lecture.id).destroy_all
         FreeOnlineQuizGrade.where(:user_id => id, :lecture_id => lecture.id).destroy_all
         Forum::Post.delete('destroy_all_by_user', {:user_id => id, :lecture_id => lecture.id} )
+
       end
     end
-  end  
+  end
 
   private
     def add_default_user_role_to_user
-      if !self.has_role?('User') 
+      if !self.has_role?('User')
         self.roles << Role.find(1)
       end
     end
