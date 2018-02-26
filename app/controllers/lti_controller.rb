@@ -175,7 +175,7 @@ class LtiController < ApplicationController
 								# if yes call redirect_url_student_teacher function and redirected to the return url 
 								sl_type_name_type_id = resource_context.sl_type_name_type_id.split('__')
 								url , course  = redirect_url_student_teacher( sl_type_name_type_id[0] , params['roles'], sl_type_name_type_id[1])
-								if params['roles'] != "Instructor"
+								if is_student?(params['roles']) #student	
 									if !(course.users.map(&:id).include?(current_user.id)) && !(course.teachers.map(&:id).include?(current_user.id))
 										course.users<<current_user
 										course.save
@@ -206,18 +206,22 @@ class LtiController < ApplicationController
 
 	def lti_launch_use
 		consumer_key = params['oauth_consumer_key']
+
 		lti_key_instance = LtiKey.find_by_consumer_key(consumer_key)
 		if lti_key_instance
-			authenticator = IMS::LTI::Services::MessageAuthenticator.new(request.url.partition('?').first, request.request_parameters , lti_key_instance.shared_sceret)
+			
+			authenticator = IMS::LTI::Services::MessageAuthenticator.new(request.url.partition('?').first, request.query_parameters.merge(request.request_parameters) , lti_key_instance.shared_sceret)
+			# authenticator = IMS::LTI::Services::MessageAuthenticator.new(request.url.partition('?').first, request.request_parameters , lti_key_instance.shared_sceret)
+			redirect_boolean = 'true'
+			status = 'nil'
+			user_sign_in_token , user = user_sign_in
+
 			if authenticator.valid_signature?
 				## TO use scalaleLearning
 				## check the student can sig in AND ENROLL STUDENT
 				url , course = redirect_url_student_teacher(params['sl_type'],params['roles'],params['sl_type_id'])
-				redirect_boolean = 'true'
-				status = 'nil'
-				user_sign_in_token , user = user_sign_in
 				if user_sign_in_token
-					if params['roles'] != "Instructor"
+					if is_student?(params['roles']) ## student 
 						if !(course.users.map(&:id).include?(user.id)) && !(course.teachers.map(&:id).include?(user.id))
 							course.users<<user
 							course.save
@@ -233,7 +237,9 @@ class LtiController < ApplicationController
 				end
 			else
 				# handle invalid OAuth
-				redirect_to "#/users/edit"+'?'+user_sign_in_token.to_query
+				# redirect_to "#/users/edit"+'?'+user_sign_in_token.to_query
+				url = "#/users/edit"
+				redirect_to "#/lti_sign_in_token?redirect_boolean="+redirect_boolean+"&status="+status+"&"+user_sign_in_token.to_query+"&redirect_local_url="+url[1..-1]
 			end
 		else
 			redirect_to "#/"
@@ -253,33 +259,39 @@ class LtiController < ApplicationController
 	end
 
 	private
+
+		def is_student?(role)
+			student_roles = [ 'student' ,'member' ,'learner' ,'alumni' ,'prospectivestudent' ,'guest' ,'other' ,'observer' ,'none' ]
+			student_roles.any? { |s| role.downcase.include?(s) }
+		end
+
 		def redirect_url_student_teacher(sl_type,roles,sl_type_id)
 			if sl_type == 'course'
 				course = Course.find(sl_type_id)
-				roles == "Instructor" ? url = "#/courses/#{course.id}/information" : url = "#/courses/#{course.id}/course_information"
+				!is_student?(params['roles']) ? url = "#/courses/#{course.id}/information" : url = "#/courses/#{course.id}/course_information"
 			elsif sl_type == 'group'
 				group  = Group.find(sl_type_id)
 				course = group.course
 				url = "#/courses/#{course.id}/modules/#{group.id}"
-				roles == "Instructor" ? url += "/course_editor" : url += "/courseware/overview"
+				!is_student?(params['roles']) ? url += "/course_editor" : url += "/courseware/overview"
 			elsif sl_type == 'lecture'
 				lecture  = Lecture.find(sl_type_id)
 				course = lecture.course
 				group = lecture.group
 				url = "#/courses/#{course.id}/modules/#{group.id}"
-				roles == "Instructor" ? url += "/course_editor/lectures/#{lecture.id}" : url += "/courseware/lectures/#{lecture.id}"
+				!is_student?(params['roles']) ? url += "/course_editor/lectures/#{lecture.id}" : url += "/courseware/lectures/#{lecture.id}"
 			elsif sl_type == 'quiz'
 				quiz  = Quiz.find(sl_type_id)
 				course = quiz.course
 				group = quiz.group
 				url = "#/courses/#{course.id}/modules/#{group.id}"
-				roles == "Instructor" ? url += "/course_editor/quizzes/#{quiz.id}" : url += "/courseware/quizzes/#{quiz.id}"
+				!is_student?(params['roles']) ? url += "/course_editor/quizzes/#{quiz.id}" : url += "/courseware/quizzes/#{quiz.id}"
 			elsif sl_type == 'customlink'
 				custom_link = CustomLink.find(sl_type_id)
 				course = custom_link.course
 				group = custom_link.group
 				url = "#/courses/#{course.id}/modules/#{group.id}"
-				roles == "Instructor" ? url += "/course_editor/link/#{custom_link.id}" : url = custom_link.url
+				!is_student?(params['roles']) ? url += "/course_editor/link/#{custom_link.id}" : url = custom_link.url
 			else
 				url = "#/courses"
 			end
@@ -306,7 +318,7 @@ class LtiController < ApplicationController
 				return token , canvas_login_user
 			else # If teacher create new course
 				# check if student or teacher  // Learner  OR
-				if params['roles'] == "Instructor"
+				if !is_student?(params['roles'])
 					return false , false
 				else
 					user =User.new(params[:user])
