@@ -69,7 +69,7 @@ class UserMailer < ApplicationMailer
 		@bcc= [""]
 		@reply_to= user.email
 		mail(:bcc => @bcc,:to => @to, :subject => @problem_type, :from => @from, :reply_to => @user_email)
-		end
+	end
 
 	def content_problem_email(url, user, problem, course, group, lecture, quiz , agent,version)
 		I18n.locale= 'en'
@@ -229,6 +229,12 @@ class UserMailer < ApplicationMailer
 		@from =  "\"ScalableLearning \" <no-reply@scalable-learning.com>"
 		@user = user
 		mail(:to => user.email, :subject => "Time to delete or update your ScalableLearning account", :from => @from)
+	end
+
+	def anonymisation_report(mail_to, successes,failures)
+		@successes = successes
+		@failures = failures
+		mail(:to =>mail_to, :subject => "anonymisation report")
 	end
 
 end

@@ -18,6 +18,7 @@
 
 /config/config.yml
 /config/database.yml
+/config/app_environment_variables.rb
 /db/*.javadb/
 /db/*.sqlite3
 /db/schema.rb

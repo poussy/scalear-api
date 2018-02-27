@@ -11,17 +11,18 @@ class Devise::SessionsController < DeviseTokenAuth::SessionsController
             
             user.email = resource_params[:email]
             ## use user's email to decrypt information
-            key   = ActiveSupport::KeyGenerator.new(email).generate_key("\xDB\x86\xE2$f\xBC\x8C\xF3\xC3\xAF\xEC\xB4u\x15\x92\xFD\x03\xE1\xA6J\x1Ed\xB9\xFB\x03\x97Mmj\xEB^`",32)
+            key   = ActiveSupport::KeyGenerator.new(email).generate_key(ENV['gdpr_salt'],32)
             crypt = ActiveSupport::MessageEncryptor.new(key)
             
             user.name =crypt.decrypt_and_verify(user.encrypted_data['name'])
             user.last_name = crypt.decrypt_and_verify(user.encrypted_data['last_name'])
             user.screen_name =crypt.decrypt_and_verify(user.encrypted_data['screen_name'])
+            user.university =crypt.decrypt_and_verify(user.encrypted_data['university'])
             user.encrypted_email = nil
             user.encrypted_data = nil
             user.skip_confirmation!
             user.skip_reconfirmation!
-            user.save
+            
             # create token and sign in user
             @resource = user
             
