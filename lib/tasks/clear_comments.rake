@@ -1,20 +1,7 @@
 namespace :clear_comments do
 
     task :all_comment => :environment do
-        # users.each do |user|
-        #     u = User.find_by_email(user[:email])
-        #     u.subjects.destroy_all
-        #
-        #     u.courses.destroy_all
-        #     u.subjects_to_teach.destroy_all
-        # end
-        # all_posts = []
-        # all_user_ids = []
-        # for user in users
-        #     all_user_ids <<  user.id
-        # end
-        #
-        # for
+
 
         user_comment_ids = Forum::Post.get("distinct_user_ids_of_all_comments")
 

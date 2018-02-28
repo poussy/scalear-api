@@ -151,132 +151,9 @@ class User < ActiveRecord::Base
 
   end
 
-  # def count_online_quizzes_solved(group)
-  # end
-
   def get_lectures_viewed(lecture)
     return lecture_views.select{|v| v.lecture_id == lecture.id} #, :percent => 75
   end
-
-  # def grades(course)          #
-  # end
-
-  # def quiz_grades2(group)           #
-  # end
-
-  # def group_quiz_grades(group)           #
-  # end
-
-  # def course_late_days(course)    #THIS HERE IS VERY SLOW!!!
-  # end
-
-  # def late_days(group)          #
-  # end
-
-  # def quiz_late_days(group)     #
-  # end
-
-  # def calculate_lectures_late_days(lectures)    #
-  # end
-
-  # def calculate_quizzes_late_days(quizzes)     #
-  # end
-
-  # def calculate_late_days(lecture)
-  # end
-
-  # def calculate_quiz_late_days(quiz)
-  # end
-
-  # def finished_lecture_group?(lecture)
-  # end
-
-  # def finished_lecture_group_stats?(lecture)
-  # end
-
-  # def finished_quiz_group?(quiz)
-  # end
-
-  # def finished_group_boolean(group)
-  # end
-
-  # def finished_group?(group)
-  # end
-
-  # def finished_group_stats?(group)
-  # end
-
-  # def finished_quizzes(quizzes)
-  # end
-
-  # def finished_surveys(surveys)
-  # end
-
-  # def finished_quiz(quiz)
-  # end
-
-  # def finished_survey(quiz) #done when just saved.
-  # end
-
-  # def finished_quizzes_on_time(quizzes)
-  # end
-
-  # def finished_quiz_on_time(quiz)
-  # end
-
-  # def finished_lectures(lectures)  #if finished all online_quizzes AND opened the lecture
-  # end
-
-  # def finished_lectures_on_time(lectures)
-  # end
-
-  # def finished_lecture(lecture)
-  # end
-
-  # def finished_lecture_on_time(lecture)
-  # end
-
-  # def get_statistics(course, quiz_total, online_total)
-  # end
-
-  # def quizzes_percent(course, quiz_total)
-  # end
-
-  # def online_quizzes_percent(course, online_total) #old
-  # end
-
-  # def total_online_quiz(course)
-  # end
-
-  # def total_online_quiz_lecture(lecture)
-  # end
-
-  # def get_lecture_grade(lecture)
-  # end
-
-  # def total_online_quiz_quiz(quiz)
-  # end
-
-  # def total_quiz(course)
-  # end
-
-  # def get_quiz_grade(quiz)
-  # end
-
-  # def get_detailed_quiz_grade(quiz)  #
-  # end
-
-  # def get_detailed_lecture_grade(lecture)  #old
-  # end
-
-  # def grades_angular_quiz_test(group)           #
-  # end
-
-  # def grades_angular_survey_test(group)           #
-  # end
-
-  # def grades_angular_lecture_test(group)
-  # end
 
   def grades_angular_all_items(group)
     grades=[]
@@ -449,8 +326,6 @@ class User < ActiveRecord::Base
     end
   end
 
-  # def finished_lectures_test_percent(group) #called per student
-  # end
 
   def finished_group_percent(group) #called per student
     group_online_quizzes= group.online_quizzes.select{|f| !f.online_answers.empty? or f.question_type=="Free Text Question"}
@@ -504,8 +379,6 @@ class User < ActiveRecord::Base
     return 2 #ontime
   end
 
-  # def grades_module_before_due_date(group)
-  # end
 
   def finished_lectures_test(group)
     status = {}
@@ -565,14 +438,6 @@ class User < ActiveRecord::Base
     return max.to_i
   end
 
-  # def grades_angular(item)          #
-  # end
-
-  # def self.delete_demo_users(course) #change according to course.
-  # end
-
-  # def self.students
-  # end
 
   def remove_student(course_id)   #should i add them as associations (belong to/ has_many) ?
     if enrollments.where(:course_id => course_id).destroy_all
@@ -582,8 +447,7 @@ class User < ActiveRecord::Base
     end
   end
 
-  # def self.search(search)
-  # end
+
 
   def full_name
     if !self.last_name.nil?
@@ -601,8 +465,6 @@ class User < ActiveRecord::Base
     end
   end
 
-  # def reset_password!(new_password, new_password_confirmation)
-  # end
 
   def async_destroy
     self.destroy
