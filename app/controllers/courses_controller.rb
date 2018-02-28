@@ -51,13 +51,18 @@ class CoursesController < ApplicationController
 			@total_teacher = Course.where("id is not null").count
 			teacher_courses= Course.where("id is not null").order("start_date DESC").limit(params[:limit]).offset(params[:offset]).includes([{:teacher_enrollments => [:user,:role]}, :enrollments, :lectures, :quizzes])#.all
 		elsif current_user.is_school_administrator?
-			email = UsersRole.where(:user_id => current_user.id, :role_id => 9)[0].admin_school_domain
-			if email.blank?
+			user_role = UsersRole.where(:user_id => current_user.id, :role_id => 9)[0]
+      		school_domain = user_role.admin_school_domain
+			if school_domain.blank?
 				@total_teacher = 0
 				teacher_courses = {}
 			else
-				@total_teacher = Course.select{|c| c.teachers.select{|t| t.email.include?(email) }.size>0}.count
-				teacher_courses = Course.order("start_date DESC").includes([:user,:teachers,{:teacher_enrollments => [:user,:role]}, :enrollments, :lectures, :quizzes]).select{|c| c.teachers.select{|t| t.email.include?(email) }.size>0}[params[:offset].to_i .. params[:offset].to_i+params[:limit].to_i ]
+				if school_domain == "all"
+					school_domain = user_role.organization.domain || nil
+				end
+				
+				@total_teacher = Course.select{|c| c.teachers.select{|t| t.email.include?(school_domain) }.size>0}.count
+				teacher_courses = Course.order("start_date DESC").includes([:user,:teachers,{:teacher_enrollments => [:user,:role]}, :enrollments, :lectures, :quizzes]).select{|c| c.teachers.select{|t| t.email.include?(school_domain) }.size>0}[params[:offset].to_i .. params[:offset].to_i+params[:limit].to_i ]
 			end
 		else
 			@total_teacher = current_user.subjects_to_teach.count
@@ -112,13 +117,12 @@ class CoursesController < ApplicationController
 		if current_user.has_role?('Administrator')
 			@import= Course.all
 		elsif current_user.has_role?('School Administrator')
-			user_role = UsersRole.where(:user_id => user.id, :role_id => 9)[0]
-			if user_role
-				email = user_role.admin_school_domain || nil
+			user_role = UsersRole.where(:user_id => current_user.id, :role_id => 9)[0]
+      		email = user_role.admin_school_domain
+			if email == "all"
+				email = user_role.organization.domain || nil
 			end
-			if email
-				@import= Course.includes([:user,:teachers]).select{|c| ( c.teachers.select{|t| t.email.include?(email) }.size>0 ) }
-			end
+			@import= Course.includes([:user,:teachers]).select{|c| ( c.teachers.select{|t| t.email.include?(email) }.size>0 ) }
 		else
 			@import= current_user.subjects_to_teach
 		end
@@ -341,8 +345,6 @@ class CoursesController < ApplicationController
 	end  
 
 	def destroy
-		@course = Course.find(params[:id])
-		# if @course.groups.empty?
 		if @course.destroy
 			render :json => {:notice => [I18n.t('controller_msg.course_successfully_deleted')]}
 		else
@@ -416,7 +418,7 @@ class CoursesController < ApplicationController
 	def course_editor_angular
 		groups = @course.groups.all
 		groups.each do |g|
-			g['items'] = g.items
+			g['items'] = g.get_all_items
 			g['total_time'] = g.total_time
 		end
 
@@ -531,23 +533,34 @@ class CoursesController < ApplicationController
 		course[:duration] = course.duration
 		is_preview_user = current_user.is_preview?
 		today = Time.now
+		filteredItems = {}
+		initalGroups = course.groups.includes(:lectures, :quizzes, :custom_links)
 		if is_preview_user
-		groups = course.groups.includes(:lectures, :quizzes, :custom_links).select{|v|
-			v.lectures.size > 0 ||
-			v.quizzes.size > 0 ||
-			v.custom_links.size > 0
-		}
+			groups = initalGroups.select{|v|
+				filteredItems[g.id] = {
+					:lectures => g.lectures,
+					:quizzes => g.quizzes,
+					:custom_links => g.custom_links
+				};
+				v.lectures.size > 0 ||
+				v.quizzes.size > 0 ||
+				v.custom_links.size > 0
+			}
 		else
-		groups = course.groups.includes(:lectures, :quizzes, :custom_links).select{|v|
-			v.appearance_time <= today &&
-			(
-			l =v.lectures.where("appearance_time <= ? or inclass = true", today );
-			q = v.quizzes.where( "appearance_time <= ?", today );
-			l.size > 0 ||
-			q.size > 0 ||
-			v.custom_links.size > 0
-			)
-		}
+			groups =initalGroups.select{|g|
+				filteredItems[g.id] = {
+					:lectures => g.lectures.select{|l| l.appearance_time<=today || l.inclass = true},
+					:quizzes => g.quizzes.select{ |q| q.appearance_time<=today},
+					:custom_links => g.custom_links
+				};
+				g.appearance_time <= today &&
+				(
+					
+					filteredItems[g.id][:lectures].size > 0 ||
+					filteredItems[g.id][:quizzes].size > 0 ||
+					filteredItems[g.id][:custom_links].size > 0
+				)
+			}
 		end
 
 		groups.sort!{|x,y| ( x.position and y.position ) ? x.position <=> y.position : ( x.position ? -1 : 1 )  }
@@ -562,7 +575,7 @@ class CoursesController < ApplicationController
 			g.current_user= current_user
 			g[:has_inclass] = false
 			g[:has_distance_peer] = false
-			all = g.get_items
+			all = (filteredItems[g.id][:lectures] + filteredItems[g.id][:quizzes] + filteredItems[g.id][:custom_links]).sort{|a,b| a.position <=> b.position}
 			all.each do |q|
 				q[:class_name]= q.class.name.downcase
 				if q[:class_name] != 'customlink'
@@ -581,7 +594,7 @@ class CoursesController < ApplicationController
 				end
 			end
 			g[:items] = all
-			g[:sub_items_size] = g.lectures.size + g.quizzes.size
+			g[:sub_items_size] = filteredItems[g.id][:lectures].size + filteredItems[g.id][:quizzes].size
 			g[:total_time] = g.total_time
 		end
 		next_item={}

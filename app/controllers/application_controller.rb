@@ -3,13 +3,21 @@ class ApplicationController < ActionController::API
   include CanCan::ControllerAdditions
 
   before_action :configure_permitted_parameters, if: :devise_controller?
+  before_action :set_locale
   rescue_from ActiveRecord::RecordNotFound, :with => :record_not_found
 
+  def append_info_to_payload(payload)
+    super
+    payload[:ip] = request.remote_ip
+    if !current_user.nil?
+      payload[:user_id] = current_user.id if current_user.id
+    end
+  end
 
   def configure_permitted_parameters
     devise_parameter_sanitizer.permit(:sign_up, keys: [:last_name, :university, :user, :name, :screen_name, :registration])
     devise_parameter_sanitizer.permit(:account_update, keys: 
-      [:last_name, :university, :user, :name, :screen_name, :registration, :link, :bio, :first_day, :email])
+      [:last_name, :university, :user, :name, :screen_name, :registration, :link, :bio, :first_day, :email, :saml])
   end
 
   def check_user_signed_in? #401 not authenticated(devise) #403 not authorized/not allowed (cancan)
@@ -36,6 +44,14 @@ class ApplicationController < ActionController::API
   def record_not_found
     render :json => {errors:[I18n.t("controller_msg.record_not_found")]}, status:404
     true
+  end
+
+  def set_locale
+    I18n.locale = params[:locale]||I18n.default_locale
+  end
+
+  def self.default_url_options
+    { locale: I18n.locale }
   end
 
 end

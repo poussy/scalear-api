@@ -633,7 +633,7 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 	test "check_if_invited_distance_peer should respond with enrolled students if no invitations" do
 		get "/en/courses/3/lectures/3/check_if_invited_distance_peer", headers: @headers2
 		assert_equal decode_json_response_body["students"], [
-			{"id"=>nil, "name"=>"Ahmed", "email"=>"Ahmed@gmail.com", "last_name"=>"aly", "full_name"=>"Ahmed aly", "status"=>nil, "lower"=>"ahmed"}, 
+			{"id"=>nil, "name"=>"Ahmed", "email"=>"ahmed@gmail.com", "last_name"=>"aly", "full_name"=>"Ahmed aly", "status"=>nil, "lower"=>"ahmed"}, 
 			{"id"=>nil, "name"=>"Hossam", "email"=>"Hossam@gmail.com", "last_name"=>"aly", "full_name"=>"Hossam aly", "status"=>nil, "lower"=>"hossam"}, 
 			{"id"=>nil, "name"=>"Karim", "email"=>"Karim@gmail.com", "last_name"=>"aly", "full_name"=>"Karim aly", "status"=>nil,"lower"=>"karim"}, 
 			{"id"=>nil, "name"=>"Mohamed", "email"=>"Mohamed@gmail.com", "last_name"=>"aly", "full_name"=>"Mohamed aly", "status"=>nil, "lower"=>"mohamed"}]
@@ -885,8 +885,40 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 		end
 		assert_equal VideoNote.where(id:6).size, 0
 	end
-	
-	
-	
+
+	test "export_notes after adding 1 note in lecture" do
+		VideoNote.create(lecture_id:3, user_id:6, data: "new note", id: 6)
+		get '/en/courses/3/lectures/3/export_notes', params: {}, headers: @headers2
+		resp =  JSON.parse(JSON.parse(response.body)['notes'][0])
+		assert_response :success
+		assert_equal resp.count , 1
+	end	
+	test "export_notes after adding 2 note in lecture" do
+		VideoNote.create(lecture_id:3, user_id:6, data: "new note", id: 6)
+		VideoNote.create(lecture_id:3, user_id:6, data: "new note", id: 7)
+		get '/en/courses/3/lectures/3/export_notes', params: {}, headers: @headers2
+		assert_response :success
+		resp =  JSON.parse(JSON.parse(response.body)['notes'][0])
+		assert_equal resp.count , 2
+
+	end	
+	test "export_notes after adding 2 note in lecture from 1 student and 1 note from different student" do
+		VideoNote.create(lecture_id:3, user_id:6, data: "new note", id: 6)
+		VideoNote.create(lecture_id:3, user_id:6, data: "new note", id: 7)
+		VideoNote.create(lecture_id:3, user_id:8, data: "new note", id: 8)
+		get '/en/courses/3/lectures/3/export_notes', params: {}, headers: @headers2
+		resp =  JSON.parse(JSON.parse(response.body)['notes'][0])
+		assert_response :success
+		assert_equal resp.count , 2
+	end	
+	test "export_notes after adding 2 note in lecture and then deleting 1 note  " do
+		VideoNote.create(lecture_id:3, user_id:6, data: "new note", id: 6)
+		VideoNote.create(lecture_id:3, user_id:6, data: "new note", id: 7)
+		delete '/en/courses/3/lectures/3/delete_note', params: {note_id:6}, headers: @headers2
+		get '/en/courses/3/lectures/3/export_notes', params: {}, headers: @headers2
+		resp =  JSON.parse(JSON.parse(response.body)['notes'][0])
+		assert_response :success
+		assert_equal resp.count , 1
+	end	
 
 end

@@ -148,7 +148,6 @@ html_free_text_quiz_with_answer1:
   question: free text html question
   display_text: true
 
-
 ocq_online_quiz1:
   group: group1
   course: course1

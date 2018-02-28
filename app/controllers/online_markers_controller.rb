@@ -31,8 +31,13 @@ class OnlineMarkersController < ApplicationController
 		render json: {:markerList => lecture.online_markers, :status=>"success"}		
 	end
 
-	# def update_hide
-	# end
+	def update_hide
+		if @online_marker.update_attributes(:hide => params[:hide])
+			render json: {}
+		else
+			render :json => {:errors => [I18n.t("controller_msg.could_not_update_marker")]}, :status => 400
+		end
+	end
 
 	def online_marker_params
 		params.require(:online_marker).permit(:lecture_id,:group_id,:course_id,:time,:annotation,:title,:hide,:duration, :height, :width, :xcoor, :ycoor)

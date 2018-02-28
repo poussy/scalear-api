@@ -82,7 +82,7 @@ class LecturesController < ApplicationController
 				online_quiz.update_attributes(:inclass => @lecture.inclass)
 			end
 
-			render json: {lecture: @lecture, :notice => [I18n.t("controller_msg.lecture_successfully_updated")] }
+			render json: {lecture: @lecture.remove_null_virtual_attributes, :notice => [I18n.t("controller_msg.lecture_successfully_updated")] }
 		else
 			render json: {:errors => @lecture.errors , :appearance_time =>@lecture.appearance_time.strftime('%Y-%m-%d')}, :status => :unprocessable_entity
 		end
@@ -863,9 +863,21 @@ class LecturesController < ApplicationController
 		render json:{lecture: copy_lecture, :notice => [I18n.t("controller_msg.lecture_successfully_updated")]}
   	end
 
-
-	# def export_notes
-	# end
+	def export_notes
+    notes = []
+    @group_no = Lecture.where(:id => params[:id]).pluck(:group_id)
+    lectures = Lecture.where(:group_id => @group_no)
+    lectures.each do |l|
+      if l.video_notes.any?
+        notes << VideoNote.where(:lecture_id => l.id, :user_id => current_user.id).to_json(:include => {:lecture => {:only => [:name, :id]}})
+      end
+    end
+    if notes.nil?
+      render json: {:notes => "", :exists => false}
+    else
+      render json: {:notes => notes, :exists => true}
+    end
+	end
 
   def change_status_angular
    status=params[:status].to_i
