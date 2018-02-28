@@ -673,6 +673,11 @@ class User < ActiveRecord::Base
     self
   end
 
+  def self.get_anonymised_user email
+    encrypted_email = Digest::SHA256.hexdigest (email)
+    User.find_by_encrypted_email(encrypted_email)
+  end
+
   private
     def add_default_user_role_to_user
       if !self.has_role?('User') 

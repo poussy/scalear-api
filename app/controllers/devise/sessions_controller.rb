@@ -4,9 +4,7 @@ class Devise::SessionsController < DeviseTokenAuth::SessionsController
 
         ### in case user is pseudoanonymised ###
         email = resource_params[:email]
-        encrypted_email = Digest::SHA256.hexdigest (email)
-
-        user = User.find_by_encrypted_email(encrypted_email)
+        user = User.get_anonymised_user(email)
         if !user.nil? &&  user.valid_password?(resource_params[:password])
             
             

@@ -26,12 +26,7 @@ class Devise::PasswordsController < DeviseTokenAuth::PasswordsController
       end
 
       @email = resource_params[:email].downcase
-      @resource = User.find_by_email(@email)
-      if @resource.nil?
-        ##check if user is anonymised
-        encrypted_email = Digest::SHA256.hexdigest (resource_params[:email])
-        @resource = User.find_by_encrypted_email(encrypted_email)
-      end
+      @resource = User.find_by_email(@email) || User.get_anonymised_user(@email) ## check also anonymised users
 
       @errors = nil
       @error_status = 400
