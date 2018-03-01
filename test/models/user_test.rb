@@ -31,6 +31,27 @@ class UserTest < ActiveSupport::TestCase
     assert_equal user.finished_lecture_test?(lecture), [-1, 0, 0, 2, 10]
   end
   
+  test "anonymise and deanonymise user" do
+    user = users(:user1)
+    user.anonymise
+    anonymised_user =  User.find(user.id)
+    assert_equal anonymised_user.name, "Archived"
+    assert_equal anonymised_user.email, "archived_user#{user.id}@scalable-learning.com"
+    assert_equal anonymised_user.last_name, "user"
+    assert_equal anonymised_user.screen_name, "Archived#{user.id}"
+    assert_equal anonymised_user.university, "Archived"
+    assert ['name','last_name','screen_name','university'].all? {|attr| anonymised_user.encrypted_data.key?(attr)}
+
+    deanonymised_user = user.deanonymise("a.hossam.2010@gmail.com")
+    
+    assert_equal deanonymised_user.name, "ahmed"
+    assert_equal deanonymised_user.email, "a.hossam.2010@gmail.com"
+    assert_equal deanonymised_user.last_name, "hossam"
+    assert_equal deanonymised_user.screen_name, "ahmed hossam"
+    assert_equal deanonymised_user.university, "nile"
+    assert_not deanonymised_user.encrypted_data
+  end
+  
 
 
 end
