@@ -50,8 +50,21 @@ class UsersController < ApplicationController
     render :json =>{}
   end
 
-  # def saml_signup
-  # end
+  def saml_signup
+    params[:user][:password] = Devise.friendly_token[0,20]
+    params[:user][:completion_wizard] = {:intro_watched => false}
+    user =User.new(params[:user])
+    user.skip_confirmation!
+    user.roles << Role.find(1)
+    user.roles << Role.find(2)
+    if user.save
+      token = user.create_new_auth_token
+      redirect_to "#/users/login?#{token.to_query}"
+    else
+      render json: {errors: user.errors}, status: :unprocessable_entity
+    end
+
+  end
 
   def get_subdomains
     subdomains = []
