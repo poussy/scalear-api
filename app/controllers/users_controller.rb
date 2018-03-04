@@ -51,9 +51,10 @@ class UsersController < ApplicationController
   end
 
   def saml_signup
-    params[:user][:password] = Devise.friendly_token[0,20]
-    params[:user][:completion_wizard] = {:intro_watched => false}
-    user =User.new(params[:user])
+    params_user = user_params
+    params_user[:password] = Devise.friendly_token[0,20]
+    params_user[:completion_wizard] = {:intro_watched => false}
+    user =User.new(params_user)
     user.skip_confirmation!
     user.roles << Role.find(1)
     user.roles << Role.find(2)
@@ -109,4 +110,11 @@ class UsersController < ApplicationController
     end 
   end 
 
+  private 
+
+  def user_params
+    params.require(:user).permit(:email,:name,:last_name,:university,:password,:screen_name,:saml)
+  end
+
 end
+
