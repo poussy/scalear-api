@@ -146,7 +146,7 @@ class QuizzesController < ApplicationController
       all.each do |l|
         if l.id == quiz.id
           break
-        elsif l.required
+        elsif l.required && l.graded
           requirements[l.class.name.downcase.to_sym] << l.id
         end
       end
