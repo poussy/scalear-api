@@ -2,6 +2,9 @@ require 'test_helper'
 
 class ArchiveUsersTaskTest < ActiveSupport::TestCase
     def setup
+        ENV['hash_salt']="test_salt"
+        ENV['anonymisation_report_mail']="test@mail.com"
+
         User.find(6).update_attribute('updated_at',1.year.ago-8.days)
         User.find(7).update_attribute('updated_at',1.year.ago-10.days)
         ScalearApi::Application.load_tasks

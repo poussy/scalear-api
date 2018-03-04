@@ -32,6 +32,8 @@ class UserTest < ActiveSupport::TestCase
   end
   
   test "anonymise and deanonymise user" do
+    ENV['hash_salt']="test_salt"
+    ENV['anonymisation_report_mail']="test@mail.com"
     user = users(:user1)
     user.anonymise
     anonymised_user =  User.find(user.id)
