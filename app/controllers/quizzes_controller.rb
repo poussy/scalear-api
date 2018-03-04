@@ -57,7 +57,7 @@ class QuizzesController < ApplicationController
       end
     end
     questions.each_with_index do |q, index|
-      if !quiz.course.is_teacher(current_user)
+      if quiz.course.is_student(current_user)
         answers[index]=q.answers.select([:id, :question_id, :content,:explanation])
         if q.question_type.upcase=="DRAG"
           exp = []
