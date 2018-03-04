@@ -678,6 +678,15 @@ class User < ActiveRecord::Base
     User.find_by_encrypted_email(encrypted_email)
   end
 
+  def generate_token life_span
+    client_id = SecureRandom.urlsafe_base64(nil, false)
+    token     = SecureRandom.urlsafe_base64(nil, false)
+    self.tokens[client_id] = {
+      token: BCrypt::Password.create(token),
+      expiry: life_span
+    }
+  end
+
   private
     def add_default_user_role_to_user
       if !self.has_role?('User') 

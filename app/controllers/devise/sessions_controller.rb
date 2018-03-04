@@ -10,14 +10,10 @@ class Devise::SessionsController < DeviseTokenAuth::SessionsController
             
             # create token and sign in user
             @resource = user.deanonymise(email)
-            
-            @client_id = SecureRandom.urlsafe_base64(nil, false)
-            @token     = SecureRandom.urlsafe_base64(nil, false)
-            @resource.tokens[@client_id] = {
-            token: BCrypt::Password.create(@token),
-            expiry: (Time.now + DeviseTokenAuth.token_lifespan).to_i
-            }
+            @resource.generate_token(DeviseTokenAuth.token_lifespan)
+           
             if @resource.save
+                pp @resource
                 render_create_success
             else 
                 render json: @resource.errors
@@ -29,5 +25,7 @@ class Devise::SessionsController < DeviseTokenAuth::SessionsController
             }, status: 401
         end
     end
+
+    
 end
 
