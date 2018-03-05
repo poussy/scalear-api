@@ -96,4 +96,13 @@ class UsersController < ApplicationController
     end 
   end 
 
+  def agree_to_privacy_policy
+    current_user.policy_agreement= {'date' => DateTime.now, 'ip' => request.remote_ip}
+    if current_user.save    
+      render json: current_user
+    else
+      render json: current_user.errors
+    end
+  end
+
 end

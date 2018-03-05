@@ -494,6 +494,64 @@ class User < ActiveRecord::Base
     end
   end
 
+  def anonymise
+
+    self.encrypted_email = Digest::SHA256.hexdigest (self.email).to_s
+            
+    ## use email as key for encryption
+    key   = ActiveSupport::KeyGenerator.new(self.email).generate_key(ENV['hash_salt'],32)
+    crypt = ActiveSupport::MessageEncryptor.new(key)
+    encrypted_name = crypt.encrypt_and_sign(self.name)   
+    encrypted_screen_name = crypt.encrypt_and_sign(self.screen_name)   
+    encrypted_last_name = crypt.encrypt_and_sign(self.last_name)
+    encrypted_university = crypt.encrypt_and_sign(self.university)
+    self.encrypted_data = {'name' => encrypted_name, 'last_name' => encrypted_last_name, 
+        'screen_name' => encrypted_screen_name,'university' => encrypted_university}
+    self.name = "Archived"
+    self.last_name = "user"
+    self.screen_name = "Archived#{self.id}"
+    self.university = "Archived"
+    self.email = "archived_user#{self.id}@scalable-learning.com"
+    self.skip_confirmation!
+    self.skip_reconfirmation!
+    if self.save
+        return "success"
+    else
+        return self.errors.map{|attr,err| [attr,err] }.flatten
+    end
+  end
+
+  def deanonymise email
+    self.email = email
+    ## use user's email to decrypt information
+    key   = ActiveSupport::KeyGenerator.new(email).generate_key(ENV['hash_salt'],32)
+    crypt = ActiveSupport::MessageEncryptor.new(key)
+    
+    self.name =crypt.decrypt_and_verify(self.encrypted_data['name'])
+    self.last_name = crypt.decrypt_and_verify(self.encrypted_data['last_name'])
+    self.screen_name =crypt.decrypt_and_verify(self.encrypted_data['screen_name'])
+    self.university =crypt.decrypt_and_verify(self.encrypted_data['university'])
+    self.encrypted_email = nil
+    self.encrypted_data = nil
+    self.skip_confirmation!
+    self.skip_reconfirmation!
+    self
+  end
+
+  def self.get_anonymised_user email
+    encrypted_email = Digest::SHA256.hexdigest (email)
+    User.find_by_encrypted_email(encrypted_email)
+  end
+
+  def generate_token life_span
+    client_id = SecureRandom.urlsafe_base64(nil, false)
+    token     = SecureRandom.urlsafe_base64(nil, false)
+    self.tokens[client_id] = {
+      token: BCrypt::Password.create(token),
+      expiry: life_span
+    }
+  end
+
   private
     def add_default_user_role_to_user
       if !self.has_role?('User')
