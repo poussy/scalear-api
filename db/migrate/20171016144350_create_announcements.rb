@@ -1,10 +1,10 @@
 class CreateAnnouncements < ActiveRecord::Migration[5.1]
   def up
     create_table :announcements do |t|
-		t.string   :announcement
-		t.integer  :course_id
-		t.integer  :user_id
-		t.datetime   :date
+      t.string   :announcement
+      t.integer  :course_id
+      t.integer  :user_id
+      t.datetime :date
       t.timestamps
     end
     add_index :announcements, :course_id
@@ -14,6 +14,6 @@ class CreateAnnouncements < ActiveRecord::Migration[5.1]
   end
 
   def down
-  	drop_table :announcements
+    drop_table :announcements
   end
 end

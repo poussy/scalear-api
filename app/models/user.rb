@@ -1,7 +1,7 @@
 class User < ActiveRecord::Base
 
   include DeviseTokenAuth::Concerns::User
-  
+
 
   before_create :add_default_user_role_to_user
 
@@ -9,27 +9,22 @@ class User < ActiveRecord::Base
   devise :database_authenticatable, :registerable,
           :recoverable, :rememberable, :trackable, :validatable,
           :confirmable
-          # :omniauthable
 
   attr_accessor :info_complete
 
-  has_many :subjects, :class_name => "Course", :dependent => :destroy  # to get this call user.subjects
+  has_many :subjects, :class_name => "Course", :dependent => :destroy
 
   has_many :enrollments, :dependent => :destroy
-  has_many :courses, -> { distinct }, :through => :enrollments, :source => :course  # to get this call user.subjects
-
+  has_many :courses, -> { distinct }, :through => :enrollments, :source => :course
 
   has_many :teacher_enrollments, :dependent => :destroy
   has_many :subjects_to_teach, -> { distinct }, :through => :teacher_enrollments, :source => :course
 
   has_many :guest_enrollments, :dependent => :destroy
   has_many :guest_courses, -> { distinct }, :through => :guest_enrollments, :source => :course
-  
 
-  has_many :users_roles, :dependent => :destroy
-  has_many :roles, -> { distinct }, :through => :users_roles
-
-  # has_and_belongs_to_many :roles, -> {uniq} ,:join_table => :users_roles  
+  has_and_belongs_to_many :organizations, :join_table => :users_roles
+  has_and_belongs_to_many :roles, :join_table => :users_roles
   has_many :shared_bys, :class_name => "SharedItem", :foreign_key => 'shared_by_id', :dependent => :destroy
   has_many :shared_withs, :class_name => "SharedItem", :foreign_key => 'shared_with_id', :dependent => :destroy
 
@@ -44,7 +39,7 @@ class User < ActiveRecord::Base
   has_many :free_online_quiz_grades, :dependent => :destroy
   has_many :lecture_views, :dependent => :destroy
   has_many :online_quiz_grades, :dependent => :destroy
-  has_many :quiz_grades, :dependent=> :destroy#, :conditions => :user kda its like im defining a method called quiz grades, which returns something when user = ... not what i want.
+  has_many :quiz_grades, :dependent=> :destroy
   has_many :user_distance_peers, :dependent => :destroy
   has_many :video_events, :dependent => :destroy
   has_many :video_notes, :dependent => :destroy
@@ -64,14 +59,14 @@ class User < ActiveRecord::Base
   attribute :status
 
   def has_role?(role)
-    self.roles.pluck(:name).include?(role)      
+    self.roles.pluck(:name).include?(role)
   end
 
    # override devise function, to include methods with response
   def token_validation_response
     self.as_json(:methods => [:info_complete, :intro_watched])
   end
-    
+
   def get_subdomains(email)
     subdomains = []
     subdomains = User.select(:email)
@@ -101,7 +96,7 @@ class User < ActiveRecord::Base
   def get_assignment_status(item)
     return self.assignment_statuses.select{|a| a.group_id == item.group_id}.first
   end
-  
+
   def get_quiz_status(item)
     return self.assignment_item_statuses.select{|a| a.group_id == item.group_id && a.quiz_id == item.id && !a.lecture_id}.first
   end
@@ -109,32 +104,9 @@ class User < ActiveRecord::Base
   # def password_complexity
   # end
 
-  # def self.teachers
-  # end
-
-  # def self.find_or_create_for_doorkeeper_oauth(oauth_data)
-  # end
-
-  # def update_doorkeeper_credentials(oauth_data)
-  # end
-
-  # def is_student?
-  # end
-
-  # def is_teacher?
-  # end
-
-  # def is_teacher_or_admin?
-  # end
-
-  # def is_prof?(course)
-  # end
-
-  # def is_ta?(course)
-  # end
-
-  # def is_administrator?
-  # end
+  def is_administrator?
+    role_ids.include?5
+  end
 
   def is_preview?
     role_ids.include?6
@@ -143,8 +115,25 @@ class User < ActiveRecord::Base
   # def tutorials_taken
   # end
 
-  # def add_admin_school_domain(domain)
-  # end
+  ### For university enter all , for deparment input subdomain&&domain  e.g'it.uu.se'
+  def add_admin_school_domain(domain)
+    if domain.blank?
+      errors.add :admin_school_domain, "can not be empty"
+    else
+      if !self.role_ids.include?(9)
+        self.roles << Role.find(9)
+      end
+      UsersRole.where(:user_id => self.id, :role_id => 9).update_all(:admin_school_domain => domain)
+    end
+  end
+
+  def get_school_administrator_domain
+    user_role = UsersRole.where(:user_id => self.id, :role_id => 9)
+    if user_role
+      return UsersRole.where(:user_id => self.id, :role_id => 9)[0].admin_school_domain
+    end
+    return nil
+  end
 
   # def get_exact_stats(group)
   # end
@@ -156,138 +145,15 @@ class User < ActiveRecord::Base
   # def get_summary_table_online_quizzes_solved(lecture)
   # end
 
-  
+
   def get_lecture_status(item)
     return self.assignment_item_statuses.select{|a| a.group_id == item.group_id && a.lecture_id == item.id && !a.quiz_id}.first
 
   end
-  
-  # def count_online_quizzes_solved(group)
-  # end
 
   def get_lectures_viewed(lecture)
     return lecture_views.select{|v| v.lecture_id == lecture.id} #, :percent => 75
   end
-
-  # def grades(course)          #
-  # end
-
-  # def quiz_grades2(group)           #
-  # end
-
-  # def group_quiz_grades(group)           #
-  # end
-
-  # def course_late_days(course)    #THIS HERE IS VERY SLOW!!!
-  # end
-
-  # def late_days(group)          #
-  # end
-
-  # def quiz_late_days(group)     #
-  # end
-
-  # def calculate_lectures_late_days(lectures)    #
-  # end
-
-  # def calculate_quizzes_late_days(quizzes)     #
-  # end  
-
-  # def calculate_late_days(lecture)
-  # end
-
-  # def calculate_quiz_late_days(quiz)
-  # end
-
-  # def finished_lecture_group?(lecture)
-  # end
-
-  # def finished_lecture_group_stats?(lecture)
-  # end
-
-  # def finished_quiz_group?(quiz)
-  # end
-
-  # def finished_group_boolean(group)
-  # end
-
-  # def finished_group?(group)
-  # end  
-
-  # def finished_group_stats?(group)
-  # end
-
-  # def finished_quizzes(quizzes)
-  # end
-
-  # def finished_surveys(surveys)
-  # end
-
-  # def finished_quiz(quiz)
-  # end
-
-  # def finished_survey(quiz) #done when just saved.
-  # end
-
-  # def finished_quizzes_on_time(quizzes)
-  # end  
-
-  # def finished_quiz_on_time(quiz)
-  # end
-
-  # def finished_lectures(lectures)  #if finished all online_quizzes AND opened the lecture
-  # end
-
-  # def finished_lectures_on_time(lectures)
-  # end
-
-  # def finished_lecture(lecture)
-  # end
-
-  # def finished_lecture_on_time(lecture)
-  # end
-
-  # def get_statistics(course, quiz_total, online_total)
-  # end
-
-  # def quizzes_percent(course, quiz_total)
-  # end
-
-  # def online_quizzes_percent(course, online_total) #old
-  # end
-
-  # def total_online_quiz(course)
-  # end
-
-  # def total_online_quiz_lecture(lecture)
-  # end
-
-  # def get_lecture_grade(lecture)
-  # end
-
-  # def total_online_quiz_quiz(quiz)
-  # end
-
-  # def total_quiz(course)
-  # end
-
-  # def get_quiz_grade(quiz)
-  # end
-
-  # def get_detailed_quiz_grade(quiz)  #
-  # end
-
-  # def get_detailed_lecture_grade(lecture)  #old
-  # end  
-
-  # def grades_angular_quiz_test(group)           #
-  # end
-
-  # def grades_angular_survey_test(group)           #
-  # end
-
-  # def grades_angular_lecture_test(group)
-  # end
 
   def grades_angular_all_items(group)
     grades=[]
@@ -310,8 +176,16 @@ class User < ActiveRecord::Base
     return grades
   end
 
-  # def finished_quiz_test?(quiz)
-  # end
+  def finished_quiz_test?(quiz)
+    inst=self.quiz_statuses.select{|v| v.quiz_id==quiz.id and v.status=="Submitted"}[0]
+    if inst.nil?
+      return -1
+    elsif inst.created_at < quiz.due_date
+      return 0
+    else
+      return (inst.created_at.to_date - quiz.due_date.to_date).to_i  #solved after lecture due date
+    end
+  end
 
   def finished_quiz_test_with_correct_question_count?(quiz)
     inst=self.quiz_statuses.select{|v| v.quiz_id==quiz.id and v.status=="Submitted"}[0]
@@ -394,7 +268,7 @@ class User < ActiveRecord::Base
     item.groups.each do |g|
       grades<<[g.id, self.finished_group_test?(g),0,0]
     end
-    return grades    
+    return grades
   end
 
   def group_grades_test(course)
@@ -418,7 +292,7 @@ class User < ActiveRecord::Base
       else
         return quiz_prog
       end
-    end    
+    end
   end
 
   def finished_quizzes_test(group)
@@ -449,11 +323,9 @@ class User < ActiveRecord::Base
         max= new_max if new_max>max
       end
       return max.to_i
-    end    
+    end
   end
 
-  # def finished_lectures_test_percent(group) #called per student
-  # end
 
   def finished_group_percent(group) #called per student
     group_online_quizzes= group.online_quizzes.select{|f| !f.online_answers.empty? or f.question_type=="Free Text Question"}
@@ -507,8 +379,6 @@ class User < ActiveRecord::Base
     return 2 #ontime
   end
 
-  # def grades_module_before_due_date(group)
-  # end
 
   def finished_lectures_test(group)
     status = {}
@@ -565,17 +435,9 @@ class User < ActiveRecord::Base
         max= new_max if new_max>max
       end
     end
-    return max.to_i    
+    return max.to_i
   end
 
-  # def grades_angular(item)          #
-  # end      
-
-  # def self.delete_demo_users(course) #change according to course.
-  # end
-
-  # def self.students
-  # end
 
   def remove_student(course_id)   #should i add them as associations (belong to/ has_many) ?
     if enrollments.where(:course_id => course_id).destroy_all
@@ -585,27 +447,33 @@ class User < ActiveRecord::Base
     end
   end
 
-  # def self.search(search)
-  # end
+
 
   def full_name
     if !self.last_name.nil?
       return self.name + ' ' + self.last_name
     else
       return self.name
-    end    
+    end
   end
 
-  # def full_name_reverse
-  # end
+  def full_name_reverse
+    if !self.last_name.nil?
+      return self.last_name + ' ' + self.name
+    else
+      return self.name
+    end
+  end
 
-  # def reset_password!(new_password, new_password_confirmation)
-  # end
 
-  # def async_destroy
-  # end
+  def async_destroy
+    self.destroy
+  end
+  handle_asynchronously :async_destroy, :run_at => Proc.new { 5.seconds.from_now }
 
   def delete_student_data(course_id)
+
+
     ActiveRecord::Base.transaction do
       Confused.where(:user_id => id, :course_id => course_id).destroy_all
       LectureView.where(:user_id => id, :course_id => course_id).destroy_all
@@ -621,16 +489,74 @@ class User < ActiveRecord::Base
         OnlineQuizGrade.where(:user_id => id, :lecture_id => lecture.id).destroy_all
         FreeOnlineQuizGrade.where(:user_id => id, :lecture_id => lecture.id).destroy_all
         Forum::Post.delete('destroy_all_by_user', {:user_id => id, :lecture_id => lecture.id} )
+
       end
     end
-  end  
+  end
+
+  def anonymise
+
+    self.encrypted_email = Digest::SHA256.hexdigest (self.email).to_s
+            
+    ## use email as key for encryption
+    key   = ActiveSupport::KeyGenerator.new(self.email).generate_key(ENV['hash_salt'],32)
+    crypt = ActiveSupport::MessageEncryptor.new(key)
+    encrypted_name = crypt.encrypt_and_sign(self.name)   
+    encrypted_screen_name = crypt.encrypt_and_sign(self.screen_name)   
+    encrypted_last_name = crypt.encrypt_and_sign(self.last_name)
+    encrypted_university = crypt.encrypt_and_sign(self.university)
+    self.encrypted_data = {'name' => encrypted_name, 'last_name' => encrypted_last_name, 
+        'screen_name' => encrypted_screen_name,'university' => encrypted_university}
+    self.name = "Archived"
+    self.last_name = "user"
+    self.screen_name = "Archived#{self.id}"
+    self.university = "Archived"
+    self.email = "archived_user#{self.id}@scalable-learning.com"
+    self.skip_confirmation!
+    self.skip_reconfirmation!
+    if self.save
+        return "success"
+    else
+        return self.errors.map{|attr,err| [attr,err] }.flatten
+    end
+  end
+
+  def deanonymise email
+    self.email = email
+    ## use user's email to decrypt information
+    key   = ActiveSupport::KeyGenerator.new(email).generate_key(ENV['hash_salt'],32)
+    crypt = ActiveSupport::MessageEncryptor.new(key)
+    
+    self.name =crypt.decrypt_and_verify(self.encrypted_data['name'])
+    self.last_name = crypt.decrypt_and_verify(self.encrypted_data['last_name'])
+    self.screen_name =crypt.decrypt_and_verify(self.encrypted_data['screen_name'])
+    self.university =crypt.decrypt_and_verify(self.encrypted_data['university'])
+    self.encrypted_email = nil
+    self.encrypted_data = nil
+    self.skip_confirmation!
+    self.skip_reconfirmation!
+    self
+  end
+
+  def self.get_anonymised_user email
+    encrypted_email = Digest::SHA256.hexdigest (email)
+    User.find_by_encrypted_email(encrypted_email)
+  end
+
+  def generate_token life_span
+    client_id = SecureRandom.urlsafe_base64(nil, false)
+    token     = SecureRandom.urlsafe_base64(nil, false)
+    self.tokens[client_id] = {
+      token: BCrypt::Password.create(token),
+      expiry: life_span
+    }
+  end
 
   private
-      def add_default_user_role_to_user
-        if !self.has_role?('User') 
-          self.users_roles.build(role_id:1)
-        end
-        return true
+    def add_default_user_role_to_user
+      if !self.has_role?('User')
+        self.roles << Role.find(1)
       end
+    end
 
 end

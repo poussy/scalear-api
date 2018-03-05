@@ -246,21 +246,20 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 	
 	test "should add new_marker " do
 		url = '/en/courses/'+@course1.id.to_s+'/lectures/'+@lecture1.id.to_s+'/new_marker'
-		get url , params: {time: 11.2},headers: @user1.create_new_auth_token 
+		post url , params: { marker: {time:15,duration:5,xcoor:0.5,ycoor:0.2,height:1.1,width:2.3}},headers: @user1.create_new_auth_token 
 		resp =  JSON.parse response.body
 		assert_response :success
-		assert_equal resp['marker']['time'] , 11.2	
+		assert_equal resp['marker']['time'] , 15.0	
+		assert_equal resp['marker']['duration'] , 5
+		assert_equal resp['marker']['xcoor'] , 0.5
+		assert_equal resp['marker']['ycoor'] , 0.2
+		assert_equal resp['marker']['height'] , 1.1
+		assert_equal resp['marker']['width'] , 2.3
 	end
-	test "should new_marker for empty params" do
-		url = '/en/courses/'+@course1.id.to_s+'/lectures/'+@lecture1.id.to_s+'/new_marker'
-		get url , params: {},headers: @user1.create_new_auth_token 
-		resp =  JSON.parse response.body
-		assert_response 400		
-		assert_equal resp['errors']['time'][0] , "can't be blank"	
-	end
+
 	test "should new_marker for invalid time" do
 		url = '/en/courses/'+@course1.id.to_s+'/lectures/'+@lecture1.id.to_s+'/new_marker'
-		get url , params: { time: "dsadasd"},headers: @user1.create_new_auth_token 
+		post url , params: { marker: {time:'aaa'}},headers: @user1.create_new_auth_token 
 		resp =  JSON.parse response.body
 		assert_response 400		
 		assert_equal resp['errors']['time'][0] , "is not a number"
@@ -536,7 +535,7 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 	test "html free text should create quiz grade 1 if answer is right" do
 		
 		post '/en/courses/3/lectures/3/save_html', params: {quiz: 10, answer: "answer free text", distance_peer:false, in_group: false}, headers: @headers2, as: :json
-		assert_equal FreeOnlineQuizGrade.where(online_quiz_id:10).first["grade"], 1
+		assert_equal FreeOnlineQuizGrade.where(online_quiz_id:10).first["grade"], 3
 		assert_equal decode_json_response_body["explanation"], {"10"=>"<p class=\"medium-editor-p\">explanation free text</p>"}
 	end
 
@@ -631,6 +630,210 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 		assert_equal  VideoNote.where(lecture_id:3, user_id:6).size, notes
 	end
 
+	test "check_if_invited_distance_peer should respond with enrolled students if no invitations" do
+		get "/en/courses/3/lectures/3/check_if_invited_distance_peer", headers: @headers2
+		assert_equal decode_json_response_body["students"], [
+			{"id"=>nil, "name"=>"Ahmed", "email"=>"ahmed@gmail.com", "last_name"=>"aly", "full_name"=>"Ahmed aly", "status"=>nil, "lower"=>"ahmed"}, 
+			{"id"=>nil, "name"=>"Hossam", "email"=>"Hossam@gmail.com", "last_name"=>"aly", "full_name"=>"Hossam aly", "status"=>nil, "lower"=>"hossam"}, 
+			{"id"=>nil, "name"=>"Karim", "email"=>"Karim@gmail.com", "last_name"=>"aly", "full_name"=>"Karim aly", "status"=>nil,"lower"=>"karim"}, 
+			{"id"=>nil, "name"=>"Mohamed", "email"=>"Mohamed@gmail.com", "last_name"=>"aly", "full_name"=>"Mohamed aly", "status"=>nil, "lower"=>"mohamed"}]
+		
+		assert_equal decode_json_response_body["invite_status"], "no_invitation"
+	end
+
+	test "check_if_invited_distance_peer should respond with invited users" do
+		Enrollment.create(user_id:3, course_id:3)
+		Enrollment.create(user_id:4, course_id:3)
+		Lecture.find(3).update_attribute('distance_peer',true)
+		DistancePeer.create(id:1,course_id:3,group_id:3,lecture_id:3,user_id:6)
+		@student.user_distance_peers.create(online_quiz_id:4,distance_peer_id:1,status:0,online:false)
+		UserDistancePeer.create(user_id:3,online_quiz_id:4,distance_peer_id:1,status:0,online:false)
+		get "/en/courses/3/lectures/3/check_if_invited_distance_peer", headers: @headers2
+		
+		assert_equal decode_json_response_body["invite"],"a.okasha"
+		assert_equal decode_json_response_body["invite_status"],"invited"
+		assert_equal decode_json_response_body["distance_peer_id"],1
+	end
+
+	test "check_if_in_distance_peer_session should return user_distance_peer of user if same status" do
+		Enrollment.create(user_id:3, course_id:3)
+		Enrollment.create(user_id:4, course_id:3)
+		Lecture.find(3).update_attribute('distance_peer',true)
+		DistancePeer.create(id:1,course_id:3,group_id:3,lecture_id:3,user_id:6)
+		@student.user_distance_peers.create(id:1,online_quiz_id:4,distance_peer_id:1,status:1,online:false)
+		UserDistancePeer.create(id:2,user_id:3,online_quiz_id:4,distance_peer_id:1,status:1,online:false)
+
+		get "/en/courses/3/lectures/3/check_if_in_distance_peer_session", headers: @headers2
+
+		assert_equal decode_json_response_body["distance_peer"]["id"], 1
+		assert_equal decode_json_response_body["distance_peer"]["status"], 1
+
+	
+	end
+
+	test "check_if_in_distance_peer_session should return other user's distance peer if different statuses and updated after" do
+		Enrollment.create(user_id:3, course_id:3)
+		Enrollment.create(user_id:4, course_id:3)
+		Lecture.find(3).update_attribute('distance_peer',true)
+		DistancePeer.create(id:1,course_id:3,group_id:3,lecture_id:3,user_id:6)
+		@student.user_distance_peers.create(id:1,online_quiz_id:4,distance_peer_id:1,status:1,online:false,updated_at:'2017-03-02')
+		UserDistancePeer.create(id:2,user_id:3,online_quiz_id:4,distance_peer_id:1,status:2,online:false,updated_at:'2017-03-01')
+
+		get "/en/courses/3/lectures/3/check_if_in_distance_peer_session", headers: @headers2
+
+		assert_equal decode_json_response_body["distance_peer"]["id"], 2
+		assert_equal decode_json_response_body["distance_peer"]["status"], 2
+
+	
+	end
+
+	test "invite_student_distance_peer if not already invited" do
+		Enrollment.create(user_id:3, course_id:3)
+		Enrollment.create(user_id:4, course_id:3)
+		Lecture.find(3).update_attribute('distance_peer',true)
+
+		get "/en/courses/3/lectures/3/invite_student_distance_peer", params:{email:"okasha@gmail.com"}, headers: @headers2
+
+		assert_equal UserDistancePeer.all.map{|u|u.status},[0,0]
+	end
+
+	test "invite_student_distance_peer if already invited should change status to 1" do
+		Enrollment.create(user_id:3, course_id:3)
+		Enrollment.create(user_id:4, course_id:3)
+		Lecture.find(3).update_attribute('distance_peer',true)
+		DistancePeer.create(id:5,course_id:3,group_id:3,lecture_id:3,user_id:3)
+		@student.user_distance_peers.create(id:10,online_quiz_id:4,distance_peer_id:5,status:0,online:false)
+		UserDistancePeer.create(id:11,user_id:3,online_quiz_id:4,distance_peer_id:5,status:0,online:false)
+
+		get "/en/courses/3/lectures/3/invite_student_distance_peer", params:{email:"okasha@gmail.com"}, headers: @headers2
+
+		assert_equal UserDistancePeer.all.map{|u|u.status},[1,1]
+	end
+
+	test "check_invited_student_accepted_distance_peer " do
+		Enrollment.create(user_id:3, course_id:3)
+		Enrollment.create(user_id:4, course_id:3)
+		Lecture.find(3).update_attribute('distance_peer',true)
+		DistancePeer.create(id:5,course_id:3,group_id:3,lecture_id:3,user_id:3)
+		@student.user_distance_peers.create(id:10,online_quiz_id:4,distance_peer_id:5,status:1,online:false)
+		UserDistancePeer.create(id:11,user_id:3,online_quiz_id:4,distance_peer_id:5,status:1,online:false)
+
+		get "/en/courses/3/lectures/3/check_invited_student_accepted_distance_peer", params:{distance_peer_id:5, email:"okasha@gmail.com"}, headers: @headers2
+
+		assert_equal decode_json_response_body["status"], 1
+
+		## denied (other user cancelled)
+		UserDistancePeer.find(11).destroy
+		get "/en/courses/3/lectures/3/check_invited_student_accepted_distance_peer", params:{distance_peer_id:5, email:"okasha@gmail.com"}, headers: @headers2
+		assert_equal decode_json_response_body["status"],"denied"
+	end
+
+	test "accept_invation_distance_peer should update status to 1" do
+		Enrollment.create(user_id:3, course_id:3)
+		Enrollment.create(user_id:4, course_id:3)
+		Lecture.find(3).update_attribute('distance_peer',true)
+		DistancePeer.create(id:5,course_id:3,group_id:3,lecture_id:3,user_id:3)
+		@student.user_distance_peers.create(id:10,online_quiz_id:4,distance_peer_id:5,status:0,online:false)
+		UserDistancePeer.create(id:11,user_id:3,online_quiz_id:4,distance_peer_id:5,status:0,online:false)
+
+		get "/en/courses/3/lectures/3/accept_invation_distance_peer", params:{distance_peer_id:5, email:"okasha@gmail.com"}, headers: @headers2
+
+		assert_equal decode_json_response_body["status"], 0
+		assert_equal UserDistancePeer.all.map{|u|u.status},[1,1]
+		
+	end
+
+	test "cancel_session_distance_peer should delete distance_peer" do
+		Enrollment.create(user_id:3, course_id:3)
+		Enrollment.create(user_id:4, course_id:3)
+		Lecture.find(3).update_attribute('distance_peer',true)
+		DistancePeer.create(id:5,course_id:3,group_id:3,lecture_id:3,user_id:3)
+		@student.user_distance_peers.create(id:10,online_quiz_id:4,distance_peer_id:5,status:0,online:false)
+		UserDistancePeer.create(id:11,user_id:3,online_quiz_id:4,distance_peer_id:5,status:0,online:false)
+
+		get "/en/courses/3/lectures/3/cancel_session_distance_peer", params:{distance_peer_id:5}, headers: @headers2
+
+		assert_not DistancePeer.exists?(id:5)
+		
+		## distance peer doesnt exists
+		
+		get "/en/courses/3/lectures/3/cancel_session_distance_peer", params:{distance_peer_id:5}, headers: @headers2
+		assert_equal decode_json_response_body["distance_peer"],"deleted"
+	end
+
+	test "change_status_distance_peer" do
+		Enrollment.create(user_id:3, course_id:3)
+		Enrollment.create(user_id:4, course_id:3)
+		Lecture.find(3).update_attribute('distance_peer',true)
+		DistancePeer.create(id:5,course_id:3,group_id:3,lecture_id:3,user_id:3)
+		@student.user_distance_peers.create(id:10,online_quiz_id:4,distance_peer_id:5,status:0,online:false)
+		UserDistancePeer.create(id:11,user_id:3,online_quiz_id:4,distance_peer_id:5,status:0,online:false)
+
+		get "/en/courses/3/lectures/3/change_status_distance_peer", params:{distance_peer_id:5, online_quiz_id:5, status:3}, headers: @headers2
+
+		assert_equal UserDistancePeer.find(10).status, 3
+		assert_equal UserDistancePeer.find(10).online_quiz_id, 5
+
+		## no distance_peer
+		UserDistancePeer.find(10).destroy
+		get "/en/courses/3/lectures/3/change_status_distance_peer", params:{distance_peer_id:5, online_quiz_id:5, status:3}, headers: @headers2
+		assert_equal decode_json_response_body["distance_peer"], "no_peer_session"
+		
+	end
+
+	test "check_if_distance_peer_status_is_sync" do
+		Enrollment.create(user_id:3, course_id:3)
+		Enrollment.create(user_id:4, course_id:3)
+		Lecture.find(3).update_attribute('distance_peer',true)
+		DistancePeer.create(id:5,course_id:3,group_id:3,lecture_id:3,user_id:3)
+		@student.user_distance_peers.create(id:10,online_quiz_id:4,distance_peer_id:5,status:1,online:false)
+		UserDistancePeer.create(id:11,user_id:3,online_quiz_id:4,distance_peer_id:5,status:1,online:false)
+
+		## same status for both users
+		get "/en/courses/3/lectures/3/check_if_distance_peer_status_is_sync", params:{distance_peer_id:5}, headers: @headers2
+		assert_equal decode_json_response_body["status"],"start"
+
+		UserDistancePeer.find(11).update_attribute('status',2)
+		get "/en/courses/3/lectures/3/check_if_distance_peer_status_is_sync", params:{distance_peer_id:5}, headers: @headers2
+		assert_equal decode_json_response_body["status"],"wait"
+
+		## no session
+		UserDistancePeer.find(11).destroy
+		get "/en/courses/3/lectures/3/check_if_distance_peer_status_is_sync", params:{distance_peer_id:5}, headers: @headers2
+		assert_equal decode_json_response_body["distance_peer"],"no_peer_session"
+		
+	end
+
+	test "check_if_distance_peer_is_alive should end session if second user state is 6" do
+		Enrollment.create(user_id:3, course_id:3)
+		Enrollment.create(user_id:4, course_id:3)
+		Lecture.find(3).update_attribute('distance_peer',true)
+		DistancePeer.create(id:5,course_id:3,group_id:3,lecture_id:3,user_id:3)
+		@student.user_distance_peers.create(id:10,online_quiz_id:4,distance_peer_id:5,status:1,online:false)
+		UserDistancePeer.create(id:11,user_id:3,online_quiz_id:4,distance_peer_id:5,status:6,online:false)
+
+		## one user ended session
+		get "/en/courses/3/lectures/3/check_if_distance_peer_is_alive", params:{distance_peer_id:5}, headers: @headers2
+		assert_equal decode_json_response_body["status"],"dead"
+		assert_equal UserDistancePeer.find(10).status, 6
+
+		## session is alive
+		UserDistancePeer.find(11).update_attribute('status',1)
+		UserDistancePeer.find(10).update_attribute('status',1)
+		get "/en/courses/3/lectures/3/check_if_distance_peer_is_alive", params:{distance_peer_id:5}, headers: @headers2
+		assert_equal decode_json_response_body["status"],"alive"
+
+		## no session
+		UserDistancePeer.find(11).destroy
+		get "/en/courses/3/lectures/3/check_if_distance_peer_is_alive", params:{distance_peer_id:5}, headers: @headers2
+		assert_equal decode_json_response_body["distance_peer"],"no_peer_session"
+		
+	end
+
+
+	
+	
+	
 	test "change_status_angular should change status assignment_item_status, or create new one with specified status" do
 		# will create one if empty
 		assert Lecture.find(3).assignment_item_statuses.empty?
@@ -674,8 +877,48 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 		end
 		
 	end
-	
-	
-	
+
+	test "delete_note" do
+		VideoNote.create(lecture_id:3, user_id:6, data: "new note", id: 6)
+		assert_difference 'Lecture.find(3).video_notes.size', -1 do
+			delete '/en/courses/3/lectures/3/delete_note', params: {note_id:6}, headers: @headers2
+		end
+		assert_equal VideoNote.where(id:6).size, 0
+	end
+
+	test "export_notes after adding 1 note in lecture" do
+		VideoNote.create(lecture_id:3, user_id:6, data: "new note", id: 6)
+		get '/en/courses/3/lectures/3/export_notes', params: {}, headers: @headers2
+		resp =  JSON.parse(JSON.parse(response.body)['notes'][0])
+		assert_response :success
+		assert_equal resp.count , 1
+	end	
+	test "export_notes after adding 2 note in lecture" do
+		VideoNote.create(lecture_id:3, user_id:6, data: "new note", id: 6)
+		VideoNote.create(lecture_id:3, user_id:6, data: "new note", id: 7)
+		get '/en/courses/3/lectures/3/export_notes', params: {}, headers: @headers2
+		assert_response :success
+		resp =  JSON.parse(JSON.parse(response.body)['notes'][0])
+		assert_equal resp.count , 2
+
+	end	
+	test "export_notes after adding 2 note in lecture from 1 student and 1 note from different student" do
+		VideoNote.create(lecture_id:3, user_id:6, data: "new note", id: 6)
+		VideoNote.create(lecture_id:3, user_id:6, data: "new note", id: 7)
+		VideoNote.create(lecture_id:3, user_id:8, data: "new note", id: 8)
+		get '/en/courses/3/lectures/3/export_notes', params: {}, headers: @headers2
+		resp =  JSON.parse(JSON.parse(response.body)['notes'][0])
+		assert_response :success
+		assert_equal resp.count , 2
+	end	
+	test "export_notes after adding 2 note in lecture and then deleting 1 note  " do
+		VideoNote.create(lecture_id:3, user_id:6, data: "new note", id: 6)
+		VideoNote.create(lecture_id:3, user_id:6, data: "new note", id: 7)
+		delete '/en/courses/3/lectures/3/delete_note', params: {note_id:6}, headers: @headers2
+		get '/en/courses/3/lectures/3/export_notes', params: {}, headers: @headers2
+		resp =  JSON.parse(JSON.parse(response.body)['notes'][0])
+		assert_response :success
+		assert_equal resp.count , 1
+	end	
 
 end

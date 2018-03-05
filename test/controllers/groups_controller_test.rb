@@ -23,7 +23,7 @@ class GroupsControllerTest < ActionDispatch::IntegrationTest
 		@assignment_statuses_course1 =  assignment_statuses(:assignment_statuses_course1)
 
 		@student = users(:student_in_course3)
-
+		@lecture1 = lectures(:lecture1)
 	end
 
 	test "Validate abilities for user1" do
@@ -311,7 +311,6 @@ class GroupsControllerTest < ActionDispatch::IntegrationTest
 		get  url , params: {group: { name:'' }} ,headers: @user3.create_new_auth_token 
 		assert_response :success
 		resp =  JSON.parse response.body
-		assert_equal resp['items'].count , 5
 		assert_equal resp['total_questions'] , 10
 		assert_equal resp['total_quiz_questions'] , 6
 		assert_equal resp['total_survey_questions'] , 0
@@ -718,5 +717,345 @@ class GroupsControllerTest < ActionDispatch::IntegrationTest
 			post '/en/courses/3/groups/3/hide_invideo_quiz', params:{hide:true, quiz:1}, headers: @user3.create_new_auth_token
 		end
 	end
+
+	## waiting for discussion
+	test "get_discussion_summary should" do 
+		get '/en/courses/3/groups/3/get_discussion_summary', headers: @user3.create_new_auth_token
+
+		assert decode_json_response_body['module'].key? 'posts_total'
+		assert decode_json_response_body['module'].key? 'unanswered_questions_count'
+
+		get '/en/courses/3/groups/3/get_discussion_summary', headers: @student.create_new_auth_token
+
+		assert decode_json_response_body['module'].key? 'posts_total'
+		assert_not decode_json_response_body['module'].key? 'unanswered_questions_count'
+	end
+
+	test "get_module_data_angular" do
+		get "/en/courses/3/groups/3/get_module_data_angular", headers:  @student.create_new_auth_token
+
+		assert_equal decode_json_response_body["module_lectures"].size, 2
+
+		lecture = decode_json_response_body["module_lectures"][0]
+		
+
+		assert_equal lecture["id"], 3
+		assert_equal lecture["name"], "lecture3"
+		assert_equal lecture["user_confused"].size, 4
+		assert_equal lecture["title_markers"].size, 1
+		assert_equal lecture["video_quizzes"].size, 10
+
+		assert_equal lecture["video_quizzes"][0]["id"], 1
+		assert_equal lecture["video_quizzes"][0]["online_answers"].map{|ans| ans["id"]}, [6,7]
+		
+
+	end
+
+	test "get_module_inclass" do
+
+		OnlineQuiz.find(1).update_attributes(inclass: true, hide:false, intro: 30, self: 60, in_group: 90, discussion: 120)
+		OnlineQuiz.find(2).update_attributes(hide:false)
+		get '/en/courses/3/groups/3/get_module_inclass', headers: @user3.create_new_auth_token
+		
+		assert_equal decode_json_response_body["lectures"].keys, ["3","4"]
+
+		lecture3 = decode_json_response_body["lectures"]["3"]
+
+		assert_equal lecture3["markers"], [[11.2, {"id"=>332392615, "title"=>"title", "show"=>true, "type"=>"marker"}]]
+		assert_equal lecture3["confused"],  [[0.0, {"count"=>2, "show"=>true}], [30.0, {"count"=>1, "show"=>true}]]
+		assert_equal lecture3["really_confused"], [[45.0, {"count"=>1, "show"=>true}]]
+
+		assert_equal lecture3["inclass"], [
+			[
+				20.0,
+				{"id"=>1,
+				"title"=>"New Quiz",
+				"type"=>"Quiz",
+				"start_time"=>100.0,
+				"end_time"=>120.0,
+				"question"=>"New Quiz",
+				"show"=>true,
+				"online_answers"=>
+					[{"id"=>6,
+					"online_quiz_id"=>1,
+					"answer"=>"answer1",
+					"xcoor"=>2.0,
+					"ycoor"=>3.0,
+					"correct"=>true,
+					"explanation"=>"explanation for answer1",
+					"width"=>3.0,
+					"height"=>2.0,
+					"pos"=>3,
+					"sub_ycoor"=>3.0,
+					"sub_xcoor"=>2.0,
+					"created_at"=>"2017-02-02T02:00:00.000+02:00",
+					"updated_at"=>"2017-02-02T02:00:00.000+02:00"},
+					{"id"=>7,
+					"online_quiz_id"=>1,
+					"answer"=>"answer2",
+					"xcoor"=>2.0,
+					"ycoor"=>6.0,
+					"correct"=>false,
+					"explanation"=>"explanation for answer2",
+					"width"=>3.0,
+					"height"=>2.0,
+					"pos"=>3,
+					"sub_ycoor"=>3.0,
+					"sub_xcoor"=>2.0,
+					"created_at"=>"2017-02-02T02:00:00.000+02:00",
+					"updated_at"=>"2017-02-02T02:00:00.000+02:00"}],
+				"question_type"=>"OCQ",
+				"quiz_type"=>"invideo",
+				"timers"=>
+					{"id"=>nil,
+					"intro"=>30,
+					"self"=>60,
+					"in_group"=>90,
+					"discussion"=>120,
+					"match_type"=>nil,
+					"solved_quiz"=>nil,
+					"reviewed"=>nil,
+					"votes_count"=>nil,
+					"online_answers"=>[],
+					"online_answers_drag"=>nil,
+					"inclass_session"=>nil},
+				"available"=>{"in_self"=>true, "in_group"=>true}}
+			]
+		]
+
+		assert_equal decode_json_response_body["students_count"], 5
+		assert_equal decode_json_response_body["review_question_count"], 15
+		assert_equal decode_json_response_body["review_video_quiz_count"], 1 #inclass: false, hide: false
+		assert_equal decode_json_response_body["inclass_quizzes_count"], 1 #inclass: true, hide: false
+		assert decode_json_response_body["markers_count"].nil?
+
+	end
+
+	test "get_quiz_charts_inclass for teacher" do
+
+		Question.find(1).update_attributes(show: true) #ocq
+		Question.find(4).update_attributes(show: true) #drag
+		Question.find(3).update_attributes(show: true) #drag
+
+		QuizGrade.create(id: 1, user_id: 6, quiz_id: 1, question_id:1, answer_id: 4, grade: 1)
+		FreeAnswer.create(id:1, user_id:6, quiz_id:1, question_id:4, answer: ["<p class=\"medium-editor-p\">ans1</p>", "<p class=\"medium-editor-p\">ans2</p>"], hide: false, grade: 3, student_hide: false)
+		FreeAnswer.create(id:2, user_id:6, quiz_id:1, question_id:3, answer: "answer to free text 3", hide: false, grade: 3, student_hide: false, created_at:'2017-1-1', updated_at:'2017-1-1')
+		get '/en/courses/3/groups/3/get_quiz_charts_inclass', headers: @user3.create_new_auth_token
+		
+		quiz1 = decode_json_response_body["quizzes"]["1"]
+		assert_equal quiz1["answers"]["1"],  {
+			"show"=>true,
+         	"student_show"=>true,
+         	"answers"=>{
+				"4"=>[1, "grey", "<p class=\"medium-editor-p\">a1</p>"],
+				"5"=>[0, "green", "<p class=\"medium-editor-p\">a2</p>"]
+			},
+         	"title"=>"<p class=\\\"medium-editor-p\\\">ocq</p>"}
+
+		assert_equal quiz1["answers"]["4"],  {
+			"show"=>true,
+        	"student_show"=>true,
+         	"answers"=>{
+				"<p class=\"medium-editor-p\">ans1</p>"=> [1,"green", "<p class=\"medium-editor-p\">ans1</p> in correct place"],
+           		"<p class=\"medium-editor-p\">ans2</p>"=> [1,"green", "<p class=\"medium-editor-p\">ans2</p> in correct place"]},
+         	"title"=>"<p class=\\\"medium-editor-p\\\">drag quiz</p>"}
+
+		assert_equal quiz1["answers"]["3"]["answers"][0]["answer"], "answer to free text 3"
+		assert_equal quiz1["questions"], [
+			{"question"=>"<p class=\\\"medium-editor-p\\\">drag quiz</p>","type"=>"drag","id"=>4},
+			{"question"=>"<p class=\\\"medium-editor-p\\\">free text</p>","type"=>"Free Text Question","id"=>3},
+			{"question"=>"<p class=\\\"medium-editor-p\\\">ocq</p>","type"=>"OCQ","id"=>1}]
+		
+	end
+
+	test "get_inclass_student_status for student" do
+		InclassSession.create(online_quiz_id: 3, lecture_id: 3, group_id:3, course_id: 3, status: 2)
+		
+		get '/en/courses/3/groups/3/get_inclass_student_status', params:{quiz_id:3,status:0},headers: @student.create_new_auth_token
+		assert_equal decode_json_response_body, {"status"=>2,
+			"updated"=>true,
+			"quiz"=>{
+				"time"=>50.0,
+				"question_title"=>"New Quiz",
+				"question_type"=>"Free Text Question",
+				"id"=>3,
+				"answers"=>[{"id"=>1, "answer"=>"answer for free text"}]},
+				"lecture"=>{"id"=>3, "name"=>"lecture3"}
+			}
+	end
+
+	test "get_survey_chart_angular for student" do
+		Quiz.find(1).update_attribute('quiz_type','survey')
+		get '/en/courses/3/groups/3/get_survey_chart_angular', params:{display_only:'display_only',survey_id:1},headers: @student.create_new_auth_token
+		assert_equal decode_json_response_body["chart_data"], 
+		{"1"=>
+			{"show"=>false,
+			"student_show"=>true,
+			"answers"=>
+			{"4"=>[0, "<p class=\"medium-editor-p\">a1</p>"],
+			"5"=>[0, "<p class=\"medium-editor-p\">a2</p>"]},
+			"title"=>"<p class=\\\"medium-editor-p\\\">ocq</p>"},
+		"2"=>
+			{"show"=>false,
+			"student_show"=>true,
+			"answers"=>
+			{"1"=>[0, "<p class=\\\"medium-editor-p\\\">a1</p>"],
+			"2"=>[0, "<p class=\\\"medium-editor-p\\\">a2</p>"]},
+			"title"=>"<p class=\\\"medium-editor-p\\\">q1</p>"},
+		"4"=>
+			{"show"=>false,
+			"student_show"=>true,
+			"answers"=>
+			{"3"=>
+				[0,
+				["<p class=\"medium-editor-p\">ans1</p>",
+				"<p class=\"medium-editor-p\">ans2</p>"]]},
+			"title"=>"<p class=\\\"medium-editor-p\\\">drag quiz</p>"}}
+		
+		assert_equal decode_json_response_body["students_count"], 5
+		assert_equal decode_json_response_body["chart_questions"][0],{"question"=>"<p class=\\\"medium-editor-p\\\">ocq</p>", "type"=>"OCQ"}
+	end
 	
+	test "should get_module_summary for teacher 3" do
+		get '/en/courses/3/groups/3/get_module_summary', params:{},headers: @user3.create_new_auth_token
+		resp =  JSON.parse response.body
+		assert_response :success
+		assert_equal resp['module']['duration'] , 390
+		assert_equal resp['module']['quiz_count'] , 11
+		assert_equal resp['module']['type'] , 'teacher'
+		assert_equal resp['module']['students_count'] , 5
+		assert_equal resp['module']['students_completion']['incomplete'] , 5
+	end
+	
+	test "should get_module_summary for teacher 1" do
+		url = '/en/courses/'+ @course1.id.to_s+'/groups/'+@group1.id.to_s+'/get_module_summary'
+		get url, params: {} ,headers: @user1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_response :success
+		assert_equal resp['module']['duration'] , 240
+		assert_equal resp['module']['quiz_count'] , 2
+		assert_equal resp['module']['type'] , 'teacher'
+		assert_equal resp['module']['students_count'] , 1
+		assert_equal resp['module']['students_completion']['on_time'] , 1
+	end
+
+	test "should get_module_summary for teacher 1 after deleting student1 answer" do
+		online_quiz_grade1 =  online_quiz_grades(:online_quiz_grade1)
+		online_quiz_grade1.destroy
+		url = '/en/courses/'+ @course1.id.to_s+'/groups/'+@group1.id.to_s+'/get_module_summary'
+		get url, params: {} ,headers: @user1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_response :success
+		assert_equal resp['module']['duration'] , 240
+		assert_equal resp['module']['quiz_count'] , 2
+		assert_equal resp['module']['type'] , 'teacher'
+		assert_equal resp['module']['students_count'] , 1
+		assert_equal resp['module']['students_completion']['incomplete'] , 1
+	end
+
+	test "should get_module_summary for teacher 1 after deleting online_quiz" do
+		html_free_text_quiz_with_answer1 =  online_quizzes(:html_ocq_online_quiz1)
+		html_free_text_quiz_with_answer1.destroy
+		url = '/en/courses/'+ @course1.id.to_s+'/groups/'+@group1.id.to_s+'/get_module_summary'
+		get url, params: {} ,headers: @user1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_response :success
+		assert_equal resp['module']['duration'] , 240
+		assert_equal resp['module']['quiz_count'] , 1
+		assert_operator resp['module']['due_date'] , :<=, 0		
+		assert_equal resp['module']['type'] , 'teacher'
+		assert_equal resp['module']['students_count'] , 1
+		assert_equal resp['module']['students_completion']['on_time'] , 1
+	end
+
+	test "should get_module_summary for teacher 1 after edit the group in the future" do
+		@group1.update_attributes(appearance_time: Time.zone.now + 2.day, due_date: Time.zone.now + 3.day)
+		url = '/en/courses/'+ @course1.id.to_s+'/groups/'+@group1.id.to_s+'/get_module_summary'
+		get url, params: {} ,headers: @user1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_response :success
+		assert_equal resp['module']['duration'] , 240
+		assert_equal resp['module']['quiz_count'] , 2
+		assert_operator resp['module']['due_date'] , :>=, 0
+		assert_equal resp['module']['type'] , 'teacher'
+		assert_equal resp['module']['students_count'] , 1
+		assert_equal resp['module']['students_completion']['completed'] , 1
+	end
+
+	test "should get_module_summary for student1" do
+		url = '/en/courses/'+ @course1.id.to_s+'/groups/'+@group1.id.to_s+'/get_module_summary'
+		get url, params: {} ,headers: @student1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_response :success
+		assert_equal resp['module']['duration'] , 240
+		assert_equal resp['module']['quiz_count'] , 2
+		assert_equal resp['module']['type'] , 'student'
+		assert_equal resp['module']['module_done_perc'] , 100
+		assert_operator resp['module']['due_date'] , :<=, 0
+	end
+
+	test "should get_module_summary for student1 after deleting student1 answer" do
+		online_quiz_grade1 =  online_quiz_grades(:online_quiz_grade1)
+		online_quiz_grade1.destroy
+
+		online_quiz_grade1 =  online_quiz_grades(:online_quiz_grade1)
+		online_quiz_grade1.destroy
+		url = '/en/courses/'+ @course1.id.to_s+'/groups/'+@group1.id.to_s+'/get_module_summary'
+		get url, params: {} ,headers: @student1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_response :success
+		assert_equal resp['module']['duration'] , 240
+		assert_equal resp['module']['quiz_count'] , 2
+		assert_equal resp['module']['type'] , 'student'
+		assert_equal resp['module']['module_done_perc'] , 100
+		assert_operator resp['module']['due_date'] , :<=, 0
+	end
+
+	test "should get_module_summary for student1 after deleting online_quiz" do
+		html_free_text_quiz_with_answer1 =  online_quizzes(:html_ocq_online_quiz1)
+		html_free_text_quiz_with_answer1.destroy
+		url = '/en/courses/'+ @course1.id.to_s+'/groups/'+@group1.id.to_s+'/get_module_summary'
+		get url, params: {} ,headers: @student1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_response :success
+		assert_equal resp['module']['duration'] , 240
+		assert_equal resp['module']['quiz_count'] , 1
+		assert_equal resp['module']['type'] , 'student'
+		assert_equal resp['module']['module_done_perc'] , 100
+		assert_operator resp['module']['due_date'] , :<=, 0
+	end
+
+	test "should get_module_summary for student1 after edit the group in the future" do
+		@group1.update_attributes(appearance_time: Time.zone.now + 2.day, due_date: Time.zone.now + 3.day)
+		url = '/en/courses/'+ @course1.id.to_s+'/groups/'+@group1.id.to_s+'/get_module_summary'
+		get url, params: {} ,headers: @student1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_response :success
+		assert_equal resp['module']['duration'] , 240
+		assert_equal resp['module']['quiz_count'] , 2
+		assert_equal resp['module']['type'] , 'student'
+		assert_equal resp['module']['module_done_perc'] , 100
+		assert_operator resp['module']['due_date'] , :>=, 0
+	end
+
+	test "should copy/paste group after updating lecture to inclass" do
+		url = '/en/courses/'+ @course1.id.to_s+'/lectures/'+@lecture1.id.to_s
+		put url, params: {:lecture => { inclass: true}}, headers: @user1.create_new_auth_token, as: :json
+		assert_response :success
+
+		url = '/en/courses/'+ @course1.id.to_s+'/groups/module_copy'
+		group_id = @group1.id
+		post url, params: {module_id: group_id} ,headers: @user1.create_new_auth_token 	
+		assert_response :success
+		new_group = Group.last
+
+		assert @group1.name == new_group.name
+		assert @group1.inclass_sessions.count == new_group.inclass_sessions.count
+	end	
+
+	test "should update_all_inclass_sessions" do
+		url = '/en/courses/'+ @course1.id.to_s+'/groups/'+@group1.id.to_s+'/update_all_inclass_sessions'
+		post url, params: {}, headers: @user1.create_new_auth_token, as: :json
+		assert_response :success
+	end
 end

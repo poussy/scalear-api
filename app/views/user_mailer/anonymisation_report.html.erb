@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
+  </head>
+  <body>
+    <h3>Successful anonymisations</h3>
+    <ul>
+      <% @successes.each do |id,data|%>
+        <li><%= "id [#{id}] =>  #{data} "%></li>
+      <% end %>
+    </ul>
+    <h3>Failed anonymisations</h3>
+    <ul>
+      <% @failures.each do |id,data|%>
+        <li><%= "id [#{id}] =>  #{data} "%></li>
+      <% end %>
+    </ul>
+  </body>
+</html>

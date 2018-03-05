@@ -45,9 +45,6 @@ class CustomLinksController < ApplicationController
     end
   end
 
-  # def link_copy
-  # end
-  
 private
 
   def custom_link_params

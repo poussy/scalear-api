@@ -42,6 +42,10 @@ class LecturesController < ApplicationController
 		if params[:lecture][:graded_module]== true 
 			params[:lecture][:graded]=@lecture.group.graded
 		end
+		if params[:lecture][:skip_ahead_module]== true 
+			params[:lecture][:skip_ahead]=@lecture.group.skip_ahead 
+		end 
+
 		did_he_change_lecture_type = @lecture.inclass != params[:lecture][:inclass]
 
 		if @lecture.update_attributes(lecture_params)
@@ -78,7 +82,7 @@ class LecturesController < ApplicationController
 				online_quiz.update_attributes(:inclass => @lecture.inclass)
 			end
 
-			render json: {lecture: @lecture, :notice => [I18n.t("controller_msg.lecture_successfully_updated")] }
+			render json: {lecture: @lecture.remove_null_virtual_attributes, :notice => [I18n.t("controller_msg.lecture_successfully_updated")] }
 		else
 			render json: {:errors => @lecture.errors , :appearance_time =>@lecture.appearance_time.strftime('%Y-%m-%d')}, :status => :unprocessable_entity
 		end
@@ -231,16 +235,16 @@ class LecturesController < ApplicationController
         if match_string =~ /^\/.*\/$/
           match_string =match_string[1..match_string.length-2]
           regex = Regexp.new match_string
-          @grade =  !!(@answer =~ regex)? 1:0
+          @grade =  !!(@answer =~ regex)? 3:1 
         else
-          @grade = !!(@answer.downcase == match_string.downcase)? 1:0
+          @grade = !!(@answer.downcase == match_string.downcase)? 3:1
         end
         review = false
       end
       # if FreeOnlineQuizGrade.where(:user_id => current_user.id, :online_quiz_id => @quiz).empty?
       FreeOnlineQuizGrade.create(:lecture_id => params[:id],:course_id => params[:course_id], :group_id => @lecture.group_id , :user_id => current_user.id, :online_quiz_id => @quiz, :online_answer => @answer , :grade => @grade, :attempt => attempt+1)
       # end
-      render json: {:msg => I18n.t('controller_msg.succefully_submitted'), :correct => @grade==1 , :explanation => @exp, :done => [item_pos, group_pos, @lecture.is_done], :review => review}
+      render json: {:msg => I18n.t('controller_msg.succefully_submitted'), :correct => @grade==3 , :explanation => @exp, :done => [item_pos, group_pos, @lecture.is_done], :review => review}
     else #OCQ
       quiz_grades = OnlineQuizGrade.where(:user_id => current_user.id, :online_quiz_id => @quiz, :in_group => answered_in_group )
       attempt = quiz_grades.sort{|x,y| x.attempt <=> y.attempt }.last.attempt rescue 0
@@ -567,11 +571,12 @@ class LecturesController < ApplicationController
 		if !items.empty?
 			position = items.last.position + 1
 		end
-		@lecture = @course.lectures.build(:name => "New Lecture", :appearance_time => group.appearance_time, 
-			:due_date => group.due_date, :appearance_time_module => true, :due_date_module => true, 
-			:required_module => true, :graded_module => true,:url => "none", :group_id => params[:group], 
-			:slides => "none", :position => position, :start_time => 0, :end_time => 0, :inclass => params[:inclass] ,
-			:distance_peer => params[:distance_peer] , :required=>group.required , :graded=>group.graded )
+		@lecture = @course.lectures.build(:name => "New Lecture", :appearance_time => group.appearance_time, :due_date => group.due_date, 
+				:appearance_time_module => true, :due_date_module => true, :required_module => true, 
+				:graded_module => true, :skip_ahead_module => true,:url => "none", 
+				:group_id => params[:group], :slides => "none", :position => position, 
+				:start_time => 0, :end_time => 0, :inclass => params[:inclass] ,
+				:distance_peer => params[:distance_peer] , :required=>group.required , :graded=>group.graded ) 
 		@lecture['class_name']='lecture'
 		if @lecture.save
 			render json:{lecture: @lecture, :notice => [I18n.t("controller_msg.lecture_successfully_created")]}
@@ -605,7 +610,10 @@ class LecturesController < ApplicationController
   	end
 
 	def new_marker
-		marker = @lecture.online_markers.build(:group_id => @lecture.group_id, :course_id => @lecture.course_id, :title => "", :annotation => "", :time => params[:time])
+		marker = @lecture.online_markers.build(:group_id => @lecture.group_id, :course_id => @lecture.course_id, :title => "", 
+				:annotation => "", :time => params[:marker][:time], 
+				:height => params[:marker][:height],  :width => params[:marker][:width],  
+				:xcoor => params[:marker][:xcoor],  :ycoor => params[:marker][:ycoor] ) 
 		if marker.save
 			render json: {:marker => marker, notice: "#{I18n.t('controller_msg.marker_successfully_created')}"}
 		else
@@ -757,8 +765,14 @@ class LecturesController < ApplicationController
 	# # def get_progress_lecture
 	# # end
 
-	# def delete_confused
-	# end
+	def delete_confused
+			c=@lecture.confuseds.where(:id => params[:confused_id], :user_id => current_user.id)[0]
+			if c.destroy
+					render json: {:notice => [I18n.t("controller_msg.successfully_deleted")]}
+			else
+					render json: {:errors => [I18n.t("controller_msg.could_not_delete_confused")]}, :status => 400
+			end
+	end
 
 	def save_note
 			lecture= Lecture.find(params[:id])
@@ -780,8 +794,14 @@ class LecturesController < ApplicationController
 		
 	end
 
-	# def delete_note
-	# end
+	def delete_note
+			note=@lecture.video_notes.find(params[:note_id])
+			if note.destroy
+					render json: {:notice => [I18n.t("notes.successfully_deleted")]}
+			else
+					render json: {:errors => [I18n.t("notes.could_not_delete_note")]}, :status => 400
+			end
+	end
 
 	# def load_note
 	# end
@@ -800,6 +820,7 @@ class LecturesController < ApplicationController
 		copy_lecture.due_date_module = true
 		copy_lecture.required_module = true
 		copy_lecture.graded_module = true
+		copy_lecture.skip_ahead_module = true
 
 
 		copy_lecture.save(:validate => false)
@@ -842,9 +863,21 @@ class LecturesController < ApplicationController
 		render json:{lecture: copy_lecture, :notice => [I18n.t("controller_msg.lecture_successfully_updated")]}
   	end
 
-
-	# def export_notes
-	# end
+	def export_notes
+    notes = []
+    @group_no = Lecture.where(:id => params[:id]).pluck(:group_id)
+    lectures = Lecture.where(:group_id => @group_no)
+    lectures.each do |l|
+      if l.video_notes.any?
+        notes << VideoNote.where(:lecture_id => l.id, :user_id => current_user.id).to_json(:include => {:lecture => {:only => [:name, :id]}})
+      end
+    end
+    if notes.nil?
+      render json: {:notes => "", :exists => false}
+    else
+      render json: {:notes => notes, :exists => true}
+    end
+	end
 
   def change_status_angular
    status=params[:status].to_i
@@ -866,41 +899,141 @@ class LecturesController < ApplicationController
 			render :json => {}
 	end
 
-	# def check_if_invited_distance_peer
-	# end
+	def check_if_invited_distance_peer
+			course=Course.find(params[:course_id])
+
+			invatations = current_user.user_distance_peers.includes(:distance_peer).select{|d| d.distance_peer.lecture_id == params[:id].to_i  && d.status ==0}
+			if invatations.select { |d| current_user.id != d.distance_peer.user_id }.count != 0
+					online_names = invatations.map{|u_dis| [u_dis.distance_peer.user.screen_name ,  u_dis.distance_peer.id]}
+					render json: {:invite => online_names ,:invite_status=>"invited_by" }
+			elsif invatations.select { |d| current_user.id == d.distance_peer.user_id }.count == 1
+					online_names =  DistancePeer.find(invatations.first.distance_peer_id).user_distance_peers.select{|d| d.status ==0 && current_user.id != d.user_id}.map{|u_dis| u_dis.user.screen_name }
+					render json: {:invite => online_names[0] ,:invite_status=>"invited" , :distance_peer_id => invatations.first.distance_peer_id }
+			else
+					students = course.enrolled_students.select("users.email,users.last_name,users.name, LOWER(users.name)").order("LOWER(users.name)") #enrolled
+					students.each do |s|
+							s[:full_name] = s.full_name
+							s[:email] = s.email
+					end
+					students = students.select{|s| s.email != current_user.email}
+
+					render json:{ :invite_status => "no_invitation", :students => students}
+			end
+	end
 
 	def check_if_in_distance_peer_session
 		session = current_user.user_distance_peers.includes(:distance_peer).order('updated_at DESC').select{|d| d.distance_peer.lecture_id == params[:id].to_i && !(d.status == 0 || d.status == 6 )}
-		# user_email = session.first.select { |d| current_user.id != d.distance_peer.user_id }
+		
 		if session.count != 0
-			user_distance_peer = DistancePeer.find(session.first.distance_peer_id).user_distance_peers.select{|d| d.status !=0 && current_user.id == d.user_id}
-			online_names =  DistancePeer.find(session.first.distance_peer_id).user_distance_peers.select{|d| d.status !=0 && current_user.id != d.user_id}.map{|u_dis| u_dis.user.screen_name }
-			render json: {:distance_peer => session.first, :user_distance_peer => user_distance_peer[0] ,:name => online_names[0] }
+			distance_peer = DistancePeer.find(session.first.distance_peer_id).user_distance_peers 
+      user_distance_peer = distance_peer.select{|d| current_user.id == d.user_id}[0] 
+      other_user_distance_peer = distance_peer.select{|d| current_user.id != d.user_id}[0] 
+      online_names =  other_user_distance_peer.user.screen_name  
+ 
+      if user_distance_peer.status != other_user_distance_peer.status && (user_distance_peer.updated_at > other_user_distance_peer.updated_at ) 
+        # status = "wait" 
+        render json: {:distance_peer => other_user_distance_peer ,:name => online_names } 
+      else 
+        render json: {:distance_peer => user_distance_peer ,:name => online_names } 
+      end 
+      # render json: {:distance_peer => session.first, :user_distance_peer => user_distance_peer ,:name => online_names } 
 		else
 			render json:{ :distance_peer => "no_peer_session"}
 		end
   	end
 
-	# def invite_student_distance_peer
-	# end
+	def invite_student_distance_peer
+			@lecture= Lecture.find(params[:id])
+			user_distance_peer = current_user.user_distance_peers.includes(:distance_peer).select{|d| d.distance_peer.lecture_id == params[:id].to_i  && d.status ==0 && d.distance_peer.user_id == User.find_by_email(params[:email]).id }
+			if user_distance_peer.select { |d| current_user.id != d.distance_peer.user_id }.count != 0
+					distance_peer = user_distance_peer.first.distance_peer
+					distance_peer.user_distance_peers.update_all(status: 1)
 
-	# def check_invited_student_accepted_distance_peer
-	# end
+			else
+					distance_peer = DistancePeer.create(:user_id => current_user.id, :course_id => params[:course_id] ,  :group_id =>@lecture.group.id , :lecture_id => params[:id])
+					UserDistancePeer.create(:distance_peer_id=>distance_peer.id , :user_id => User.find_by_email(params[:email]).id, :status => 0 ,  :online =>false )
+					UserDistancePeer.create(:distance_peer_id=>distance_peer.id , :user_id => current_user.id, :status => 0 ,  :online =>false )
+			end
+			render json: {:notice => "wait_for_student" , :distance_peer_id => distance_peer.id}
+	end
 
-	# def accept_invation_distance_peer
-	# end
+	def check_invited_student_accepted_distance_peer
+			user = User.find_by_email(params[:email])
+			status = nil
+			if user
+					status = UserDistancePeer.find_by_distance_peer_id_and_user_id(params[:distance_peer_id] , user.id)
+			# else
+					# render json: {:status => "no_peer_session"}
+			end
+			if status
+					render json: {:status => status.status}
+			else
+					render json: {:status => "denied"}
+			end
+	end
 
-	# def cancel_session_distance_peer
-	# end
+	def accept_invation_distance_peer
+			if DistancePeer.exists?(id: params[:distance_peer_id])
+					DistancePeer.find(params[:distance_peer_id]).user_distance_peers.update_all(status: 1)
+					# UserDistancePeer.find_by_distance_peer_id(params[:distance_peer_id])
+					render json: {:status => 0}
+			else
+					render json: {:status => "cancelled"}
+			end
+	end
 
-	# def change_status_distance_peer
-	# end
+	def cancel_session_distance_peer
+			if DistancePeer.exists?(id: params[:distance_peer_id])
+					DistancePeer.find(params[:distance_peer_id]).destroy
+			end
+			render json:{:distance_peer=> 'deleted'}
+	end
 
-	# def check_if_distance_peer_status_is_sync
-	# end
+	def change_status_distance_peer
+			session = UserDistancePeer.includes(:distance_peer).select{|d| d.distance_peer_id == params[:distance_peer_id].to_i && d.user_id == current_user.id}
+			if session.count != 0
+					if params[:online_quiz_id]=="do_not_updated"
+							session.first.update_attributes(:status => params[:status])
+					else
+							session.first.update_attributes(:status => params[:status],:online_quiz_id=> params[:online_quiz_id])
+					end
+					render json: {:status =>  "done" }
+			else
+					render json:{ :distance_peer => "no_peer_session"}
+			end
 
-	# def check_if_distance_peer_is_alive
-	# end
+	end
+
+	def check_if_distance_peer_status_is_sync
+			session = UserDistancePeer.includes(:distance_peer).select{|d| d.distance_peer_id == params[:distance_peer_id].to_i }
+			user_student = session.select{|d| d.user_id == current_user.id}
+			second_student = session.select{|d| d.user_id  != current_user.id}
+			if session.count == 2
+					if ( user_student.first.status == second_student.first.status )# && (second_student.first.status != 6)
+							render json: {:status =>  "start" }
+					else
+							render json:{ :status => "wait"}
+					end
+			else
+					render json:{ :distance_peer => "no_peer_session"}
+			end
+	end
+
+	def check_if_distance_peer_is_alive
+			session = UserDistancePeer.includes(:distance_peer).select{|d| d.distance_peer_id == params[:distance_peer_id].to_i }
+			user_student = session.select{|d| d.user_id == current_user.id}
+			second_student = session.select{|d| d.user_id  != current_user.id}
+			if session.count == 2
+					if second_student.first.status == 6
+							user_student.first.update_attributes(:status => 6)
+							render json: {:status =>  "dead" }
+					else
+							render json:{ :status => "alive"}
+					end
+			else
+					render json:{ :distance_peer => "no_peer_session"}
+			end
+	end
 
 	# # def end_distance_peer_session
 	# # end
@@ -909,6 +1042,6 @@ private
 	def lecture_params
 		params.require(:lecture).permit(:course_id, :description, :name, :url, :group_id, :appearance_time, :due_date, :duration,
 			:aspect_ratio, :slides, :appearance_time_module, :due_date_module,:required_module , :inordered_module, 
-			:position, :required, :inordered, :start_time, :end_time, :type, :graded, :graded_module, :inclass, :distance_peer, :parent_id )
+			:position, :required, :inordered, :start_time, :end_time, :type, :graded, :graded_module, :inclass, :distance_peer)
 	end
 end
