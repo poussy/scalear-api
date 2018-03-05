@@ -331,8 +331,16 @@ class User < ActiveRecord::Base
     return [ day_finished , correct_answers_question, total_question_count ,not_checked_question, 0 ,0 ]
   end
 
-  # def finished_survey_test?(survey)
-  # end
+  def finished_survey_test?(survey)
+    inst=self.quiz_statuses.select{|v| v.quiz_id==survey.id and v.status=="Saved"}[0]
+    if inst.nil?
+      return -1
+    elsif inst.created_at < survey.due_date
+      return 0
+    else
+      return (inst.created_at.to_date - survey.due_date.to_date).to_i  #solved after lecture due date
+    end    
+  end
 
   def finished_survey_test_with_completed_question_count?(survey)
     total_question_count = survey.questions.where("question_type !=?", 'header').count

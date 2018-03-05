@@ -22,7 +22,7 @@ class ApplicationController < ActionController::API
 
   def check_user_signed_in? #401 not authenticated(devise) #403 not authorized/not allowed (cancan)
     if !user_signed_in?
-       render json:{:errors=>[t("controller_msg.not_logged_in")]}, status: 401
+       render json:{:errors=>[I18n.t("controller_msg.not_logged_in")]}, status: 401
     end
   end
 	
