@@ -52,6 +52,8 @@ class User < ActiveRecord::Base
   validates :last_name, :presence => true
   validates :screen_name, :presence => true, :uniqueness => true
   validates :university, :presence => true
+  validate :password_complexity
+  
 
   serialize :completion_wizard
 
@@ -101,8 +103,11 @@ class User < ActiveRecord::Base
     return self.assignment_item_statuses.select{|a| a.group_id == item.group_id && a.quiz_id == item.id && !a.lecture_id}.first
   end
 
-  # def password_complexity
-  # end
+  def password_complexity
+    if password.present? and not password.match(/^(?=.*[a-z])(?=.*\d)/)
+      errors.add :password, "must include at least one lowercase letter and one digit"
+    end
+  end
 
   def is_administrator?
     role_ids.include?5
