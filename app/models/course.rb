@@ -1,4 +1,7 @@
 class Course < ApplicationRecord
+	include HelperUtils
+
+
 	belongs_to :user
 	has_many :groups, -> { order('position') }, :dependent => :destroy
 	has_many :lectures, -> { order('position') }
@@ -289,7 +292,8 @@ class Course < ApplicationRecord
 			end
 
 			######## This is working - creates csv's and then puts them in zip #############
-			file_name = @course.short_name.gsub(" ","_")+".zip"#{}"course.zip"
+			file_name = sanitize_filename(@course.short_name)+".zip"
+
 			t = Tempfile.new(file_name)
 			Zip::ZipOutputStream.open(t.path) do |z|
 					csv_files.each do |key,value|
@@ -306,8 +310,34 @@ class Course < ApplicationRecord
 	handle_asynchronously :export_course, :run_at => Proc.new { 5.seconds.from_now }
 
 
-	# def export_student_csv(current_user)
-	# end
+	def export_student_csv(current_user)
+    enrolled = User.where('enrollments.course_id = ?',id).includes(:enrollments)
+    csv_files={}
+    csv_files[:student_list]= CSV.generate do |csv_student_list|
+      csv_student_list  << [:email ,:name , :last_name ,:screen_name,:university]
+      enrolled.each do |d|
+        csv_student_list << [d.email ,d.name , d.last_name ,d.screen_name , d.university]
+      end
+    end
+
+    ######## This is working - creates csv's and then puts them in zip #############
+    file_name = sanitize_filename(self.short_name)+".zip"#{}"course.zip"
+
+    t = Tempfile.new(file_name)
+    Zip::ZipOutputStream.open(t.path) do |z|
+      csv_files.each do |key,value|
+       z.put_next_entry("#{key}.csv")
+       z.write(value)
+      end
+    end
+    #send_file t.path, :type => 'application/zip',
+    #                  :disposition => 'attachment',
+    #                  :filename => file_name
+    UserMailer.delay.attachment_email(current_user, file_name, t.path, I18n.locale)#.deliver
+    t.close
+  end
+  handle_asynchronously :export_student_csv, :run_at => Proc.new { 5.seconds.from_now }
+
 
 	def import_course(import_from)
 		importing_will_change!
@@ -422,8 +452,8 @@ class Course < ApplicationRecord
 		self.importing = false
 		self.save!
 
-  	end
-  	handle_asynchronously :import_course, :run_at => Proc.new { 15.seconds.from_now }
+	end
+	handle_asynchronously :import_course, :run_at => Proc.new { 15.seconds.from_now }
 
 
 	# def self.our(user)
@@ -436,8 +466,99 @@ class Course < ApplicationRecord
 	# def not_enrolled_students #returns scope (relation)
 	# end
 
-	# def export_for_transfer
-	# end
+  def export_for_transfer
+    @course = Course.where(:id => id).includes([:groups , :custom_links, {:quizzes => [{:questions => :answers}, :quiz_statuses, :quiz_grades, :free_answers]},:lectures, :lecture_views, :confuseds, :pauses, :backs, :lecture_questions, :free_online_quiz_grades, :online_quiz_grades, {:online_quizzes => :online_answers}, :announcements, :assignment_statuses])[0]
+
+    csv_files={}
+
+    csv_files[:course]= CSV.generate do |csv_course|
+    csv_files[:groups]= CSV.generate do |csv_group|
+    csv_files[:lectures] = CSV.generate do |csv_lecture|
+    csv_files[:quizzes] = CSV.generate do |csv_quiz|
+    csv_files[:online_quizzes] = CSV.generate do |csv_online_quiz|
+    csv_files[:online_answers] = CSV.generate do |csv_online_answer|
+    csv_files[:questions]= CSV.generate do |csv_question|
+    csv_files[:answers]= CSV.generate do |csv_answer|
+    csv_files[:custom_links]= CSV.generate do |csv_link|
+    csv_files[:free_answers]= CSV.generate do |csv_free_answer|
+    csv_files[:events]= CSV.generate do |csv_events|
+    csv_files[:teacher_enrollments]= CSV.generate do |csv_teacher_enrollment|
+    csv_files[:teacher]= CSV.generate do |csv_teacher|
+
+      csv_course << Course.column_names
+      csv_course << @course.attributes.values_at(*Course.column_names)
+
+      csv_group << Group.column_names
+      csv_lecture << Lecture.column_names
+      csv_quiz << Quiz.column_names
+      csv_online_quiz << OnlineQuiz.column_names
+      csv_online_answer << OnlineAnswer.column_names
+      csv_question << Question.column_names
+      csv_answer << Answer.column_names
+      csv_link << CustomLink.column_names
+      csv_free_answer << FreeAnswer.column_names
+      csv_events  << Event.column_names
+      csv_teacher_enrollment  << TeacherEnrollment.column_names + ["email"]
+      csv_teacher << ["email"]
+
+      @course.groups.each do |g|
+        csv_group << g.attributes.values_at(* Group.column_names)
+      end
+
+      @course.lectures.each do |l|
+          csv_lecture << l.attributes.values_at(* Lecture.column_names)
+      end
+
+      @course.online_quizzes.each do |quiz|
+        csv_online_quiz << quiz.attributes.values_at(* OnlineQuiz.column_names)
+        quiz.online_answers.each do |answer|
+          csv_online_answer << answer.attributes.values_at(* OnlineAnswer.column_names)
+        end
+      end
+
+      @course.quizzes.each do |q|
+          csv_quiz << q.attributes.values_at(* Quiz.column_names)
+          q.questions.each do |question|
+            csv_question << question.attributes.values_at(* Question.column_names)
+            question.answers.each do |answer|
+              csv_answer << answer.attributes.values_at(* Answer.column_names)
+            end
+          end
+
+          q.free_answers.each do |free_answer|
+      csv_free_answer << free_answer.attributes.values_at(* FreeAnswer.column_names)
+          end
+      end
+      @course.custom_links.each do |d|
+        csv_link << d.attributes.values_at(* CustomLink.column_names)
+      end
+
+      @course.events.each do |d|
+        csv_events << d.attributes.values_at(* Event.column_names)
+      end
+
+      @course.teacher_enrollments.each do |d|
+        csv_teacher_enrollment << d.attributes.values_at(* TeacherEnrollment.column_names) + [User.find(d.user_id).email]
+      end
+
+      csv_teacher << @course.user.attributes.values_at("email")
+
+
+    end
+    end
+    end
+    end
+    end
+    end
+    end
+    end
+    end
+    end
+    end
+    end
+    end
+      return csv_files
+  end
 
 	def export_modules_progress(current_user)
 		students=self.users.select("users.*, LOWER(users.name), LOWER(users.last_name)").order("LOWER(users.last_name)").includes([{:free_online_quiz_grades => :lecture}, {:online_quiz_grades => :lecture}, {:lecture_views => :lecture}, {:quiz_statuses => :quiz},:assignment_statuses])
@@ -473,9 +594,10 @@ class Course < ApplicationRecord
 		end
 
 
-		file_name = short_name.gsub(" ","_")+"_progress_days_late.zip"
+		sanitized_file_name = sanitize_filename(short_name)
+		file_name = sanitized_file_name+"_progress_days_late.zip"
 		t = Tempfile.new(file_name)
-		csv_file_name = short_name.gsub(" ","_")+"_progress_days_late.csv"
+		csv_file_name = sanitized_file_name+"_progress_days_late.csv"
 
 		Zip::ZipOutputStream.open(t.path) do |z|
 		z.put_next_entry(csv_file_name)
@@ -639,14 +761,36 @@ class Course < ApplicationRecord
 			return totals
 	end
 
-	# class << self
-	# 	def export_school_data(start_date, end_date, domain, current_user)
-	# 	end
+  class << self
+    def export_school_data(start_date, end_date, domain, current_user)
+      totals = Course.school_admin_statistics(start_date, end_date, domain, current_user)
+      csv_file = CSV.generate do |csv_course|
+        csv_course << ["course_name", "teacher_name", "active_students", "questions", "solved_quizzes", "view", "start_date", "end_date", "teacher_email", "active_teachers", "total_questions", "total_solved_quizzes", "total_view"]
+        totals[:course_data].each do |course_data|
+          course = course_data[1]
+          csv_course << [course["short_name"], course["full_name"], course["students"], course["active_questions"], course["active_solved_online_quiz"], course["active_view"], course["start_date"], course["end_date"], course["email"], course["teachers"], course["total_questions"], course["total_solved_online_quiz"], course["total_view"]]
+        end
+      end
+      file_name = "#{current_user.email.split('@')[1]}_school_data.zip"
+      t = Tempfile.new(file_name)
+      csv_file_name = "#{current_user.email.split('@')[1]}_school_data.csv"
 
-	# 	def self.export_school_admin(start_date, end_date, domain, current_user)
-	# 	end
-	# end
+      Zip::ZipOutputStream.open(t.path) do |z|
+       z.put_next_entry(csv_file_name)
+       z.write(csv_file)
+      end
 
+      UserMailer.delay.attachment_email(current_user, file_name, t.path, I18n.locale)
+      # UserMailer.attachment_email(current_user, file_name, t.path, I18n.locale).deliver
+      t.close
+    end
+    handle_asynchronously :export_school_data, :run_at => Proc.new { 5.seconds.from_now }
+  end
+
+  ## workaround for delayed jobs to work on class methods
+  def self.export_school_admin(start_date, end_date, domain, current_user)
+    Course.export_school_data(start_date, end_date, domain, current_user)
+  end
 
 	private 
 		# def validate_end_date_after_start_date
@@ -684,4 +828,10 @@ class Course < ApplicationRecord
 			(0...5).map { [*('A'..'H'),*('J'..'N'), *('P'..'Z')].to_a[rand(24)] }.join + '-' + (0...5).map { (0..9).to_a[rand(10)] }.join
 		end
 
+end
+
+class ActiveSupport::TimeWithZone
+  def to_s(format = :default)
+   self.to_datetime.to_s(:db)
+  end
 end
