@@ -135,7 +135,8 @@ answer1_quiz_1_correct:
   sub_xcoor: 2
   sub_ycoor: 3  
   correct: true
-
+  created_at: '2017-02-02'
+  updated_at: '2017-02-02'
 answer2_quiz_1:
   id: 7
   online_quiz_id: 1
@@ -149,6 +150,8 @@ answer2_quiz_1:
   sub_xcoor: 2
   sub_ycoor: 3  
   correct: false
+  created_at: '2017-02-02'
+  updated_at: '2017-02-02'
 # answers for mcq online_quiz 4
 answer1_quiz_4_correct:
   id: 8

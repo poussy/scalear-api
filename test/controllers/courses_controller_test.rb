@@ -4,12 +4,14 @@ class CoursesControllerTest <  ActionDispatch::IntegrationTest
 	def setup
 		@user1 = users(:user1)
 		@user2 = users(:user2)
+		@user3 = users(:user3)
 		@user4 = users(:user4)
 		@admin_user = users(:admin_user)
 		@invitated_user = users(:invitated_user)
 
 		@course1 = courses(:course1)
 		@course2 = courses(:course2)
+		@course3 = courses(:course3)
 
 		@course_domain1 = course_domains(:course_domain_1)
 
@@ -60,12 +62,86 @@ class CoursesControllerTest <  ActionDispatch::IntegrationTest
 		assert_equal resp['total'] , 2
 	end
 
+	test 'index method for student' do
+		user = users(:student_in_course3)
+		url = '/en/courses'
+		get  url ,headers:user.create_new_auth_token 
+		assert_equal decode_json_response_body, {
+				"total"=>1,
+				"teacher_courses"=>[],
+				"student_courses"=>[
+					{"end_date"=>"2017-10-09",
+					"id"=>3,
+					"importing"=>false,
+					"image_url"=>
+					"https://pbs.twimg.com/profile_images/839721704163155970/LI_TRk1z_400x400.jpg",
+					"name"=>"course3",
+					"short_name"=>"c3",
+					"start_date"=>"2017-07-04",
+					"user_id"=>3,
+					"ended"=>true,
+					"duration"=>13,
+					"teacher_enrollments"=>[{"user"=>{"name"=>"ahmed", "email"=>"okasha@gmail.com"}}]}
+				]}
+
+	end
+
+
+
 	test 'validate index method for Admin' do
 		url = '/en/courses'
 		get  url ,headers: @admin_user.create_new_auth_token 
 		resp =  JSON.parse response.body
 		assert_equal resp['total'] , 5
 	end		
+
+	test "index should get all courses whose teachers have the same domain as admin_school_domain of admin's role" do
+		admin = users(:school_administrator)
+		admin.roles<<Role.find(1)
+		@course = courses(:course3)
+        @course.teacher_enrollments.where({:user_id => 3}).destroy_all
+		## admin_school_domain of admin's role is ".edu.eg"
+		u = User.find(6)
+		u.email='any_name@bar.edu.eg'
+		u.save
+		u.confirm
+		TeacherEnrollment.create(user_id:6,course_id:3,role_id:3,email_discussion: false)
+		get '/en/courses',params:{limit:10,offset:0} ,headers: admin.create_new_auth_token
+		assert_equal decode_json_response_body["total"], 1
+		assert_equal decode_json_response_body["teacher_courses"], [
+			{
+				"end_date"=>"2017-10-09",
+				"id"=>3,
+				"importing"=>false,
+				"image_url"=>
+				"https://pbs.twimg.com/profile_images/839721704163155970/LI_TRk1z_400x400.jpg",
+				"name"=>"course3",
+				"short_name"=>"c3",
+				"start_date"=>"2017-07-04",
+				"user_id"=>3,
+				"ended"=>true,
+				"duration"=>13,
+				"enrollments"=>5,
+				"lectures"=>2,
+				"quiz"=>1,
+				"survey"=>0,
+				"teacher_enrollments"=>
+				[{"user"=>{"name"=>"saleh", "email"=>"any_name@bar.edu.eg"}}]
+			}
+		]
+	end
+
+	test "show" do
+		user = users(:student_in_course3)
+		@course = courses(:course3)
+        @course.teacher_enrollments.where({:user_id => 3}).destroy_all
+		TeacherEnrollment.create(course_id: 3, user_id: 6, role_id: 3)
+
+		get "/en/courses/3", headers: user.create_new_auth_token
+		assert_equal decode_json_response_body["teachers"], [{"id"=>6,"name"=>"saleh aly",  "role"=>"Professor",  "email"=>"saleh@gmail.com"}]
+		assert_equal decode_json_response_body["course"]["id"], 3
+		assert_equal decode_json_response_body["course"]["name"], "course3"
+	end
 
 	test 'validate new method for teacher' do
 		url = '/en/courses/new'
@@ -184,7 +260,7 @@ class CoursesControllerTest <  ActionDispatch::IntegrationTest
 	test 'validate update method ' do
 		url = '/en/courses/'+ @course1.id.to_s+'/'
 		put  url , params: {"course"=>{"user_id"=> @user1.id , "short_name"=>"aa", "name"=>"a", "time_zone"=>"UTC", "start_date"=>"2017-11-05", "end_date"=>"2018-01-14", 
-			"disable_registration"=>"2018-01-14", "description"=>nil, "prerequisites"=>nil, "discussion_link"=>"", "image_url"=>nil, "importing"=>false, "parent_id"=>nil}, "id"=>"1"} ,
+			"disable_registration"=>"2018-01-14", "description"=>nil, "prerequisites"=>nil, "discussion_link"=>"", "image_url"=>nil, "importing"=>false}, "id"=>"1"} ,
 			headers: @user1.create_new_auth_token 
 		assert_response :success
 		resp =  JSON.parse response.body
@@ -204,7 +280,7 @@ class CoursesControllerTest <  ActionDispatch::IntegrationTest
 		url = '/en/courses/'+ @course1.id.to_s+'/course_editor_angular'
 		get  url  ,headers: @user1.create_new_auth_token 
 		resp =  JSON.parse response.body
-		assert_equal resp['course']['duration'] , 5
+		assert_equal resp['course']['duration'] , 13
 		assert_equal resp['groups'].count , 3
 	end
 
@@ -214,7 +290,7 @@ class CoursesControllerTest <  ActionDispatch::IntegrationTest
 		url = '/en/courses/'+ @course1.id.to_s+'/course_editor_angular'
 		get  url  ,headers: @user1.create_new_auth_token 
 		resp =  JSON.parse response.body
-		assert_equal resp['course']['duration'] , 5
+		assert_equal resp['course']['duration'] , 13
 		assert_equal resp['groups'].count , 4
 	end
 
@@ -243,17 +319,21 @@ class CoursesControllerTest <  ActionDispatch::IntegrationTest
 		# compare new and imported groups
 		new_course.groups.each_with_index do |new_group, i|
 			assert_equal  course_from.groups[i].name, new_group.name
+			assert_equal  course_from.groups[i].appearance_time+127.days, new_group.appearance_time
+
 			# compare new and imported lectures
 			lectures_from = course_from.groups[i].lectures
 			new_group.lectures.each_with_index do |new_lecture, j|
 				assert_equal lectures_from[j].name, new_lecture.name
-				## difference between courses start_date is 65 days
-				assert_equal lectures_from[j].appearance_time.to_date + 65.days, new_lecture.appearance_time.to_date
+				## difference between courses start_date is 127 days
+				assert_equal lectures_from[j].appearance_time.to_date + 127.days, new_lecture.appearance_time.to_date
 			end
 			# compare quizzes
 			quizzes_from = course_from.groups[i].quizzes
 			new_group.quizzes.each_with_index do |new_quiz, k|
 				assert_equal quizzes_from[k].name, new_quiz.name
+				## now quiz appearance time is like the old group appearance time
+				assert_equal new_quiz.appearance_time, course_from.groups[i].appearance_time
 			end
 			#compare custom_links
 			links_from = course_from.groups[i].custom_links
@@ -779,5 +859,91 @@ class CoursesControllerTest <  ActionDispatch::IntegrationTest
 		assert_equal decode_json_response_body['next_item']['item'], {"id"=>3, "class_name"=>"lecture"}
 		
 	end
+
+	test "export csv" do
+		user = users(:user3)
+		user.roles << Role.find(1)
+		TeacherEnrollment.create(user_id:3,course_id:3,role_id:3)
+
 	
+		assert_difference 'ActionMailer::Base.deliveries.size' do
+			## force mail to be sent immediately
+			Delayed::Worker.delay_jobs = false
+			get '/en/courses/3/export_csv', headers: user.create_new_auth_token
+		end
+		
+		attachment =  ActionMailer::Base.deliveries[0].attachments[0]
+		assert_equal attachment.content_type, "application/zip; filename=c3.zip"
+		assert_equal attachment.filename, "c3.zip"
+
+	end
+
+	test "send_system_announcement" do
+		
+		Delayed::Worker.delay_jobs = false
+		post '/en/courses/send_system_announcement', params:{list_type: '1', message:'<p class="medium-editor-p">hello</p>', subject:'System announcement'}, headers: @admin_user.create_new_auth_token
+		## teachers
+		assert_equal ActionMailer::Base.deliveries.last["bcc"].value, ["a.hossam.2010@gmail.com", "a.hossam.2012@gmailll.com", "okasha@gmail.com"]
+		assert_equal ActionMailer::Base.deliveries.last["subject"].value, "System announcement"
+		assert ActionMailer::Base.deliveries.last.encoded.include?('<p class="medium-editor-p">hello</p>')
+		## students
+		post '/en/courses/send_system_announcement', params:{list_type: '2', message:'<p class="medium-editor-p">hello</p>', subject:'System announcement'}, headers: @admin_user.create_new_auth_token
+		assert_equal ActionMailer::Base.deliveries.last["bcc"].value.sort, ["saleh@gmail.com", "ahmed@gmail.com", "Karim@gmail.com", "Mohamed@gmail.com", "Hossam@gmail.com", "student_a.hossam.2010@gmail.com"].sort
+
+		## teachers & students
+		post '/en/courses/send_system_announcement', params:{list_type: '3', message:'<p class="medium-editor-p">hello</p>', subject:'System announcement'}, headers: @admin_user.create_new_auth_token
+		assert_equal ActionMailer::Base.deliveries.last["bcc"].value.sort, User.pluck(:email).sort
+
+	end
+
+	test "unenroll student" do
+		@student1.roles<<Role.find(1)
+		assert_difference 'Enrollment.where(course_id:@course1.id,user_id:@student1.id).size', -1 do
+			post "/en/courses/"+@course1.id.to_s+"/unenroll",headers: @student1.create_new_auth_token
+		end
+		
+		assert_equal decode_json_response_body["deleted"], true
+	end
+
+	test "get_student_duedate_email" do
+		@student1.roles<<Role.find(1)
+		get "/en/courses/"+@course1.id.to_s+"/get_student_duedate_email",headers: @student1.create_new_auth_token
+		assert_equal decode_json_response_body["email_due_date"], false
+	end
+
+	test "update_student_duedate_email" do
+		@student1.roles<<Role.find(1)
+		assert_equal  Enrollment.where(user_id:@student1.id).first.email_due_date, false
+		post "/en/courses/"+@course1.id.to_s+"/update_student_duedate_email",params:{email_due_date:true},headers: @student1.create_new_auth_token
+		assert_equal Enrollment.where(user_id:@student1.id).first.email_due_date, true
+	end
+	
+	test 'validate destroy course admin_user' do
+		remaing_enrollments = Enrollment.count - @course3.enrollments.count
+		remaing_lectures = Lecture.count - @course3.lectures.count
+		url = '/en/courses/3'
+		delete url ,params: {}, headers: @admin_user.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_equal resp['notice'][0] , "Course was successfully deleted."
+		assert_equal Enrollment.count , remaing_enrollments
+		assert_equal Lecture.count , remaing_lectures
+	end
+
+	test 'validate destroy course' do
+		remaing_enrollments = Enrollment.count - @course3.enrollments.count
+		remaing_lectures = Lecture.count - @course3.lectures.count
+		url = '/en/courses/3'
+		delete url ,params: {}, headers: @user3.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_equal resp['notice'][0] , "Course was successfully deleted."
+		assert_equal Enrollment.count , remaing_enrollments
+		assert_equal Lecture.count , remaing_lectures
+	end		
+
+	test 'can not destroy course ' do
+		url = '/en/courses/3'
+		delete url ,params: {email: "a"},headers: @user1.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_equal resp['errors'][0] , "You are not authorized to see requested page"
+	end		
 end

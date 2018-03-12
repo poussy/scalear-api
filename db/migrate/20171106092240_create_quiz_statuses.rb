@@ -12,6 +12,6 @@ class CreateQuizStatuses < ActiveRecord::Migration[5.1]
     end
     add_index :quiz_statuses, :course_id
     add_index :quiz_statuses, :quiz_id
-    add_index :quiz_statuses, :user_id 
+    add_index :quiz_statuses, :user_id
   end
 end

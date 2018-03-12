@@ -124,11 +124,27 @@ class DiscussionsController < ApplicationController
 		end		
 	end
 
-	# def remove_all_flags
-	# end
+	def remove_all_flags
+			p = Forum::Post.find(params[:post_id])
+			lec = Lecture.find(p.lecture_id)
+			if lec.course.user == current_user || current_user.roles.first.id == 1 || current_user.roles.first.id == 5
+					Forum::PostFlag.delete(params[:post_id])
+					render json: {:notice => [I18n.t("controller_msg.flags_removed")]}
+			else
+					render json: {:errors => [I18n.t("controller_msg.could_not_delete_flags")]}, :status => 400
+			end
+	end
 
-	# def remove_all_comment_flags
-	# end
+	def remove_all_comment_flags
+			c = Forum::Comment.find(params[:comment_id], :params => {:post_id => params[:post_id]})
+			lec = Lecture.find(c.lecture_id)
+			if lec.course.user == current_user || current_user.roles.first.id == 1 || current_user.roles.first.id == 5
+					Forum::CommentFlag.delete(params[:comment_id])
+					render json: {:notice => [I18n.t("controller_msg.flags_removed")]}
+			else
+					render json: {:errors => [I18n.t("controller_msg.could_not_delete_flags")]}, :status => 400
+			end
+	end
 
 	def hide_post
 		if params[:hide]

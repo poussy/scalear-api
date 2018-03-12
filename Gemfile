@@ -1,4 +1,5 @@
 source 'https://rubygems.org'
+ruby '2.3.4'
 
 git_source(:github) do |repo_name|
   repo_name = "#{repo_name}/#{repo_name}" unless repo_name.include?("/")
@@ -53,3 +54,13 @@ gem 'rubyzip', '>= 1.0.0' # will load new rubyzip version
 gem 'zip-zip' # will load compatibility for old rubyzip API.
 gem 'settingslogic'
 gem 'activeresource'
+gem 'aescrypt'
+gem 'ruby-saml', :git => "git://github.com/karimAlaa/ruby-saml.git"
+gem 'ims-lti', '~>2.2.3'
+gem 'roboto'
+gem 'newrelic_rpm'
+gem 'influxdb'
+gem "lograge"
+gem "logstash-event"
+gem "rack-timeout"
+gem "rack-block"

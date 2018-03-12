@@ -17,6 +17,7 @@ event2:
   course: course2
 
 event3:
+  id: 1
   name: "New Module due"
   start_at: "2017-9-9 00:00:00"
   end_at: "2017-9-9 00:00:00"

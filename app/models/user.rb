@@ -9,27 +9,22 @@ class User < ActiveRecord::Base
   devise :database_authenticatable, :registerable,
           :recoverable, :rememberable, :trackable, :validatable,
           :confirmable
-          # :omniauthable
 
   attr_accessor :info_complete
 
-  has_many :subjects, :class_name => "Course", :dependent => :destroy  # to get this call user.subjects
+  has_many :subjects, :class_name => "Course", :dependent => :destroy
 
   has_many :enrollments, :dependent => :destroy
-  has_many :courses, -> { distinct }, :through => :enrollments, :source => :course  # to get this call user.subjects
-
+  has_many :courses, -> { distinct }, :through => :enrollments, :source => :course
 
   has_many :teacher_enrollments, :dependent => :destroy
   has_many :subjects_to_teach, -> { distinct }, :through => :teacher_enrollments, :source => :course
 
   has_many :guest_enrollments, :dependent => :destroy
   has_many :guest_courses, -> { distinct }, :through => :guest_enrollments, :source => :course
-  
 
-  has_many :users_roles, :dependent => :destroy
-  has_many :roles, -> { distinct }, :through => :users_roles
-
-  # has_and_belongs_to_many :roles, -> {uniq} ,:join_table => :users_roles  
+  has_and_belongs_to_many :organizations, :join_table => :users_roles  
+  has_and_belongs_to_many :roles, :join_table => :users_roles
   has_many :shared_bys, :class_name => "SharedItem", :foreign_key => 'shared_by_id', :dependent => :destroy
   has_many :shared_withs, :class_name => "SharedItem", :foreign_key => 'shared_with_id', :dependent => :destroy
 
@@ -44,7 +39,7 @@ class User < ActiveRecord::Base
   has_many :free_online_quiz_grades, :dependent => :destroy
   has_many :lecture_views, :dependent => :destroy
   has_many :online_quiz_grades, :dependent => :destroy
-  has_many :quiz_grades, :dependent=> :destroy#, :conditions => :user kda its like im defining a method called quiz grades, which returns something when user = ... not what i want.
+  has_many :quiz_grades, :dependent=> :destroy
   has_many :user_distance_peers, :dependent => :destroy
   has_many :video_events, :dependent => :destroy
   has_many :video_notes, :dependent => :destroy
@@ -109,32 +104,9 @@ class User < ActiveRecord::Base
   # def password_complexity
   # end
 
-  # def self.teachers
-  # end
-
-  # def self.find_or_create_for_doorkeeper_oauth(oauth_data)
-  # end
-
-  # def update_doorkeeper_credentials(oauth_data)
-  # end
-
-  # def is_student?
-  # end
-
-  # def is_teacher?
-  # end
-
-  # def is_teacher_or_admin?
-  # end
-
-  # def is_prof?(course)
-  # end
-
-  # def is_ta?(course)
-  # end
-
-  # def is_administrator?
-  # end
+  def is_administrator?
+    role_ids.include?5
+  end
 
   def is_preview?
     role_ids.include?6
@@ -143,8 +115,25 @@ class User < ActiveRecord::Base
   # def tutorials_taken
   # end
 
-  # def add_admin_school_domain(domain)
-  # end
+  ### For university enter all , for deparment input subdomain&&domain  e.g'it.uu.se' 
+  def add_admin_school_domain(domain)
+    if domain.blank?
+      errors.add :admin_school_domain, "can not be empty"
+    else
+      if !self.role_ids.include?(9)
+        self.roles << Role.find(9)
+      end 
+      UsersRole.where(:user_id => self.id, :role_id => 9).update_all(:admin_school_domain => domain)
+    end
+  end
+
+  def get_school_administrator_domain
+    user_role = UsersRole.where(:user_id => self.id, :role_id => 9)
+    if user_role
+      return UsersRole.where(:user_id => self.id, :role_id => 9)[0].admin_school_domain
+    end
+    return nil
+  end
 
   # def get_exact_stats(group)
   # end
@@ -310,8 +299,16 @@ class User < ActiveRecord::Base
     return grades
   end
 
-  # def finished_quiz_test?(quiz)
-  # end
+  def finished_quiz_test?(quiz)
+    inst=self.quiz_statuses.select{|v| v.quiz_id==quiz.id and v.status=="Submitted"}[0]
+    if inst.nil?
+      return -1
+    elsif inst.created_at < quiz.due_date
+      return 0
+    else
+      return (inst.created_at.to_date - quiz.due_date.to_date).to_i  #solved after lecture due date
+    end
+  end
 
   def finished_quiz_test_with_correct_question_count?(quiz)
     inst=self.quiz_statuses.select{|v| v.quiz_id==quiz.id and v.status=="Submitted"}[0]
@@ -334,8 +331,16 @@ class User < ActiveRecord::Base
     return [ day_finished , correct_answers_question, total_question_count ,not_checked_question, 0 ,0 ]
   end
 
-  # def finished_survey_test?(survey)
-  # end
+  def finished_survey_test?(survey)
+    inst=self.quiz_statuses.select{|v| v.quiz_id==survey.id and v.status=="Saved"}[0]
+    if inst.nil?
+      return -1
+    elsif inst.created_at < survey.due_date
+      return 0
+    else
+      return (inst.created_at.to_date - survey.due_date.to_date).to_i  #solved after lecture due date
+    end    
+  end
 
   def finished_survey_test_with_completed_question_count?(survey)
     total_question_count = survey.questions.where("question_type !=?", 'header').count
@@ -596,14 +601,21 @@ class User < ActiveRecord::Base
     end    
   end
 
-  # def full_name_reverse
-  # end
+  def full_name_reverse
+    if !self.last_name.nil?
+      return self.last_name + ' ' + self.name
+    else
+      return self.name
+    end
+  end
 
   # def reset_password!(new_password, new_password_confirmation)
   # end
 
-  # def async_destroy
-  # end
+  def async_destroy
+    self.destroy
+  end
+  handle_asynchronously :async_destroy, :run_at => Proc.new { 5.seconds.from_now }
 
   def delete_student_data(course_id)
     ActiveRecord::Base.transaction do
@@ -626,11 +638,10 @@ class User < ActiveRecord::Base
   end  
 
   private
-      def add_default_user_role_to_user
-        if !self.has_role?('User') 
-          self.users_roles.build(role_id:1)
-        end
-        return true
+    def add_default_user_role_to_user
+      if !self.has_role?('User') 
+        self.roles << Role.find(1)
       end
+    end
 
 end

@@ -1,27 +1,27 @@
 class CreateCourses < ActiveRecord::Migration[5.1]
   def up
     create_table :courses do |t|
-	    t.integer  :user_id
-	    t.string   :short_name
-	    t.string   :name
-	    t.string   :time_zone
-	    
-	    t.date     :start_date
-	    t.date     :end_date
-	    t.date     :disable_registration
+      t.integer  :user_id
+      t.string   :short_name
+      t.string   :name
+      t.string   :time_zone
+      
+      t.date     :start_date
+      t.date     :end_date
+      t.date     :disable_registration
 
-	    t.text     :description
-	    t.text     :prerequisites
+      t.text     :description
+      t.text     :prerequisites
 
-	    t.string   :discussion_link, :default => ""
-	    t.string   :image_url
-	    
-	    t.string   :unique_identifier
-	    t.string   :guest_unique_identifier
-	    
-	    t.boolean  :importing, :default => false
+      t.string   :discussion_link,  :default => ""
+      t.string   :image_url
+      
+      t.string   :unique_identifier
+      t.string   :guest_unique_identifier
+      
+      t.boolean  :importing,        :default => false
 
-		t.timestamps
+    t.timestamps
     end
 
     add_index :courses, :user_id
@@ -31,6 +31,6 @@ class CreateCourses < ActiveRecord::Migration[5.1]
   end
 
   def down
-  	    drop_table :courses
+    drop_table :courses
   end
 end

@@ -1,41 +1,35 @@
 require 'test_helper'
 
 class QuizzesControllerTest < ActionDispatch::IntegrationTest
-  def setup
-    ## create user for authorization, and set this user to be a teacher in course3, below tests wil use items in course3
-    @user = users(:user3)
+    def setup
+        ## create user for authorization, and set this user to be a teacher in course3, below tests wil use items in course3
+        @user = users(:user3)
+        @student = users(:student_in_course3)
+    	@headers2 = @student.create_new_auth_token
+    	@headers2['content-type']="application/json"
+    	
+    	@course = courses(:course3)
+        @course4 = courses(:course4)
 
-		@user.roles << Role.find(1)
+    	@course.teacher_enrollments.create(:user_id => 3, :role_id => 1, :email_discussion => false)
+    	@course4.teacher_enrollments.create(:user_id => 3, :role_id => 1, :email_discussion => false)
 
-    @student = users(:student_in_course3)
-		@headers2 = @student.create_new_auth_token
-		@headers2['content-type']="application/json"
-	
-		@course = courses(:course3)
-    @course4 = courses(:course4)
+        ## necessary to send as json, so true and false wouldn't convert to strings
+        @headers = @user.create_new_auth_token
+        @headers['content-type']="application/json"
+    end
 
-		@course.teacher_enrollments.create(:user_id => 3, :role_id => 1, :email_discussion => false)
-		@course4.teacher_enrollments.create(:user_id => 3, :role_id => 1, :email_discussion => false)
-
-    ## necessary to send as json, so true and false wouldn't convert to strings
-    @headers = @user.create_new_auth_token
-    @headers['content-type']="application/json"
-    
-  end
-
-  test "should be able to create quiz" do
-    assert_difference 'Quiz.count' do
-		  post '/en/courses/3/quizzes/new_or_edit/', params:{:group => 3, :type => 'quiz'},headers: @user.create_new_auth_token
+    test "should be able to create quiz" do
+        assert_difference 'Quiz.count' do
+	       post '/en/courses/3/quizzes/new_or_edit/', params:{:group => 3, :type => 'quiz'},headers: @user.create_new_auth_token
 		end
 	end
 
-  test "should be able to create survey" do
-
-    assert_difference 'Quiz.count' do 
-		  post '/en/courses/3/quizzes/new_or_edit/', params:{:group => 3, :type => 'survey'},headers: @user.create_new_auth_token
+    test "should be able to create survey" do
+        assert_difference 'Quiz.count' do 
+            post '/en/courses/3/quizzes/new_or_edit/', params:{:group => 3, :type => 'survey'},headers: @user.create_new_auth_token
 		end
 	end
-
 
   test "should throw error if quiz id is not present with correct course id" do
 
@@ -107,38 +101,31 @@ class QuizzesControllerTest < ActionDispatch::IntegrationTest
     
 	end
 
-  test "should not be able to delete other teachers' quizzes" do
-
-		@course.teacher_enrollments.where({:user_id => 3, :role_id => 1, :email_discussion => false}).destroy_all
-    
-
-    assert Quiz.where(id: 1).present?
-    
-    ## parent module has required ==false and graded ==false
-		delete '/en/courses/3/quizzes/1', headers: @headers
-
-    assert (JSON.parse response.body)['errors'].include? "You are not authorized to see requested page"
-    
-    assert Quiz.where(id: 1).present?
-    
+    test "should not be able to delete other teachers' quizzes" do
+        @course.teacher_enrollments.where({:user_id => 3, :role_id => 1, :email_discussion => false}).destroy_all
+        assert Quiz.where(id: 1).present?
+        ## parent module has required ==false and graded ==false
+        delete '/en/courses/3/quizzes/1', headers: @headers
+        resp = JSON.parse response.body
+        assert resp['errors'].include? "You are not authorized to see requested page"
+        assert Quiz.where(id: 1).present?
 	end
 
-  test "should copy quiz" do
-    assert_difference ['Quiz.count', 'Event.count'] do
-		  post '/en/courses/3/quizzes/quiz_copy', params: {module_id: 3, quiz_id: 1}, headers: @headers, as: :json
-    end
+    test "should copy quiz" do
+        assert_difference ['Quiz.count', 'Event.count'] do
+            post '/en/courses/3/quizzes/quiz_copy', params: {module_id: 3, quiz_id: 1}, headers: @headers, as: :json
+        end
 
-   	quiz_from = Quiz.find(1)
-    new_quiz = Quiz.last
+        quiz_from = Quiz.find(1)
+        new_quiz = Quiz.last
 
-    assert_equal quiz_from.name, new_quiz.name
-    assert_equal quiz_from.retries, new_quiz.retries
-    assert_equal quiz_from.instructions, new_quiz.instructions
-    assert_equal quiz_from.required, new_quiz.required
-    assert_equal quiz_from.graded, new_quiz.graded
+        assert_equal quiz_from.name, new_quiz.name
+        assert_equal quiz_from.retries, new_quiz.retries
+        assert_equal quiz_from.instructions, new_quiz.instructions
+        assert_equal quiz_from.required, new_quiz.required
+        assert_equal quiz_from.graded, new_quiz.graded
 
-    assert_not_equal quiz_from.id, new_quiz.id
-
+        assert_not_equal quiz_from.id, new_quiz.id
 	end
 
   test "should add question if sent with no id and delete other questions from database" do
@@ -622,7 +609,19 @@ class QuizzesControllerTest < ActionDispatch::IntegrationTest
         post '/en/courses/3/quizzes/1/show_question_inclass', params: {question: 1, show:false}, headers: @headers, as: :json
       end
     end
+
+    test "create_or_update_survey_responses should add response to free answer" do
+      FreeAnswer.create(id: 1,user_id: 6, quiz_id:1, question_id: 5,answer: '<p class=\"medium-editor-p\">ans1</p>', hide: true, grade: 0, student_hide: false, response:"")
+      post '/en/courses/3/quizzes/1/create_or_update_survey_responses', params: {groups: [1],response:"response to answer1"}, headers: @headers, as: :json
+      assert_equal FreeAnswer.find(1).response, "response to answer1"
+    end
+
+    test "make_visible should make survey visible" do
+      Quiz.find(1).update_attributes({quiz_type:'survey',visible:false})
+      assert_changes 'Quiz.find(1).visible', from: false, to: true do
+        post '/en/courses/3/quizzes/1/make_visible', params: {visible: true}, headers: @headers, as: :json
+      end
+      assert_equal decode_json_response_body, {"notice"=>["Survey is now visible"]}
+    end
     
-
-
 end

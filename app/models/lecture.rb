@@ -16,7 +16,7 @@ class Lecture < ApplicationRecord
 		
 
 	validates :name, :url,:appearance_time, :due_date,:course_id, :group_id, :start_time, :end_time, :position, :presence => true
-	validates_inclusion_of :appearance_time_module, :due_date_module,:required_module , :graded_module, :inclass, :distance_peer, :in => [true, false] #not in presence because boolean false considered not present.
+	validates_inclusion_of :appearance_time_module, :due_date_module,:required_module , :graded_module, :skip_ahead_module, :in => [true, false] #not in presence because boolean false considered not present.
 
 	validates_datetime :appearance_time, :on_or_after => lambda{|m| m.group.appearance_time}, :on_or_after_message => I18n.t("lectures.errors.appearance_time_after_module_appearance_time")
 
@@ -37,6 +37,7 @@ class Lecture < ApplicationRecord
 	attribute :video_quizzes
 	attribute :annotations
 	attribute :requirements
+	attribute :skip_ahead
 
 
 	# def has_not_appeared
@@ -59,6 +60,14 @@ class Lecture < ApplicationRecord
 
 	# def titled_markers
 	# end
+
+	def remove_null_virtual_attributes
+		lecture = self.as_json({})
+		["class_name", "done", "user_confused", "posts", "lecture_notes", 
+		"title_markers", "video_quizzes","annotations","requirements","skip_ahead" ].each{|attr| lecture.delete(attr) unless lecture[attr]}
+		lecture
+	end
+	
 
 	def posts_public
 		posts = Forum::Post.find(:all, :params => {lecture_id: self.id, user_id:current_user.id, privacy: 1})
@@ -98,8 +107,18 @@ class Lecture < ApplicationRecord
 	# def is_done_summary_table
 	# end
 
-	# def is_done_user(st)
-	# end
+	def is_done_user(st)
+		assign= st.get_assignment_status(self)
+		assign_lecture = st.get_lecture_status(self)
+		if (!assign.nil? && assign.status==1) || (!assign_lecture.nil? && assign_lecture.status==1)#modified status and marked as done on time
+			return true
+		else
+			lecture_quizzes=online_quizzes.includes(:online_answers).select{|f| f.online_answers.size!=0 && f.graded}.map{|v| v.id}.sort #ids of lecture quizzes
+			user_quizzes=st.get_online_quizzes_solved(self)   #stubbed in lec_spec
+			viewed=st.get_lectures_viewed(self)
+			return ( user_quizzes&lecture_quizzes == lecture_quizzes and !viewed.empty? and viewed.first.percent == 100)
+		end
+	end
 
 	# def is_done?(user_asking) #marks lecture as done IF all quizzes solved AND passed all 25/50/75 marks.
 	# end
@@ -121,8 +140,13 @@ class Lecture < ApplicationRecord
 		return data
 	end
 
-	# def get_questions_visible
-	# end
+	def get_questions_visible
+		data={}
+		online_quizzes.where("hide = 'f' or inclass = 't'").select{|f| !f.online_answers.empty?}.each do |quiz|
+			data[quiz.id] = {:title => quiz.question,:start_time => quiz.start_time, :time => quiz.time , :end_time => quiz.end_time, :type => quiz.question_type, :quiz_type => quiz.quiz_type, :inclass => quiz.inclass, :hide =>quiz.hide}
+		end
+		return data
+	end
 
 	# def get_question_ids
 	# end
@@ -143,11 +167,10 @@ class Lecture < ApplicationRecord
 			return get_charts(students_id ,online_q)
 	end
 
-	# def get_charts_visible(students_id)
-	# end
-
-	# def get_charts_all(students_id)
-	# end
+	def get_charts_visible(students_id)
+		online_q= self.online_quizzes.where(:hide => false)
+		return get_charts(students_id ,online_q)
+	end
 
 	def get_charts(students_id,online_q)
 		data={}
@@ -262,8 +285,14 @@ class Lecture < ApplicationRecord
 	# def get_free_text_answers
 	# end
 
-	# def get_visible_free_text
-	# end
+	def get_visible_free_text
+		@data={}
+		self.online_quizzes.select{|v| v.question_type == 'Free Text Question'}.each do |question|
+			@data[question.id]= question.free_online_quiz_grades.select{|v| v.online_answer != '' && !v.hide }
+		end
+		return @data
+	end
+
 
 	# def get_free_text_questions
 	# end

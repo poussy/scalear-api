@@ -14,7 +14,7 @@ class GroupTest < ActiveSupport::TestCase
 	test "Validate model validation" do
 		group1 = Group.new 
 		assert_not group1.valid?
-		assert_equal [:course, :appearance_time, :course_id, :name, :due_date, :position ], group1.errors.keys
+		assert_equal [:course, :appearance_time, :course_id, :name, :due_date, :position, :skip_ahead ], group1.errors.keys
 		group1.name = 'name'
 		group1.position = 1
 		group1.course_id = @course1.id
@@ -23,10 +23,11 @@ class GroupTest < ActiveSupport::TestCase
 		group1.due_date = '2017-8-9'.to_datetime
 		assert_not group1.valid?
 
-		assert_equal [ :due_date ], group1.errors.keys
+		assert_equal [ :skip_ahead,:due_date ], group1.errors.keys
 		assert_not group1.valid?
 
 		group1.due_date = '2017-10-9'.to_datetime
+		group1.skip_ahead = true
 		assert group1.valid?
 		group1.save
 
@@ -52,32 +53,5 @@ class GroupTest < ActiveSupport::TestCase
 		assert @group1.valid?
 
 	end
-
-	test "items function should return quizzez, lectures and custom_links of a course, with class_name attribute on them" do
-		group = groups(:group3)
-		
-		group.items.each do |item|
-			assert item.respond_to? :class_name
-			assert_equal item.class.name.downcase, item['class_name']
-		end
-		
-		
-				
-	end
-
-	test "get_items function should return quizzez, lectures and custom_links sorted according to position" do
-		group = groups(:group3)
-		
-		group.items.each_with_index do |item, index|
-			if index<group.items.length-1
-				assert_operator group.items[index].position, :<, group.items[index+1].position
-			end
-		end
-	end
-	
-
-
-
-
 
 end
