@@ -635,19 +635,21 @@ class CoursesController < ApplicationController
 		render json: {:course => course,  :groups => groups, :next_item => next_item}
   	end
 
-	# def courseware
-	# end  
-
 	def export_csv
 		@course.export_course(current_user)
 		render :json => {:notice => ['Course wil be exported to CSV and sent to your Email']}
 	end
 
-	# def export_student_csv
-	# end  
+  def export_student_csv
+    @course.export_student_csv(current_user)
+    render :json => {:notice => ['Student list wil be exported to CSV and sent to your Email']}
+  end
 
-	# def export_for_transfer
-	# end  
+  def export_for_transfer
+    if current_user.is_administrator?  || (@course.is_school_administrator(current_user))
+      csv_files = @course.export_for_transfer()
+    end
+  end 
 
 	def export_modules_progress
 		@course=Course.where(:id => params[:id]).includes(:groups => [{:online_quizzes => [:online_answers, :lecture]}, :quizzes, :lectures => :online_quizzes])[0]

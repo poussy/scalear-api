@@ -311,7 +311,7 @@ class Course < ApplicationRecord
 
 
 	def export_student_csv(current_user)
-    enrolled = User.where('enrollments.course_id = ?',id).includes(:enrollments)
+    enrolled = users
     csv_files={}
     csv_files[:student_list]= CSV.generate do |csv_student_list|
       csv_student_list  << [:email ,:name , :last_name ,:screen_name,:university]
@@ -557,7 +557,19 @@ class Course < ApplicationRecord
     end
     end
     end
-      return csv_files
+    file_name = sanitize_filename(@course.short_name)+".zip"
+    t = Tempfile.new(file_name)
+    Zip::ZipOutputStream.open(t.path) do |z|
+      csv_files.each do |key,value|
+       z.put_next_entry("#{key}.csv")
+       z.write(value)
+      end
+    end
+     send_file t.path, :type => 'application/zip',
+                     :disposition => 'attachment',
+                     :filename => file_name
+
+    t.close
   end
 
 	def export_modules_progress(current_user)
