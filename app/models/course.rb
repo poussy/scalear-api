@@ -632,11 +632,7 @@ class Course < ApplicationRecord
 
 			school_course = Course.includes([:user,:teachers])
 			if (!current_user.is_administrator? &&  domain.downcase == 'all')
-					domain = UsersRole.where(:user_id => current_user.id, :role_id => 9)[0].admin_school_domain
-					if domain == 'all'
-							email = user_role.organization.domain || nil
-					end
-
+					domain = UsersRole.where(:user_id => current_user.id, :role_id => 9).first.organization.domain rescue ''
 			end
 
 			if(domain.downcase != "all")
