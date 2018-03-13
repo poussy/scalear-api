@@ -3,11 +3,10 @@ Rails.application.configure do
 
   config.middleware.insert_before 0, Rack::Cors do
       allow do
-        origins 'http://localhost:9000' #'http://scalear-staging.s3-website-eu-west-1.amazonaws.com'  #* #angular-edu.herokuapp.com
+        origins '*' #'http://scalear-staging.s3-website-eu-west-1.amazonaws.com'  #* #angular-edu.herokuapp.com
         resource '*', 
         :headers => :any,
         :expose  => ['access-token', 'expiry', 'token-type', 'uid', 'client'], 
-        :credentials => true, 
         :methods => [:get, :post, :options, :put, :delete]
       end
   end

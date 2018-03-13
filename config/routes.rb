@@ -63,6 +63,7 @@ Rails.application.routes.draw do
     end
 
     get 'lti/(:action)' => 'lti#(:action)'
+    post 'lti/(:action)' => 'lti#(:action)'
     get  'saml/saml_signin' => 'saml#saml_signin'
     get  'saml/get_domain' => 'saml#get_domain'
     post 'saml/consume' => 'saml#consume'

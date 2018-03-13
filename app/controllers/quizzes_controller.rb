@@ -57,7 +57,7 @@ class QuizzesController < ApplicationController
       end
     end
     questions.each_with_index do |q, index|
-      if !quiz.course.is_teacher(current_user)
+      if quiz.course.is_student(current_user)
         answers[index]=q.answers.select([:id, :question_id, :content,:explanation])
         if q.question_type.upcase=="DRAG"
           exp = []
@@ -146,7 +146,7 @@ class QuizzesController < ApplicationController
       all.each do |l|
         if l.id == quiz.id
           break
-        elsif l.required
+        elsif l.required && l.graded
           requirements[l.class.name.downcase.to_sym] << l.id
         end
       end
