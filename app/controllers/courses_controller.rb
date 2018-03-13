@@ -56,7 +56,7 @@ class CoursesController < ApplicationController
 			total_teacher_courses = Course.count
 			teacher_courses= Course.order("start_date DESC").limit(params[:limit]).offset(params[:offset]).includes([{:teacher_enrollments => [:user]}, :enrollments, :lectures, :quizzes])
 		elsif current_user.is_school_administrator?
-			school_domain = UsersRole.where(:user_id => current_user.id, :role_id => 9)[0].admin_school_domain
+			school_domain = UsersRole.where(:user_id => current_user.id, :role_id => 9).first.organization.domain rescue ''
 			if !school_domain.blank?
 				course_ids = TeacherEnrollment.joins(:user).where("users.email like ?", "%#{school_domain}%").pluck(:course_id).uniq
 				total_teacher_courses = course_ids.size

@@ -7,3 +7,8 @@ organization_sv:
   id: 2
   name: 'sweden'
   domain: '.sv'
+
+oragnization_edu:
+  id: 3
+  name: 'edu'
+  domain: 'edu.eg'

@@ -70,7 +70,7 @@ class UsersControllerTest < ActionController::TestCase
     get :get_subdomains, {params: {id: user.id}}
     resp =  JSON.parse response.body
     assert_response :success
-    assert_equal resp["subdomains"], [".edu.eg"]    
+    assert_equal resp["subdomains"], ["edu.eg.com"]    
   end
 
   test 'should get_subdomains for admin_user' do
