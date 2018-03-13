@@ -613,7 +613,7 @@ class LecturesController < ApplicationController
 		marker = @lecture.online_markers.build(:group_id => @lecture.group_id, :course_id => @lecture.course_id, :title => "", 
 				:annotation => "", :time => params[:marker][:time], 
 				:height => params[:marker][:height],  :width => params[:marker][:width],  
-				:xcoor => params[:marker][:xcoor],  :ycoor => params[:marker][:ycoor] ) 
+				:xcoor => params[:marker][:xcoor],  :ycoor => params[:marker][:ycoor], :as_slide => params[:marker][:as_slide] ) 
 		if marker.save
 			render json: {:marker => marker, notice: "#{I18n.t('controller_msg.marker_successfully_created')}"}
 		else
