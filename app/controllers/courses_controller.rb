@@ -56,11 +56,18 @@ class CoursesController < ApplicationController
 			total_teacher_courses = Course.count
 			teacher_courses= Course.order("start_date DESC").limit(params[:limit]).offset(params[:offset]).includes([{:teacher_enrollments => [:user]}, :enrollments, :lectures, :quizzes])
 		elsif current_user.is_school_administrator?
-			school_domain = UsersRole.where(:user_id => current_user.id, :role_id => 9)[0].admin_school_domain
-			if !school_domain.blank?
-				course_ids = TeacherEnrollment.joins(:user).where("users.email like ?", "%#{school_domain}%").pluck(:course_id).uniq
-				total_teacher_courses = course_ids.size
-				teacher_courses = Course.order("start_date DESC").where(:id => course_ids).limit(params[:limit]).offset(params[:offset]).includes([{:teacher_enrollments => [:user]}, :enrollments, :lectures, :quizzes])
+			user_role = UsersRole.where(:user_id => current_user.id, :role_id => 9)[0]
+			school_domain = user_role.admin_school_domain
+			if school_domain.blank?
+				total_teacher_courses = 0
+				teacher_courses = {}
+			else
+				if school_domain == "all"
+					school_domain = user_role.organization.domain || nil
+				end
+			
+				total_teacher_courses = Course.select{|c| c.teachers.select{|t| t.email.include?(school_domain) }.size>0}.count
+				teacher_courses = Course.order("start_date DESC").includes([:user,:teachers,{:teacher_enrollments => [:user,:role]}, :enrollments, :lectures, :quizzes]).select{|c| c.teachers.select{|t| t.email.include?(school_domain) }.size>0}[params[:offset].to_i .. params[:offset].to_i+params[:limit].to_i ]
 			end
 		else
 			total_teacher_courses = current_user.subjects_to_teach.count
