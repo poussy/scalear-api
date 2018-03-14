@@ -176,7 +176,6 @@ class GroupsController < ApplicationController
 			@group['total_quizzes'] = @group.quizzes.where(:quiz_type => "quiz").count
 			@group['total_surveys'] = @group.quizzes.where(:quiz_type => "survey").count
 			@group['total_links'] = @group.custom_links.count
-			# @group['custom_links'] = @group.custom_links.sort!{|x,y| ( x.group_position and y.group_position ) ? x.group_position <=> y.group_position : ( x.group_position ? -1 : 1 )  }
 			render json: @group
 		end
 	end
@@ -216,9 +215,47 @@ class GroupsController < ApplicationController
 	# def get_module_charts_angular
 	# end
 
-	# def get_survey_chart_angular
-	# end
+	def get_survey_chart_angular
+			if params[:survey_id]
+						@surveychart=Quiz.where(:id => params[:survey_id].to_i, :course_id => params[:course_id].to_i, :quiz_type => "survey").includes(:questions =>  [:free_answers, {:answers => :quiz_grades}]).first
+			else
+						@surveychart= Group.find(params[:id]).quizzes.where(:quiz_type => "survey").includes(:questions =>  [:free_answers, {:answers => :quiz_grades}]).first
+			end
 
+				students = @surveychart.course.users
+				students_ids = students.map(&:id)
+
+				if !@surveychart.nil?
+						@all_surveys = Group.find(params[:id]).quizzes.where(:quiz_type => "survey").map {|o| [o.name, o.id, o.visible]}
+						if(params[:display_only])
+								@survey_data=@surveychart.get_survey_student_display_data_angular(students_ids)
+								@survey_free_answers= @surveychart.get_survey_student_display_free_text_angular
+						else
+								@survey_data=@surveychart.get_survey_data_angular(students_ids)
+								@survey_free_answers= @surveychart.get_survey_free_text_angular
+						end
+
+						@ordered_survey=[]
+						sorted_survey =@surveychart.questions.where("question_type !='header'").sort{|x,y| ( x.position and y.position ) ? x.position <=> y.position : ( x.position ? -1 : 1 )  }
+						sorted_survey.each {|e| @ordered_survey<<[e.id,e.question_type] }
+						@survey_questions= @surveychart.questions.where("question_type !='header'").map{|obj| {:question => obj.content, :type => obj.question_type}}
+						@survey_free_questions = @surveychart.questions.where("question_type = 'Free Text Question'").map{|obj| obj={:id => obj.id, :content => obj.content, :show => obj.show, :student_show => obj.student_show} }
+						@numbering= @surveychart.get_numbering
+						@survey_free={}
+						@survey_free_questions.each_with_index do |q, ind|
+								id = q[:id]
+								@survey_free[id]={}
+								@survey_free[id][:title] = q[:content]
+								@survey_free[id][:answers] = @survey_free_answers[id]
+								@survey_free[id][:show] = q[:show]
+								@survey_free[id][:student_show] = q[:student_show]
+						end
+				end
+
+				students_count = @course.users.size
+
+				render :json => {:chart_data => @survey_data, :chart_questions => @survey_questions, :all_surveys => @all_surveys, :related =>@numbering, :survey_free => @survey_free, :students_count => students_count, :ordered_survey => @ordered_survey, :survey => @surveychart}
+	end
 	def get_student_statistics_angular
 		@modulechart=Group.where(:id => params[:id], :course_id => params[:course_id]).includes([{:lectures => [:confuseds, :video_events]}]).first
 		if @modulechart.nil?
@@ -240,7 +277,7 @@ class GroupsController < ApplicationController
 		@really_confused_chart= Confused.get_rounded_time_module(@really_confused) #right now I round up. [[234,5],[238,6]]
 		@back_chart= VideoEvent.get_rounded_time_module(@back) #right now I round up. [[234,5],[238,6]]
 		@pause_chart= VideoEvent.get_rounded_time_module(@pause) #right now I round up. [[234,5],[238,6]]
-		@question_chart2= VideoEvent.get_rounded_time_module(@discussion) #right now I round up. [[234,5],[238,6]]
+		@question_chart2= VideoEvent.get_questions_rounded_time_module(@discussion) #right now I round up. [[234,5],[238,6]]
 		@question_chart = @question_chart2.to_a.map{|v| v=[v[0],v[1][0]]} #getting the time [time,count]
 		@questions_list = @question_chart2.to_a.map{|v| v=[v[0],v[1][1]]} #getting the questions [time,questions]
 
@@ -362,13 +399,6 @@ class GroupsController < ApplicationController
 		review_question_count = 0
 		review_quizzes_count = OnlineQuiz.where(:hide => false, :course_id => params[:course_id], :group_id => params[:id], :inclass => false).count
 		inclass_quizzes_count= OnlineQuiz.where(:hide => false, :course_id => params[:course_id], :group_id => params[:id], :inclass => true ).count
-		
-		# all = _module.lectures + _module.quizzes.where(:quiz_type => "survey")
-		# all.sort!{|x,y| ( x.position and y.position ) ? x.position <=> y.position : ( x.position ? -1 : 1 )  }
-		# all.each do |s|
-		#   s[:class_name]= s.class.name.downcase
-		# end
-		# _module[:items] = all
 
 		_module.lectures.each do |lec|
 			lecture_charts = lec.get_charts_visible(students_ids)
@@ -734,6 +764,12 @@ class GroupsController < ApplicationController
 		course = group.course
 		data = course.is_student(current_user)? group.get_discussion_summary_student(current_user) : group.get_discussion_summary_teacher
 		render :json => {:module =>data }
+	end
+
+	def export_module_timeline_csv
+		@modulechart=Group.where(:id => params[:id], :course_id => params[:course_id]).includes([{:lectures => [:confuseds, :video_events]}]).first
+		@all_stats= @modulechart.export_student_statistics_csv(current_user)
+		render :json => {:notice => ["timeline data wil be exported to CSV and sent to your Email"]}
 	end
 
 

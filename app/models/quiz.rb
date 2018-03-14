@@ -23,6 +23,12 @@ class Quiz < ApplicationRecord
 
   after_destroy :clean_up
 
+  def remove_null_virtual_attributes
+    quiz = self.as_json({})
+    ["class_name","current_user","requirements","done"].each{|attr| quiz.delete(attr) unless quiz[attr]}
+    quiz
+  end
+
   def is_done
     st=current_user
     assign= st.get_assignment_status(self)
@@ -92,14 +98,38 @@ class Quiz < ApplicationRecord
   # def get_survey_display_free_text
   # end
 
-  # def get_numbering
-  # end
+  def get_numbering
+    @data={}
+    count=1
+    questions.select{|v| v.question_type == 'Free Text Question'}.each do |question|
+      question.free_answers.select{|v| v.answer != ''}.each do |ans|
+        if @data[ans.user_id].nil?
+          @data[ans.user_id]=count
+          count+=1
+        end
+      end
+    end
+    return @data
+  end
 
   # def get_display_numbering
   # end
 
-  # def get_survey_data_angular(students_id)
-  # end
+  def get_survey_data_angular(students_id)
+    data={}
+    questions.select{|v| v.question_type != 'Free Text Question'and v.question_type != 'header'}.each do |question|
+      answers={}
+      question.answers.each do |answer|
+        answers[answer.id] = [answer.quiz_grades.select{|grade| students_id.include?(grade.user_id)}.size, answer.content]
+      end
+      data[question.id]={}
+      data[question.id][:show] = question.show
+      data[question.id][:student_show] = question.student_show
+      data[question.id][:answers] = answers
+      data[question.id][:title] = question.content
+    end
+    return data
+  end
 
   def get_quiz_display_data_angular(students_id)
     data={}
@@ -131,8 +161,13 @@ class Quiz < ApplicationRecord
   # def get_quiz_free_text_angular
   # end
 
-  # def get_survey_free_text_angular
-  # end
+  def get_survey_free_text_angular
+    @data={}
+    questions.select{|v| v.question_type == 'Free Text Question'}.each do |question|
+      @data[question.id]= question.free_answers.select{|v| v.answer != ''}
+    end
+    return @data
+  end
 
   def get_quiz_display_free_text_angular
     @data={}
@@ -142,11 +177,29 @@ class Quiz < ApplicationRecord
     return @data
   end
 
-  # def get_survey_student_display_free_text_angular
-  # end
+  def get_survey_student_display_free_text_angular
+    @data={}
+    questions.select{|v| v.question_type == 'Free Text Question' and v.student_show==true}.each do |question|
+      @data[question.id]= question.free_answers.select{|v| v.answer != '' and v.student_hide==false}
+    end
+    return @data
+  end
 
-  # def get_survey_student_display_data_angular(students_id)
-  # end
+  def get_survey_student_display_data_angular(students_id)
+    data={}
+    questions.select{|v| v.question_type != 'Free Text Question' and v.question_type != 'header' and v.student_show==true}.each do |question|
+      answers={}
+      question.answers.each do |answer|
+        answers[answer.id] = [answer.quiz_grades.select{|grade| students_id.include?(grade.user_id)}.size, answer.content]
+      end
+      data[question.id]={}
+      data[question.id][:show] = question.show
+      data[question.id][:student_show] = question.student_show
+      data[question.id][:answers] = answers
+      data[question.id][:title] = question.content
+    end
+    return data
+  end
 
   private
     def clean_up

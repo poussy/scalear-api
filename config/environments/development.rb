@@ -3,11 +3,10 @@ Rails.application.configure do
 
   config.middleware.insert_before 0, Rack::Cors do
       allow do
-        origins 'http://localhost:9000' #'http://scalear-staging.s3-website-eu-west-1.amazonaws.com'  #* #angular-edu.herokuapp.com
+        origins '*' #'http://scalear-staging.s3-website-eu-west-1.amazonaws.com'  #* #angular-edu.herokuapp.com
         resource '*', 
         :headers => :any,
         :expose  => ['access-token', 'expiry', 'token-type', 'uid', 'client'], 
-        :credentials => true, 
         :methods => [:get, :post, :options, :put, :delete]
       end
   end
@@ -29,7 +28,7 @@ Rails.application.configure do
 
     config.cache_store = :memory_store
     config.public_file_server.headers = {
-      'Cache-Control' => "public, max-age=#{2.days.seconds.to_i}"
+      'Cache-Control' => "public, max-age=#{1.year.seconds.to_i}"
     }
   else
     config.action_controller.perform_caching = false
@@ -39,14 +38,11 @@ Rails.application.configure do
 
   # Don't care if the mailer can't send.
   config.action_mailer.raise_delivery_errors = false
-
   config.action_mailer.perform_caching = false
-
   config.action_mailer.default_url_options = { :host => 'localhost', :port => 3000 }
   config.action_mailer.delivery_method = :smtp
-
   config.action_mailer.perform_deliveries = true
-
+  config.action_mailer.asset_host = 'http://localhost:3000'
   config.action_mailer.smtp_settings = {
       address: "smtp.gmail.com",
       port: 587,
@@ -71,5 +67,34 @@ Rails.application.configure do
   config.file_watcher = ActiveSupport::EventedFileUpdateChecker
 
   config.frontend_host = "http://localhost:9000/#/"
-  config.action_mailer.asset_host = 'http://localhost:3000'
+
+  ActiveSupport::Deprecation.silenced = true
+  config.active_record.logger = nil
+  config.lograge.enabled = true
+  config.lograge.formatter = Lograge::Formatters::Logstash.new
+  config.lograge.custom_options = lambda do |event|
+    params = event.payload[:params].reject do |k|
+      ['controller', 'action', 'locale'].include? k
+    end
+    opts={}
+    if !event.payload[:params]["id"].nil?
+      opts[event.payload[:params]["controller"].singularize+'_id' ] = event.payload[:params]["id"]
+      params.delete("id")
+    end
+    opts[:params] = params
+    opts[:user_id] = event.payload[:user_id]
+    opts[:ip] = event.payload[:ip]
+    if event.payload[:exception]
+      opts[:stacktrace] = %Q('#{Array(event.payload[:stacktrace]).to_json}')
+    end
+    opts
+  end  
 end
+
+
+ENV['INFLUXDB_USER']='root'
+ENV['INFLUXDB_PASSWORD']='root'
+ENV['INFLUXDB_DATABASE']='production_statistics'
+# ENV['INFLUXDB_DATABASE']='staging_statistics'
+ENV['INFLUXDB_HOST']='54.172.25.46'
+ENV['INFLUXDB_PORT']='8086'

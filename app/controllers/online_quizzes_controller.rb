@@ -52,8 +52,7 @@ class OnlineQuizzesController < ApplicationController
   	end
   
 	def destroy
-		@online_quiz.destroy
-		
+		@online_quiz.destroy	
 		render json: {:notice => [I18n.t("controller_msg.quiz_successfully_deleted")]}
 	end
 	
@@ -122,16 +121,15 @@ class OnlineQuizzesController < ApplicationController
 	end
 	
 	def update_inclass_session
-		quiz = OnlineQuiz.find(params[:id])
-		session = quiz.inclass_session
+		session = @online_quiz.inclass_session
 		if !session.nil?
 			if session.update_attributes(:status => params[:status])
-				render :json => {:notice => [I18n.t("quizzes.updated")]}
+				render :json => {:notice => [I18n.t("controller_msg.online_quiz_successfully_updated")]}
 			else
-				render :json => {:errors => [I18n.t("quizzes.could_not_update")]}, :status => 400
+				render :json => {:errors => [I18n.t("controller_msg.could_not_update_online_quiz")]}, :status => 400
 			end
 		else
-			render :json => {:errors => [I18n.t("quizzes.could_not_update")]}, :status => 400
+			render :json => {:errors => [I18n.t("controller_msg.could_not_update_online_quiz")]}, :status => 400
 		end
 
 	end
@@ -159,7 +157,7 @@ private
 
 	def online_quiz_params
 		params.require(:online_quiz).permit(:time ,:start_time ,:end_time ,:graded ,:intro ,
-			:self ,:in_group ,:discussion ,:display_text, :inclass, :question)
+			:self ,:in_group ,:discussion ,:display_text, :inclass, :question, :xcoor, :ycoor, :height,:width )
 	end
 	
 end

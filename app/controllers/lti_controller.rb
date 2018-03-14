@@ -4,9 +4,10 @@ require "rexml/xpath"
 
 class LtiController < ApplicationController
 	skip_before_action :authenticate_user!, raise: false
+	# before_action :authenticate_user!
+	
 	skip_authorize_resource
 	before_action :check_user_signed_in?, :only => [ :generate_new_lti_keys, :get_lti_custom_shared_key ]
-
 
 	def embed_course_list
 		courses = {}
@@ -149,7 +150,7 @@ class LtiController < ApplicationController
 				end
 			end
 		end
-		render json: {shared_sceret: shared_sceret, consumer_key:consumer_key, lti_url_xml: root_url+"lti/configuration", lti_url_embed:root_url[0...-2]+"lti/lti_launch_embed"}
+		render json: {shared_sceret: shared_sceret, consumer_key:consumer_key, lti_url_xml: root_url[0...-2]+"lti/configuration", lti_url_embed:root_url[0...-2]+"lti/lti_launch_embed"}
 	end
 
 	def lti_launch_embed
@@ -157,40 +158,38 @@ class LtiController < ApplicationController
 		lti_key_instance = LtiKey.find_by_consumer_key(consumer_key)
 
 		if lti_key_instance
-			# if lti_key_instance.organization && !(params['custom_canvas_user_login_id'].include?(lti_key_instance.organization.domain))
 			if lti_key_instance.organization && !(params['lis_person_contact_email_primary'].include?(lti_key_instance.organization.domain))
 				redirect_to "#/"
 			else
-				provider = IMS::LTI::ToolProvider.new( consumer_key , lti_key_instance.shared_sceret)
-				if provider.valid_request?(request)
-					if user_sign_in
+				authenticator = IMS::LTI::Services::MessageAuthenticator.new(request.url, request.request_parameters , lti_key_instance.shared_sceret)
+				if authenticator.valid_signature?
+					user_sign_in_token , user = user_sign_in
+					if user_sign_in_token
 						if params['tool_consumer_info_product_family_code'] == 'canvas' 
-							redirect_to "#/lti_course_list?return_url="+params['ext_content_return_url']+"&consumer_key="+consumer_key
+							redirect_to("#/lti_course_list?return_url="+params['ext_content_return_url']+"&consumer_key="+consumer_key+'&'+user_sign_in_token.to_query)
 						else
 							resource_context_id = params['resource_link_id']+'scalable_learning'+params['context_id']
 							resource_context = LtiResource.find_by_resource_context_id(resource_context_id)
 							#check resoures_link_id&context_id is in the table or not 
 							if resource_context
-							# if yes call redirect_url_student_teacher function and redirected to the return url 
+								# if yes call redirect_url_student_teacher function and redirected to the return url 
 								sl_type_name_type_id = resource_context.sl_type_name_type_id.split('__')
 								url , course  = redirect_url_student_teacher( sl_type_name_type_id[0] , params['roles'], sl_type_name_type_id[1])
-								if params['roles'] != "Instructor"
-									if !(course.users.map(&:id).include?(current_user.id)) && !(course.teacher_enrollments.map(&:id).include?(current_user.id))
+								if is_student?(params['roles']) #student	
+									if !(course.users.map(&:id).include?(current_user.id)) && !(course.teachers.map(&:id).include?(current_user.id))
 										course.users<<current_user
 										course.save
 									end
 								end
-								redirect_to url
+								redirect_to url+"?"+user_sign_in_token.to_query
 							else
 								#if not redirect to lti_course_list
 								#used #sl# to make sure that it will not repeat in any place
 								resource_context_id = params['resource_link_id']+'scalable_learning'+params['context_id']
-								redirect_to "#/lti_course_list?return_url=lti_tool_redirect&consumer_key="+consumer_key+"&resource_context_id="+resource_context_id
+								redirect_to "#/lti_course_list?return_url=lti_tool_redirect&consumer_key="+consumer_key+"&resource_context_id="+resource_context_id+'&'+user_sign_in_token.to_query
 							end
 						end
 					else ### create new account and user is Instructor
-						# redirect_to "#/lti_course_list?full_name="+params['lis_person_name_full']+"&email="+params['custom_canvas_user_login_id']+
-						#     "&first_name="+params['lis_person_name_given']+"&last_name="+params['lis_person_name_family']
 						redirect_to "#/lti_course_list?full_name="+params['lis_person_name_full']+"&email="+params['lis_person_contact_email_primary']+
 						"&first_name="+params['lis_person_name_given']+"&last_name="+params['lis_person_name_family']
 					end
@@ -207,30 +206,40 @@ class LtiController < ApplicationController
 
 	def lti_launch_use
 		consumer_key = params['oauth_consumer_key']
+
 		lti_key_instance = LtiKey.find_by_consumer_key(consumer_key)
 		if lti_key_instance
-			provider = IMS::LTI::ToolProvider.new(params['oauth_consumer_key'] , lti_key_instance.shared_sceret)
-			if provider.valid_request?(request)
+			
+			authenticator = IMS::LTI::Services::MessageAuthenticator.new(request.url.partition('?').first, request.query_parameters.merge(request.request_parameters) , lti_key_instance.shared_sceret)
+			# authenticator = IMS::LTI::Services::MessageAuthenticator.new(request.url.partition('?').first, request.request_parameters , lti_key_instance.shared_sceret)
+			redirect_boolean = 'true'
+			status = 'nil'
+			user_sign_in_token , user = user_sign_in
+
+			if authenticator.valid_signature?
 				## TO use scalaleLearning
 				## check the student can sig in AND ENROLL STUDENT
 				url , course = redirect_url_student_teacher(params['sl_type'],params['roles'],params['sl_type_id'])
-				if user_sign_in
-					if params['roles'] != "Instructor"
-						if !(course.users.map(&:id).include?(current_user.id)) && !(course.teacher_enrollments.map(&:id).include?(current_user.id))
-							course.users<<current_user
+				if user_sign_in_token
+					if is_student?(params['roles']) ## student 
+						if !(course.users.map(&:id).include?(user.id)) && !(course.teachers.map(&:id).include?(user.id))
+							course.users<<user
 							course.save
 						end
+					elsif !(course.teachers.map(&:id).include?(user.id))
+						redirect_boolean = 'false'
+						status = 'no_teacher_enrollment'
 					end
-					redirect_to url
+					redirect_to "#/lti_sign_in_token?redirect_boolean="+redirect_boolean+"&status="+status+"&"+user_sign_in_token.to_query+"&redirect_local_url="+url[1..-1]
 				else ### create new account for teacher
-					# redirect_to "#/lti_course_list?full_name="+params['lis_person_name_full']+"&email="+params['custom_canvas_user_login_id']+
-					#     "&first_name="+params['lis_person_name_given']+"&last_name="+params['lis_person_name_family']
 					redirect_to "#/lti_course_list?full_name="+params['lis_person_name_full']+"&email="+params['lis_person_contact_email_primary']+
 					"&first_name="+params['lis_person_name_given']+"&last_name="+params['lis_person_name_family']
 				end
 			else
 				# handle invalid OAuth
-				redirect_to "#/users/edit"
+				# redirect_to "#/users/edit"+'?'+user_sign_in_token.to_query
+				url = "#/users/edit"
+				redirect_to "#/lti_sign_in_token?redirect_boolean="+redirect_boolean+"&status="+status+"&"+user_sign_in_token.to_query+"&redirect_local_url="+url[1..-1]
 			end
 		else
 			redirect_to "#/"
@@ -250,33 +259,39 @@ class LtiController < ApplicationController
 	end
 
 	private
+
+		def is_student?(role)
+			student_roles = [ 'student' ,'member' ,'learner' ,'alumni' ,'prospectivestudent' ,'guest' ,'other' ,'observer' ,'none' ]
+			student_roles.any? { |s| role.downcase.include?(s) }
+		end
+
 		def redirect_url_student_teacher(sl_type,roles,sl_type_id)
 			if sl_type == 'course'
 				course = Course.find(sl_type_id)
-				roles == "Instructor" ? url = "#/courses/#{course.id}/information" : url = "#/courses/#{course.id}/course_information"
+				!is_student?(params['roles']) ? url = "#/courses/#{course.id}/information" : url = "#/courses/#{course.id}/course_information"
 			elsif sl_type == 'group'
 				group  = Group.find(sl_type_id)
 				course = group.course
 				url = "#/courses/#{course.id}/modules/#{group.id}"
-				roles == "Instructor" ? url += "/course_editor" : url += "/courseware/overview"
+				!is_student?(params['roles']) ? url += "/course_editor" : url += "/courseware/overview"
 			elsif sl_type == 'lecture'
 				lecture  = Lecture.find(sl_type_id)
 				course = lecture.course
 				group = lecture.group
 				url = "#/courses/#{course.id}/modules/#{group.id}"
-				roles == "Instructor" ? url += "/course_editor/lectures/#{lecture.id}" : url += "/courseware/lectures/#{lecture.id}"
+				!is_student?(params['roles']) ? url += "/course_editor/lectures/#{lecture.id}" : url += "/courseware/lectures/#{lecture.id}"
 			elsif sl_type == 'quiz'
 				quiz  = Quiz.find(sl_type_id)
 				course = quiz.course
 				group = quiz.group
 				url = "#/courses/#{course.id}/modules/#{group.id}"
-				roles == "Instructor" ? url += "/course_editor/quizzes/#{quiz.id}" : url += "/courseware/quizzes/#{quiz.id}"
+				!is_student?(params['roles']) ? url += "/course_editor/quizzes/#{quiz.id}" : url += "/courseware/quizzes/#{quiz.id}"
 			elsif sl_type == 'customlink'
 				custom_link = CustomLink.find(sl_type_id)
 				course = custom_link.course
 				group = custom_link.group
 				url = "#/courses/#{course.id}/modules/#{group.id}"
-				roles == "Instructor" ? url += "/course_editor/link/#{custom_link.id}" : url = custom_link.url
+				!is_student?(params['roles']) ? url += "/course_editor/link/#{custom_link.id}" : url = custom_link.url
 			else
 				url = "#/courses"
 			end
@@ -291,20 +306,20 @@ class LtiController < ApplicationController
 			if !canvas_id_user.nil?
 				canvas_id_user.canvas_last_signin = DateTime.now
 				canvas_id_user.save
-				sign_in canvas_id_user
-				return true
+				token = canvas_id_user.create_new_auth_token
+				return token , canvas_id_user
 			elsif !canvas_login_user.nil? # notFounded Check Email        
 				if params['custom_canvas_user_id']
 					canvas_login_user.canvas_id = params['custom_canvas_user_id']
 				end
 				canvas_login_user.canvas_last_signin = DateTime.now
 				canvas_login_user.save
-				sign_in canvas_login_user
-				return true
+				token =  canvas_login_user.create_new_auth_token
+				return token , canvas_login_user
 			else # If teacher create new course
 				# check if student or teacher  // Learner  OR
-				if params['roles'] == "Instructor"
-					return false
+				if !is_student?(params['roles'])
+					return false , false
 				else
 					user =User.new(params[:user])
 					user.password = Devise.friendly_token[0,20]
@@ -315,7 +330,11 @@ class LtiController < ApplicationController
 					# user.email = params['custom_canvas_user_login_id']
 					user.email = params['lis_person_contact_email_primary']
 					user.name = params['lis_person_name_given']
-					user.last_name = params['lis_person_name_family']
+					if params['lis_person_name_family'] == ''
+						user.last_name = '__'
+					else
+						user.last_name = params['lis_person_name_family']
+					end
 					user.screen_name = params['lis_person_name_full']
 					user.university = '-'
 					if params['custom_canvas_user_id']
@@ -323,10 +342,10 @@ class LtiController < ApplicationController
 					end
 					user.canvas_last_signin = DateTime.now
 					if user.save
-						sign_in user
-						return true
+						token = user.create_new_auth_token
+						return token , user
 					else
-						return false
+						return false, false
 					end
 				end
 			end

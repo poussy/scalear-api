@@ -1,8 +1,5 @@
 class UserMailer < ApplicationMailer
 
-	# def welcome_email(user)
-	# end
-
 	def announcement_email(users, announcement, course, locale)
 		I18n.locale=locale
 		@from =  "\"#{course.short_name} - #{course.name}\" <info@scalable-learning.com>"
@@ -26,9 +23,6 @@ class UserMailer < ApplicationMailer
 		mail(:to => email, :subject => I18n.t("user_mailer.added_to_course"), :from => @from, :reply_to => @reply_to)
 	end	
 	
-	# def student_email(course,user, subject, message, teacher_email, locale)
-	# end
-
 	def student_batch_email(course,users, subject, message, teacher_email, locale)
 		I18n.locale=locale
 		@from =  "\"#{course.short_name} - #{course.name}\" <info@scalable-learning.com>"
@@ -127,14 +121,11 @@ class UserMailer < ApplicationMailer
 	end
 
 	def attachment_email(user, file_name, file_path, locale)
-		# puts "in email mailer"
 		I18n.locale=locale
 		@from =  "\"Scalable Learning\" <info@scalable-learning.com>"
 		@user_name= user.name
 		@user_email= user.email
 		attachments[file_name]= File.read(file_path)
-		# puts "file is "
-		# puts file.inspect
 
 		mail(:to => @user_email , :subject => "Exported File", :from => @from)
 	end
@@ -159,13 +150,9 @@ class UserMailer < ApplicationMailer
 		mail(:to => @user_email , :subject => "analytics_student_questions", :from => @from)
 	end
 
-	# def apology_email(user, course)
-	# end
-
 	def discussion_reply_email(post_owner, comment_owner, course, group, lecture, post, comment, locale)
 		I18n.locale=locale
 		@from =  "\"#{course.short_name} - #{course.name}\" <info@scalable-learning.com>"
-		# @user_email = user.email
 		@post_owner = post_owner
 		@comment_owner = comment_owner
 		@post = post
@@ -192,8 +179,11 @@ class UserMailer < ApplicationMailer
 		mail(:to => @teacher.email, :subject => "Question in #{course.short_name}: #{lecture.name}", :from => @from)
 	end
 
-	# def password_changed_email(user,locale)
-	# end
+	def password_changed_email(user,locale)
+			@user = user
+			@from =  "\"Scalable Learning\" <info@scalable-learning.com>"
+			mail(:to => @user.email, :subject => "Password changed", :from => @from)
+	end
 
 	def due_date_email(user , course , group , group_type ,locale)
 		I18n.locale=locale

@@ -306,8 +306,34 @@ class Course < ApplicationRecord
 	handle_asynchronously :export_course, :run_at => Proc.new { 5.seconds.from_now }
 
 
-	# def export_student_csv(current_user)
-	# end
+	def export_student_csv(current_user)
+		enrolled = User.includes(:enrollments).where('enrollments.course_id = ?',id).references(:enrollments)
+		csv_files={}
+		csv_files[:student_list]= CSV.generate do |csv_student_list|
+			csv_student_list  << [:email ,:name , :last_name ,:screen_name,:university]
+			enrolled.each do |d|
+				csv_student_list << [d.email ,d.name , d.last_name ,d.screen_name , d.university]
+			end
+		end
+
+		######## This is working - creates csv's and then puts them in zip #############
+		file_name = sanitize_filename(self.short_name)+".zip"#{}"course.zip"
+
+		t = Tempfile.new(file_name)
+		Zip::ZipOutputStream.open(t.path) do |z|
+			csv_files.each do |key,value|
+				z.put_next_entry("#{key}.csv")
+				z.write(value)
+			end
+		end
+		#send_file t.path, :type => 'application/zip',
+		#                  :disposition => 'attachment',
+		#                  :filename => file_name
+		UserMailer.delay.attachment_email(current_user, file_name, t.path, I18n.locale)#.deliver
+		t.close
+	end
+	handle_asynchronously :export_student_csv, :run_at => Proc.new { 5.seconds.from_now }
+	
 
 	def import_course(import_from)
 		importing_will_change!
@@ -682,6 +708,10 @@ class Course < ApplicationRecord
 
 		def generate_random_unique_identifier
 			(0...5).map { [*('A'..'H'),*('J'..'N'), *('P'..'Z')].to_a[rand(24)] }.join + '-' + (0...5).map { (0..9).to_a[rand(10)] }.join
+		end
+
+		def sanitize_filename(filename)
+			return filename.gsub /[^a-z0-9\-]+/i, '_'
 		end
 
 end

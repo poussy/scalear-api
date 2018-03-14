@@ -81,8 +81,23 @@ class SharedItemsController < ApplicationController
 		render :json => {:all_shared => all_shared, :courses => courses}
   	end
 
-	# def update_shared_data
-	# end
+	def update_shared_data
+		if(params[:data])
+			s= SharedItem.find(params[:id])
+			s.data ={:modules =>[], :lectures => [], :quizzes => [], :customlinks => []}
+			params[:data].each do |key,value|
+				if value
+					s.data[key] = value.map{|v| v["id"]}
+				end
+			end
+
+			if s.save
+				render json: {}
+			else
+				render json: {:errors => [I18n.t("controller_msg.problem_updating_shared")]}, :status => 400
+			end
+		end		
+	end
 
 	def accept_shared
 		

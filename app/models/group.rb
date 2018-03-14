@@ -287,7 +287,7 @@ class Group < ApplicationRecord
 		(quizzes+lectures+custom_links).sort{|a,b| a.position <=> b.position}
 	end
 
-	def items
+	def get_all_items
 		all = self.get_items
 		all.each do |s|
 			s[:class_name]= s.class.name.downcase
@@ -348,12 +348,12 @@ class Group < ApplicationRecord
 		time=0
 		time_list={}
 		time_list2=[]
-		students_id = course.users.map(&:id)
+		students_ids = course.users.map(&:id)
 		self.lectures.each do |lec|
-			lec.confuseds.select{|v| v.very==false && students_id.include?(v.user_id)}.sort{|x,y| x.time <=> y.time}.each_with_index do |c, index|
+			lec.confuseds.select{|v| v.very==false && students_ids.include?(v.user_id)}.sort{|x,y| x.time <=> y.time}.each_with_index do |c, index|
 				confuseds[[time,c.time, index]] = [c.time, lec.url]
 			end
-			lec.confuseds.select{|v| v.very==true && students_id.include?(v.user_id)}.sort{|x,y| x.time <=> y.time}.each_with_index do |c, index|
+			lec.confuseds.select{|v| v.very==true && students_ids.include?(v.user_id)}.sort{|x,y| x.time <=> y.time}.each_with_index do |c, index|
 				really_confuseds[[time,c.time, index]] = [c.time, lec.url]
 			end
 			lec.video_events.where("event_type = 3 and (from_time - to_time) <= 15 and (from_time - to_time) >= 1").sort{|x,y| x.from_time <=> y.from_time}.each_with_index do |c, index|
@@ -957,6 +957,79 @@ end
 		return data
 	end
 
+	def export_student_statistics_csv(current_user)
+
+		all_stats = {:confuseds => {},:really_confuseds => {}, :backs => {}, :pauses => {}, :questions => {}}
+		
+		students_ids = course.users.map(&:id)
+		
+		self.lectures.each do |lec|
+
+		
+			lec.confuseds.select{|v| v.very==false && students_ids.include?(v.user_id)}.sort{|x,y| x.time <=> y.time}.each_with_index do |c, index|
+				rounded_time = Time.at(c.time).round(15).strftime("%H:%M:%S")
+				if !all_stats[:confuseds][rounded_time]
+					all_stats[:confuseds][rounded_time] = [c.lecture.group.name,c.lecture.name,rounded_time,"Confused","",1]
+				else
+					all_stats[:confuseds][rounded_time][5]+=1
+				end
+			end
+			lec.confuseds.select{|v| v.very==true && students_ids.include?(v.user_id)}.sort{|x,y| x.time <=> y.time}.each_with_index do |c, index|
+				rounded_time = Time.at(c.time).round(15).strftime("%H:%M:%S")
+				if !all_stats[:really_confuseds][rounded_time]
+					all_stats[:really_confuseds][rounded_time] = [c.lecture.group.name,c.lecture.name,rounded_time,"Really confused","",1]
+				else
+					all_stats[:really_confuseds][rounded_time][5]+=1
+				end
+			end
+			lec.video_events.where("event_type = 3 and (from_time - to_time) <= 15 and (from_time - to_time) >= 1").sort{|x,y| x.from_time <=> y.from_time}.each_with_index do |c, index|
+				rounded_time = Time.at(c.from_time).round(15).strftime("%H:%M:%S")
+				if !all_stats[:backs][rounded_time]
+					all_stats[:backs][rounded_time] = [c.group.name,c.lecture.name,rounded_time,"Back","",1]
+				else
+					all_stats[:backs][rounded_time][5]+=1
+				end
+			end
+			lec.video_events.where(:event_type => 2).sort{|x,y| x.from_time <=> y.from_time}.each_with_index do |c, index|
+				rounded_time = Time.at(c.from_time).round(15).strftime("%H:%M:%S")
+				if !all_stats[:pauses][rounded_time]
+					all_stats[:pauses][rounded_time] = [c.group.name,c.lecture.name,rounded_time,"Pause","",1]
+				else
+					all_stats[:pauses][rounded_time][5]+=1
+				end
+				
+			end
+			posts = Forum::Post.find(:all, :params => {lecture_id: lec.id})
+
+			posts.sort{|x,y| x.time <=> y.time}.each_with_index do |c, index|
+				rounded_time = Time.at(c.time).round(15).strftime("%H:%M:%S")
+				if !all_stats[:questions][rounded_time]
+					all_stats[:questions][rounded_time] = [Group.find(c.group_id).name,Lecture.find(c.lecture_id).name,rounded_time,"Question", c.content,1]
+				else
+					all_stats[:questions][rounded_time][5]+=1
+				end
+			end
+
+		end
+		file_name = sanitize_filename(self.name)+".zip"#{}"course.zip"
+		t = Tempfile.new(file_name)
+		Zip::ZipOutputStream.open(t.path) do |z|
+			all_stats.each do |event_name,events|
+				data = CSV.generate do |csv|
+					csv << ["Module","Video","Time_In_Video","Event_Type","Event_Details","Number_of_events"]
+					events.each do |time,event_details|
+						csv << event_details
+					end
+				end
+				z.put_next_entry("#{event_name}.csv")
+				z.write(data)
+			end
+		end
+		UserMailer.delay.attachment_email(current_user, file_name, t.path, I18n.locale)#.deliver
+	end
+	handle_asynchronously :export_student_statistics_csv, :run_at => Proc.new { 5.seconds.from_now }
+	  
+
 	private
 
 		def appearance_date_must_be_before_items
@@ -982,4 +1055,9 @@ end
 		def clean_up
 			self.events.where(:lecture_id => nil, :quiz_id => nil).destroy_all			
 		end
+
+		def sanitize_filename(filename)
+			return filename.gsub /[^a-z0-9\-]+/i, '_'
+		end
+
 end
