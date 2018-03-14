@@ -1011,21 +1011,17 @@ end
 			end
 
 		end
-		file_name = sanitize_filename(self.name)+".zip"#{}"course.zip"
+		file_name = sanitize_filename(self.name)+".csv"#{}"course.zip"
 		t = Tempfile.new(file_name)
-		Zip::ZipOutputStream.open(t.path) do |z|
+		CSV.open(t.path,"wb") do |csv|
+			csv << ["Module","Video","Time_In_Video","Event_Type","Event_Details","Number_of_events"]
 			all_stats.each do |event_name,events|
-				data = CSV.generate do |csv|
-					csv << ["Module","Video","Time_In_Video","Event_Type","Event_Details","Number_of_events"]
-					events.each do |time,event_details|
-						csv << event_details
-					end
+				events.each do |time,event_details|
+					csv << event_details
 				end
-				z.put_next_entry("#{event_name}.csv")
-				z.write(data)
 			end
 		end
-		UserMailer.delay.attachment_email(current_user, file_name, t.path, I18n.locale)#.deliver
+		UserMailer.delay.video_events(current_user, file_name, t.path, I18n.locale, self.name, self.course.name)#.deliver
 	end
 	handle_asynchronously :export_student_statistics_csv, :run_at => Proc.new { 5.seconds.from_now }
 	  
