@@ -238,6 +238,7 @@ class UserMailer < ApplicationMailer
 	end
 
 	def anonymisation_success(user)
+		@user = user
 		mail(:to => user.email, :subject => "Your account on ScalableLearning has been pseudonymized")
 	end
 	
