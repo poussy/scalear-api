@@ -39,6 +39,7 @@ namespace :db do
     "20171108155358",
     "20171108155921",
     "20171108160438",
+    "20180312113750"
   ]
 
   task :skip_migrations => :environment do
