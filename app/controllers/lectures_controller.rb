@@ -613,7 +613,7 @@ class LecturesController < ApplicationController
 		marker = @lecture.online_markers.build(:group_id => @lecture.group_id, :course_id => @lecture.course_id, :title => "", 
 				:annotation => "", :time => params[:marker][:time], 
 				:height => params[:marker][:height],  :width => params[:marker][:width],  
-				:xcoor => params[:marker][:xcoor],  :ycoor => params[:marker][:ycoor] ) 
+				:xcoor => params[:marker][:xcoor],  :ycoor => params[:marker][:ycoor], :as_slide => params[:marker][:as_slide] ) 
 		if marker.save
 			render json: {:marker => marker, notice: "#{I18n.t('controller_msg.marker_successfully_created')}"}
 		else
@@ -1042,6 +1042,7 @@ private
 	def lecture_params
 		params.require(:lecture).permit(:course_id, :description, :name, :url, :group_id, :appearance_time, :due_date, :duration,
 			:aspect_ratio, :slides, :appearance_time_module, :due_date_module,:required_module , :inordered_module, 
-			:position, :required, :inordered, :start_time, :end_time, :type, :graded, :graded_module, :inclass, :distance_peer)
+			:position, :required, :inordered, :start_time, :end_time, :type, :graded, :graded_module, :inclass, :distance_peer,
+			:skip_ahead,:skip_ahead_module)
 	end
 end

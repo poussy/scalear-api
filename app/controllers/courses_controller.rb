@@ -47,47 +47,70 @@ class CoursesController < ApplicationController
 	end  
 
 	def index
-		if current_user.has_role?('Administrator')
-			@total_teacher = Course.where("id is not null").count
-			teacher_courses= Course.where("id is not null").order("start_date DESC").limit(params[:limit]).offset(params[:offset]).includes([{:teacher_enrollments => [:user,:role]}, :enrollments, :lectures, :quizzes])#.all
+		# The course index page, with all the courses the teacher is giving OR the student is taking.
+		# If this is an <tt> instructor </tt> I show the courses he's giving, else, the courses he's taking.
+		total_teacher_courses = 0
+		teacher_courses = {}
+
+		if current_user.is_administrator?
+			total_teacher_courses = Course.count
+			teacher_courses= Course.order("start_date DESC").limit(params[:limit]).offset(params[:offset]).includes([{:teacher_enrollments => [:user]}, :enrollments, :lectures, :quizzes])
 		elsif current_user.is_school_administrator?
-			user_role = UsersRole.where(:user_id => current_user.id, :role_id => 9)[0]
-      		school_domain = user_role.admin_school_domain
-			if school_domain.blank?
-				@total_teacher = 0
-				teacher_courses = {}
-			else
-				if school_domain == "all"
-					school_domain = user_role.organization.domain || nil
-				end
-				
-				@total_teacher = Course.select{|c| c.teachers.select{|t| t.email.include?(school_domain) }.size>0}.count
-				teacher_courses = Course.order("start_date DESC").includes([:user,:teachers,{:teacher_enrollments => [:user,:role]}, :enrollments, :lectures, :quizzes]).select{|c| c.teachers.select{|t| t.email.include?(school_domain) }.size>0}[params[:offset].to_i .. params[:offset].to_i+params[:limit].to_i ]
+			school_domain = UsersRole.where(:user_id => current_user.id, :role_id => 9).first.organization.domain rescue ''
+			if !school_domain.blank?
+				course_ids = TeacherEnrollment.joins(:user).where("users.email like ?", "%#{school_domain}%").pluck(:course_id).uniq
+				total_teacher_courses = course_ids.size
+				teacher_courses = Course.order("start_date DESC").where(:id => course_ids).limit(params[:limit]).offset(params[:offset]).includes([{:teacher_enrollments => [:user]}, :enrollments, :lectures, :quizzes])
 			end
 		else
-			@total_teacher = current_user.subjects_to_teach.count
-			teacher_courses = current_user.subjects_to_teach.order("start_date DESC").limit(params[:limit]).offset(params[:offset]).includes([{:teacher_enrollments => [:user,:role]}, :enrollments, :lectures, :quizzes])
+			total_teacher_courses = current_user.subjects_to_teach.count
+			teacher_courses = current_user.subjects_to_teach.order("start_date DESC").limit(params[:limit]).offset(params[:offset]).includes([{:teacher_enrollments => [:user]}, :enrollments, :lectures, :quizzes])
 		end
-		if teacher_courses 
-			teacher_courses = teacher_courses.map do|c| 
+
+		if teacher_courses
+			teacher_courses = teacher_courses.map do|c|
+				{
+				"end_date"=>c.end_date,
+				"id"=>c.id,
+				"importing"=>c.importing,
+				"image_url"=>c.image_url,
+				"name"=>c.name,
+				"short_name"=>c.short_name,
+				"start_date"=>c.start_date,
+				"user_id"=>c.user_id,
+				"ended"=>c.ended,
+				"duration"=>c.duration,
+				'enrollments'=>c.enrollments.size,
+				'lectures'=>c.lectures.size,
+				'quiz'=>c.quizzes.select{|q| q.quiz_type =='quiz'}.size,
+				'survey'=>c.quizzes.select{|q| q.quiz_type !='quiz'}.size,
+				"teacher_enrollments"=> c.teacher_enrollments.map { |u| { "user" => { "name" => u.user.name , "email" => u.user.email } } }
+				}
+			end
+		end
+
+		#student
+		total_student_courses = (current_user.courses + current_user.guest_courses).count
+		if(total_student_courses > 0)
+			student_courses = (current_user.courses.order("start_date DESC").limit(params[:limit]).offset(params[:offset]) + current_user.guest_courses.order("start_date DESC").limit(params[:limit]).offset(params[:offset])).map do|c|
 				{ 
-					"end_date"=>c.end_date,"id"=>c.id,"importing"=>c.importing,"image_url"=>c.image_url,"name"=>c.name,"short_name"=>c.short_name, 
-					"start_date"=>c.start_date,"user_id"=>c.user_id,"ended"=>c.ended,"duration"=>c.duration,'enrollments'=>c.enrollments.size ,'lectures'=>c.lectures.size , 
-					'quiz'=>c.quizzes.select{|q| q.quiz_type =='quiz'}.size ,'survey'=>c.quizzes.select{|q| q.quiz_type !='quiz'}.size, 
-					"teacher_enrollments"=> c.teacher_enrollments.map { |u| { "user" => { "name" => u.user.name , "email" => u.user.email } } } 
-				} 
-			end 
-		end 
-		@total_student = (current_user.courses + current_user.guest_courses).count
-		student_courses = (current_user.courses.order("start_date DESC").limit(params[:limit]).offset(params[:offset]) + current_user.guest_courses.order("start_date DESC").limit(params[:limit]).offset(params[:offset])).map do|c|
-			{
-				"end_date"=>c.end_date,"id"=>c.id,"importing"=>c.importing,"image_url"=>c.image_url,"name"=>c.name,"short_name"=>c.short_name,"start_date"=>c.start_date,
-				"user_id"=>c.user_id,"ended"=>c.ended,"duration"=>c.duration, "teacher_enrollments"=> c.teacher_enrollments.map { |u| { "user" => { "name" => u.user.name ,
-				"email" => u.user.email } } }
-			}
+				"end_date"=>c.end_date,
+				"id"=>c.id,
+				"importing"=>c.importing,
+				"image_url"=>c.image_url,
+				"name"=>c.name,
+				"short_name"=>c.short_name,
+				"start_date"=>c.start_date,
+				"user_id"=>c.user_id,
+				"ended"=>c.ended,
+				"duration"=>c.duration, 
+				"teacher_enrollments"=> c.teacher_enrollments.map { |u| { "user" => { "name" => u.user.name ,"email" => u.user.email } } }
+				}
+			end
 		end
-		@total = @total_student > @total_teacher ? @total_student : @total_teacher
-		render json: {:total => @total, :teacher_courses => teacher_courses, :student_courses => student_courses}
+
+		total_count = [total_student_courses, total_teacher_courses].max
+		render json: {:total => total_count, :teacher_courses => teacher_courses, :student_courses => student_courses}
 	end  
 
 	def current_courses
@@ -612,9 +635,6 @@ class CoursesController < ApplicationController
 		render json: {:course => course,  :groups => groups, :next_item => next_item}
   	end
 
-	# def courseware
-	# end  
-
 	def export_csv
 		@course.export_course(current_user)
 		render :json => {:notice => ['Course wil be exported to CSV and sent to your Email']}
@@ -625,8 +645,11 @@ class CoursesController < ApplicationController
 		render :json => {:notice => ['Student list wil be exported to CSV and sent to your Email']}
 	end
 
-	# def export_for_transfer
-	# end  
+  def export_for_transfer
+    if current_user.is_administrator?  || (@course.is_school_administrator(current_user))
+      csv_files = @course.export_for_transfer()
+    end
+  end 
 
 	def export_modules_progress
 		@course=Course.where(:id => params[:id]).includes(:groups => [{:online_quizzes => [:online_answers, :lecture]}, :quizzes, :lectures => :online_quizzes])[0]

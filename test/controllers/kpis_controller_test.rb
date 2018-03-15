@@ -5,6 +5,7 @@ class KpisControllerTest < ActionDispatch::IntegrationTest
 	def setup
 		@user3 = users(:user3)
 		@admin_user = users(:admin_user)
+		ENV['INFLUXDB_PORT'] = "3"
 	end
 
 	test "should read_totals_for_duration" do
