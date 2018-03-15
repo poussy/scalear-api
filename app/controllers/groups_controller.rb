@@ -769,7 +769,7 @@ class GroupsController < ApplicationController
 	def export_module_timeline_csv
 		@modulechart=Group.where(:id => params[:id], :course_id => params[:course_id]).includes([{:lectures => [:confuseds, :video_events]}]).first
 		@all_stats= @modulechart.export_student_statistics_csv(current_user)
-		render :json => {:notice => ["timeline data wil be exported to CSV and sent to your Email"]}
+		render :json => {:notice => ["Timeline data wil be exported to CSV and sent to your Email"]}
 	end
 
 

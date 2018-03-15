@@ -231,6 +231,18 @@ class UserMailer < ApplicationMailer
 		@user = user
 		mail(:to => user.email, :subject => "Your account on ScalableLearning has been pseudonymized")
 	end
+
+	def video_events(user, file_name, file_path, locale, group_name, course_name)
+		I18n.locale=locale
+		@from =  "\"Scalable Learning\" <info@scalable-learning.com>"
+		@user_name= user.name
+		@user_email= user.email
+		@group_name = group_name
+		@course_name = course_name
+		attachments[file_name]= File.read(file_path)
+
+		mail(:to => @user_email , :subject => " Exported Data from Module #{group_name}", :from => @from)
+	end
 	
 
 end
