@@ -31,9 +31,8 @@ class Devise::ConfirmationsController < DeviseTokenAuth::ConfirmationsController
           redirect_headers = build_redirect_headers(token,
                                                     client_id,
                                                     redirect_header_options)
-
+          redirect_headers['uid'] = @resource['uid']
           redirect_url = "#{params[:redirect_url]}?#{redirect_headers.to_query}"
-
           redirect_to(redirect_url)
         else
           raise ActionController::RoutingError.new('Not Found')
