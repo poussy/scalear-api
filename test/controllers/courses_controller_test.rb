@@ -443,6 +443,26 @@ class CoursesControllerTest <  ActionDispatch::IntegrationTest
 		assert_equal resp['teacher_courses'].count , 2
 	end
 
+	test 'validate current_courses method for school admin' do
+		user = users(:school_administrator)
+		user.roles << Role.find(1)
+
+		teacher_in_course_3 = User.find(3)
+		teacher_in_course_3.skip_reconfirmation!
+		teacher_in_course_3.email = 'ahmed@edu.eg'
+		teacher_in_course_3.save(:validate => false)
+
+		# no current courses
+		get '/en/courses/current_courses' , headers: user.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_equal resp['teacher_courses'].count , 0
+		# one current course
+		Course.find(3).update_attribute("end_date",Date.today+1.day)
+		get '/en/courses/current_courses' , headers: user.create_new_auth_token 
+		resp =  JSON.parse response.body
+		assert_equal resp['teacher_courses'].count , 1
+	end
+
 	test 'validate get_role method for teacher' do
 		url = '/en/courses/'+ @course1.id.to_s+'/get_role/'
 		get  url , headers: @user1.create_new_auth_token 
