@@ -214,4 +214,35 @@ class UserMailer < ApplicationMailer
 		mail(:to => user.email, :subject => "End Date of Course: #{course.name}", :from => @from)
 	end
 
+	def inactive_user(user, locale)
+		I18n.locale=locale
+		@from =  "\"ScalableLearning \" <no-reply@scalable-learning.com>"
+		@user = user
+		mail(:to => user.email, :subject => "Time to delete or update your ScalableLearning account", :from => @from)
+	end
+
+	def anonymisation_report(mail_to, successes,failures)
+		@successes = successes
+		@failures = failures
+		mail(:to =>mail_to, :subject => "anonymisation report")
+	end
+
+	def anonymisation_success(user)
+		@user = user
+		mail(:to => user.email, :subject => "Your account on ScalableLearning has been pseudonymized")
+	end
+
+	def video_events(user, file_name, file_path, locale, group_name, course_name)
+		I18n.locale=locale
+		@from =  "\"Scalable Learning\" <info@scalable-learning.com>"
+		@user_name= user.name
+		@user_email= user.email
+		@group_name = group_name
+		@course_name = course_name
+		attachments[file_name]= File.read(file_path)
+
+		mail(:to => @user_email , :subject => " Exported Data from Module #{group_name}", :from => @from)
+	end
+	
+
 end
