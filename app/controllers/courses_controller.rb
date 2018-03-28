@@ -591,7 +591,8 @@ class CoursesController < ApplicationController
 		should_enter=true
 		next_i=nil
 		last_viewed_group = -1
-		last_viewed_lecture = course.lecture_views.includes(:lecture).select{|lec_view| lec_view.user_id == current_user.id && lec_view.lecture.appearance_time <= today }.sort_by!(&:updated_at).last
+		current_lecture_ids = course.lectures.where('appearance_time <= ?',today).pluck(:id)
+		last_viewed_lecture = current_user.lecture_views.where(:lecture_id => current_lecture_ids).order(:updated_at).last
 		last_viewed_group_id = last_viewed_lecture.group_id if !last_viewed_lecture.nil?
 
 		groups.each do |g|
