@@ -47,6 +47,7 @@ Rails.application.routes.draw do
         get "get_subdomains"
         get "get_welcome_message"
         post "submit_welcome_message"
+        post "agree_to_privacy_policy"
       end
       collection do
         get "student"
@@ -186,6 +187,7 @@ Rails.application.routes.draw do
         get 'get_module_summary'
         get 'get_online_quiz_summary'
         get 'get_discussion_summary'
+        get 'export_module_timeline_csv'
       end
       collection do
         post 'sort'
