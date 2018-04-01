@@ -128,7 +128,7 @@ class UsersController < ApplicationController
       if params['password'] == params['password_confirmation']
         render json: user
       else
-        render json: {errors: {password_confirmation:["Doesnt match password"]}}, :status => :unprocessable_entity 
+        render json: {errors: {password_confirmation:["Doesn't match password"]}}, :status => :unprocessable_entity 
       end
     else
       render json: {errors: user.errors}, :status => :unprocessable_entity 
