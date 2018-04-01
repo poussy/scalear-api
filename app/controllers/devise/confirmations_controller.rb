@@ -26,7 +26,7 @@ class Devise::ConfirmationsController < DeviseTokenAuth::ConfirmationsController
   
           sign_in(@resource)
           if @resource.errors.include?(:email) && User.find_by_confirmation_token(params[:confirmation_token])
-            redirect_header_options = {account_confirmation_success: "confirmed"}
+            redirect_header_options = {account_confirmation_success: false}
           else
             redirect_header_options = {account_confirmation_success: true}
           end
@@ -40,7 +40,7 @@ class Devise::ConfirmationsController < DeviseTokenAuth::ConfirmationsController
           redirect_headers['uid'] = @resource['uid']
           redirect_url = "#{params[:redirect_url]}?#{redirect_headers.to_query}"
         else
-            redirect_url = "#{params[:redirect_url]}?#{{account_confirmation_success: "invalid"}.to_query}"
+            redirect_url = "#{params[:redirect_url]}?#{{account_confirmation_success: false}.to_query}"
         end
         redirect_to(redirect_url)
     end
