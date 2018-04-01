@@ -60,7 +60,7 @@ class UsersController < ApplicationController
     user.roles << Role.find(2)
     if user.save
       token = user.create_new_auth_token
-      redirect_to "#/users/login?#{token.to_query}"
+      render json: {user: user, token: token}
     else
       render json: {errors: user.errors}, status: :unprocessable_entity
     end
