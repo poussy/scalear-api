@@ -43,7 +43,6 @@ class ApplicationController < ActionController::API
 
   def record_not_found
     render :json => {errors:[I18n.t("controller_msg.record_not_found")]}, status:404
-    true
   end
 
   def set_locale
