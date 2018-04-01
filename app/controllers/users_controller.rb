@@ -60,7 +60,7 @@ class UsersController < ApplicationController
     user.roles << Role.find(2)
     if user.save
       token = user.create_new_auth_token
-      redirect_to "#/users/login?#{token.to_query}"
+      render json: {user: user, token: token}
     else
       render json: {errors: user.errors}, status: :unprocessable_entity
     end
@@ -109,6 +109,15 @@ class UsersController < ApplicationController
       render json: {:errors => current_user.organizations[0].errors }, :status => :unprocessable_entity 
     end 
   end 
+
+  def agree_to_privacy_policy
+    current_user.policy_agreement= {'date' => DateTime.now, 'ip' => request.remote_ip}
+    if current_user.save    
+      render json: current_user
+    else
+      render json: current_user.errors
+    end
+  end
 
   private 
 

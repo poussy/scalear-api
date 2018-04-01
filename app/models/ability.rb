@@ -27,7 +27,7 @@ class Ability
              :get_lecture_charts_angular, :get_quiz_chart_angular, :get_survey_chart_angular, :get_student_statistics_angular, :change_status_angular, 
              :display_quizzes_angular, :display_questions_angular, :hide_invideo_quiz, :get_student_questions, :hide_student_question, :get_inclass_active_angular,
              :module_copy,:display_all, :get_progress_module, :get_module_progress, :get_module_inclass, :get_quiz_charts, :get_survey_charts, :get_quiz_charts_inclass,
-             :update_all_inclass_sessions, :get_module_summary, :get_online_quiz_summary, :get_discussion_summary], Group do |group|
+             :update_all_inclass_sessions, :get_module_summary, :get_online_quiz_summary, :get_discussion_summary, :export_module_timeline_csv], Group do |group|
                 group.course.correct_teacher(user)
         end
         can [:get_survey_chart_angular, :get_module_data_angular, :last_watched, :get_inclass_student_status, :get_module_summary, :get_online_quiz_summary, 
