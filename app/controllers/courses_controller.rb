@@ -58,7 +58,7 @@ class CoursesController < ApplicationController
 		elsif current_user.is_school_administrator?
 			school_domain = UsersRole.where(:user_id => current_user.id, :role_id => 9).first.organization.domain rescue ''
 			if !school_domain.blank?
-				course_ids = TeacherEnrollment.joins(:user).where("users.email like ?", "%#{school_domain}%").pluck(:course_id).uniq
+				course_ids = TeacherEnrollment.joins(:user).where("users.email like ? or users.id = ?", "%#{school_domain}%", current_user.id).pluck(:course_id).uniq 
 				total_teacher_courses = course_ids.size
 				teacher_courses = Course.order("start_date DESC").where(:id => course_ids).limit(params[:limit]).offset(params[:offset]).includes([{:teacher_enrollments => [:user]}, :enrollments, :lectures, :quizzes])
 			end
@@ -114,12 +114,14 @@ class CoursesController < ApplicationController
 	end  
 
 	def current_courses
-		email = current_user.email.split('@')[1]
-		if current_user.has_role?('Administrator')
+		if current_user.is_administrator?
 			teacher_courses = Course.select([:start_date, :end_date, :name, :short_name, :id]).where("end_date > ?", Time.now)
 		elsif current_user.is_school_administrator?
-			email = UsersRole.where(:user_id => current_user.id, :role_id => 9)[0].admin_school_domain
-			teacher_courses = Course.includes([:user,:teachers]).select([:start_date, :end_date, :name, :short_name, :id,:user_id]).select{|c| ( c.teachers.select{|t| t.email.include?(email) }.size>0 ) && (c.end_date > Date.today) }
+			school_domain = UsersRole.where(:user_id => current_user.id, :role_id => 9).first.organization.domain rescue ''
+			if !school_domain.blank?
+				course_ids = TeacherEnrollment.joins(:user).where("users.email like ? or users.id = ?", "%#{school_domain}%", current_user.id).pluck(:course_id).uniq 
+			end
+			teacher_courses = Course.where("end_date > ?",Date.today).where(:id => course_ids).includes([:user,:teachers]).select([:start_date, :end_date, :name, :short_name, :id,:user_id])
 		else
 			teacher_courses=current_user.subjects_to_teach.where("end_date > ?", Time.now)
 		end
@@ -591,7 +593,8 @@ class CoursesController < ApplicationController
 		should_enter=true
 		next_i=nil
 		last_viewed_group = -1
-		last_viewed_lecture = course.lecture_views.includes(:lecture).select{|lec_view| lec_view.user_id == current_user.id && lec_view.lecture.appearance_time <= today }.sort_by!(&:updated_at).last
+		current_lecture_ids = course.lectures.where('appearance_time <= ?',today).pluck(:id)
+		last_viewed_lecture = current_user.lecture_views.where(:lecture_id => current_lecture_ids).order(:updated_at).last
 		last_viewed_group_id = last_viewed_lecture.group_id if !last_viewed_lecture.nil?
 
 		groups.each do |g|
@@ -640,10 +643,10 @@ class CoursesController < ApplicationController
 		render :json => {:notice => ['Course wil be exported to CSV and sent to your Email']}
 	end
 
-  def export_student_csv
-    @course.export_student_csv(current_user)
-    render :json => {:notice => ['Student list wil be exported to CSV and sent to your Email']}
-  end
+	def export_student_csv
+		@course.export_student_csv(current_user)
+		render :json => {:notice => ['Student list wil be exported to CSV and sent to your Email']}
+	end
 
   def export_for_transfer
     if current_user.is_administrator?  || (@course.is_school_administrator(current_user))

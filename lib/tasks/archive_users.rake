@@ -5,9 +5,11 @@ namespace :gdpr do
         failures = {}
         inactive_users = User.where('updated_at < ? AND encrypted_data is null', 1.year.ago.midnight-1.week)
         inactive_users.each do |user|
+           user_data = user.dup
            result = user.anonymise
            if result == "success"
                 successes[user.id] = result
+                UserMailer.delay.anonymisation_success(user_data)#.deliver
            else
                 failures[user.id] = result
            end

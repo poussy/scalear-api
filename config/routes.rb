@@ -187,6 +187,7 @@ Rails.application.routes.draw do
         get 'get_module_summary'
         get 'get_online_quiz_summary'
         get 'get_discussion_summary'
+        get 'export_module_timeline_csv'
       end
       collection do
         post 'sort'

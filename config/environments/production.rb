@@ -87,7 +87,7 @@ Rails.application.configure do
 
 
   config.frontend_host = "https://www.scalable-learning.com/#"
-  config.action_mailer.default_url_options = {:host => 'www.scalable-learning.com/#' , :protocol => 'https'}
+  config.action_mailer.default_url_options = {:host => 'www.scalable-learning.com' , :protocol => 'https'}
 
   config.action_mailer.smtp_settings = {
     :address        => 'smtp.sendgrid.net',
