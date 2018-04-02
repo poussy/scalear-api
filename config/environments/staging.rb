@@ -7,9 +7,9 @@ Rails.application.configure do
   config.consider_all_requests_local       = false
   config.action_controller.perform_caching = true
   config.cache_store = :memory_store
-  config.public_file_server.headers = {
-    'Cache-Control' => "public, max-age=#{1.year.seconds.to_i}"
-  }
+  # config.public_file_server.headers = {
+  #   'Cache-Control' => "public, max-age=#{1.year.seconds.to_i}"
+  # }
 
   # Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
   config.force_ssl = true
