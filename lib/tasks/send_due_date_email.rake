@@ -6,12 +6,13 @@ task :send_due_date_email => :environment do
 
 	events.each do |ev|
 		enrolled[ev.course_id].each do |enroll|
-			if ev.group_id.nil? && !ev.lecture_id.nil?
+			
+			if !ev.lecture_id.nil? && !ev.lecture.due_date_module #send only if it has due date separate from module
 				lecture = ev.lecture
-				if enroll.user.finished_lecture_test?(lecture)[0]  < 0
+				if enroll.user.finished_lecture_test?(lecture)[0]  < 0 # didnt answer all quizzes || didnt watch video
 					UserMailer.due_date_email(enroll.user, ev.course, lecture , "Lecture" , I18n.locale).deliver
 				end
-			elsif ev.group_id.nil? && !ev.quiz_id.nil?
+			elsif !ev.quiz_id.nil? && !ev.quiz.due_date_module   #send only if it has due date separate from module
 				quiz = ev.quiz
 				if quiz.quiz_type=='quiz'
 					if  enroll.user.finished_quiz_test?(quiz) < 0
