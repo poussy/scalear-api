@@ -10,7 +10,6 @@ class ImpressionateController < ApplicationController
 			end
 			if !old.nil?
 				user = old
-				user.courses = [course]
 				preview_user_token = user.create_new_auth_token
 				render json: {:user => user, :token => preview_user_token}
 			else
