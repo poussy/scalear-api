@@ -446,18 +446,12 @@ class CoursesController < ApplicationController
 			g['items'] = g.get_all_items
 			g['total_time'] = g.total_time
 		end
-
-		if current_user.has_role?("Preview")
-			user =User.where("email = ? AND name='preview' ",current_user.email.split('@')[0]+'_preview@scalable-learning.com' ).first
-			if !user.nil?
-				enrolled = user.enrollments.first
-				if enrolled
-					if enrolled.course_id == params[:id].to_i
-						user.destroy()
-					end
-				end
-			end
+		
+		user =User.where("email = ? AND name='preview' ",current_user.email.split('@')[0]+'_preview@scalable-learning.com' ).first
+		if !user.nil?
+			user.async_destroy
 		end
+		
 		course1 =  @course.as_json
 		course1[:duration] = @course.duration
 		render json: {:course => course1,  :groups => groups}
