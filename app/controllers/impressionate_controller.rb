@@ -33,8 +33,9 @@ class ImpressionateController < ApplicationController
 	def destroy
 			old_user = User.find(params[:old_user_id])
 			old_user_token = old_user.create_new_auth_token
-			new_user = User.find(params[:new_user_id])
-			new_user.async_destroy
+			if new_user = User.find_by_id(params[:new_user_id])
+				new_user.async_destroy
+			end
 			render json: {:msg => "No longer preview as student", :token=>old_user_token}
 	end
 
