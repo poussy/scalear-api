@@ -27,7 +27,7 @@
       <%= "#{t('user_mailer.student_comment')}: #{@problem}" %>
       <br>
       <% if @url %>
-        <%= "(#{t('user_mailer.technical_details')}: #{root_url+@url}" %>
+        <%= "(#{t('user_mailer.technical_details')}: #{Rails.configuration.frontend_host+@url}" %>
         <br>
         <%= "#{t('agent')}: #{@agent})" %><br/>
         <%= "#{t('version')}: #{@version}" %><br/>

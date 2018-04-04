@@ -11,7 +11,7 @@
 
     <p>"<%= @comment.content.html_safe %>"</p>
     <p>
-      <%= link_to "Click to view your question and the video", root_url+@url, :target => '_blank' %>
+      <%= link_to "Click to view your question and the video", Rails.configuration.frontend_host+@url, :target => '_blank' %>
     </p>
   </body>
 </html>

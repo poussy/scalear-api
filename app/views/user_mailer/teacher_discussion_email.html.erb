@@ -6,8 +6,8 @@
 	<body>
 		<p>The student <%=@post_owner.screen_name%> asked the following question in <%= @course.short_name %> "<%= @lecture.name%>"</p>
 		<br />
-		<p><%= Time.at(@post.time.round).utc.strftime("%H:%M:%S") %>: "<%= link_to @post.content.html_safe, root_url+@url, :target => '_blank' %>"</p>
-		<p>You are receiving this email because you are listed as a teacher for the course <%= @course.name %> on Scalable-Learning.com. If you would like to disable these emails you may do so on the <%= link_to "Course Administration page", root_url+@url2, :target => '_blank' %>.</p>
+		<p><%= Time.at(@post.time.round).utc.strftime("%H:%M:%S") %>: "<%= link_to @post.content.html_safe, Rails.configuration.frontend_host+@url, :target => '_blank' %>"</p>
+		<p>You are receiving this email because you are listed as a teacher for the course <%= @course.name %> on Scalable-Learning.com. If you would like to disable these emails you may do so on the <%= link_to "Course Administration page", Rails.configuration.frontend_host+@url2, :target => '_blank' %>.</p>
 	</body>
 </html>
 
