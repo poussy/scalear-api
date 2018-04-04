@@ -5,7 +5,7 @@
   </head>
   <body>
 <p>Here is the progress from ScalableLearning for your <%=@course_short_name%> as of <%=@today%>.</p>
-<p>	You can export a newer version of the progress at any time from the <%= link_to "course progress page", root_url+@url_progress, :target => '_blank' %></p>
+<p>	You can export a newer version of the progress at any time from the <%= link_to "course progress page", Rails.configuration.frontend_host+@url_progress, :target => '_blank' %></p>
     <p> Sincerely,</p> 
     <p> The ScalableLearning Team</p> 
   </body>

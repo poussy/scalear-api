@@ -15,7 +15,7 @@
     </p>
     <% end %>
     <p>
-       <%= link_to t('user_mailer.check_course_website'), root_url+@url, :target => '_blank' %>
+       <%= link_to t('user_mailer.check_course_website'), Rails.configuration.frontend_host+@url, :target => '_blank' %>
     </p>
     
   </body>
