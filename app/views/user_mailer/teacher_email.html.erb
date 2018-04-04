@@ -9,7 +9,7 @@
     <br />
     <%= t('user_mailer.you_been_invited', name: @inviter.name, role: @role_name, course: @course.name ) %>.
     <%= t('user_mailer.to_join_course') %>
-    <%= link_to root_url+"/users/teacher", root_url+"/users/teacher", :target => '_blank' %>
+    <%= link_to Rails.configuration.frontend_host+"/users/teacher", Rails.configuration.frontend_host+"/users/teacher", :target => '_blank' %>
     <%= t('user_mailer.to_join_course2') %>
     <br />
     <br />
