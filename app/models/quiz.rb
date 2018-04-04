@@ -15,8 +15,12 @@ class Quiz < ApplicationRecord
   attribute :done
   attribute :questions_count
 
-  after_save do
+  after_initialize do
     self[:questions_count] = self.questions.count
+  end
+
+  before_update do
+    self[:show_explanation] = true if !self[:exam]
   end
 
   validates :retries, :correct_question_count, :numericality => {:only_integer => true, :greater_than_or_equal_to => 0 }
