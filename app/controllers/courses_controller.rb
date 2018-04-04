@@ -449,7 +449,7 @@ class CoursesController < ApplicationController
 		
 		user =User.where("email = ? AND name='preview' ",current_user.email.split('@')[0]+'_preview@scalable-learning.com' ).first
 		if !user.nil?
-			user.destroy
+			user.async_destroy
 		end
 		
 		course1 =  @course.as_json
