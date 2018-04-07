@@ -500,16 +500,15 @@ class CoursesController < ApplicationController
         @students=@course.users.select("users.*, LOWER(users.name), LOWER(users.last_name)").order("LOWER(users.last_name)")
         @total=@students.size
 
-        graded_submitted_quizzes = @course.quiz_statuses.includes(:quiz).where("status= ? AND quizzes.quiz_type = ? AND quizzes.graded = ?", "Submitted","quiz",true).references(:quiz).distinct(:quiz_id).group(:user_id).count
-        graded_online_quizzes = @course.online_quiz_grades.where(course_id:@course.id).includes([:lecture,:online_quiz]).where("lectures.graded = ? AND online_quizzes.graded = ?",true, true ).references([:lecture,:online_quiz]).distinct(:online_quiz_id).group(:user_id).count
-        graded_free_online_quizzes = @course.free_online_quiz_grades.where(course_id:@course.id).includes([:lecture,:online_quiz]).where("lectures.graded = ? AND online_quizzes.graded = ?",true, true).references([:lecture,:online_quiz]).distinct(:online_quiz_id).group(:user_id).count
-
+        graded_submitted_quizzes = @course.quiz_statuses.includes(:quiz).where("status= ? AND quizzes.quiz_type = ? AND quizzes.graded = ?", "Submitted","quiz",true).references(:quiz).distinct(:quiz_id).group(:user_id).count ## {[user_id] => [count]}
+        graded_online_quizzes = @course.online_quiz_grades.where(course_id:@course.id).includes([:lecture,:online_quiz]).where("lectures.graded = ? AND online_quizzes.graded = ?",true, true ).references([:lecture,:online_quiz]).select(:online_quiz_id).distinct().group(:user_id).count
+        graded_free_online_quizzes = @course.free_online_quiz_grades.where(course_id:@course.id).includes([:lecture,:online_quiz]).where("lectures.graded = ? AND online_quizzes.graded = ?",true, true).references([:lecture,:online_quiz]).select(:online_quiz_id).distinct().group(:user_id).count
+        total_lecture_views = @course.lecture_views.includes(:lecture).where("lectures.graded = ? AND percent = ? ", true, 100).references(:lecture).select(:lecture_id).distinct().group(:user_id).count
+        
         @students.each_with_index do |s, index|
-            
-
             @n_solved=graded_submitted_quizzes[s.id]
             @nonline=(graded_online_quizzes[s.id] || 0)+ (graded_free_online_quizzes[s.id] || 0)
-            @lectures_views = s.lecture_views.includes(:lecture).where("lectures.course_id = ? AND lectures.graded = ? AND percent = ? ", @course.id, true, 100).references(:lecture).size
+            @lectures_views = total_lecture_views[s.id]
 
             if @n_solved.nil? || @n_total==0
                 @result1=0
