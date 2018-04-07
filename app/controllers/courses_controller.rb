@@ -491,7 +491,7 @@ class CoursesController < ApplicationController
     end  
 
     def get_total_chart_angular
-        @course=Course.where(:id => 13).includes({:online_quizzes => [:online_answers, :lecture]}, :quizzes)[0]
+        @course=Course.where(:id => params[:id]).includes({:online_quizzes => [:online_answers, :lecture]}, :quizzes)[0]
         @student_progress=[]
         @nonline_total=@course.online_quizzes.select{|f| f.graded && f.lecture.graded && (!f.online_answers.empty? || f.question_type=="Free Text Question")}.size
         @lectures_total =@course.lectures.select{|l|  ( l.graded && !l.duration.nil? ) }.size
@@ -500,16 +500,16 @@ class CoursesController < ApplicationController
         @students=@course.users.select("users.*, LOWER(users.name), LOWER(users.last_name)").order("LOWER(users.last_name)")
         @total=@students.size
 
-        graded_submitted_quizzes = @course.quiz_statuses.includes(:quiz).where("status= ? AND quizzes.quiz_type = ? AND quizzes.graded = ?", "Submitted","quiz",true).references(:quiz)
-        graded_online_quizzes = @course.online_quiz_grades.where(course_id:@course.id).includes([:lecture,:online_quiz]).where("lectures.graded = ? AND online_quizzes.graded = ?",true, true ).references([:lecture,:online_quiz])
-        graded_free_online_quizzes = @course.free_online_quiz_grades.where(course_id:@course.id).includes([:lecture,:online_quiz]).where("lectures.graded = ? AND online_quizzes.graded = ?",true, true).references([:lecture,:online_quiz])
+        graded_submitted_quizzes = @course.quiz_statuses.includes(:quiz).where("status= ? AND quizzes.quiz_type = ? AND quizzes.graded = ?", "Submitted","quiz",true).references(:quiz).distinct(:quiz_id).group(:user_id).count
+        graded_online_quizzes = @course.online_quiz_grades.where(course_id:@course.id).includes([:lecture,:online_quiz]).where("lectures.graded = ? AND online_quizzes.graded = ?",true, true ).references([:lecture,:online_quiz]).distinct(:online_quiz_id).group(:user_id).count
+        graded_free_online_quizzes = @course.free_online_quiz_grades.where(course_id:@course.id).includes([:lecture,:online_quiz]).where("lectures.graded = ? AND online_quizzes.graded = ?",true, true).references([:lecture,:online_quiz]).distinct(:online_quiz_id).group(:user_id).count
 
         @students.each_with_index do |s, index|
             
 
-            @n_solved=graded_submitted_quizzes.where(user_id:s.id).size
-            @nonline=graded_online_quizzes.where(user_id:s.id).size+ graded_free_online_quizzes.where(user_id:s.id).size
-            @lectures_views = s.lecture_views.select{ |lec_view| lec_view.lecture.graded && ( lec_view.percent ==100 ) }.size
+            @n_solved=graded_submitted_quizzes[s.id]
+            @nonline=(graded_online_quizzes[s.id] || 0)+ (graded_free_online_quizzes[s.id] || 0)
+            @lectures_views = s.lecture_views.includes(:lecture).where("lectures.course_id = ? AND lectures.graded = ? AND percent = ? ", @course.id, true, 100).references(:lecture).size
 
             if @n_solved.nil? || @n_total==0
                 @result1=0
