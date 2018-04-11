@@ -36,5 +36,7 @@ module ScalearApi
     # The default locale is :en and all translations from config/locales/*.rb,yml are auto loaded.
     config.i18n.default_locale = :en
     config.i18n.locale = :en
+    Rails.application.middleware.use( Oink::Middleware, :instruments => :memory )
+    
   end
 end
