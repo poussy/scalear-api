@@ -174,7 +174,7 @@ class User < ActiveRecord::Base
         else
           if g.exam
             ### id , day_finished , quiz solved , total quiz , optional quiz solved , 0, 0, (1for lecture // 2for quiz // 3 for exam), correct questions threshold to pass exam
-            grades<<[g.id, self.finished_quiz_test_with_correct_question_count?(g),3,g.questions_count].flatten
+            grades<<[g.id, self.finished_quiz_test_with_correct_question_count?(g),3,g.correct_question_count].flatten
           else
             grades<<[g.id, self.finished_quiz_test_with_correct_question_count?(g),2].flatten
           end
