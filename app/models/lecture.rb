@@ -4,7 +4,7 @@ class Lecture < ApplicationRecord
 	has_many :assignment_item_statuses, :dependent => :destroy
 	has_many :confuseds, :dependent => :destroy
 	has_many :distance_peers
-	has_many :events
+	has_many :events, :dependent => :destroy
 	has_many :free_online_quiz_grades
 	has_many :inclass_sessions, :dependent => :destroy
 	has_many :lecture_views, :dependent => :destroy

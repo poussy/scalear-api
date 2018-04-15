@@ -7,13 +7,16 @@ class DashboardController < ApplicationController
 		student_events = []
 		if user.is_administrator?
 			teacher_courses = Course.pluck(:id)
-			student_courses = []
+			student_courses = user.courses.pluck("courses.id")
 			module_teacher_courses = user.subjects_to_teach.pluck("courses.id")
 		elsif current_user.is_school_administrator?
-			email = current_user.email.split('@')[1]
-			teacher_courses = Course.includes([:user,:teachers]).all.select{|c| c.teachers.map{|e| e.email.split("@")[1]}.include?(email) }.map { |e| e.id }
-			student_courses = []
+			school_domain = UsersRole.where(:user_id => current_user.id, :role_id => 9).first.organization.domain rescue ''
+			if !school_domain.blank?
+				course_ids = TeacherEnrollment.includes(:user).where("users.email like ? or users.id = ?", "%#{school_domain}%", current_user.id).pluck(:course_id).uniq 
+				teacher_courses = Course.order("start_date DESC").where(:id => course_ids).pluck(:id)
+			end
 			module_teacher_courses = user.subjects_to_teach.pluck("courses.id")
+			student_courses = user.courses.pluck("courses.id")
 		else
 			teacher_courses = user.subjects_to_teach.pluck("courses.id")
 			student_courses = user.courses.pluck("courses.id")
@@ -118,7 +121,7 @@ class DashboardController < ApplicationController
 					student_courses = []
 			else
 				teacher_courses = user.subjects_to_teach.where("end_date > ?", today).pluck("courses.id") 
-      			student_courses = user.courses.where("end_date > ?", today).pluck("courses.id") 
+				  student_courses = user.courses.where("end_date > ?", today).pluck("courses.id") 
 			end
 
 			filter = lambda{|ev|

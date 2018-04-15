@@ -8,7 +8,7 @@ class Group < ApplicationRecord
 	has_many :assignment_statuses, :dependent => :destroy
 	has_many :assignment_item_statuses, :dependent => :destroy
 	has_many :distance_peers, :dependent => :destroy
-	has_many :events
+	has_many :events, :dependent => :destroy
 	has_many :free_online_quiz_grades
 	has_many :inclass_sessions
 	has_many :lecture_views
