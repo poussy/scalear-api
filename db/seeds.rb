@@ -72,3 +72,34 @@ users.each do |user|
     u.skip_confirmation!
     u.save!
 end
+
+
+# 1000.times do |x|
+#     u = User.create( 
+#         name: "student-",
+#         last_name: "#{x}",
+#         screen_name: "student#{x}",
+#         university: "uni",
+#         email: "course_1_student#{x}@gmail.com",
+#         password: "password1234")
+
+#     c = Course.first
+#     Enrollment.create(user_id:u.id, course_id: c.id,email_due_date: false)
+#     8.times do |x|
+#         Confused.create(user_id: u.id, course_id: c.id,lecture_id: 22,time: x+0.3, very: true, hide: false)
+#     end
+#     100.times do |x|
+#         Confused.create(user_id: u.id, course_id: c.id,lecture_id: 1,time: x+0.3, very: false, hide: false)
+#     end
+#     100.times do |x|
+#         Confused.create(user_id: u.id, course_id: c.id,lecture_id: 23,time: x+0.3, very: false, hide: false)
+#     end
+#     OnlineQuizGrade.create(lecture_id: 22, group_id: 1, course_id: 1, user_id: u.id, online_quiz_id: 47, online_answer_id: 58, grade: 1.0, optional_text: nil, review_vote: false, in_group: false, inclass: false, distance_peer: false, attempt: 2)
+#     OnlineQuizGrade.create(lecture_id: 22, group_id: 1, course_id: 1, user_id: u.id, online_quiz_id: 48, online_answer_id: 60, grade: 0.0, optional_text: nil, review_vote: false, in_group: false, inclass: false, distance_peer: false, attempt: 2)
+#     OnlineQuizGrade.create(lecture_id: 26, group_id: 1, course_id: 1, user_id: u.id, online_quiz_id: 51, online_answer_id: 65, grade: 0.0, optional_text: "Answer 1", review_vote: false, in_group: false, inclass: false, distance_peer: false, attempt: 1)
+    
+#     FreeOnlineQuizGrade.create(user_id: u.id, online_quiz_id: 38, online_answer: "sasasa", grade: 3.0, lecture_id: 1, group_id: 1, course_id: 1, response: "", hide: true, review_vote: false, attempt: 1)
+#     FreeOnlineQuizGrade.create(user_id: u.id, online_quiz_id: 50, online_answer: "sasasa", grade: 3.0, lecture_id: 1, group_id: 1, course_id: 1, response: "", hide: true, review_vote: false, attempt: 1)
+    
+    
+# end
