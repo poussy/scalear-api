@@ -1,7 +1,8 @@
 class Devise::ConfirmationsController < DeviseTokenAuth::ConfirmationsController
     def create
-        resource = User.where(email:params[:email])[0]
-        if resource.blank?
+        resource = User.find_by_email(params[:email])
+
+        if resource.nil?
             render json: {errors: {email:["User doesn't exist"]}}, :status => :unprocessable_entity
         else
             resource.send_confirmation_instructions({
