@@ -12,8 +12,7 @@ class DashboardController < ApplicationController
 		elsif current_user.is_school_administrator?
 			school_domain = UsersRole.where(:user_id => current_user.id, :role_id => 9).first.organization.domain rescue ''
 			if !school_domain.blank?
-				course_ids = TeacherEnrollment.includes(:user).where("users.email like ? or users.id = ?", "%#{school_domain}%", current_user.id).pluck(:course_id).uniq 
-				teacher_courses = Course.order("start_date DESC").where(:id => course_ids).pluck(:id)
+				teacher_courses = TeacherEnrollment.includes(:user).where("users.email like ? or users.id = ?", "%#{school_domain}%", current_user.id).pluck(:course_id).uniq 
 			end
 			module_teacher_courses = user.subjects_to_teach.pluck("courses.id")
 			student_courses = user.courses.pluck("courses.id")
