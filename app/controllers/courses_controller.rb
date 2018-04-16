@@ -143,7 +143,7 @@ class CoursesController < ApplicationController
 			@import= Course.all
 		elsif current_user.has_role?('School Administrator')
 			user_role = UsersRole.where(:user_id => current_user.id, :role_id => 9)[0]
-      		email = user_role.admin_school_domain
+			  email = user_role.admin_school_domain
 			if email == "all"
 				email = user_role.organization.domain || nil
 			end
@@ -264,7 +264,7 @@ class CoursesController < ApplicationController
 		enrolled_student = Enrollment.where(:course_id => params[:id] , :user_id => current_user.id)
 		enrolled_student.update_all(:email_due_date => params[:"email_due_date"])  unless enrolled_student.nil?
 		render json: {}
-  	end 
+	  end 
 
 	def update_teacher_discussion_email
 		enrolled_teacher = TeacherEnrollment.where(:course_id => params[:id] , :user_id => current_user.id)
@@ -320,7 +320,7 @@ class CoursesController < ApplicationController
 		@errors=[]
 
 		if ( email =~ Devise.email_regexp ) == nil
-		 	@errors <<   I18n.t("courses.enter_valid_email")
+			 @errors <<   I18n.t("courses.enter_valid_email")
 		elsif User.find_by_email(email.downcase).nil? #invited only - not yet created an account
 			Invitation.where(:email => email, :course_id => @course.id).destroy_all
 		else
@@ -375,7 +375,7 @@ class CoursesController < ApplicationController
 		else
 			render :json => {:errors => [I18n.t('controller_msg.could_not_delete_course')]} , :status => 400
 		end
-  	end  
+	  end  
 
 	def remove_student
 		@student=User.find(params[:student])
@@ -491,20 +491,24 @@ class CoursesController < ApplicationController
 	end  
 
 	def get_total_chart_angular
-		@course=Course.where(:id => params[:id]).includes({:online_quizzes => [:online_answers, :lecture]}, :quizzes)[0]
+		@course=Course.where(:id => params[:id]).includes({:online_quizzes => [:online_answers, :lecture]}, :quizzes, :lectures)[0]
 		@student_progress=[]
 		@nonline_total=@course.online_quizzes.select{|f| f.graded && f.lecture.graded && (!f.online_answers.empty? || f.question_type=="Free Text Question")}.size
 		@lectures_total =@course.lectures.select{|l|  ( l.graded && !l.duration.nil? ) }.size
 	
 		@n_total= @course.quizzes.select{|v| v.quiz_type=="quiz" and v.graded}.size    #where(:quiz_type => "quiz").count
-		@students=@course.users.select("users.*, LOWER(users.name), LOWER(users.last_name)").order("LOWER(users.last_name)").includes([{:free_online_quiz_grades => :lecture} , {:online_quiz_grades => :lecture} , {:quiz_statuses => :quiz}])
+		@students=@course.users.select("users.*, LOWER(users.name), LOWER(users.last_name)").order("LOWER(users.last_name)")
 		@total=@students.size
 
+		graded_submitted_quizzes = @course.quiz_statuses.includes(:quiz).where("status= ? AND quizzes.quiz_type = ? AND quizzes.graded = ?", "Submitted","quiz",true).references(:quiz).distinct(:quiz_id).group(:user_id).count ## {[user_id] => [count]}
+		graded_online_quizzes = @course.online_quiz_grades.includes([:lecture,:online_quiz]).where("lectures.graded = ? AND online_quizzes.graded = ?",true, true ).references([:lecture,:online_quiz]).select(:online_quiz_id).distinct().group(:user_id).count
+		graded_free_online_quizzes = @course.free_online_quiz_grades.includes([:lecture,:online_quiz]).where("lectures.graded = ? AND online_quizzes.graded = ?",true, true).references([:lecture,:online_quiz]).select(:online_quiz_id).distinct().group(:user_id).count
+		total_lecture_views = @course.lecture_views.includes(:lecture).where("lectures.graded = ? AND percent = ? ", true, 100).references(:lecture).select(:lecture_id).distinct().group(:user_id).count
+		
 		@students.each_with_index do |s, index|
-
-			@n_solved=s.quiz_statuses.select{|v| v.course_id==@course.id && v.status=="Submitted" && v.quiz.quiz_type=='quiz' && v.quiz.graded}.size
-			@nonline=s.online_quiz_grades.select{|q| q.course_id == @course.id && q.lecture.graded && q.online_quiz.graded }.uniq{|u| u.online_quiz_id}.size + s.free_online_quiz_grades.select{|f| f.course_id == @course.id && f.lecture.graded && f.online_quiz.graded}.uniq{|u| u.online_quiz_id}.size
-			@lectures_views = s.lecture_views.select{ |lec_view| lec_view.lecture.graded && ( lec_view.percent ==100 ) }.size
+			@n_solved=graded_submitted_quizzes[s.id]
+			@nonline=(graded_online_quizzes[s.id] || 0)+ (graded_free_online_quizzes[s.id] || 0)
+			@lectures_views = total_lecture_views[s.id]
 
 			if @n_solved.nil? || @n_total==0
 				@result1=0
@@ -630,7 +634,7 @@ class CoursesController < ApplicationController
 		end
 
 		render json: {:course => course,  :groups => groups, :next_item => next_item}
-  	end
+	  end
 
 	def export_csv
 		@course.export_course(current_user)
@@ -643,9 +647,9 @@ class CoursesController < ApplicationController
 	end
 
   def export_for_transfer
-    if current_user.is_administrator?  || (@course.is_school_administrator(current_user))
-      csv_files = @course.export_for_transfer()
-    end
+	if current_user.is_administrator?  || (@course.is_school_administrator(current_user))
+	  csv_files = @course.export_for_transfer()
+	end
   end 
 
 	def export_modules_progress
