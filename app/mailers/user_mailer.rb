@@ -1,5 +1,7 @@
 class UserMailer < ApplicationMailer
 
+	$frontend_host = Rails.configuration.frontend_host
+
 	def announcement_email(users, announcement, course, locale)
 		I18n.locale=locale
 		@from =  "\"#{course.short_name} - #{course.name}\" <info@scalable-learning.com>"
