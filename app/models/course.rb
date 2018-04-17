@@ -304,7 +304,7 @@ class Course < ApplicationRecord
 			#send_file t.path, :type => 'application/zip',
 			#                  :disposition => 'attachment',
 			#                  :filename => file_name
-			UserMailer.delay.attachment_email(current_user, file_name, t.path, I18n.locale)#.deliver
+			UserMailer.delay.attachment_email(current_user, @course, file_name, t.path, I18n.locale)#.deliver
 			t.close
 	end
 	handle_asynchronously :export_course, :run_at => Proc.new { 5.seconds.from_now }
@@ -333,7 +333,7 @@ class Course < ApplicationRecord
     #send_file t.path, :type => 'application/zip',
     #                  :disposition => 'attachment',
     #                  :filename => file_name
-    UserMailer.delay.attachment_email(current_user, file_name, t.path, I18n.locale)#.deliver
+    UserMailer.delay.attachment_email(current_user, @course, file_name, t.path, I18n.locale)#.deliver
     t.close
   end
   handle_asynchronously :export_student_csv, :run_at => Proc.new { 5.seconds.from_now }
@@ -788,8 +788,7 @@ class Course < ApplicationRecord
        z.write(csv_file)
       end
 
-      UserMailer.delay.attachment_email(current_user, file_name, t.path, I18n.locale)
-      # UserMailer.attachment_email(current_user, file_name, t.path, I18n.locale).deliver
+      UserMailer.delay.attachment_email(current_user, @course, file_name, t.path, I18n.locale)
       t.close
     end
     handle_asynchronously :export_school_data, :run_at => Proc.new { 5.seconds.from_now }

@@ -10,7 +10,7 @@ class UserMailer < ApplicationMailer
 		@url  = "courses/#{course.id}"
 		@course = course
 		@reply_to= course.user.email
-		mail(:bcc => users, :subject => "#{I18n.t('user_mailer.new_announcement')} - #{course.name}", :from => @from, :reply_to => @reply_to)
+		mail(:bcc => users, :subject => "(#{@course.short_name})#{I18n.t('user_mailer.new_announcement')}", :from => "\"ScalableLearning\" <no-reply@scalable-learning.com>", :reply_to => @reply_to)
 	end
 
 	def teacher_email(course, email, role, locale)
@@ -69,7 +69,7 @@ class UserMailer < ApplicationMailer
 
 	def content_problem_email(url, user, problem, course, group, lecture, quiz , agent,version)
 		I18n.locale= 'en'
-		@from =  "\"Scalable Learning\" <info@scalable-learning.com>"
+		@from =  "\"Scalable Learning\" <no-reply@scalable-learning.com>"
 		@course= Course.find_by_id(course) if course!=-1
 		@lecture= Lecture.find_by_id(lecture) if lecture!=-1
 		@quiz= Quiz.find_by_id(quiz) if quiz!=-1
@@ -90,14 +90,14 @@ class UserMailer < ApplicationMailer
 		@url[0] = ''
 		@bcc= ["karim@novelari.com"]
 		@to= @course.teachers.pluck(:email)
-		subject = "#{@course.short_name}: Student issue "
+		subject = "#{@course.short_name} Student help request "
 		@reply_to= user.email
 		mail(:bcc => @bcc,:to => @to, :subject => subject, :from => @from, :reply_to => @user_email)
 	end
 
 	def contact_us_email(url, user, comment, agent)
 		I18n.locale= 'en'
-		@from =  "\"Scalable Learning\" <info@scalable-learning.com>"
+		@from =  "\"Scalable Learning\" <no-reply@scalable-learning.com>"
 		@comment= comment
 		@user_name= user.name
 		@user_email=user.email
@@ -105,7 +105,7 @@ class UserMailer < ApplicationMailer
 		@url[0] = ''
 		@agent = agent
 		@to = ["teacher-support@scalear.zendesk.com"]
-		mail(:to => @to, :subject => "Homepage Contact Request", :from => @from, :reply_to => @user_email)
+		mail(:to => @to, :subject => "ScalableLearning Homepage Contact Request", :from => @from, :reply_to => @user_email)
 	end
 
 	def survey_email(user,question,answer,survey,course,response, locale)
@@ -122,11 +122,12 @@ class UserMailer < ApplicationMailer
 		mail(:to => @user_email , :subject => "#{t('response_to')} #{survey}", :from => @from)
 	end
 
-	def attachment_email(user, file_name, file_path, locale)
+	def attachment_email(user, course, file_name, file_path, locale)
 		I18n.locale=locale
-		@from =  "\"Scalable Learning\" <info@scalable-learning.com>"
+		@from =  "\"Scalable Learning\" <no-reply@scalable-learning.com>"
 		@user_name= user.name
 		@user_email= user.email
+		@course = course
 		attachments[file_name]= File.read(file_path)
 
 		mail(:to => @user_email , :subject => "Exported File", :from => @from)
@@ -154,7 +155,7 @@ class UserMailer < ApplicationMailer
 
 	def discussion_reply_email(post_owner, comment_owner, course, group, lecture, post, comment, locale)
 		I18n.locale=locale
-		@from =  "\"#{course.short_name} - #{course.name}\" <info@scalable-learning.com>"
+		@from =  "\"ScalableLearning\" <no-reply@scalable-learning.com>"
 		@post_owner = post_owner
 		@comment_owner = comment_owner
 		@post = post
@@ -163,7 +164,7 @@ class UserMailer < ApplicationMailer
 		@course = course
 		@lecture = lecture
 		@module = group
-		mail(:to => @post_owner.email, :subject => "You've got an answer! (#{lecture.name})", :from => @from,:reply_to => @comment_owner.email)		
+		mail(:to => @post_owner.email, :subject => "(#{@course.short_name}) Answer to your question in #{@module.name}", :from => @from,:reply_to => @comment_owner.email)		
 	end
 
 	def teacher_discussion_email(post_owner, teacher, course, group, lecture, post, locale)
@@ -213,7 +214,7 @@ class UserMailer < ApplicationMailer
 		@url_dashboard = "courses/dashboard"
 		@course = course
 		@user = user
-		mail(:to => user.email, :subject => "End Date of Course: #{course.name}", :from => @from)
+		mail(:to => user.email, :subject => "(#{course.short_name}) End of course", :from => @from)
 	end
 
 	def inactive_user(user, locale)
@@ -231,7 +232,7 @@ class UserMailer < ApplicationMailer
 
 	def anonymisation_success(user)
 		@user = user
-		mail(:to => user.email, :subject => "Your account on ScalableLearning has been pseudonymized")
+		mail(:to => user.email, :subject => "Your account has been pseudonymized", :from => "support@scalable-learning.com")
 	end
 
 	def video_events(user, file_name, file_path, locale, group_name, course_name)
