@@ -552,7 +552,7 @@ class User < ActiveRecord::Base
   end
 
   def self.get_anonymised_user email
-    encrypted_email = Digest::SHA256.hexdigest (email)
+    encrypted_email = Digest::SHA256.hexdigest (email) rescue ""
     User.find_by_encrypted_email(encrypted_email)
   end
 
