@@ -13,7 +13,6 @@ class Devise::SessionsController < DeviseTokenAuth::SessionsController
             @resource.generate_token(DeviseTokenAuth.token_lifespan)
            
             if @resource.save
-                pp @resource
                 render_create_success
             else 
                 render json: @resource.errors
