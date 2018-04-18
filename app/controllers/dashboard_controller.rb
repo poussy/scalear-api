@@ -5,20 +5,19 @@ class DashboardController < ApplicationController
 		user = User.where(:id => current_user.id).includes({:online_quiz_grades => [:online_quiz, :lecture]}, {:free_online_quiz_grades => [:online_quiz , :lecture] }, {:lecture_views => :lecture }, :assignment_item_statuses, {:quiz_statuses => :quiz})[0]
 		teacher_events = []
 		student_events = []
+
+		student_courses = user.courses.pluck("courses.id")
+		module_teacher_courses = user.subjects_to_teach.pluck("courses.id")
 		if user.is_administrator?
 			teacher_courses = Course.pluck(:id)
-			module_teacher_courses = user.subjects_to_teach.pluck("courses.id")
 		elsif current_user.is_school_administrator?
 			school_domain = UsersRole.where(:user_id => current_user.id, :role_id => 9).first.organization.domain rescue ''
 			if !school_domain.blank?
 				teacher_courses = TeacherEnrollment.includes(:user).where("users.email like ? or users.id = ?", "%#{school_domain}%", current_user.id).pluck(:course_id).uniq 
 			end
-			module_teacher_courses = user.subjects_to_teach.pluck("courses.id")
 		else
-			teacher_courses = user.subjects_to_teach.pluck("courses.id")
-			module_teacher_courses = teacher_courses
+			teacher_courses = module_teacher_courses
 		end
-		student_courses = user.courses.pluck("courses.id")
 
 		today = Time.now
 		filter = lambda{|ev|
