@@ -13,8 +13,17 @@ class Quiz < ApplicationRecord
   attribute :current_user
   attribute :requirements
   attribute :done
+  attribute :questions_count
 
-  validates :retries, :numericality => {:only_integer => true, :greater_than_or_equal_to => 0 }
+  after_initialize do
+    self[:questions_count] = self.questions.count
+  end
+
+  before_update do
+    self[:show_explanation] = true if !self[:exam]
+  end
+
+  validates :retries, :correct_question_count, :numericality => {:only_integer => true, :greater_than_or_equal_to => 0 }
   validates :name, :appearance_time,:due_date,:course_id, :group_id, :presence => true
   validates_inclusion_of :appearance_time_module, :due_date_module,:required_module , :graded_module, :in => [true, false]
 
