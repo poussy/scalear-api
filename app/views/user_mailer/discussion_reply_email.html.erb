@@ -8,4 +8,4 @@
 <div style="color:#676363"><%= @comment.content.html_safe %></div>
 <p><%= t('user_mailer.reply_to_comment')%> <%= link_to t('user_mailer.here'), Rails.configuration.frontend_host+@url, :target => '_blank' %></p>
 
-<%= render partial: 'footer' %>
+<%= render partial: 'footer', locals: {role:"student"} %>

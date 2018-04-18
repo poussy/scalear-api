@@ -3,4 +3,4 @@
 <%= t('user_mailer.adjust_end_date') %><%=link_to "#{t('user_mailer.course_settings_page')}", Rails.configuration.frontend_host+@url_information, :target => '_blank' %>
 </p>
 <%= render partial: 'thank_you_footer' %>
-<%= render partial: 'footer' %>
+<%= render partial: 'footer', locals: {role:"teacher"} %>

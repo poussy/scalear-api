@@ -2,6 +2,6 @@
   <p><%= t('user_mailer.here_is_your_exported_data', {course_name: @course.name})%></p>
 
   <%= render partial: 'thank_you_footer' %>
-  <%= render partial: 'footer' %>
+  <%= render partial: 'footer', locals: {role:"teacher"} %>
     
 </div>

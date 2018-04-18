@@ -1,23 +1,11 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
-  </head>
-  <body>
-  	<%= t('Hello')%>!
-    <br />
-    <br />
-    <%= t('user_mailer.you_been_invited', name: @inviter.name, role: @role_name, course: @course.name ) %>.
-    <%= t('user_mailer.to_join_course') %>
-    <%= link_to Rails.configuration.frontend_host+"/users/teacher", Rails.configuration.frontend_host+"/users/teacher", :target => '_blank' %>
-    <%= t('user_mailer.to_join_course2') %>
-    <br />
-    <br />
-    <%= t('user_mailer.contact_us_teacher', name: @inviter.name, email: @inviter.email) %>
-    <br />
-    <br />
-    - ScalableLearning
-
-
-  </body>
-</html>
+<p>
+  <%= t('user_mailer.you_been_invited', name: @inviter.name, role: @role_name, course: @course.name ) %>.
+  <%= t('user_mailer.to_join_course') %>
+  <%= link_to "ScalableLearning", $frontend_host+"/users/teacher", :target => '_blank' %>
+  <%= t('user_mailer.to_join_course2') %>
+</p>
+<p>
+  <%= t('user_mailer.contact_us_teacher', name: @inviter.name, email: @inviter.email) %>
+</p>
+<%= render partial: 'thank_you_footer' %>
+<%= render partial: 'footer', locals: {role:"teacher"} %>

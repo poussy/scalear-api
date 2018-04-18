@@ -1,10 +1,11 @@
 <center style="font-size:80%;border-top: 1px solid lightgray;padding-top: 15px;margin-top:15px; color: #636567;">
     <div><%=t('user_mailer.you_are_recieving_mail')=%></div>
     <% if @course %>
-    <%= link_to t('user_mailer.change_mail_preferences'), $frontend_host+"courses/#{@course.id}", :target => '_blank' %> -
+    <% url = role == "teacher"? $frontend_host+"courses/#{@course.id}/information" : $frontend_host+"courses/#{@course.id}/course_information"%>
+    <%= link_to t('user_mailer.change_mail_preferences'), url, {:style=>'color:#636567', :target=> '_blank'}%> -
     <% end %>
-    <%= link_to t('user_mailer.privacy'), $frontend_host+"privacy", :target => '_blank' %><br>
+    <%= link_to t('user_mailer.privacy'), $frontend_host+"privacy", {:style=>'color:#636567', :target=> '_blank'} %><br>
     
-    <%= mail_to "support@scalable-learning.com"%><br>
-    <span>© 2018 <strong>Scalable </strong><span style="color:green">Learning </span> – RISE SICS AB, Box 1264, SE-164 29 Kista, Sweden</span>
+    <%= mail_to "support@scalable-learning.com","support@scalable-learning.com",{:style=>'color:#636567'}%><br>
+    <span>© 2018 <strong style="color:black">Scalable </strong><span style="color:green">Learning </span> – RISE SICS AB, Box 1264, SE-164 29 Kista, Sweden</span>
 </center>
