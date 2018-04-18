@@ -5,7 +5,7 @@ class Quiz < ApplicationRecord
   has_many :questions, -> { order :id }, :dependent => :destroy
   has_many :quiz_statuses, :dependent => :destroy
   has_many :assignment_item_statuses, :dependent => :destroy
-  has_many :events
+  has_many :events, :dependent => :destroy
   has_many :free_answers, :dependent => :destroy
   has_many :quiz_grades , :dependent => :destroy
 
