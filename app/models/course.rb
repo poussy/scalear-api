@@ -454,8 +454,7 @@ class Course < ApplicationRecord
 		self.save!
 
 	end
-	handle_asynchronously :import_course, :run_at => Proc.new { 15.seconds.from_now }
-
+  handle_asynchronously :import_course, :run_at => Proc.new { 15.seconds.from_now }
 
 	# def self.our(user)
 	# end
