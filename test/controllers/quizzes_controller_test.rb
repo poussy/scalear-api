@@ -262,21 +262,21 @@ class QuizzesControllerTest < ActionDispatch::IntegrationTest
         assert_equal decode_json_response_body["quiz"]["name"], quizzes(:quiz1)["name"]
         assert_equal decode_json_response_body["questions"].size, 6
         assert_equal decode_json_response_body["answers"][0], 
-            [{"id"=>4,"question_id"=>1,"content"=>"<p class=\"medium-editor-p\">a1</p>"},
-             {"id"=>5,"question_id"=>1,"content"=>"<p class=\"medium-editor-p\">a2</p>"}]
+            [{"id"=>4,"question_id"=>1,"content"=>"<p class=\"medium-editor-p\">a1</p>", "explanation"=>nil},
+             {"id"=>5,"question_id"=>1,"content"=>"<p class=\"medium-editor-p\">a2</p>", "explanation"=>nil}]
 
         assert_equal decode_json_response_body["answers"][1],  
-            [{"id"=>1,"question_id"=>2,"content"=>"<p class=\\\"medium-editor-p\\\">a1</p>"},
-              {"id"=>2,"question_id"=>2,"content"=>"<p class=\\\"medium-editor-p\\\">a2</p>"}]
+            [{"id"=>1,"question_id"=>2,"content"=>"<p class=\\\"medium-editor-p\\\">a1</p>", "explanation"=>nil},
+              {"id"=>2,"question_id"=>2,"content"=>"<p class=\\\"medium-editor-p\\\">a2</p>", "explanation"=>nil}]
         
-        assert_equal decode_json_response_body["answers"][2], [{"id"=>6, "question_id"=>3, "content"=>"abcd"}]
+        assert_equal decode_json_response_body["answers"][2], [{"id"=>6, "question_id"=>3, "content"=>"abcd", "explanation"=>nil}]
         #because it is shuffled we cannot predict the exact answer
         assert decode_json_response_body["answers"][3] == [{"id"=>3,"question_id"=>4,"content"=>["<p class=\"medium-editor-p\">ans1</p>","<p class=\"medium-editor-p\">ans2</p>"],"explanation"=>[]}] || 
                 decode_json_response_body["answers"][3] == [{"id"=>3,"question_id"=>4,"content"=>["<p class=\"medium-editor-p\">ans2</p>","<p class=\"medium-editor-p\">ans1</p>"],"explanation"=>[]}]
        
     end
 
-    test 'get_questions_angular shold return next_item if quiz was submitted' do    
+    test 'get_questions_angular should return next_item if quiz was submitted' do    
       # submit answer
       post '/en/courses/3/quizzes/1/save_student_quiz_angular' , 
         params: {
@@ -284,13 +284,14 @@ class QuizzesControllerTest < ActionDispatch::IntegrationTest
             "1":5,
             "2":{"1":false, "2":true},
             "3":"abcd",
-            "4": ["<p class=\"medium-editor-p\">ans1</p>","<p class=\"medium-editor-p\">ans2</p>"]
+            "4": ["<p class=\"medium-editor-p\">ans1</p>","<p class=\"medium-editor-p\">ans2</p>"],
+            "5":"waterloo",
+            "6":"free answer",
           },
           "commit":"submit"
         }, 
         headers: @headers2 , as: :json
-
-
+      
       get '/en/courses/3/quizzes/1/get_questions_angular' ,headers: @headers2 , as: :json
 
       assert_equal decode_json_response_body["next_item"], {"id"=>3, "class_name"=>"lecture", "group_id"=>3}
