@@ -341,9 +341,7 @@ class QuizzesControllerTest < ActionDispatch::IntegrationTest
           "6"=>"<p class=\"medium-editor-p\">exp free text</p>",
           "3"=>
             ["<p class=\"medium-editor-p\">exp1</p>",
-            "<p class=\"medium-editor-p\">exp2</p>"],
-          "7"=>"<p class=\"medium-editor-p\">exp free text</p>",
-          "8"=>"<p class=\"medium-editor-p\">exp free text</p>"
+            "<p class=\"medium-editor-p\">exp2</p>"]
         }
     end
 

@@ -497,39 +497,38 @@ class QuizzesController < ApplicationController
         if ques.question_type=="MCQ"
           #{"1":false,"2":true} is converted to [2]
           chosen_correct=a.keys.map{|f| f.to_i}.select{|v| a["#{v}"]==true}.sort
-          
+          if params[:commit]=="submit" and chosen_correct.empty?
+             return_value=I18n.t("controller_msg.unanswered_questions")
+             raise ActiveRecord::Rollback
+          end
           if chosen_correct == correct
             temp_explanation[ques.id].each{|ans,expl| explanation[ans]=expl} #if answer is correct show explanations for every answer
           elsif @quiz.show_explanation
             chosen_correct.each{|answer| explanation[answer]= temp_explanation[ques.id][answer]}#add explanation for selected answers only
           end
-          if params[:commit]=="submit" and chosen_correct.empty?
-             return_value=I18n.t("controller_msg.unanswered_questions")
-             raise ActiveRecord::Rollback
-          end
         elsif ques.question_type=="OCQ"
           chosen_correct=[a.to_i] if !a.blank?
+          if params[:commit]=="submit" and a.blank?
+            return_value=I18n.t("controller_msg.unanswered_questions")
+            raise ActiveRecord::Rollback
+          end
           if chosen_correct == correct
             temp_explanation[ques.id].each{|ans,expl| explanation[ans]=expl} #if answer is correct show explanations for every answer
           elsif @quiz.show_explanation
             chosen_correct.each{|answer| explanation[answer]= temp_explanation[ques.id][answer]} #add explanation for selected answers only
           end
           a={a => true} if !a.blank?
-          if params[:commit]=="submit" and a.blank?
-            return_value=I18n.t("controller_msg.unanswered_questions")
-            raise ActiveRecord::Rollback
-          end
         elsif ques.question_type.upcase=="DRAG"
           chosen_correct=a
           correct=ques.answers[0].content
           explanation[ques.answers[0].id]= temp_explanation[ques.id][ques.answers[0].id] if correct == chosen_correct #only show explanation if answer is correct
 
         elsif ques.question_type=="Free Text Question"
-          explanation[ques.answers[0].id]= ques.answers[0].explanation if a == ques.answers[0].content #only show explanation if answer is correct
           if params[:commit]=="submit" and a.blank?
-          return_value=I18n.t("controller_msg.unanswered_questions")
-          raise ActiveRecord::Rollback
+            return_value=I18n.t("controller_msg.unanswered_questions")
+            raise ActiveRecord::Rollback
           end
+          explanation[ques.answers[0].id]= ques.answers[0].explanation if a == ques.answers[0].content #only show explanation if answer is correct
         end
 
         if !a.nil? and ["OCQ","MCQ"].include?ques.question_type.upcase
