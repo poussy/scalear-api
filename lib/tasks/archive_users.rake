@@ -8,7 +8,7 @@ namespace :gdpr do
         inactive_users.each do |user|
            user_data = user.dup
            result = user.anonymise
-           if result == "success"
+            if result == "success"
                 successes[user.id] = result
                 emails << user_data.email
             else
@@ -16,9 +16,9 @@ namespace :gdpr do
             end
         end
         emails.each_slice(1000) do |batch|
-            UserMailer.delay.anonymisation_success(batch)#.deliver
+            UserMailer.delay.anonymisation_success(batch)
         end
-        UserMailer.anonymisation_report(ENV['anonymisation_report_mail'], successes, failures).deliver
+        UserMailer.anonymisation_report(ENV['anonymisation_report_mail'], successes, failures).deliver_now
 
     end
 
