@@ -1,13 +1,13 @@
 sv:
   mailer:
-    thanks_sign_up: "tack för att du registrerar dig en"
+    thanks_sign_up: "Tack för att du registrerar dig en"
     open_confirmation_link: "Klicka på länken nedan för att bekräfta din registrering - eller kopiera den och klistra in den i din webbläsare."
-    click_here_confirm: "Klicka här för att bekräfta ditt nya konto"
+    click_here_confirm: "Vänligen använd länken nedan för att bekräfta ditt nya ScalableLearning konto."
     copy_paste_link: "Eller kopiera och klistra in länken i din webbläsare"
-    contact_us: "Om du har frågor eller synpunkter så tveka inte att kontakta oss genom att använda återkopplings länken i menyn Hjälp"
+    contact_us: "Om du har några frågor eller kommentarer, använd länken Support på Hjälp-menyn."
     note_ie_incompatible: "Observera: Internet Explorer stöder för närvarande inte alla de avancerade webbfunktioner Scalable Learning använder. Vi rekommenderar att använda"
     we_recommend_use: "Vi rekommenderar att du använder"
-    browser: "webbläsare"
+    browser_for_best_experience: "webbläsare för bästa upplevelse."
     other_browsers: "Andra webbläsare har varit kända för att ha kompatibilitetsproblem med de avancerade webbfunktioner vi använder"
     sincerely: "Vänliga hälsningar"
     mail_sent_to: "Denna email skickades till"
@@ -673,7 +673,7 @@ sv:
       failure: 'Kunde inte autentisera dig med %{kind} för "%{reason}".'
     mailer:
       confirmation_instructions:
-        subject: 'Bekräfta ditt nya Scalable-Learning-konto!'
+        subject: 'Bekräfta ditt ScalableLearning konto'
       reset_password_instructions:
         subject: 'Instrukionter om återställning av lösenord'
       unlock_instructions:

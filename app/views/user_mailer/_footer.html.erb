@@ -2,10 +2,10 @@
     <div><%=t('user_mailer.you_are_recieving_mail')=%></div>
     <% if @course %>
     <% url = role == "teacher"? $frontend_host+"courses/#{@course.id}/information" : $frontend_host+"courses/#{@course.id}/course_information"%>
-    <%= link_to t('user_mailer.change_mail_preferences'), url, {:style=>'color:#636567', :target=> '_blank'}%> -
+    <%= link_to t('user_mailer.change_mail_preferences'), url, {:style=>'color:#636567', :target=> '_blank'}%> <br>
     <% end %>
+    <%= mail_to "support@scalable-learning.com","support@scalable-learning.com",{:style=>'color:#636567'}%> - 
     <%= link_to t('user_mailer.privacy'), $frontend_host+"privacy", {:style=>'color:#636567', :target=> '_blank'} %><br>
     
-    <%= mail_to "support@scalable-learning.com","support@scalable-learning.com",{:style=>'color:#636567'}%><br>
-    <span>© 2018 <strong style="color:black">Scalable </strong><span style="color:green">Learning </span> – RISE SICS AB, Box 1264, SE-164 29 Kista, Sweden</span>
+    <span>© 2018 ScalableLearning – RISE SICS AB, Box 1264, SE-164 29 Kista, Sweden</span>
 </center>

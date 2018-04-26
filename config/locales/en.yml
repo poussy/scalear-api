@@ -19,14 +19,14 @@ en:
         course:
           must_be_image: 'must have one of these extensions (.jpe - .jpg - .png - .gif)'
   mailer:
-    thanks_sign_up: "thank you for signing up at"
+    thanks_sign_up: "Thank you for signing up for"
     open_confirmation_link: "To complete your signup you need to open the confirmation link below, either by clicking on the link or copying and pasting it into your web browser"
-    click_here_confirm: "Click here to confirm your account"
+    click_here_confirm: "Please use the link below to confirm your new ScalableLearning account."
     copy_paste_link: "Or copy and paste the link into your web browser"
-    contact_us: "If you have questions or comments please don't hesitate to contact us by using the Feedback link in the Help menu"
+    contact_us: "If you have any questions or comments, please use the Support link in the Help menu."
     note_ie_incompatible: "Please note: Internet Explorer currently has compatibility issues with the advanced web features we are using. We strongly recommend you use"
     we_recommend_use: "We recommend you use"
-    browser: "browser"
+    browser_for_best_experience: "web browser for the best experience."
     other_browsers: " Other browsers have been known to have compatibility issues with the advanced web features we are using"
     sincerely: "Sincerely"
     mail_sent_to: "This email was sent to"
@@ -686,7 +686,7 @@ en:
       failure: 'Could not authenticate you from %{kind} because "%{reason}".'
     mailer:
       confirmation_instructions:
-        subject: 'Please confirm your scalable-learning account to get started!'
+        subject: 'Confirm your ScalableLearning account'
       reset_password_instructions:
         subject: 'Reset password instructions'
       unlock_instructions:
