@@ -91,18 +91,18 @@ class Lecture < ApplicationRecord
 	# end
 
 	def is_done
-		assign= current_user.get_assignment_status(self)
-		assign_lecture = current_user.get_lecture_status(self)
-		if (!assign.nil? && assign.status==1) || (!assign_lecture.nil? && assign_lecture.status==1)#modified status and marked as done on time
-			return true
-		else
-			lecture_quizzes=online_quizzes.includes(:online_answers).select{|f| f.online_answers.size!=0 && f.graded}.map{|v| v.id}.sort #ids of lecture quizzes
-			user_quizzes=current_user.get_online_quizzes_solved(self)   #stubbed in lec_spec
-			#will add now the marks.
-			viewed=current_user.get_lectures_viewed(self)
-			return ( user_quizzes&lecture_quizzes == lecture_quizzes and !viewed.empty? and viewed.first.percent == 100)
-		end
-  	end
+	  assign= current_user.get_assignment_status(self)
+	  assign_lecture = current_user.get_lecture_status(self)
+	  if (!assign.nil? && assign.status==1) || (!assign_lecture.nil? && assign_lecture.status==1)
+	    return true
+	  else
+	    lecture_quizzes= online_quizzes.where(:graded => true).includes(:online_answers).select{|f| f.online_answers.size!=0}.pluck(:id).sort
+	    user_quizzes=current_user.get_online_quizzes_solved(self)
+
+	    viewed=current_user.lecture_views.where(:lecture_id => self, :percent =>100).first
+	    return ( user_quizzes&lecture_quizzes == lecture_quizzes && !viewed.nil?)
+	  end
+	end
 
 	# def is_done_summary_table
 	# end
