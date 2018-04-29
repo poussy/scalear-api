@@ -217,11 +217,11 @@ class UserMailer < ApplicationMailer
 		mail(:to => user.email, :subject => "(#{course.short_name}) End of course", :from => @from)
 	end
 
-	def inactive_user(user, locale)
-		I18n.locale=locale
+	def inactive_user(emails_batch)
+		headers["X-SMTPAPI"] = { :to => emails_batch }.to_json
 		@from =  "\"ScalableLearning \" <no-reply@scalable-learning.com>"
-		@user = user
-		mail(:to => user.email, :subject => "Time to delete or update your ScalableLearning account", :from => @from)
+		#here 'to' is just a placeholder, real emails are sent via sendgrid api
+		mail(:to => "info@scalable-learning.com", :subject => "Your inactive account will be psudonymized soon", :from => @from)
 	end
 
 	def anonymisation_report(mail_to, successes,failures)
@@ -230,9 +230,11 @@ class UserMailer < ApplicationMailer
 		mail(:to =>mail_to, :subject => "anonymisation report")
 	end
 
-	def anonymisation_success(user)
-		@user = user
-		mail(:to => user.email, :subject => "Your account has been pseudonymized", :from => "support@scalable-learning.com")
+	def anonymisation_success(emails_batch)
+		headers["X-SMTPAPI"] = { :to => emails_batch }.to_json
+		@from =  "\"ScalableLearning \" <no-reply@scalable-learning.com>"
+		#here 'to' is just a placeholder, real emails are sent via sendgrid api
+		mail(:to => "info@scalable-learning.com", :subject => "Your account on ScalableLearning has been pseudonymized", :from => @from)
 	end
 
 	def video_events(user, file_name, file_path, locale, group_name, course_name)
