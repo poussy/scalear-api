@@ -51,59 +51,58 @@ class QuizzesController < ApplicationController
     drag_origin_answer=''
     correct={}
     explanation={}
-    questions.each do |q|
-      q.answers.each do |a|
-        explanation[a.id] = a.explanation
-      end
-    end
     questions.each_with_index do |q, index|
       if quiz.course.is_student(current_user)
         answers[index]=q.answers.select([:id, :question_id, :content,:explanation])
         if q.question_type.upcase=="DRAG"
-          exp = []
+          drag_origin_answer =  q.answers[0].content.clone
           answers[index].each do |a|
-            drag_origin_answer =  q.answers[0].content.clone
-            if quiz.course.is_student(current_user)
               a.content.shuffle!
-            end
-            a.content.each do |drag|
-              exp.append(a.explanation[drag_origin_answer.index(drag)])
-            end
           end
-          explanation[q.answers[0].id]=exp
         end
 
         #getting student answers, grades
         grades=current_user.quiz_grades.where(:quiz_id => params[:id], :question_id => q.id).pluck(:answer_id)
         correct1= current_user.quiz_grades.where(:quiz_id => params[:id], :question_id => q.id)[0]
-        grades2=current_user.free_answers.where(:quiz_id => params[:id], :question_id => q.id)
-        if grades2.empty?
+        free_answers=current_user.free_answers.where(:quiz_id => params[:id], :question_id => q.id)
+        
+        if q.question_type=="MCQ" && !grades.empty?
           s_grades[q.id]={}
-          if q.question_type=="MCQ"
-            grades.each{|a| s_grades[q.id][a]=true }
-          else
-            s_grades[q.id]=grades[0]
+          grades.each do |a| 
+            s_grades[q.id][a]=true #112:{186:true,187:true} selected answers
+            explanation[a] = answers[index].select{|ans|ans.id == a}[0].explanation if quiz.show_explanation #add explanations for selected answer
           end
           correct[q.id]=correct1.grade if !correct1.nil?
+          answers[index].each{|ans| explanation[ans.id] = ans.explanation} if correct[q.id] == 1.0 #add all explanations if answer is correct
+        elsif q.question_type=="OCQ" && !grades.empty?
+          s_grades[q.id]=grades[0] #111: 190 selected answer
+          explanation[grades[0]]=answers[index].select{|ans|ans.id == grades[0]}[0].explanation if quiz.show_explanation #add explanation for selected answer
+          correct[q.id]=correct1.grade if !correct1.nil?
+          answers[index].each{|ans| explanation[ans.id] = ans.explanation} if correct[q.id] == 1.0 #add all explanations if answer is correct
+          
+        elsif q.question_type.upcase=="DRAG" && !free_answers.empty?
+          exp=[]
+          free_answers[0].answer.each do |drag|
+            exp.append(q.answers[0].explanation[drag_origin_answer.index(drag)])
+          end
+          explanation[q.answers[0].id]=exp if free_answers[0].grade == 1 
+          s_grades[q.id]=free_answers[0].answer
+          correct[q.id]=free_answers[0].grade
+        elsif q.question_type.upcase=="FREE TEXT QUESTION" && !free_answers.empty?
+          explanation[q.answers[0].id] = q.answers[0].explanation if free_answers[0].grade == 3 || free_answers[0].grade == 2
+          s_grades[q.id]=free_answers[0].answer
+          correct[q.id]=free_answers[0].grade
+        end
+      
+        # remove explanations from answers
+        if q.question_type.upcase=="DRAG"
+          answers[index][0].explanation = []
         else
-          if q.question_type.upcase=="DRAG"
-            exp=[]
-            grades2[0].answer.each do |drag|
-              exp.append(q.answers[0].explanation[drag_origin_answer.index(drag)])
-            end
-            explanation[q.answers[0].id]=exp
+          answers[index].each do |answer|
+            answer.explanation = nil
           end
-          s_grades[q.id]=grades2[0].answer
-          correct[q.id]=grades2[0].grade
         end
-        if quiz.course.is_student(current_user) || quiz.course.is_guest(current_user)
-          if q.question_type.upcase=="DRAG"
-            answers[index][0].explanation = []
-          else
-            answers[index]=q.answers.select([:id, :question_id, :content])
-          end
 
-        end
       else
         if q.question_type == "Free Text Question" && q.quiz.quiz_type != "survey"
           if q.answers[0].content != ""
@@ -461,6 +460,7 @@ class QuizzesController < ApplicationController
   def save_student_quiz_angular
     return_value=""
     correct_ans={}
+    temp_explanation = {}
     explanation = {}
      #if submitting, must make sure all questions were solved
     group=@quiz.group
@@ -473,9 +473,11 @@ class QuizzesController < ApplicationController
       params[:student_quiz].each do |q,a|
       
       ques=Question.find(q)
+      temp_explanation[ques.id] = {}
+      
       if ques.question_type.upcase != "DRAG"
         ques.answers.each do |answer|
-          explanation[answer.id] = answer.explanation
+          temp_explanation[ques.id][answer.id] = answer.explanation
         end
       else
         exp = []
@@ -483,10 +485,10 @@ class QuizzesController < ApplicationController
         a.each do |drag|
           exp.append(ques.answers[0].explanation[drag_origin_answer.index(drag)])
         end
-        explanation[ques.answers[0].id]=exp
-
+        temp_explanation[ques.id][ques.answers[0].id]=exp
+        
       end
-
+      
       if ques.question_type != 'header'
         current_user.quiz_grades.where(:question_id => ques.id, :quiz_id => params[:id]).destroy_all
         current_user.free_answers.where(:question_id => ques.id, :quiz_id => params[:id]).destroy_all
@@ -499,22 +501,34 @@ class QuizzesController < ApplicationController
              return_value=I18n.t("controller_msg.unanswered_questions")
              raise ActiveRecord::Rollback
           end
+          if chosen_correct == correct
+            temp_explanation[ques.id].each{|ans,expl| explanation[ans]=expl} #if answer is correct show explanations for every answer
+          elsif @quiz.show_explanation
+            chosen_correct.each{|answer| explanation[answer]= temp_explanation[ques.id][answer]}#add explanation for selected answers only
+          end
         elsif ques.question_type=="OCQ"
           chosen_correct=[a.to_i] if !a.blank?
-          a={a => true} if !a.blank?
           if params[:commit]=="submit" and a.blank?
             return_value=I18n.t("controller_msg.unanswered_questions")
             raise ActiveRecord::Rollback
           end
+          if chosen_correct == correct
+            temp_explanation[ques.id].each{|ans,expl| explanation[ans]=expl} #if answer is correct show explanations for every answer
+          elsif @quiz.show_explanation
+            chosen_correct.each{|answer| explanation[answer]= temp_explanation[ques.id][answer]} #add explanation for selected answers only
+          end
+          a={a => true} if !a.blank?
         elsif ques.question_type.upcase=="DRAG"
           chosen_correct=a
           correct=ques.answers[0].content
+          explanation[ques.answers[0].id]= temp_explanation[ques.id][ques.answers[0].id] if correct == chosen_correct #only show explanation if answer is correct
 
         elsif ques.question_type=="Free Text Question"
-           if params[:commit]=="submit" and a.blank?
+          if params[:commit]=="submit" and a.blank?
             return_value=I18n.t("controller_msg.unanswered_questions")
             raise ActiveRecord::Rollback
-           end
+          end
+          explanation[ques.answers[0].id]= ques.answers[0].explanation if a == ques.answers[0].content #only show explanation if answer is correct
         end
 
         if !a.nil? and ["OCQ","MCQ"].include?ques.question_type.upcase
