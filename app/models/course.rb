@@ -9,7 +9,7 @@ class Course < ApplicationRecord
 	has_many :custom_links, -> { order('position') }
 	has_many :announcements, :dependent => :destroy
 	has_many :confuseds
-	
+
 	has_many :enrollments, :dependent => :destroy
 	# has_many :users, :through => :enrollments
 	has_many :users, :through => :enrollments, :source => :user
@@ -45,19 +45,19 @@ class Course < ApplicationRecord
 
 	validate :validate_end_date_disable_regis_after_start_date ,on: [:create, :update]
 	validates_format_of :image_url, :with    => %r{\.(((g|G)(i|I)(f|F))|((j|J)(p|P)(e|E)?(g|G))|((p|P)(n|N)(g|G)))}i, :message => :must_be_image, :allow_blank => true
-	
+
 	attribute :modules
 	attribute :duration
-	
+
 	def correct_teacher(user)
-		if !(self.teachers.include? user) && !user.has_role?('Administrator') && !(self.is_school_administrator(user))  
+		if !(self.teachers.include? user) && !user.has_role?('Administrator') && !(self.is_school_administrator(user))
 			return false
 		end
 		return true
 	end
 
 	def correct_student(user)
-		if !(self.users.include? user) && !(self.guests.include? user) 
+		if !(self.users.include? user) && !(self.guests.include? user)
 			return false
 		end
 		return true
@@ -66,11 +66,11 @@ class Course < ApplicationRecord
 	def is_school_administrator(user)
 		user_role = UsersRole.where(:user_id => user.id, :role_id => 9)[0]
 		if user_role
-			if user_role.admin_school_domain != 'all' 
-					email = user_role.admin_school_domain || nil 
-			else 
-					email = user_role.organization.domain || nil 
-			end 
+			if user_role.admin_school_domain != 'all'
+					email = user_role.admin_school_domain || nil
+			else
+					email = user_role.organization.domain || nil
+			end
 		end
 		return user.has_role?('School Administrator') && self.teachers.select{|t| t.email.split("@").last.include?(email) }.size>0
 	end
@@ -82,7 +82,7 @@ class Course < ApplicationRecord
 	def add_ta(user)
 		self.teacher_enrollments.create(:user_id => user.id, :role_id => 4)
 	end
-	
+
 	# def surveys
 	# end
 
@@ -97,7 +97,7 @@ class Course < ApplicationRecord
 		if self.end_date && self.start_date
 			( self.end_date - self.start_date ).numerator / 7
 		end
-		
+
 	end
 
 	def is_teacher(user)
@@ -116,9 +116,9 @@ class Course < ApplicationRecord
 		# 1 teacher, 2 student, 3 prof, 4 TA, 5 Admin, 6 preview, 7 guest
 		role = 0
 		if self.correct_teacher(user) ## teacher && administrator && school_administrator
-			role = 1 
+			role = 1
 		elsif self.is_student(user)
-			role = 2 
+			role = 2
 		elsif  self.is_guest(user)
 			role = 7
 		end
@@ -341,13 +341,13 @@ class Course < ApplicationRecord
 
 	def import_course(import_from)
 		importing_will_change!
-		
+
 		from=Course.find(import_from)
-		
+
 		addition_days = ((self.start_date.to_date - from.start_date.to_date) .to_i).days
 
 		new_course=self
-		
+
 		from.groups.each do |g|
 			new_group= g.dup
 			new_group.course_id = new_course.id
@@ -401,10 +401,10 @@ class Course < ApplicationRecord
 				new_quiz.course_id = new_course.id
 				new_quiz.group_id = new_group.id
 				new_quiz.visible= false
-				if from.end_date.to_time < q.appearance_time 
+				if from.end_date.to_time < q.appearance_time
 					new_quiz.appearance_time =  Date.today + 200.years
 				else
-					new_quiz.appearance_time =  g.appearance_time
+					new_quiz.appearance_time =  g.appearance_time+ addition_days
 				end
 				new_quiz.due_date = new_quiz.due_date + addition_days
 				new_quiz.save(:validate => false)
@@ -453,8 +453,7 @@ class Course < ApplicationRecord
 		self.save!
 
 	end
-	handle_asynchronously :import_course, :run_at => Proc.new { 15.seconds.from_now }
-
+  handle_asynchronously :import_course, :run_at => Proc.new { 15.seconds.from_now }
 
 	# def self.our(user)
 	# end
@@ -615,7 +614,7 @@ class Course < ApplicationRecord
 		z.put_next_entry(csv_file_name)
 		z.write(csv_file)
 		end
-		
+
 		UserMailer.progress_days_late(current_user, file_name, t.path, I18n.locale,self).deliver
 		t.close
 	end
@@ -667,7 +666,7 @@ class Course < ApplicationRecord
 			active_courses_ids = (new_updated_courses + course_created_lec_views + course_quiz_solved + course_updated_note + course_updated_confused + course_updated_modules + course_updated_lectures + course_updated_quizzes + course_updated_links + course_announcements +course_online_quiz_grade +course_free_online_quiz_grades).uniq
 			active_courses_ids = active_courses_ids.compact
 
-			total_teachers_count  = TeacherEnrollment.select("distinct user_id").where(:course_id => active_courses_ids).count    
+			total_teachers_count  = TeacherEnrollment.select("distinct user_id").where(:course_id => active_courses_ids).count
 			total_students_count  = Enrollment.select("distinct user_id").where(:course_id => active_courses_ids).count
 
 			active_courses_count = active_courses_ids.size
@@ -799,7 +798,7 @@ class Course < ApplicationRecord
     Course.export_school_data(start_date, end_date, domain, current_user)
   end
 
-	private 
+	private
 		# def validate_end_date_after_start_date
 		def validate_end_date_disable_regis_after_start_date
 			if end_date && start_date && end_date < start_date

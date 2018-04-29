@@ -144,7 +144,11 @@ class User < ActiveRecord::Base
   # end
 
   def get_online_quizzes_solved(lecture)
-    return ((online_quiz_grades.includes(:online_quiz).select{|v| v.lecture_id == lecture.id &&  v.online_quiz.graded}.map{|t| t.online_quiz_id})+(free_online_quiz_grades.includes(:online_quiz).select{|v| v.lecture_id == lecture.id && v.online_quiz.graded}.map{|t| t.online_quiz_id})).sort.uniq
+    return (
+      (online_quiz_grades.includes(:online_quiz).where("online_quizzes.graded = ? AND online_quizzes.lecture_id = ? ", true, lecture.id).references(:online_quiz).pluck(:online_quiz_id)
+      )+
+      (free_online_quiz_grades.includes(:online_quiz).where("online_quizzes.graded = ? AND online_quizzes.lecture_id = ? ", true, lecture.id).references(:online_quiz).pluck(:online_quiz_id))
+    ).sort.uniq
   end
 
   # def get_summary_table_online_quizzes_solved(lecture)
