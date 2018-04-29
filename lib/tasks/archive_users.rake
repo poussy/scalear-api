@@ -3,18 +3,22 @@ namespace :gdpr do
     task :archive_users => :environment do
         successes = {}
         failures = {}
+        emails = [];
         inactive_users = User.where('updated_at < ? AND encrypted_data is null', 1.year.ago.midnight-1.week)
         inactive_users.each do |user|
            user_data = user.dup
            result = user.anonymise
-           if result == "success"
+            if result == "success"
                 successes[user.id] = result
-                UserMailer.delay.anonymisation_success(user_data)#.deliver
-           else
+                emails << user_data.email
+            else
                 failures[user.id] = result
-           end
+            end
         end
-        UserMailer.anonymisation_report(ENV['anonymisation_report_mail'], successes, failures).deliver
+        emails.each_slice(1000) do |batch|
+            UserMailer.delay.anonymisation_success(batch)
+        end
+        UserMailer.anonymisation_report(ENV['anonymisation_report_mail'], successes, failures).deliver_now
 
     end
 
