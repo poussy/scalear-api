@@ -1,20 +1,17 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
-  </head>
-  <body>
+<div>
     <h3>Homepage Contact Request</h3>
     <p>
+    <p><%= @comment %></p>
       <br />
+      User name: <%=@user_name%>
       <br />
-      A question/comment was submitted by <%=@user_name%>, email: <%=@user_email%> from page: <%=Rails.configuration.frontend_host+@url%>.
+      Email: <%=@user_email%>
       <br />
+      Page: <%=Rails.configuration.frontend_host+@url%>
+      <br/>
       Agent: <%= @agent %>
       <br />
       Version: <%= @version %>
     </p>
     <br />
-    <p><%= @comment %></p>
-  </body>
-</html>
+  </div>
