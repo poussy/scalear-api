@@ -121,7 +121,11 @@ class UsersController < ApplicationController
   end
 
   def validate_user
-   
+    #skip password confirmation in case of saml
+    if params['user']['password'].blank? && params['is_saml']
+      params['password'] = Devise.friendly_token[0,20]
+      params['password_confirmation'] = params['password']
+    end
     user = User.new(email: params['user']['email'],last_name: params['user']['last_name'], name: params['user']['name'], password: params['password'], screen_name:params['user']['screen_name'], 
       university: params['user']['university'])
     if user.valid?
