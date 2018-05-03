@@ -311,7 +311,7 @@ class QuizzesControllerTest < ActionDispatch::IntegrationTest
         headers: @headers2 , as: :json
 
         assert_equal decode_json_response_body["status"]["status"], "Submitted"
-        assert_equal decode_json_response_body["status"]["attempts"], 1
+        assert_equal decode_json_response_body["status"]["attempts"], 2
     end
     
     test "save_student_quiz_angular should return result and explanations" do
@@ -361,7 +361,7 @@ class QuizzesControllerTest < ActionDispatch::IntegrationTest
         headers: @headers2 , as: :json
 
         assert_not QuizStatus.where(quiz_id:1, user_id:6).empty?
-        assert_equal QuizStatus.where(quiz_id:1, user_id:6).first["attempts"], 1
+        assert_equal QuizStatus.where(quiz_id:1, user_id:6).first["attempts"], 2
 
         # second attempt
         post '/en/courses/3/quizzes/1/save_student_quiz_angular' , 
@@ -376,7 +376,7 @@ class QuizzesControllerTest < ActionDispatch::IntegrationTest
         }, 
         headers: @headers2 , as: :json
 
-        assert_equal QuizStatus.where(quiz_id:1, user_id:6).first["attempts"], 2
+        assert_equal QuizStatus.where(quiz_id:1, user_id:6).first["attempts"], 3
     end
 
     test "save_student_quiz_angular should create quiz_grades for mcq and ocq " do
