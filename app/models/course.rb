@@ -143,7 +143,7 @@ class Course < ApplicationRecord
 			csv_files[:online_quiz_grades]= CSV.generate do |csv_online_quiz_grade|
 			csv_files[:free_online_quiz_grades]= CSV.generate do |csv_free_online_quiz_grade|
 			csv_files[:confused]= CSV.generate do |csv_confused|
-			csv_files[:lecture_questions]= CSV.generate do |csv_lecture_question|
+			# csv_files[:lecture_questions]= CSV.generate do |csv_lecture_question|
 			csv_files[:discussions] = CSV.generate do |csv_discussion|
 			csv_files[:pauses]= CSV.generate do |csv_pause|
 			csv_files[:backs]= CSV.generate do |csv_back|
@@ -279,7 +279,7 @@ class Course < ApplicationRecord
 			end
 			end
 			end
-			end
+			# end
 			end
 			end
 			end
@@ -466,7 +466,7 @@ class Course < ApplicationRecord
 	# end
 
   def export_for_transfer
-    @course = Course.where(:id => id).includes([:groups , :custom_links, {:quizzes => [{:questions => :answers}, :quiz_statuses, :quiz_grades, :free_answers]},:lectures, :lecture_views, :confuseds, :pauses, :backs, :lecture_questions, :free_online_quiz_grades, :online_quiz_grades, {:online_quizzes => :online_answers}, :announcements, :assignment_statuses])[0]
+    @course = Course.where(:id => id).includes([:groups , :custom_links, {:quizzes => [{:questions => :answers}, :quiz_statuses, :quiz_grades, :free_answers]},:lectures, :lecture_views, :confuseds, :pauses, :backs, :free_online_quiz_grades, :online_quiz_grades, {:online_quizzes => :online_answers}, :announcements, :assignment_statuses])[0]
 
     csv_files={}
 
