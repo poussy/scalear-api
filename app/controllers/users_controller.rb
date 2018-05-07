@@ -111,12 +111,33 @@ class UsersController < ApplicationController
   end 
 
   def agree_to_privacy_policy
-    current_user.policy_agreement= {'date' => DateTime.now, 'ip' => request.remote_ip}
-    if current_user.save    
-      render json: current_user
+    user = User.find(params['id'])
+    user.policy_agreement= {'date' => DateTime.now, 'ip' => request.remote_ip}
+    if user.save    
+      render json: user
     else
-      render json: current_user.errors
+      render json: user.errors
     end
+  end
+
+  def validate_user
+    #skip password confirmation in case of saml
+    if params['user']['password'].blank? && params['is_saml']
+      params['password'] = Devise.friendly_token[0,20]
+      params['password_confirmation'] = params['password']
+    end
+    user = User.new(email: params['user']['email'],last_name: params['user']['last_name'], name: params['user']['name'], password: params['password'], screen_name:params['user']['screen_name'], 
+      university: params['user']['university'])
+    if user.valid?
+      if params['password'] == params['password_confirmation']
+        render json: user
+      else
+        render json: {errors: {password_confirmation:["Doesn't match password"]}}, :status => :unprocessable_entity 
+      end
+    else
+      render json: {errors: user.errors}, :status => :unprocessable_entity 
+    end
+
   end
 
   private 
