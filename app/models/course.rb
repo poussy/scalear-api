@@ -343,10 +343,11 @@ class Course < ApplicationRecord
 		importing_will_change!
 
 		from=Course.find(import_from)
-
-		addition_days = ((self.start_date.to_date - from.start_date.to_date) .to_i).days
-
 		new_course=self
+
+		addition_days = ((new_course.start_date.to_date - from.start_date.to_date) .to_i).days
+
+
 
 		from.groups.each do |g|
 			new_group= g.dup
@@ -401,12 +402,12 @@ class Course < ApplicationRecord
 				new_quiz.course_id = new_course.id
 				new_quiz.group_id = new_group.id
 				new_quiz.visible= false
-				if from.end_date.to_time < q.appearance_time
+				if new_course.end_date.to_time < q.appearance_time #unpublished
 					new_quiz.appearance_time =  Date.today + 200.years
-				else
-					new_quiz.appearance_time =  g.appearance_time+ addition_days
+				elsif from.end_date.to_time > q.appearance_time #published
+					new_quiz.appearance_time =  new_group.appearance_time
 				end
-				new_quiz.due_date = new_quiz.due_date + addition_days
+				new_quiz.due_date = q.due_date + addition_days
 				new_quiz.save(:validate => false)
 
 				Event.where(:quiz_id => q.id, :lecture_id => nil).each do |e|
