@@ -28,7 +28,7 @@ Rails.application.configure do
   # Send deprecation notices to registered listeners
   config.active_support.deprecation = :notify
 
-  config.action_mailer.default_url_options = { :host => 'test.scalable-learning.com/#' , :protocol => 'https'}
+  config.action_mailer.default_url_options = { :host => 'test.scalable-learning.com' , :protocol => 'https'}
   config.action_mailer.asset_host = 'https://test.scalable-learning.com'
 
   # ActionMailer Config

@@ -1,11 +1,20 @@
 class Devise::ConfirmationsController < DeviseTokenAuth::ConfirmationsController
     def create
-        self.resource = resource_class.send_confirmation_instructions(params)
+        resource = User.find_by_email(params[:email])
+
+        if resource.nil?
+            render json: {errors: {email:["User doesn't exist"]}}, :status => :unprocessable_entity
+        else
+            resource.send_confirmation_instructions({
+                client_config: params[:config_name],
+                redirect_url: params[:confirm_success_url]
+              })
+        end
     end
 
     def show
         @resource = resource_class.confirm_by_token(params[:confirmation_token])
-  
+       
         if @resource && @resource.id
           # create client id
           client_id  = SecureRandom.urlsafe_base64(nil, false)
@@ -19,18 +28,24 @@ class Devise::ConfirmationsController < DeviseTokenAuth::ConfirmationsController
           }
   
           sign_in(@resource)
+          if @resource.errors.include?(:email) && User.find_by_confirmation_token(params[:confirmation_token])
+            redirect_header_options = {account_confirmation_success: false}
+          else
+            redirect_header_options = {account_confirmation_success: true}
+          end
+
           @resource.save!
-  
-          redirect_header_options = {account_confirmation_success: true}
+          
+          
           redirect_headers = build_redirect_headers(token,
                                                     client_id,
                                                     redirect_header_options)
           redirect_headers['uid'] = @resource['uid']
           redirect_url = "#{params[:redirect_url]}?#{redirect_headers.to_query}"
-          redirect_to(redirect_url)
         else
-          raise ActionController::RoutingError.new('Not Found')
+            redirect_url = "#{params[:redirect_url]}?#{{account_confirmation_success: false}.to_query}"
         end
+        redirect_to(redirect_url)
     end
 
     private 

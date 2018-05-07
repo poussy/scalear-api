@@ -90,6 +90,7 @@ GEM
     ffi (1.9.18)
     globalid (0.4.0)
       activesupport (>= 4.2.0)
+    hodel_3000_compliant_logger (0.1.1)
     i18n (0.9.0)
       concurrent-ruby (~> 1.0)
     ims-lti (2.2.3)
@@ -122,6 +123,7 @@ GEM
       systemu (~> 2.6.2)
     mail (2.6.6)
       mime-types (>= 1.16, < 4)
+    memory_profiler (0.9.10)
     method_source (0.9.0)
     mime-types (3.1)
       mime-types-data (~> 3.2015)
@@ -134,6 +136,9 @@ GEM
     nio4r (2.1.0)
     nokogiri (1.8.1)
       mini_portile2 (~> 2.3.0)
+    oink (0.10.1)
+      activerecord
+      hodel_3000_compliant_logger
     orm_adapter (0.5.0)
     pg (0.21.0)
     public_suffix (3.0.1)
@@ -235,7 +240,9 @@ DEPENDENCIES
   listen (>= 3.0.5, < 3.2)
   lograge
   logstash-event
+  memory_profiler
   newrelic_rpm
+  oink
   pg (~> 0.18)
   puma (~> 3.7)
   rack-block

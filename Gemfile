@@ -64,3 +64,5 @@ gem "lograge"
 gem "logstash-event"
 gem "rack-timeout"
 gem "rack-block"
+gem "oink"
+gem 'memory_profiler'
