@@ -59,6 +59,8 @@ Rails.application.routes.draw do
         post "alter_pref"
         post "saml_signup"
         get "user_exist"
+        post "validate_user"
+        
       end
     end
 

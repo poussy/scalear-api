@@ -3,6 +3,8 @@
 	belongs_to :user
 	belongs_to :course
 
+	validates :time, :presence => true
+
 	def self.get_rounded_time_check(array)
 		return_hash={}
 		Time.zone="UTC"
