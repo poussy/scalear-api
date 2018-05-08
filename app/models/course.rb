@@ -143,7 +143,6 @@ class Course < ApplicationRecord
 			csv_files[:online_quiz_grades]= CSV.generate do |csv_online_quiz_grade|
 			csv_files[:free_online_quiz_grades]= CSV.generate do |csv_free_online_quiz_grade|
 			csv_files[:confused]= CSV.generate do |csv_confused|
-			# csv_files[:lecture_questions]= CSV.generate do |csv_lecture_question|
 			csv_files[:discussions] = CSV.generate do |csv_discussion|
 			csv_files[:pauses]= CSV.generate do |csv_pause|
 			csv_files[:backs]= CSV.generate do |csv_back|
@@ -171,7 +170,6 @@ class Course < ApplicationRecord
 					csv_online_quiz_grade << OnlineQuizGrade.column_names
 					csv_free_online_quiz_grade << FreeOnlineQuizGrade.column_names
 					csv_confused << Confused.column_names
-					# csv_lecture_question << LectureQuestion.column_names
 					csv_discussion << Forum::Post.get('column_names')
 					csv_pause << VideoEvent.column_names
 					csv_back<< VideoEvent.column_names
@@ -190,7 +188,6 @@ class Course < ApplicationRecord
 					@course.announcements.each do |announcement|
 							csv_announcement << announcement.attributes.values_at(* Announcement.column_names)
 					end
-					# @course.groups.each
 					@course.groups.each do |g|
 							csv_group << g.attributes.values_at(* Group.column_names)
 					end
@@ -221,9 +218,6 @@ class Course < ApplicationRecord
 					@course.confuseds.each do |confused|
 							csv_confused << confused.attributes.values_at(* Confused.column_names)
 					end
-					# @course.lecture_questions.each do |lecture_question|
-					# 		csv_lecture_question << lecture_question.attributes.values_at(* LectureQuestion.column_names)
-					# end
 					@course.video_events.where(:event_type => 2).each do |pause|
 							csv_pause << pause.attributes.values_at(* VideoEvent.column_names)
 					end
@@ -279,7 +273,6 @@ class Course < ApplicationRecord
 			end
 			end
 			end
-			# end
 			end
 			end
 			end
@@ -301,9 +294,6 @@ class Course < ApplicationRecord
 						z.write(value)
 					end
 			end
-			#send_file t.path, :type => 'application/zip',
-			#                  :disposition => 'attachment',
-			#                  :filename => file_name
 			UserMailer.delay.attachment_email(current_user, file_name, t.path, I18n.locale)#.deliver
 			t.close
 	end
