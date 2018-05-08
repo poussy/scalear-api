@@ -511,8 +511,11 @@ class LecturesController < ApplicationController
 
 			if flag==false #not confused before in this 15 sec interval.
 					x=Confused.new(:lecture_id => params[:id], :course_id => params[:course_id], :user_id => current_user.id, :time => params[:time], :very => false)
-					x.save
-					@message=I18n.t('groups.saved')
+					if x.save
+						@message=I18n.t('groups.saved')
+					else
+						@message=x.errors
+					end
 			end
 			#should probably rescue if an exception occurs.
 			render json: {:msg => @message, :flag => flag, :id => x.id, :item => x}
