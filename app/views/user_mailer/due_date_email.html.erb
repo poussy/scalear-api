@@ -1,16 +1,5 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
-  </head>
-  <body>
-    <p> <%= @user.name %></p>
-    <p>This is a friendly reminder that the  <%= @group_type %>  <%= @group.name %> in Course <%= @course.name%>  is due in one day </p>
-    <p>You can see the due dates for all modules on your  <%= link_to "dashboard", Rails.configuration.frontend_host+@url_dashboard, :target => '_blank' %> and you can adjust your email preferences in your <%= link_to "course", Rails.configuration.frontend_host+@url_information, :target => '_blank' %> settings.
-     
-    </p>
-
-    <p>Cheers,</p>
-    <p>The ScalableLearning Team</p>
-  </body>
-</html>
+<p><%= t('user_mailer.due_in_one_day', {item_type: @item_type, item_name: @item.name , course_name: @course.name})%></p>
+<p><%= t('user_mailer.see_due_dates')%> <%= link_to "dashboard", $frontend_host+@url_dashboard, :target => '_blank' %>
+  
+<%= render partial: 'thank_you_footer' %>
+<%= render partial: 'footer', locals: {role:"student"} %>

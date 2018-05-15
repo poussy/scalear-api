@@ -142,12 +142,11 @@ class CoursesController < ApplicationController
 		if current_user.has_role?('Administrator')
 			@import= Course.all
 		elsif current_user.has_role?('School Administrator')
-			user_role = UsersRole.where(:user_id => current_user.id, :role_id => 9)[0]
-			  email = user_role.admin_school_domain
-			if email == "all"
-				email = user_role.organization.domain || nil
+			school_domain = UsersRole.where(:user_id => current_user.id, :role_id => 9).first.organization.domain rescue ''
+			if !school_domain.blank?
+				course_ids = TeacherEnrollment.joins(:user).where("users.email like ? or users.id = ?", "%#{school_domain}%", current_user.id).pluck(:course_id).uniq 
 			end
-			@import= Course.includes([:user,:teachers]).select{|c| ( c.teachers.select{|t| t.email.include?(email) }.size>0 ) }
+			@import= Course.where(:id => course_ids)
 		else
 			@import= current_user.subjects_to_teach
 		end
