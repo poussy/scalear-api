@@ -2,6 +2,10 @@ class DashboardController < ApplicationController
 	# skip_before_filter :check_user_signed_in?, :only => [:dynamic_url ]
 	
 	def get_dashboard
+		if !current_user
+			render json: {:errors => [ I18n.t("controller_msg.you_are_not_authorized") ]}, status: 403
+			return
+		end
 		user = User.where(:id => current_user.id).includes({:online_quiz_grades => [:online_quiz, :lecture]}, {:free_online_quiz_grades => [:online_quiz , :lecture] }, {:lecture_views => :lecture }, :assignment_item_statuses, {:quiz_statuses => :quiz})[0]
 		teacher_events = []
 		student_events = []
