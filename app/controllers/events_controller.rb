@@ -8,8 +8,8 @@ class EventsController < ApplicationController
 	def correct_user
 		# Checking to see if the current user is taking the course OR teaching the course, otherwise he is not authorised.
 		@course=Course.find_by_id(params[:course_id])
-		if !current_user && !(@course.users.include? current_user) && !(@course.guests.include? current_user) && !(@course.teachers.include? current_user) && !current_user.is_administrator? && !(@course.is_school_administrator(current_user))  #&& not administrator.
-			render json: {:errors => [ t("controller_msg.you_are_not_authorized") ]}, status: 403
+		if !current_user || (!(@course.users.include? current_user) && !(@course.guests.include? current_user) && !(@course.teachers.include? current_user) && !current_user.is_administrator? && !(@course.is_school_administrator(current_user)))  #&& not administrator.
+			render json: {:errors => [ I18n.t("controller_msg.you_are_not_authorized") ]}, status: 403
 		end
 	end
 
