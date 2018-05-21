@@ -5,7 +5,7 @@ class UserTest < ActiveSupport::TestCase
     u = users(:user1)
     assert u.valid?
 
-    u.last_name = nil
+    u.screen_name = nil
 
     assert u.invalid?
 
