@@ -1,7 +1,11 @@
 class NewsFeedController < ApplicationController
 	
 	def index
-    	unfilterd_courses = []
+      unfilterd_courses = []
+      if !current_user
+        render json: {:errors => [ I18n.t("controller_msg.you_are_not_authorized") ]}, status: 403
+        return
+      end
       if current_user.is_administrator?
         unfilterd_courses = Course.all
       elsif current_user.is_school_administrator?

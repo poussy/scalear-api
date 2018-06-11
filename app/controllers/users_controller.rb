@@ -129,10 +129,14 @@ class UsersController < ApplicationController
     user = User.new(email: params['user']['email'],last_name: params['user']['last_name'], name: params['user']['name'], password: params['password'], screen_name:params['user']['screen_name'], 
       university: params['user']['university'])
     if user.valid?
-      if params['password'] == params['password_confirmation']
-        render json: user
-      else
+      if params['password'] != params['password_confirmation']
         render json: {errors: {password_confirmation:["Doesn't match password"]}}, :status => :unprocessable_entity 
+      elsif params['last_name'].blank?
+        render json: {errors: {last_name:["can't be blank"]}}, :status => :unprocessable_entity 
+      elsif params['university'].blank?
+        render json: {errors: {university:["can't be blank"]}}, :status => :unprocessable_entity 
+      else
+        render json: user
       end
     else
       render json: {errors: user.errors}, :status => :unprocessable_entity 

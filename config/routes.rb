@@ -50,7 +50,6 @@ Rails.application.routes.draw do
         post "agree_to_privacy_policy"
       end
       collection do
-        get "student"
         get "teacher"
         get "sign_angular_in"
         get "get_current_user"
@@ -76,7 +75,6 @@ Rails.application.routes.draw do
         post 'unenroll'
         get 'add_student'
         get 'student_show'
-        get 'courseware'
         get 'courseware_teacher'
         get 'enrolled_students'
         get 'teachers'
@@ -94,7 +92,6 @@ Rails.application.routes.draw do
         get 'progress'
         post 'student_quiz'
         get 'student_notifications'
-        get 'course_editor'
         get 'student_grade'
         get 'dynamic_quizzes'
         get 'student_quiz_grade'
@@ -113,7 +110,6 @@ Rails.application.routes.draw do
         get 'module_progress_angular'
         get 'get_total_chart_angular'
         get 'courseware_angular'
-        get 'courseware'
         get 'export_csv'
         get 'export_student_csv'
         post 'new_link_angular'
