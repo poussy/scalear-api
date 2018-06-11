@@ -6,7 +6,7 @@ namespace :gdpr do
             successes = {}
             failures = {}
             emails = [];
-            inactive_users = User.where('updated_at < ? AND encrypted_data is null', 1.year.ago.midnight-1.week)
+            inactive_users = User.where('last_sign_in_at < ? AND encrypted_data is null', 1.year.ago.midnight-1.week)
             inactive_users.each do |user|
             user_data = user.dup
             result = user.anonymise

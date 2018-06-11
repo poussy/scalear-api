@@ -12,6 +12,11 @@ class ArchiveUsersTaskTest < ActiveSupport::TestCase
     
     test "inactive users should be anonymized" do
         Delayed::Worker.delay_jobs = false
+        # task only runs on sunday
+        while Date.today.wday!=0
+            travel 1.day
+        end
+
         assert_difference "User.where('encrypted_data IS NOT null').count",2 do
             Rake::Task['gdpr:archive_users'].invoke
         end
