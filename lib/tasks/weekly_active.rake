@@ -18,7 +18,7 @@ namespace :db do
 		updated_links = CustomLink.where("updated_at between ? and ? ", 1.week.ago.midnight, DateTime.now.midnight)
 		announcements = Announcement.where("updated_at between ? and ? ", 1.week.ago.midnight, DateTime.now.midnight)
 
-		new_students = new_users.select{|u| u.has_role?('student')}.count
+		new_students = new_users.select{|u| u.has_role?('Student')}.count
 		new_teachers = new_users.count - new_students
 
 		updated_students = updated_users.map{|u| u.id}
