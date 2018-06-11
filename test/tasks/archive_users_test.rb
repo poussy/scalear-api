@@ -5,13 +5,19 @@ class ArchiveUsersTaskTest < ActiveSupport::TestCase
         ENV['hash_salt']="test_salt"
         ENV['anonymisation_report_mail']="test@mail.com"
 
-        User.find(6).update_attribute('updated_at',1.year.ago-8.days)
-        User.find(7).update_attribute('updated_at',1.year.ago-10.days)
+        User.find(6).update_attribute('last_sign_in_at',1.year.ago-8.days)
+        User.find(7).update_attribute('last_sign_in_at',1.year.ago-10.days)
         ScalearApi::Application.load_tasks
     end
     
     test "inactive users should be anonymized" do
         Delayed::Worker.delay_jobs = false
+        # task only runs on sunday
+        while Date.today.wday!=0
+            travel 1.day
+        end
+        User.find(6).last_sign_in_at
+
         assert_difference "User.where('encrypted_data IS NOT null').count",2 do
             Rake::Task['gdpr:archive_users'].invoke
         end
