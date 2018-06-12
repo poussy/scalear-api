@@ -24,7 +24,6 @@ task :export_user, [:email] => :environment do |t, args|
         csv_files[:confuseds]= CSV.generate do |csv_confuseds|
         csv_files[:video_notes]= CSV.generate do |csv_video_notes|
         csv_files[:invitations]= CSV.generate do |csv_invitations|
-        csv_files[:shared_items] = CSV.generate do |csv_shared_items|
         csv_files[:announcements]= CSV.generate do |csv_announcements|
         csv_files[:discussions]= CSV.generate do |csv_discussions|
                 
@@ -119,7 +118,6 @@ task :export_user, [:email] => :environment do |t, args|
                         csv_discussions << post.values_at(*Forum::Post.get('column_names'))
                 end
 
-        end
         end
         end
         end
