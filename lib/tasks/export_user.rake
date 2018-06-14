@@ -25,7 +25,7 @@ task :export_user, [:email] => :environment do |t, args|
         csv_files[:video_notes]= CSV.generate do |csv_video_notes|
         csv_files[:invitations]= CSV.generate do |csv_invitations|
         csv_files[:announcements]= CSV.generate do |csv_announcements|
-        # csv_files[:discussions]= CSV.generate do |csv_discussions|
+        csv_files[:discussions]= CSV.generate do |csv_discussions|
                 
                 user_columns = ["id","provider","uid","remember_created_at","sign_in_count","current_sign_in_at","last_sign_in_at","current_sign_in_ip","last_sign_in_ip","failed_attempts","name","email","created_at","updated_at","last_name",
                         "screen_name","university","link","discussion_pref","completion_wizard","first_day","canvas_id","canvas_last_signin","saml","policy_agreement"]
@@ -113,10 +113,10 @@ task :export_user, [:email] => :environment do |t, args|
                         csv_announcements << announcement.attributes.values_at(*Announcement.column_names)
                 end
 
-                # csv_discussions << Forum::Post.get('column_names')
-                # Forum::Post.get("user_posts", {:user_id => user.id}).each do |post|
-                #         csv_discussions << post.values_at(*Forum::Post.get('column_names'))
-                # end
+                csv_discussions << Forum::Post.get('column_names')
+                Forum::Post.get("user_posts", {:user_id => user.id}).each do |post|
+                        csv_discussions << post.values_at(*Forum::Post.get('column_names'))
+                end
 
         end
         end
@@ -135,7 +135,7 @@ task :export_user, [:email] => :environment do |t, args|
         end
         end
         end
-        # end
+        end
 
         file_name = user.name+".zip"
         t = Tempfile.new(file_name)
