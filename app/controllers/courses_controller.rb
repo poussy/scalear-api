@@ -370,12 +370,10 @@ class CoursesController < ApplicationController
 	end  
 
 	def destroy
-		if @course.destroy
-			render :json => {:notice => [I18n.t('controller_msg.course_successfully_deleted')]}
-		else
-			render :json => {:errors => [I18n.t('controller_msg.could_not_delete_course')]} , :status => 400
-		end
-	  end  
+		@course.async_destroy
+		render :json => {:notice => [I18n.t('controller_msg.course_successfully_deleted')]}
+		# render :json => {:errors => [I18n.t('controller_msg.could_not_delete_course')]} , :status => 400
+	end  
 
 	def remove_student
 		@student=User.find(params[:student])
