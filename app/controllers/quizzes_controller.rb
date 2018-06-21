@@ -27,9 +27,9 @@ class QuizzesController < ApplicationController
       position = items.last.position + 1
     end
     if params[:type]=="quiz"
-      @quiz = @course.quizzes.build(:name => "New Quiz", :instructions =>  I18n.t('groups.choose_correct_answer'), :appearance_time => group.appearance_time+100.years  , :due_date => group.due_date ,:appearance_time_module => false, :due_date_module => true, :required_module => true, :graded_module => true,:group_id => params[:group], :quiz_type =>"quiz", :retries => 0, :position => position , :required=>group.required , :graded=>group.graded)
+      @quiz = @course.quizzes.build(:name => "New Quiz", :instructions =>  I18n.t('groups.choose_correct_answer'), :appearance_time => group.appearance_time+100.years  , :due_date => group.due_date ,:appearance_time_module => false, :due_date_module => true, :required_module => true, :graded_module => true,:group_id => params[:group], :quiz_type =>"quiz", :retries => 1, :position => position , :required=>group.required , :graded=>group.graded)
     else
-      @quiz = @course.quizzes.build(:name => "New Survey", :instructions => I18n.t('groups.fill_in_survey'), :appearance_time => group.appearance_time+100.years , :due_date => group.due_date ,:appearance_time_module => false, :due_date_module => true, :required_module => true, :graded_module => true,:group_id => params[:group], :quiz_type => "survey", :retries => 0, :position => position , :required=>group.required , :graded=>group.graded)
+      @quiz = @course.quizzes.build(:name => "New Survey", :instructions => I18n.t('groups.fill_in_survey'), :appearance_time => group.appearance_time+100.years , :due_date => group.due_date ,:appearance_time_module => false, :due_date_module => true, :required_module => true, :graded_module => true,:group_id => params[:group], :quiz_type => "survey", :retries => 1, :position => position , :required=>group.required , :graded=>group.graded)
     end
     @quiz['class_name']='quiz'
     if @quiz.save
