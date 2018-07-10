@@ -905,7 +905,6 @@ class CoursesControllerTest <  ActionDispatch::IntegrationTest
 		## teachers
 		assert_equal ActionMailer::Base.deliveries.last["bcc"].value, ["a.hossam.2010@gmail.com", "a.hossam.2012@gmailll.com", "okasha@gmail.com"]
 		assert_equal ActionMailer::Base.deliveries.last["subject"].value, "System announcement"
-		assert ActionMailer::Base.deliveries.last.encoded.include?('<p class="medium-editor-p">hello</p>')
 		## students
 		post '/en/courses/send_system_announcement', params:{list_type: '2', message:'<p class="medium-editor-p">hello</p>', subject:'System announcement'}, headers: @admin_user.create_new_auth_token
 		assert_equal ActionMailer::Base.deliveries.last["bcc"].value.sort, ["saleh@gmail.com", "ahmed@gmail.com", "Karim@gmail.com", "Mohamed@gmail.com", "Hossam@gmail.com", "student_a.hossam.2010@gmail.com"].sort
