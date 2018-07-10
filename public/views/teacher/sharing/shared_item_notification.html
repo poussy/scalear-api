@@ -1,0 +1,10 @@
+<li>
+	<a class="light-grey-hover dark-text">
+		<div style="width: 100%" ng-show="notification.sharer_email" translate="notification.shared" translate-values='{user:notification.sharer_email}'></div>
+		<div style="text-align: right;">
+			<button class="tiny success" ng-click="accept()" translate="notification.accept"></button>
+			<button class="tiny alert" ng-click="reject()" translate="notification.reject"></button>
+		</div>
+	</a>
+</li>
+<li class="divider"></li>

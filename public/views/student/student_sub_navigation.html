@@ -1,0 +1,32 @@
+<div>
+  <top-bar class="sub-header whitesmoke" style="z-index: 10 !important;">
+    <ul class="title-area">
+      <li class="name" step-text="Use the course menu to navigate. Click on the title to hide it and make the video larger." step-index="4" step-placement="bottom" step-append-to-body="true" page-name="navigation.lectures">
+        <h1 class="disable_selection">
+          <a id="content_navigator" class="truncate dark-text sub-header-component dark-medium-grey" ng-class="{'green-color-white': ContentNavigator.status, 'dark-medium-grey-hover': !ContentNavigator.status}" ng-click="toggleNavigator()" style="width: 300px;margin-right:10px">
+            <span ng-hide="('course.content_selector' | includedByState)">
+              <i ng-class="{'arrow_down_icon': !ContentNavigator.status, 'arrow_up_white_icon': ContentNavigator.status }"></i>
+              <i ng-class="{'arrow_down_icon': !ContentNavigator.status, 'arrow_up_white_icon': ContentNavigator.status }" style="position:absolute;top:7px;left:15px"></i>
+            </span>
+            <span>{{course.short_name}}: {{course.selected_module.name || 'content_navigator.select_module' | translate}}</span>
+          </a>
+        </h1>
+      </li>
+      <!-- <li toggle-top-bar class="menu-icon"><a href=""></a></li> -->
+      <li ></li>
+    </ul>
+    <ul class="title-area right timeline-navigator-btn hide-for-semi-medium" ng-if="('**.courseware.lecture.**' | includedByState)">
+      <li class="name" step-text="Use the course menu to navigate. Click on the title to hide it and make the video larger." step-index="4" step-placement="bottom" step-append-to-body="true" page-name="navigation.lectures" >
+        <h1 class="disable_selection right truncate dark-text sub-header-component dark-medium-grey" ng-class="{'blue-color-white': TimelineNavigator.status, 'dark-medium-grey-blue-hover': !TimelineNavigator.status}" style="width: 300px;">
+          <div><timeline-filters class="settings hide-for-small" /></div>
+          <a id="timeline_navigator" ng-click="toggleTimeline()" style="color: inherit;"><i ng-class="{'arrow_down_icon': !TimelineNavigator.status, 'arrow_up_white_icon': TimelineNavigator.status }"></i><i ng-class="{'arrow_down_icon': !TimelineNavigator.status, 'arrow_up_white_icon': TimelineNavigator.status }" style="position:absolute;top:2px;left:15px"></i> <span translate>lectures.timeline</span></a>
+        </h1>
+      </li>
+    </ul>
+    <top-bar-section>
+      <div ng-show="course.warning_message" class="left">
+        <h5 class="warning alert-box radius hide-for-portrait hide-for-small-down hide-for-semi-medium" style="padding: 4px;margin:8px">{{course.warning_message}}</h5>
+      </div>
+    </top-bar-section>
+  </top-bar>
+</div>

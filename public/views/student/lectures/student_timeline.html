@@ -1,0 +1,45 @@
+<div id="student-accordion" ng-class="{
+'land-height medium-height-small large-height-big small-height-big portrait-medium-height':delayed_timeline_open,
+'no-height': !delayed_timeline_open,
+'land-medium-12':ContentNavigator.status,
+'land-medium-4':!ContentNavigator.status
+}" class="student_timeline lightgrey timeline_container ease_in_out large-5 small-12  portrait-medium-12 columns no-padding-right portrait-no-padding no-padding-left">
+    <div ng-repeat="l in items" class="with-light-border no-border-top no-border-bottom no-border-right small-12" ng-class="{'border-left border-2 border-black': l.id == lecture.id}" id='outline_{{l.id}}' ng-if="::(!(!(l.appearance_time | visible) && l.inclass))">
+        <span ng-if="::(l.class_name =='lecture')">
+            <h5  ng-click="seek()(null, l.id)" ng-class="{'color-white black': l.id == lecture.id, 'light-grey-hover':l.id != lecture.id }" style="cursor:pointer; margin: 0px;padding-left:15px" class="truncate">
+                <b >{{::l.name}}</b>
+                <span ng-if=" l.id == lecture.id">
+                    <small style="color: white;" translate> lectures.timeline.watched</small>
+                    <small style="color: white;" >{{lecture.watched_percentage}}%</small>
+                    <small style="color: white;" >{{lecture.quiz_percentage}}</small>
+                    <small style="color: white;" translate>lectures.timeline.required_quizzes</small>
+                </span>
+
+                <span class="label round blue with-tiny-padding with-tiny-margin-right right" ng-show="::(!l.graded)" style="margin-top: 3px;" translate>lectures.optional</span>
+            </h5>
+            <div style="margin-left: 20px;">
+                <span ng-if="::(l.description)">
+                    <h6 class="subheader uppercase" translate>lectures.timeline.description</h6>
+                    <p class="dark-text" ng-bind-html="::(l.description)"></p>
+                </span>
+                <span ng-if="::(l.slides && l.slides != 'none')">
+                    <h6 class="subheader uppercase" translate>lectures.timeline.slides</h6>
+                    <p class="truncate">
+                        <a ng-href="::(l.slides | formatURL)" style="word-wrap: break-word;" >{{::l.slides | formatURL}}</a>
+                    </p>
+                </span>
+            </div>
+            <table class="table table-striped no-border no-margin" style="border-spacing: 0.1em; width: 100%;" ng-repeat="item in timeline[l.id].items | filter:filterType">
+                <tbody class="with-small-padding-left" name="quiz-timeline-item" quiz_timeline ng-if="::(item.type=='quiz')" data='item' seek='seek()' id='quiz_{{item.data.id}}' />
+                <tbody class="with-small-padding-left lightgrey-with-hover" name="confused-timeline-item" confused_timeline ng-if="::(item.type=='confused')" data='item' seek='seek()' id='confused_{{item.data.id}}' />
+                <tbody class="with-small-padding-left lightgrey-with-hover" name="discussion-timeline-item" discussion_timeline ng-if="::(item.type=='discussion')" data='item' seek='seek()' id='discussion_{{item.data.id}}'/>
+                <tbody class="with-small-padding-left lightgrey-with-hover" name="notes-timeline-item" notes_timeline ng-if="::(item.type=='note')" data="item" seek='seek()' id='note_{{item.data.id}}'/>
+                <tbody class="with-small-padding-left lightgrey-with-hover" name="markers-timeline-item" markers_timeline ng-if="::(item.type=='marker')" data="item" seek='seek()' id='marker_{{item.data.id}}'/>
+            </table>
+        </span>
+        <span ng-if="::(l.class_name =='quiz')">
+            <h5 class="light-grey-hover no-margin" ui-sref="course.module.courseware.quiz({quiz_id: l.id})" style="cursor:pointer; margin-bottom: 0px;padding-left:15px"><b>{{::l.name}}</b>
+            <span class="label round blue with-tiny-padding with-tiny-margin-right right" ng-show="::(!l.graded)" style="margin-top: 3px;" translate>lectures.optional</span></h5>
+        </span>
+    </div>
+</div>

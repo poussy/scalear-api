@@ -1,0 +1,48 @@
+<div class="small-12 columns no-padding" ng-class="{'no-margin': !isNormalQuiz()}">
+	 <div ng-if='isNormalQuiz()' >
+		<delete_button  class="right with-small-margin-right" size='small' color='dark' mode="content_navigator" save="save()" action='removeQuestion(index)' />
+	</div>
+	<ng-form name='qform' style='overflow: auto;'>
+		<center>
+			<div class="row collapse">
+				<div ng-show='sortable' class="small-1 columns">
+					<img  src='images/move2.png' class='handle' title="{{'editor.messages.drag_to_reorder'|translate}}"  />
+				</div>
+			    <div class="small-2 columns">
+			      <span class="prefix"><span translate>global.question</span>:</span>
+			    </div>
+			    <div class="small-8 left columns" ng-class="{'small-10':!isNormalQuiz()}" style="    margin-bottom: 0.3rem;">
+			      <div><rich-textarea ng-change="save()" required name='qlabel' ng-model='quiz[column]'/></div>
+			      <small class='error' ng-show='submitted && qform.qlabel.$error.required'><span translate>error_message.required</span>!</small>
+			    </div>
+		  	</div>
+		  	<div  class="row collapse" >
+		  		<div class="small-10 small-push-1 columns">
+			  		<div ng-if="isNormalQuiz()">
+			  			<div class="small-2 columns">
+					      <span class="prefix"><span translate>editor.type</span>:</span>
+					    </div>
+					    <div class="small-10 columns">
+					    	<select ng-change="clearAnswer(); save()" ng-model='quiz.question_type' ng-click="removeAnswerFreeText(); " required  ng-options='obj.value as obj.text for obj in quiz_types' class='choices size-14' style="margin-bottom:0.3rem"></select>
+					    </div>
+					</div>
+				    <div class="small-10 columns" ng-if='isFreeText() && !isSurvey()'>
+					    	<select ng-change="save()" ng-model='quiz.match_type' ng-click="removeAnswerFreeText();" required  ng-options='obj.value as obj.text for obj in match_types' class='choices size-14'></select>
+
+				    </div>
+				</div>
+		  	</div>
+		  	<div class="row">
+	  			<!-- <div class="small-10 small-push-1 columns" ng-if="(isFreeText() && quiz.match_type == 'Match Text')||!isFreeText()"> -->
+				<div class="small-10 small-push-1 columns" >
+					<htmlanswer />
+				</div>
+		  	</div>
+		  	<div class="row">
+		  		<div class="small-11 small-push-1 columns text-left">
+					<a id="add_answer" ng-if='!isFreeText()' class='no-margin-bottom with-tiny-margin-top button tiny add_multiple_answer' ng-click='addAnswer("",quiz)' href='' translate>editor.button.add_answer</a>
+				</div>
+		  	</div>
+  		</center>
+	</ng-form>
+</div>

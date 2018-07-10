@@ -1,0 +1,18 @@
+<div class="panel no-padding">
+  <div class="time-label uppercase blue color-white">
+    <i ng-if="event.class_name == 'announcement'" class="fi-megaphone" />
+    <small class="with-tiny-margin-left">{{(event.timestamp || event.updated_at) | fromNow}}</small>
+  </div>
+  <div class="with-padding">
+    <div>
+      <blockquote class="announcement-body dark-text with-padding">
+        <span ng-bind-html='event.announcement'>
+				</span>
+        <cite ng-show="event.course_name">
+          <a ng-if="role != 2" ui-sref="course.edit_course_information({course_id: event.course_id})">{{event.course_name}}</a>
+          <a ng-if="role == 2" ui-sref="course({course_id: event.course_id})">{{event.course_name}}</a>
+        </cite>
+      </blockquote>
+    </div>
+  </div>
+</div>

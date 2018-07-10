@@ -1,0 +1,50 @@
+<!-- build:css(.tmp/styles) styles/statistics.css -->
+<link rel="stylesheet" href="styles/teacher/statistics.css" />
+<!-- endbuild -->
+<center>
+  <loading size="big" show="loading_totals && chartConfig.loading" />
+  <div class="small-12 medium-6 large-6 columns with-margin-bottom">
+    <button class="tiny button dropdown under-the-other left" dropdown-toggle="#charts_dropdown_list">{{'statistics.'+selected_series.toLowerCase() | translate}}</button>
+    <ul id="charts_dropdown_list" class="f-dropdown" style="text-align: left;z-index: 1;">
+      <li ng-repeat="series in collection">
+        <a ng-click="getSeriesData(series)" translate>{{'statistics.'+series.toLowerCase()}}</a>
+      </li>
+    </ul>
+     <button class="tiny button success right" ng-click="emailForm()">Send email to Users</button>
+    <highchart id="chart1" config="chartConfig"></highchart>
+  </div>
+  <div ng-show="!loading_totals" class="small-12 medium-6 large-6 columns with-margin-bottom">
+    <div class="panel small-12 medium-12 large-6 columns">
+      <h5><span translate>statistics.total_students</span>: </h5>
+      <h4><b>{{Total_Students}}</b></h4>
+    </div>
+    <div class="panel small-12 medium-12 large-6 columns">
+      <h5><span translate>statistics.total_teachers</span>: </h5>
+      <h4><b>{{Total_Teachers}}</b></h4>
+    </div>
+    <div class="panel small-12 medium-12 large-6 columns">
+      <h5><span translate>statistics.total_courses</span>: </h5>
+      <h4><b>{{Total_Courses}}</b></h4>
+    </div>
+    <div class="panel small-12 medium-12 large-6 columns">
+      <h5><span translate>statistics.total_lectures</span>: </h5>
+      <h4><b>{{Total_Lectures}}</b></h4>
+    </div>
+    <div class="panel small-12 medium-12 large-6 columns">
+      <h5><span translate>statistics.total_quizzes</span>: </h5>
+      <h4><b>{{Total_Quizzes}}</b></h4>
+    </div>
+    <div class="panel small-12 medium-12 large-6 columns">
+      <h5><span translate>statistics.total_surveys</span>: </h5>
+      <h4><b>{{Total_Surveys}}</b></h4>
+    </div>
+    <div class="panel small-12 medium-12 large-6 columns">
+      <h5><span translate>statistics.questions_asked</span>: </h5>
+      <h4><b>{{Total_Questions_Asked}}</b></h4>
+    </div>
+    <div class="panel small-12 medium-12 large-6 columns">
+      <h5><span translate>statistics.total_confused</span>: </h5>
+      <h4><b>{{Total_Confused}}</b></h4>
+    </div>
+  </div>
+</center>

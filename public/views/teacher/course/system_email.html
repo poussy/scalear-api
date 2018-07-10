@@ -1,0 +1,51 @@
+<h3><i class="fi-mail size-30"></i> <span>System Wide Announcement Email</span></h3>
+<div class="small-12 columns">
+  <span>To:</span>
+  <div class="panel with-tiny-padding with-tiny-margin-bottom">
+    <label class="looks-like-a-link">
+      <input type="radio" name="users" ng-model="announcement.list_type" class="no-margin with-tiny-margin-left" value="1" />
+      <span class="with-tiny-margin">All Teachers</span>
+    </label>
+  </div>
+  <div class="panel with-tiny-padding with-tiny-margin-bottom">
+    <label class="looks-like-a-link">
+      <input type="radio" name="users" ng-model="announcement.list_type" class="no-margin with-tiny-margin-left" value="2" />
+      <span class="with-tiny-margin">All Students</span>
+    </label>
+  </div>
+  <div class="panel with-tiny-padding with-tiny-margin-bottom">
+    <label class="looks-like-a-link">
+      <input type="radio" name="users" ng-model="announcement.list_type" class="no-margin with-tiny-margin-left" value="3" />
+      <span class="with-tiny-margin">All Teachers + All students</span>
+    </label>
+  </div>
+  <div class="panel with-tiny-padding">
+    <label class="looks-like-a-link">
+      <input type="radio" name="users" ng-model="announcement.list_type" class="no-margin with-tiny-margin-left" value="4" />
+      <span class="with-tiny-margin">Other</span>
+    </label>
+    <label ng-show="announcement.list_type==4">
+      <span>Insert custom email list separated by commas</span>
+      <input type="text" name="emails" ng-model="announcement.emails" placeholder="Type email list here..." style="margin-bottom: 5px;" />
+      <div ng-show="email" id="to" name="emails" class="secondary alert-box label with-tiny-margin" ng-repeat="email in announcement.emails.split(',')">{{email}}</div>
+    </label>
+  </div>
+</div>
+<div class="small-12 columns">
+  <label>
+    <span>Reply-to:</span>
+    <input id="subject" type="email" name="reply_to" ng-model="announcement.reply_to" placeholder="Input your reply-to email..." />
+  </label>
+</div>
+<div class="small-12 columns">
+  <label>
+    <span>Subject:</span>
+    <input id="subject" type="text" name="subject" ng-model="announcement.subject" placeholder="Input your email subject..." />
+  </label>
+</div>
+<div class="small-12 columns email-forum">
+  <span>Body:</span>
+  <rich-textarea rows=3 class="panel" ng-model="announcement.message"  style="height: 200px;margin-bottom: 20px;"/>
+</div>
+<br />
+<button type="button" class="button right" id="send_emails" ng-click="confirmDialog()" ng-disabled="!announcement.subject || !announcement.message || !announcement.list_type"><span>Send</span></button>

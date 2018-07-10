@@ -1,0 +1,31 @@
+<div class="small-12 column">
+    <form ng-submit="reset_password()" novalidate>
+        <div class="with-margin">
+            <div class="right">
+                <div class="show-inline" ng-show="$parent.current_lang=='sv'" ng-cloak>
+                    <a style="cursor:pointer;" ng-click="$parent.changeLanguage('en')"><img src="images/sweden.png" style="width:25px;height:15px;" /></a>
+                </div>
+                <div class="show-inline" ng-show="$parent.current_lang=='en'" ng-cloak>
+                    <a style="cursor:pointer;" ng-click="$parent.changeLanguage('sv')"><img src="images/uk.png" style="width:25px;height:15px;" /></a>
+                </div>
+            </div>
+            <h3 class="show-inline" translate>account.password.forgot_password</h3>
+        </div>
+        <div class="small-12 medium-12 large-6 columns">
+            <label><span translate>global.email</span>
+                <input ng-disabled="sending" type="email" id="setting_user_email" ng-model="user.email" ng-class="{error: user.errors.email}" placeholder="Input your email address..." pattern="^[-aA-zZ0-9_+\.]+\@([-aA-zZ0-9]+\.)+[aA-zZ0-9]{2,4}$" />
+                <small ng-show="user.errors.email" class="error with-tiny-padding">{{user.errors.email.join()}}</small>
+            </label>
+            <button id="forget_btn" type="submit" ng-disabled="sending" class="button" translate>account.password.send_reset</button>
+        </div>
+    </form>
+</div>
+<script type="text/ng-template" id="passwordDialog">
+    <div class="ngdialog-message">
+        <h2>Password Reset</h2>
+        <span>Your password is managed through your school or university. To log into ScalableLearning, please click on "Use your School/University Account" when logging in.</span>
+    </div>
+    <div class="ngdialog-buttons mt">
+        <button type="button" class="ngdialog-button ngdialog-button-primary" ng-click="closeThisDialog()">OK</button>
+    </div>
+</script>

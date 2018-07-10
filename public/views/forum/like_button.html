@@ -1,0 +1,11 @@
+<div  style="text-align: center; display: inline-block; margin-right:15px">
+	<span>{{votes_count}}</span>
+	<div ng-show="!voted" class="upvote looks-like-a-link" ng-click="up()">
+		<!-- <img src="images/chevron_up.png" /> -->
+		<img src="images/like_icon.png" style="margin-top: -5px;" />
+	</div>
+	<div ng-show="voted" class="downvote looks-like-a-link" ng-click="down()">
+		<!-- <img src="images/chevron_down.png" /> -->
+		<img src="images/unlike_icon.png" style="margin-top: -5px;"/>
+	</div>
+</div>

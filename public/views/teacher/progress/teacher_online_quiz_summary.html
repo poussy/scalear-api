@@ -1,0 +1,6 @@
+<div>
+  	<h5><b ><span translate>global.quizzes</span> & <span translate>global.votes</span></b></h5>
+  	<highchart id="quiz_completion" ng-if="moduledata.online_quiz.length>0" class="" config="quiz_completion_chart_config" style="width: {{width_online_quiz}}%;"></highchart>
+	<a class="button small module-review" ng-click='goTo("course.module.progress" , moduledata.course_id,moduledata.id)' ng-hide='moduledata.review_page_trigger' translate>dashboard.review_select_inclass_material</a>
+    <a class="button small green module-review right" ng-click='goTo("course.module.inclass" , moduledata.course_id,moduledata.id)' ng-hide='moduledata.review_page_trigger' translate>dashboard.start_inclass</a>
+</div>

@@ -1,0 +1,22 @@
+<style>
+	.notification_panel{
+		position: absolute;
+		top: -90px;
+		width: 189px;
+		left: -35%;
+		height: 82px;
+		margin: 0;
+		padding: 10px;
+		background-color: whitesmoke;
+		color: black;
+		z-index: 1035;
+	}
+</style>
+
+<div ng-show="message" class="panel secondary notification_panel with-tiny-padding" ng-class="{'color-green': message==correct_notify,'color-red': message==incorrect_notify}">
+  <center>
+    <b><div class="size-14" style="margin-bottom: 7px;">{{message}}</div></b>
+    <h5 ng-show="middleMessage" class="dark-text no-margin" style="line-height: 12px;"><small>{{middleMessage}}</small></h5>
+    <h5 class="dark-text no-margin"><small>{{submessage}}</small></h5>
+  </center>
+</div>

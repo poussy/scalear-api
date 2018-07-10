@@ -1,0 +1,16 @@
+<div style="padding:10px">
+	<h3 ng-if="!current_user" class="with-margin-bottom"><span translate>faq</span></h3>
+	<ul>
+    	<li ng-repeat="i in questions_count track by $index">
+    		<h4 translate="faq.question{{$index+1}}"></h4>
+			<p  style="margin-left: 1.1rem;" translate="faq.answer{{$index+1}}"></p> 
+    	</li>
+    	<li>
+    		<h4 translate="faq.question7"></h4>
+			<p style="margin-left: 1.1rem;" >
+				<span translate="faq.answer7"></span>
+				<a href="https://www.heroku.com/policy/security">https://www.heroku.com/policy/security</a>
+			</p> 
+    	</li>
+	</ul>
+ </div>

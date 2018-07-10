@@ -1,0 +1,25 @@
+<div class="row collapse with-margin-bottom" >
+  <div class="row collapse with-small-margin-bottom">
+    <h5>
+      <b>
+        <span translate>dashboard.my_questions</span>
+      </b>
+      <span ng-show="moduledata.posts_total">({{moduledata.posts_answered}} of {{moduledata.posts_total}} answered)</span>
+    </h5>
+  </div>
+  <div class="center" style="margin-left: 25px">
+    <div ng-repeat="lecture in moduledata.unanswered_questions">
+      <div style="background-color:#BADAA5;padding: 5px 10px;"><b>{{lecture.name}}</b></div>
+      <div ng-repeat="question in lecture.questions" ng-click='goTo(moduledata.course_id, question.group_id, question.lecture_id, question.time)' class="dashboard_question">
+        <span ng-if="question.privacy==1">[Public]</span>
+        <span ng-if="question.privacy==0">[Private]</span>
+        <span ng-bind-html="question.content"></span>
+        <div class="center" style="margin-left: 50px">
+          <div ng-repeat="comment in question.comments">
+            <b><span ng-bind-html="comment.name"></span> :</b> <span ng-bind-html="comment.content"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,150 @@
+<div class="fixed main-nav disable_selection">
+  <div style="width: 100%;height: 32px;position: fixed;z-index: 100;background: rgba(255,255,255,0.6);" class="color-red" ng-show="preview_as_student">
+    <center>
+      <a class="white-with-hover" ng-click="disablePreview()" style="bottom: -4px;padding: 7px 18px;position: relative;border-radius: 1px;box-shadow: 0px -1px 5px lightgrey;">
+        <b class="color-red size-16" translate>global.exit_preview_as_student</b>
+      </a>
+    </center>
+  </div>
+  <top-bar class="white" is-hover="false" >
+    <ul class="title-area">
+      <li class="name">
+        <h1>
+  				<a ng-if="!lti_embed" id="home" ui-sref="home" class="dark-text must-show-inline" >
+  					<img src="images/logo.png" style="width: 28px;margin-top: -3px;"/>
+  					<span style="font-weight: 100;" >Scalable<span class="no-padding color-green" style="font-weight: 200;">Learning</span></span>
+  				</a>
+          <div ng-if="lti_embed" class="dark-text must-show-inline" >
+            <img src="images/logo.png" style="width: 28px;margin-top: -3px;"/>
+            <span style="font-weight: 100;" >Scalable<span class="no-padding color-green" style="font-weight: 200;">Learning</span></span>
+          </div>
+  			</h1>
+      </li>
+      <li toggle-top-bar class="menu-icon" ng-hide="lti_embed" ><a class="dark-text" href="">menu</a></li>
+    </ul>
+    <top-bar-section ng-if="!lti_embed">
+      <ul ng-show="user.roles[0]" class="right" step-text="Use the Dashboard for an overview of what's due next, choose and join new courses in the Courses menu, and get help and tips from the Help menu." step-index="5" step-placement="bottom" step-append-to-body="true">
+        <!-- <li class="divider border-grey medium-opacity"></li> -->
+        <li ng-if="user.roles.includes(5)"><a class="white-with-hover color-gray-hover size-16-light" id="statistics" ui-sref-active="nav-item-active" ui-sref="statistics" translate>statistics.statistics</a></li>
+        <li has-dropdown>
+          <a ng-show="user.intro_watched && user.info_complete" ng-if="user.roles.includes(9) || user.roles.includes(5)" class="white-with-hover color-gray-hover size-16-light" id="administration" ng-class="{'nav-item-active':('school_statistics' | includedByState) || ('welcome_message' | includedByState) }" translate>statistics.administration</a>
+          <ul class="lighter-grey-no-hover" top-bar-dropdown>
+            <li>
+              <a class="lighter-grey dark-text" ui-sref="school_statistics">
+                <span id="administration_button" translate>statistics.statistics_dashboard</span>
+              </a>
+            </li>
+            <li ng-if="user.get_school_administrator_domain=='all'"><!-- all'=>TO check that the user is school admin on all on univ. not an admin on depertmant -->
+              <a class="lighter-grey dark-text" ui-sref="welcome_message" >
+                <span id="welcome_message_button" translate>navigation.welcome_message</span>
+              </a>
+            </li>
+          </ul>
+        </li>
+        <li has-dropdown>
+          <a ng-show="user.intro_watched && user.info_complete" class="white-with-hover color-gray-hover size-16-light" id="dashboard" ng-class="{'nav-item-active':('dashboard' | includedByState)}" translate>navigation.dashboard</a>
+          <ul class="lighter-grey-no-hover" top-bar-dropdown>
+            <li>
+              <a class="lighter-grey dark-text" ui-sref="dashboard">
+                <span id="calendar_button" translate>navigation.calendar_and_announcements</span>
+              </a>
+            </li>
+          </ul>
+        </li>
+        <li ng-if="user.invitations > 0 || user.shared > 0" has-dropdown>
+          <a class="white-with-hover color-gray-hover size-16-light" id="notifications" ng-show="user.intro_watched && user.info_complete" translate>navigation.notifications</a>
+          <ul class="lighter-grey-no-hover" top-bar-dropdown>
+            <notification-item ng-repeat="(id, invitation) in user.invitation_items" notification="invitation" id="id"></notification-item>
+            <shared-item-notification ng-repeat="(id, item) in user.shared_items" notification="item" id="id"></shared-item-notification>
+          </ul>
+        </li>
+        <li has-dropdown>
+          <a class="white-with-hover color-gray-hover size-16-light" id="all_courses" ng-class="{'nav-item-active':('course.**' | includedByState) || ('course_list' | includedByState)}" ng-show="user.intro_watched && user.info_complete" translate>navigation.courses</a>
+          <ul class="lighter-grey-no-hover scrollable-if-tall" top-bar-dropdown>
+            <li ng-repeat="course in student_courses">
+              <a class="lighter-grey dark-text has-description" ng-class="{'nav-inner-item-active': (course.id | courseActive)}" ng-click="goToCourse(course, 2)">
+								{{course.short_name}}
+								<h5 class="dark-description"><small>{{course.name}}</small></h5>
+							</a>
+            </li>
+            <li class="divider border-grey medium-opacity"></li>
+            <li ng-repeat="course in teacher_courses">
+              <a class="lighter-grey dark-text has-description" ng-class="{'nav-inner-item-active': (course.id | courseActive)}" ng-click="goToCourse(course, 1)">
+								{{course.short_name}}
+								<h5 class="dark-description"><small>{{course.name}}</small></h5>
+							</a>
+            </li>
+            <li class="divider border-grey medium-opacity"></li>
+            <li>
+            <a class="lighter-grey dark-text" id="join_course" enrollment-modal ng-click="open()" translate>navigation.join_course</a>
+            </li>
+            <li>
+              <a class="lighter-grey dark-text" id="new_course_sub" ui-sref-active="nav-inner-item-active" ui-sref="new_course" translate>navigation.new_course</a>
+            </li>
+            <li ng-show="areShared()">
+              <a id="view_shared" class="lighter-grey dark-text" ui-sref="show_shared" ui-sref-active="nav-inner-item-active" translate>sharing.view</a>
+            </li>
+            <li class="divider border-grey medium-opacity"></li>
+            <li>
+              <a id="course_list" class="lighter-grey dark-text" ui-sref-active="nav-inner-item-active" ui-sref="course_list">
+                <span translate>navigation.show_all_courses</span>
+              </a>
+            </li>
+          </ul>
+        </li>
+        <li has-dropdown>
+          <a class="white-with-hover color-gray-hover size-16-light" id="account" ng-class="{'nav-item-active':('edit_account' | includedByState)}" translate>navigation.account</a>
+          <ul class="lighter-grey-no-hover" top-bar-dropdown>
+            <li>
+              <a id="account_information" class="lighter-grey dark-text has-description" ui-sref-active="nav-inner-item-active" ui-sref="edit_account" href="" ng-show="user.intro_watched && user.info_complete">
+                <span translate>navigation.account_information</span>
+                <h5 class="dark-description"><small translate>navigation.description.settings_description</small></h5>
+              </a>
+            </li>
+            <li class="divider border-grey medium-opacity"></li>
+            <li><a class="lighter-grey dark-text" id="logout" ng-click="logout()"><span translate>navigation.logout</span> {{user.name}}</a></li>
+          </ul>
+        </li>
+        <li has-dropdown>
+          <a class="white-with-hover color-gray-hover size-16-light" ng-class="{'nav-item-active': ('student_getting_started' | includedByState) || ('teacher_getting_started' | includedByState) || ('privacy' | includedByState)}" id="help" ng-show="user.intro_watched && user.info_complete" translate>navigation.help</a>
+          <ul class="lighter-grey-no-hover" top-bar-dropdown>
+            <!-- <li><a class="lighter-grey dark-text" ng-click="startTour()"><span translate>help.tips</span></a></li> -->
+            <li><a class="lighter-grey dark-text" ui-sref="teacher_getting_started" ><span translate> help.getting_started</span><span> </span><span translate>help.getting_started.teacher</span></a></li>
+            <li><a class="lighter-grey dark-text" ui-sref="student_getting_started"><span translate> help.getting_started</span><span> </span><span translate>help.getting_started.student</span></a></li>
+            <li class="divider border-grey medium-opacity"></li>
+            <li><a class="lighter-grey dark-text" ng-href="{{scalear_api.flipped_manual}}" target="_blank" translate>help.how_to_flip</a></li>
+            <li><a class="lighter-grey dark-text" ng-href="{{scalear_api.instruction_manual}}" target="_blank" translate>help.instruction_manual</a></li>
+            <li><a class="lighter-grey dark-text" ui-sref="lti_help"><span translate> lti.lti</span></a></li>
+            <li class="divider border-grey medium-opacity"></li>
+            <li><a class="lighter-grey dark-text" ng-href="{{scalear_api.teacher_forum_link}}" target="_blank" translate>help.teacher_forum</a></li>
+            <li><a class="lighter-grey dark-text" report-technical ng-click="toggleTechnicalDisplay()" translate>help.support</a></li>
+            <li class="divider border-grey medium-opacity"></li>
+            <li><a class="lighter-grey dark-text" ui-sref-active="nav-inner-item-active" ui-sref="privacy" translate>help.privacy_faq</a></li>
+          </ul>
+        </li>
+      </ul>
+      <!-- NOT LOGGED IN -->
+      <ul ng-if="!user.roles" class="right">
+        <li has-dropdown>
+          <!-- <a class="white-with-hover color-gray-hover size-16-light" ng-class="{'nav-item-active': ('student_signup' | includedByState) || ('teacher_signup' | includedByState) || ('signup' | includedByState)}" ui-sref="signup" translate>account.sign_up</a> -->
+          <!-- <ul class="lighter-grey-no-hover" top-bar-dropdown ng-click="closeMenu($event)">
+						<li><a class="lighter-grey dark-text"  ui-sref-active="nav-item-active" ui-sref="student_signup" ><span translate>navigation.register.student</span></a></li>
+						<li><a class="lighter-grey dark-text"  ui-sref-active="nav-item-active" ui-sref="teacher_signup" translate>navigation.register.teacher</a></li>
+					</ul> -->
+        </li>
+        <li><a class="white-with-hover color-gray-hover size-16-light" id="login" ui-sref-active="nav-item-active" ui-sref="login" ng-click="closeMenu()" translate>Login/Join</a></li>
+        <li has-dropdown>
+          <a class="white-with-hover color-gray-hover size-16-light" ng-class="{'nav-item-active': ('student_getting_started' | includedByState) || ('teacher_getting_started' | includedByState) || ('privacy' | includedByState)}" translate>navigation.help</a>
+          <ul class="lighter-grey-no-hover" top-bar-dropdown>
+            <li><a class="lighter-grey dark-text" ui-sref-active="nav-inner-item-active" ui-sref="teacher_getting_started" ><span translate> help.getting_started</span><span> </span><span translate>help.getting_started.student</span></a></li>
+            <li><a class="lighter-grey dark-text" ui-sref-active="nav-inner-item-active" ui-sref="student_getting_started"><span translate> help.getting_started</span><span> </span><span translate>help.getting_started.teacher</span></a></li>
+
+            <li class="divider border-grey medium-opacity"></li>
+            <li><a class="lighter-grey dark-text" ui-sref-active="nav-inner-item-active" ui-sref="privacy" translate>footer.privacy</a></li>
+            <li><a class="lighter-grey dark-text" report-technical ng-click="toggleTechnicalDisplay()" translate>help.support</a></li>
+          </ul>
+        </li>
+      </ul>
+    </top-bar-section>
+  </top-bar>
+</div>

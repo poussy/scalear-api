@@ -1,0 +1,52 @@
+<div class="panel with-small-margin-top text-center time_estimate">
+	<div>
+		<h6>
+			<span translate>inclass.total_inclass_time</span>:
+			<br />
+			<b>
+				<span>{{total_inclass_estimate || 0}}</span>
+				<span translate>time.minutes</span>
+			</b>
+		</h6>
+	</div>
+	<hr>
+	<div>
+		<h6 class="size-14">
+			<span translate>inclass.peer_problem_time</span>:
+			<br />
+			<span>
+				<span>{{inclass_estimate || 0}}</span>
+				<span translate>time.minutes</span>
+			</span>
+		</h6>
+		<h6 class="size-12">
+			(<span id="inclass_quiz_count">{{inclass_quiz_count || 0}}</span>
+			<span >{{ (inclass_quiz_count>1? 'inclass.quizzes' : 'inclass.quiz')| translate | lowercase}}</span>)
+		</h6>
+	</div>
+	<hr>
+	<div>
+		<h6 class="size-14" ng-style="{color: review_estimate_color}">
+			<span translate>inclass.review_time</span>:
+			<br />
+			<span>
+				<span>{{review_estimate || 0}}</span>
+				<span translate>time.minutes</span>
+			</span>
+		</h6>
+		<h6 class="size-12">
+			(<span>{{video_quiz_count || 0}}</span>
+			<span>{{ (video_quiz_count>1? 'inclass.video_quizzes' : 'inclass.video_quiz')| translate | lowercase}},</span>
+			<span>{{question_count || 0}}</span>
+			<span >{{'inclass.discussions' | translate | lowercase}},</span>
+			<span>{{quiz_count || 0}}</span>
+			<span >{{(quiz_count>1? 'inclass.quizzes' : 'inclass.quiz') | translate | lowercase}}</span>
+			<span translate>global.and</span>
+			<span>{{survey_count || 0}}</span>
+			<span >{{'inclass.surveys' | translate | lowercase}}</span>)
+		</h6>
+	</div>
+	<div class="size-12 color-green">
+		(<a pop-over="popover_options" class="size-12 color-green" translate>inclass.change_defaults</a>)
+	</div>
+</div>

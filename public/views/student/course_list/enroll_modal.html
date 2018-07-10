@@ -1,0 +1,29 @@
+<style>
+.reveal-modal{
+    height:auto;
+    overflow: hidden;
+}
+</style>
+<center>
+    <h3 translate>enrollment.enter_enrollment</h3>
+    <div class="modal-body">
+    	<form ng-submit="enrollStudent()" name="form.key">
+        	<div class="small-12 large-3 small-centered columns">
+                <input id="enrollkey_field" ng-click="enrollInputClick()" type="text" maxlength='11' ng-model="enrollment.key" name="key" required autofocus style="text-align: center;font-weight:bold;font-size: 18px;" class="no-margin with-tiny-margin-bottom"/>
+            </div>
+        	<span class='error' ng-if='form.submitted && form.key.key.$error.required' translate="error_message.required"></span>
+        	<small class='error' ng-if='form.server_error'>{{form.server_error}}</small>
+            <loading size="small" show="form.processing"></loading>
+            {{'enrollment.enrollement_key_format' | translate}} 
+            <br>
+            <b>ABCDE-12345</b>
+            <br>
+            {{'enrollment.get_enrollment_key' | translate}}
+        </form>
+    </div>
+    <div class="modal-footer">
+        <br/>
+        <button class="button small success" ng-click="enrollStudent()" translate="enrollment.enroll"></button>
+        <button class="button small alert" ng-click="cancelEnroll()" translate="button.cancel"></button>
+    </div>
+</center>

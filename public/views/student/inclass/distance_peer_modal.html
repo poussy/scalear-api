@@ -1,0 +1,67 @@
+<!--[htmlclean-protect]-->
+<div class="well well-lg" style="text-align: left;" ng-show="invite_student" id="invite_student_modal">
+  <h3><span translate>distance_peer.invited</span></h3>
+  <p translate>distance_peer.invited_instruction</p>
+  <p translate>distance_peer.distance_peer_instruction</p>
+  
+  <br>
+  <form name='email_form' novalidate>
+    <div class="left columns">
+      <div ng-show="students" id="invited_students">
+          <form name="email_form">
+              <div class="small-12 row">
+                  <!-- <div class="small-6 medium-3 large-3 columns"> -->
+                      <input id="search" type="search" placeholder="{{'global.search'|translate}}..." name="search" ng-model="searchText"/>
+                  <!-- </div> -->
+              </div>
+              <div class="small-12" >
+                <div ng-repeat="student in students | filter: searchText" ng-class="{'border-grey dark-medium-grey': student.checked}" ng-click="inviteStudent(student)">
+                  <span class="small-6 medium-3 large-2 columns left with-medium-margin-bottom" >
+                    <div class="panel looks-like-a-link small-12 medium-12 large-11 with-small-padding no-border" ng-class="{'border-grey dark-medium-grey': student.checked}">
+                      <div class="with-tiny-padding">
+                        <li class="fn truncate"><small>{{student.full_name}}</small></li>
+                        <li class="email truncate"><small>{{student.email}}</small></li>
+                      </div>
+                    </div>
+                  </span>
+                </div>
+              </div>
+          </form>
+      </div>
+
+        <div>
+            <!-- <a id="invite" ng-click="inviteStudent()" class="button success tiny right" translate>courses.information.button.invite</a> -->
+            <a class="button alert tiny right with-tiny-margin-right" ng-click="closeModal()" translate>button.cancel</a>
+        </div>
+    </div>
+  </form>
+</div>
+
+<div class="well well-lg" style="text-align: left;" ng-show="check_if_invited" id="check_if_invited_modal">
+  <h3><span translate>distance_peer.invited_by</span></h3>
+  <p translate>distance_peer.invited_by_instruction</p>
+  <div ng-repeat="student in invited_by_student" >
+    <div ng-click="acceptInvation(student)" class="button" >join {{student[0]}}</div>
+  </div>
+  <div>{{cancelled_invited_by_student}}</div> 
+  <div>
+    <a id="invite" ng-click="caneclAllDistancePeerSession();changeToInviteStatus()" class="button success tiny right" translate>distance_peer.invite_another_button</a>
+    <a class="button alert tiny right with-tiny-margin-right" ng-click="caneclAllDistancePeerSession();closeModal()" translate>button.cancel</a>
+  </div>        
+</div>
+
+<div class="well well-lg" style="text-align: left;" ng-show="wait_for_acceptance" id="wait_for_acceptance_modal">
+  <h3><span translate>distance_peer.wait_for_acceptance</span></h3>
+  <p translate>distance_peer.wait_for_acceptance_instruction</p>
+    <div> {{invited_student}}</div>
+  <div>
+    <a id="invite" ng-click="caneclDistancePeerSession(distance_peer_id);changeToInviteStatus()" class="button success tiny right" translate>distance_peer.invite_another_button</a>
+    <a class="button alert tiny right with-tiny-margin-right" ng-click="caneclDistancePeerSession(distance_peer_id);closeModal()" translate>button.cancel</a>
+  </div>        
+</div>
+
+<div class="well well-lg" style="text-align: left;" ng-show="waiting_response_of_back_end" id="waiting_response_of_back_end">
+  <h3><span translate>distance_peer.waiting_response_of_back_end</span></h3>
+        <loading size="big" show="waiting_response_of_back_end">
+      </loading>
+</div>

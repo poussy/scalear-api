@@ -1,0 +1,71 @@
+<!--build:css(.tmp/styles) styles/progress.css -->
+<link rel="stylesheet" href="styles/teacher/progress.css" />
+<!-- endbuild -->
+
+<div ng-if="statistics.lecture_names.length" ng-show="lecture_url">
+	<h4 ng-show="module.name" class="small-8 columns with-small-padding-top">
+		<b><span translate>progress.home.module_timeline</span>: </b>
+		<span>{{module.name}}</span>
+	</h4>
+	
+	<div class="row">
+		<div class="small-6 small-push-3 columns">
+			<center>
+				<video_container>
+					<youtube id="statistics_video" url="lecture_url" controls="default" player="statistics_player" class="flex-video widescreen">
+					</youtube>
+				</video_container>
+			</center>
+		</div>
+	</div>
+	<br />
+	<div class="row">
+		<div id="labels">
+			<div id="first_label" class="inverted">#
+				<span translate tooltip-append-to-body='true' tooltip-placement="right" tooltip="{{'progress.tooltip.questions'|translate}}">progress.questions</span>
+			</div>
+			<div id="second_label" class="inverted">#
+				<span translate tooltip-append-to-body='true' tooltip-placement="right" tooltip="{{'progress.tooltip.confused'|translate}}">progress.confused</span>
+			</div>
+			<div id="third_label" class="inverted">#
+				<span translate tooltip-append-to-body='true' tooltip-placement="right" tooltip="{{'progress.tooltip.back'|translate}}">progress.back</span>
+			</div>
+			<div id="fourth_label" class="inverted">#
+				<span translate tooltip-append-to-body='true' tooltip-placement="right" tooltip="{{'progress.tooltip.pauses'|translate}}">progress.pauses</span>
+			</div>
+		</div>
+		<div style="overflow-x:scroll; overflow-y:hidden;">
+			<div style="margin-left:35px;" ng-style="{width: win_width}">
+				<div class="lecture_name truncate" ng-repeat="name in lecture_names" ng-style="{width:name[0], backgroundColor:($index%2)?'':'rgb(242,242,242)'}"
+				 style="display:inline-block;text-align:center">{{name[1]}}</div>
+			</div>
+			<div ng-repeat="type in types" ng-init="createStatisticsChart(type)">
+				<div google-chart chart="{{'chart'+type}}" agc-on-select="skipToTime(selectedItem, type)" agc-on-ready="chartToolTipOnreadyHandler(row,column,chartWrapper)"></div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="small-10 small-centered medium-5 medium-offset-2 medium-uncentered columns ">
+				<ul class="button-group round with-margin">
+					<li>
+						<button ng-click="zoomGraph(.75)" >Zoom out</button>
+					</li>
+					<li>
+						<button ng-click="zoomGraph(0)" >Reset</button>
+					</li>
+					<li>
+						<button ng-click="zoomGraph(1.5)" >Zoom in</button>
+					</li>
+				</ul>
+			</div>
+			<div class="small-8 small-centered medium-3 medium-uncentered columns">
+				<button  class="with-margin" ng-click="exportCsv()" translate>lectures.timeline.export_chart</button>
+			</div>
+
+		</div>
+	</div>
+</div>
+<div class="row">
+	<center>
+		<loading size="big" show="loading_statistics_chart" />
+	</center>
+</div>

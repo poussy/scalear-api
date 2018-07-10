@@ -1,0 +1,11 @@
+<div style="overflow:auto" ng-if="module_status">
+	<h4 class="small-12 columns with-small-padding-top">
+		<b><span translate>progress.home.course_completion</span>:</b>
+		<span>{{course.short_name+" "+course.name}}</span>
+	</h4>
+	<div class="small-12 columns">
+		<progress_matrix column_names='module_names' students='module_students' status="module_status" action="updateStatus(student_id, module_id, status)" show_popover="true" export="export"></progress_matrix>
+		<!-- remaining="getRemainingModuleProgress()" scrolldisabled="module_scroll_disable"  -->
+	</div>
+</div>
+<center><loading size="big" show="loading_modules" /></center>

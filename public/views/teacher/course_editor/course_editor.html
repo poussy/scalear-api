@@ -1,0 +1,44 @@
+<!-- build:css(.tmp/styles) styles/course_editor.css -->
+<link rel="stylesheet" href="styles/teacher/course_editor.css"/>
+<link rel="stylesheet" href="styles/controls.css" type="text/css" media="screen" />
+<!-- endbuild -->
+<div ng-if="!('*.module.**' | includedByState)">
+	<br/>
+	<div class="small-9 columns">
+		<div class="small-12 columns" style="margin-bottom:15px"><h4 class="subheader"><span translate>editor.course_editor</span></h4></div>
+		<div class="small-12 columns"><p class="no-margin" translate>editor.home.choose_module</p></div>
+		<div class="small-12 columns"><p translate>editor.home.drag_module</p></div>
+		<br />
+		<div class="small-12 columns no-padding">
+			<div class="small-12 medium-3 columns">
+				<button id="new_module" class="button small green-color-white" ng-click="addModule()"translate>editor.button.add_module</button>
+			</div>
+			<div class="small-12 medium-9 columns">
+				<p class="no-margin" translate>editor.home.create_module</p>
+			</div>
+		</div>
+		<div class="small-12 columns no-padding">
+			<div class="small-12 medium-3 columns">
+				<button id="add_content" class="button small green-color-white" module-content-modal open-modal="openOnlineContentModal" ng-click="openOnlineContentModal()"><span translate>editor.button.add_content</span></button>
+			</div>
+			<div class="small-12 medium-9 columns">
+				<p class="no-margin" translate>editor.home.choose_add</p>
+			</div>
+		</div>
+		<div class="small-12 columns no-padding">
+			<div class="small-12 medium-3 columns">
+				<button class="button small orange" ng-click="previewStudent()" translate>editor.button.preview_student</button>
+			</div>
+			<div class="small-12 medium-9 columns">
+				<p class="no-margin" translate>editor.home.preview_see</p>
+			</div>
+		</div>
+		<br />
+		<div class="small-12 columns"><p translate>editor.home.right_click</p></div>
+	</div>
+</div>
+<div id="module"  ng-if="('**.overview' | includedByState)" class="small-12 large-7 columns with-small-padding-top" ui-view="module" >	
+</div>
+<div id="middle" ng-if="('**.lecture' | includedByState) || ('**.quiz' | includedByState)|| ('**.customlink' | includedByState)" class="small-12 large-7 columns ease_in_out width-max-heigh with-small-padding-top" ng-class="{'large-12 large-centered': !delayed_details_status}" ui-view="middle"/>
+
+<div id="details" ng-show="!('course.course_editor' | includedByState)" class="details-navigator-container no-padding ease_in_out small-12 large-5 columns" ui-view="details" ng-class="{'details-containeropen large-height-big small-height-big ':delayed_details_status2}"/>

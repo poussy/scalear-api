@@ -1,0 +1,14 @@
+<div id="module_{{module.id}}" class="disable_selection text-right position-relative" style="padding: 5px; min-height: 35px;border-bottom: 1px solid white;display:inline-block;width: 100%;">
+	<div context-menu data-target="module-menu" class="position-relative" style="word-wrap: break-word;">
+		<delete_button class="with-tiny-margin-left right z-one" size='small' color='dark' action='remove(event)' mode="content_navigator" padded="true">
+		</delete_button>
+		<img class='left handle with-tiny-margin' src='images/move2.png' ng-title="::('editor.messages.drag_to_reorder'|translate)" />
+		<div style="width:67%" class="show-inline left text-left module_name">{{module.name}}</div>
+		<small class="color-grey" style="padding:1px"><span>{{module.total_time && (module.total_time | formattime:'h:mm:ss') || ""}}</span></small>
+		<ul class="module-menu dropdown-menu text-left" >
+			<li><a ng-click='copy($event)'  >{{::'context_menu.copy'| translate}}</a></li>
+			<li ng-show="clipboard.type"><a ng-click='paste($event)'> {{::'context_menu.paste'| translate}} </a></li>	
+			<li><a ng-click='share($event)' >{{::'context_menu.share'| translate}}</a></li>	   
+		</ul>
+	</div>
+</div>

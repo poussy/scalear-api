@@ -1,0 +1,11 @@
+<div style="overflow:auto" ng-if="lecture_status">
+	<h4 ng-show="module.name" class="small-12 columns with-small-padding-top">
+		<b><span translate>progress.home.module_completion</span>:</b>
+		<span>{{module.name}}</span>
+	</h4>
+	<div class="small-12 columns">
+		<progress_matrix column_names='lecture_names' students='lecture_students' status="lecture_status" late_count="late_lectures" action="updateStatus(student_id, module_id, status,lecture_quiz)" show_popover="true" solved_count="solved_count" total_lec_quiz="total_lec_quiz"/>
+		<!--  remaining="getRemainingLectureProgress()" scrolldisabled="lecture_scroll_disable" -->
+	</div>
+</div>
+<center><loading size="big" show="loading_lectures" /></center>

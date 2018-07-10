@@ -1,0 +1,84 @@
+<center>
+  <loading size="big" show="!eventSources.length"></loading>
+</center>
+<span class="dashboard" ng-show="eventSources.length">
+  <div class="small-12 large-6 columns" style="z-index: 2">
+    <div ng-if="module_summary_id_list.length>0">
+      <div ng-repeat="moduledata in module_summary" class="separator">
+        <div>
+          <teacher-module-summary moduledata="moduledata" ng-if="moduledata.type == 'teacher'"  />
+          <student-module-summary moduledata="moduledata" ng-if="moduledata.type == 'student'"/>
+        </div>
+        <div ng-if="moduledata.loading.summary" style="height: 150px">
+          <center style="position: relative;top:25%">
+            <loading size="big" show="true"></loading>
+          </center>
+        </div>
+
+        <div>
+          <teacher-online-quiz-summary moduledata="moduledata" ng-if="moduledata.type == 'teacher'" />
+          <student-online-quiz-summary moduledata="moduledata" ng-if="moduledata.type == 'student'"/>
+        </div>
+        <div ng-if="moduledata.loading.online_quiz" style="height: 150px">
+          <center style="position: relative;top:25%">
+            <loading size="big" show="true"></loading>
+          </center>
+        </div>
+
+        <div>
+          <teacher-discussion-summary moduledata="moduledata" ng-if="moduledata.type == 'teacher'" />
+          <student-discussion-summary moduledata="moduledata" ng-if="moduledata.type == 'student'"/>
+        </div>
+        <div ng-if="moduledata.loading.discussion" style="height: 150px">
+          <center style="position: relative;top:25%">
+            <loading size="big" show="true"></loading>
+          </center>
+        </div>
+      </div>
+    </div>
+    <div ng-if="!module_summary_id_list.length" style="height: 300px">
+      <center style="position: relative;top:25%">
+        <h5 class="muted" translate>No module due</h5>
+      </center>
+    </div>
+  </div>
+  <div class="small-12 large-6 right columns">
+    <div class="calendar-container" step-text="Here's a calendar with all the events for the courses you're in." step-index="1" step-placement="top" step-append-to-body="flase" page-name="{{current}}">
+      <div id="studentCalendar" ui-calendar="uiConfig.calendar" ng-model="eventSources" style="width:100%;"></div>
+      <div class="row">
+        <div class="small-6 columns">
+          <a class="tiny button secondary no-margin hide-for-small left dropdown" dropdown-toggle="#sort_list" style="padding: 5px 10px;padding-right: 2.2rem;margin-left: 3px !important;"><span translate>dashboard.export_calendar</span></a>
+          <ul id="sort_list" class="dropdown-menu" style="position:absolute;width:130px;">
+            <li><a href="" ng-click="exportCalendar()" translate>dashboard.as_ical_file</a></li>
+            <li class="divider border-grey medium-opacity"></li>
+            <li><a pop-over="calendar_pop" ng-click="preventDropDownHide($event)" translate>dashboard.as_url</a></li>
+          </ul>
+          <br />
+        </div>
+        <div class="small-6 right columns">
+          <span class="calendar_color done right alert-box label radius" translate="events.done"></span>
+          <span class="calendar_color done_late right alert-box label radius" translate="events.done_late"></span>
+          <span class="calendar_color not_done right alert-box label radius" translate="events.not_done"></span>
+          <span class="calendar_color not_done_late right alert-box label radius" translate="events.not_done_late"></span>
+        </div>
+      </div>
+    </div>
+    <br />
+    <div style="min-height: 200px;">
+      <h3>Announcements</h3>
+      <div class="row">
+        <div class="small-6 columns" ng-show="course_id">
+          <a id="new_announcement" class="button green small" ng-click="createAnnouncement()" translate>announcements.create_announcement</a>
+        </div>
+      </div>
+      <div class="row">
+        <div ng-show="events.length">
+          <span step-text="Here you will find the list of all announcements from the courses you're in." step-index="2" step-placement="top" step-append-to-body="flase" page-name="{{current}}">
+            <event-item ng-repeat="event in events | orderBy:'timestamp':'reverse'" event="event" role="current_user.roles[0].id"></event-item>
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</span>
+<div id="quiz_bar" ng-hide='true'> </div>

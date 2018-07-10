@@ -1,0 +1,25 @@
+<div class="small-12 columns">
+	</br>
+	<div class="row no-margin">
+		<div class="small-8 columns">
+			<div class="small-12 columns">
+				<h4><b translate>navigation.announcements</b></h4>
+			</div>
+
+			<div class="small-12 columns">
+				<span translate>announcements.post</span>
+			</div>
+		</div>
+		<div class="small-4 columns right">
+			<a id="new_announcement" class="button small" ng-show="show_button" ng-disabled="disable_new" ng-click="createAnnouncement()" translate>announcements.create_announcement</a>
+		</div>
+	</div>
+	<center ng-show="!announcements"><br/><br/><loading size="big" show="!announcements"/></center>
+	<div class="row no-margin">
+		<center ng-show="announcements && !announcements.length" >
+			<h5 class="muted" translate>announcements.empty</h5>
+		</center>
+	</div>
+	<br />
+	<announcement-item ng-repeat="announcement in announcements | filter:{announcement: searchAnnouncement}| reverse" announcement="announcement" saveannouncement="saveAnnouncement" showannouncement="showAnnouncement" hideannouncement="hideAnnouncement" deleteannouncement="deleteAnnouncement" saving="saving"></announcement-item>
+</div>

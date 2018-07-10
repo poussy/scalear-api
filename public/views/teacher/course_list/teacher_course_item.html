@@ -1,0 +1,66 @@
+<div class="whole-box light-grey">
+	<div class="right hide-for-small-only">
+		<div class="course-image hide-for-small-only" style="padding-left: 0px;">
+			<span></span>
+			<img ng-src="{{course.image_url || '../images/course_image.png'}}" />
+		</div>
+	</div>
+	<div ng-show="(!course.importing)  && (currentuser.id == course.user_id || currentuser.roles.includes(5) || currentuser.roles.includes(9))" class="right inline with-small-margin">
+		<delete_button size="big" mode="content_navigator" color='dark' action="deletecourse(course)" />
+	</div>
+  	<div class="small-12 medium-8 large-9 columns" style="padding-top: 10px;">  		
+		<div class="row">
+			<div class="small-10 columns">
+				<h5 class="truncate"><a ui-sref="course.edit_course_information({ course_id: course.id })" class="title looks-like-a-link truncate" style="font-weight:300" title="{{course.name}}">{{course.short_name}} | {{course.name}} <i  class="label size-10 round red with-tiny-padding" ng-if="course.importing" style="font-size: 12px;"><span translate>courses.list.importing_data</span>...</i></a></h5>
+				<h6 ng-if="teachers" class="dark-text" style="word-wrap: break-word;"><span class="dark-text" translate>courses.information.taught_by</span> <span ng-repeat="teacher in teachers" style="font-weight: 400; padding-left:4px"><span class="looks-like-a-link" ng-click="filterteacher(teacher.user.name, teacher.user.email)">{{teacher.user.name}}</span><span class="with-small-margin-left">(<a href="mailto:{{teacher.user.email}}">{{teacher.user.email}}</a>)</span><span ng-if="$index < teachers.length-1">, </span></span></h6>
+			</div>
+		</div>
+		<div class="row bottom-bar" >
+			<div class="small-6 medium-6 large-4 columns with-small-margin-bottom">
+				<i class="fi-calendar size-18"></i><small class="with-small-margin-left" translate>courses.start_date</small>
+				<div class="with-medium-margin-left">
+					<small class="truncate" >{{course.start_date | amDateFormat:'DD MMMM YYYY'}}</small>
+				</div>
+			</div>
+			<div class="small-6 medium-6 large-4 columns with-small-margin-bottom">
+				<i class="fi-calendar size-18"></i><small class="with-small-margin-left" translate>courses.end_date</small>
+				<div class="with-medium-margin-left">
+					<small class="truncate" >{{course.end_date | amDateFormat:'DD MMMM YYYY'}}</small>
+				</div>
+			</div>
+<!-- 			<div class="small-6 medium-6 large-4 columns with-small-margin-bottom">
+				<i class="fi-clock size-18"></i><small class="with-small-margin-left" translate>courses.duration</small>
+				<div class="with-medium-margin-left">
+					<small class="truncate">
+						<span>{{course.duration}}</span>
+						<span translate>time.weeks<span>
+					</small>
+				</div>
+			</div> -->
+			<div class="small-6 medium-6 large-4 columns with-small-margin-bottom">
+				<i class="fi-torsos-all size-18"></i><small class="with-small-margin-left" translate>courses.list.number_of_students</small>
+				<div class="with-medium-margin-left">
+					<small class="truncate" >{{course.enrollments}}</small>
+				</div>
+			</div>
+			<div class="small-6 medium-6 large-4 columns with-small-margin-bottom">
+				<i class="fi-video size-18"></i><small class="with-small-margin-left" translate>courses.list.lectures</small>
+				<div class="with-medium-margin-left">
+					<small class="truncate" >{{course.lectures}}</small>
+				</div>
+			</div>
+			<div class="small-6 medium-6 large-4 columns with-small-margin-bottom">
+				<i class="fi-clipboard-notes size-18"></i><small class="with-small-margin-left" translate>courses.list.quizzes</small>
+				<div class="with-medium-margin-left">
+					<small class="truncate" >{{course.quiz}}</small>
+				</div>
+			</div>
+			<div class="small-6 medium-6 large-4 columns with-small-margin-bottom left">
+				<i class="fi-clipboard-pencil size-18"></i><small class="with-small-margin-left" translate>courses.list.surveys</small>
+				<div class="with-medium-margin-left">
+					<small class="truncate" >{{course.survey}}</small>
+				</div>
+			</div>
+		</div>
+  	</div>	
+</div>

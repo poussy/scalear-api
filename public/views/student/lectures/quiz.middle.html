@@ -1,0 +1,90 @@
+<div class="small-12 column">
+    <span ng-repeat="(key,alert_message) in alert_messages" ng-show="alert_messages" class="warning alert-box label radius show-for-medium-down show-for-portrait no-margin">
+        <span ng-show='key=="due"'>
+            <span translate>events.due_date_passed</span>{{' - '+alert_message[0]+'('+alert_message[1]}} <span>{{ "time."+alert_message[2] | translate}}</span>)
+            <span translate>time.ago</span>
+        </span>
+        <span class="no-margin" ng-show='key=="submit"'>
+            <span translate>quizzes.already_submitted</span> {{quiz.quiz_type}} <span translate>quizzes.no_more_attempts</span>
+        </span>
+        <span ng-show='key=="today"'>
+            <span translate>events.due</span> <span translate>time.today</span> <span translate>global.at</span> <span>{{alert_message| date:'h:mma'}}</span>
+        </span>
+    </span>
+
+
+    <!-- <span class="label size-10 round alert with-tiny-padding with-tiny-margin right" ng-show="quiz.required" translate><small>error_message.required</small></span> -->
+    <h3>
+        <i ng-if="quiz.quiz_type=='quiz'" class="fi-clipboard-notes"></i>
+        <i ng-if="quiz.quiz_type=='survey'" class="fi-clipboard-pencil"></i>
+        <!-- {{quiz.name}} -->
+        <div ng-bind-html="quiz.name" ></div>
+      <span ng-if="quiz && !quiz.graded" class="color-grey text-italic" style="margin-left: 5px; margin-bottom:5px; font-size: 16px;">(<span translate>lectures.optional</span>)</span>
+  </h3>
+    <h5 class="subheader" ng-bind-html="quiz.instructions"></h5>
+    <div class="small-12 columns">
+    	<p ng-if="status==null || status.attempts<quiz.retries+1">
+    		<span translate="quizzes.attempt_number"></span>:
+            {{status.attempts || 0}}/{{quiz.retries+1}}
+    	</p>
+    	<p ng-if="status.attempts==quiz.retries+1">
+    		<span translate="quizzes.used_up_all"></span>
+            {{quiz.retries+1}}
+            <span translate="quizzes.attempts"></span>
+    	</p>
+    	<!-- <p ng-if="status!=null && status.attempts<quiz.retries+1">
+    		<span translate="quizzes.attempt_number"></span>: {{status.attempts}}/{{quiz.retries+1}}
+    	</p> -->
+    </div>
+    <hr>
+    <div class="small-12 columns no-padding">
+    	<form name="form">
+            <center class="no_solve" ng-if="!passed_requirments">
+                <div style='color:#428bca; width: 100%;font-weight:300;font-size:12px' >
+                    <h2 style="top:60px;font-weight:300;font-size:18px" ><span translate>lectures.messages.finish_before_proceeding</span></h2>
+                </div>
+            </center>
+            <span ng-if="passed_requirments">
+        		<student-quiz quiz='quiz' student-answers="studentAnswers" submitted="submitted" correct="correct" explanation="explanation"></student-quiz>
+
+            </span>
+    	</form>
+    </div>
+    <div class="with-margin-top small-12 columns" ng-if="passed_requirments">
+        <button ng-disabled="status.status=='Submitted' || quiz.questions.length==0 || (status.attempts==quiz.retries+1 && quiz.quiz_type == 'survey') || save_inprogress" type="button" class="button tiny" ng-click="saveQuiz('save')">
+           <span translate>button.save</span>
+        </button>
+        <button ng-disabled="(status.status=='Submitted' && status.attempts==quiz.retries+1) || quiz.questions.length==0" ng-if="quiz.quiz_type=='quiz'" type="button" class="button tiny success" ng-click="saveQuiz('submit')">
+            <span translate>button.submit</span>
+        </button>
+        <button id="next_button" type="button" ng-show="next_item.id" ng-click="nextItem()" class="button tiny">
+            <span translate>button.next</span>
+        </button>
+    </div>
+    <div ng-if="current_survey.visible" ng-repeat="element in ordered_survey">
+        <div ng-show="survey_chart_data && survey_chart_data[element[0]].student_show" style="padding:10px 40px" >
+            <center><h4>Survey Results:</h4></center>
+            <div ng-if="element[1]!='Free Text Question'" class="chart" style='min-width:300px; height:205px;' ng-init="chart=createSurveyChart(survey_chart_data[element[0]].answers, $index,student_count)">
+                <center ng-init="loading=true" style="position:relative;top:50%"><loading size="small" show="loading" /></center>
+                <div google-chart on-ready="loading=false" chart="chart" ></div>
+            </div>
+        </div>
+
+         <div ng-if="element[1]=='Free Text Question' && survey_free[element[0]].student_show" style="margin-top:60px">
+            <div style="margin:10px 15px">Free Text Question | <span ng-bind-html="survey_free[element[0]].title" ></span></div>
+            <free-text-table ng-if="survey_free[element[0]].answers" survey-id="1" question="survey_free[element[0]]"  related-answers="related_answers" display-only="true"/>
+        </div>
+    </div>
+
+        <!-- <div ng-repeat="element in ordered_quiz">
+            <div ng-show="quiz_chart_data && quiz_chart_data[element[0]].show" style="padding:10px 40px" >
+                <div ng-if="element[1]!='Free Text Question'" class="chart" style='min-width:300px; height:205px;' ng-init="chart=createQuizChart(quiz_chart_data[element[0]].answers, $index)">
+                    <center ng-init="loading=true" style="position:relative;top:50%"><loading size="small" show="loading" /></center>
+                    <div google-chart on-ready="loading=false" chart="chart" ></div>
+                </div>
+            </div>
+            <div ng-if="element[1]=='Free Text Question' && quiz_free[element[0]].show" style="margin-top:60px">
+                <free-text-table ng-if="quiz_free[element[0]].answers" survey_id="quiz.id" question="quiz_free[element[0]]" related-answers="related_answers" display-only="true" graded="true"/>
+            </div>
+        </div> -->
+</div>

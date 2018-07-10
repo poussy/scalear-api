@@ -1,0 +1,140 @@
+<div ng-if="!loading_lti && !selected_lauch_url && !selected_resource" >
+	<accordion ng-hide="create_new_account || no_common_courses" class="accordion no-margin navigation">
+		<div ng-show="courses">
+		    <accordion-group ng-repeat="(course_key , course) in courses" id="first_accordion" class="accordion-group overflow-auto" open="" is-open="courses_sign">
+			<accordion-heading class="accordion-heading">
+				<!-- <div  style="padding: 3px;border-bottom: 1px solid white;"> -->
+				<div  class="row collapse" style="padding: 4px 13px;">
+					<div class="small-1 column" style="margin-top: 35px;">
+						<i ng-show="courses_sign" class='fi-minus size-10 color-black' style="margin-right: 20px;float: left;"></i>
+						<i ng-hide="courses_sign" class='fi-plus size-10 color-black'  style="margin-right: 20px;float: left;"></i>
+					</div>
+					<div class="small-9 columns" style="word-wrap: break-word;">
+						{{course.short_name}} | {{course.name}}
+						<div class="bottom-bar">
+							<div class="small-12 medium-4 columns with-small-margin-bottom">
+								<i class="fi-calendar size-18"></i><small class="with-small-margin-left" translate>courses.start_date</small>:
+								<small class="truncate">{{course.start_date | amDateFormat:'DD MMMM YYYY'}}</small>
+							</div>
+							<div class="small-12 medium-4 columns with-small-margin-bottom">
+								<i class="fi-calendar size-18"></i><small class="with-small-margin-left" translate>courses.end_date</small>:
+								<small class="truncate">{{course.end_date | amDateFormat:'DD MMMM YYYY'}}</small>
+							</div>
+							<div class="small-12 medium-4 columns with-small-margin-bottom">
+								<i class="fi-torsos-all size-18"></i>
+								<small class="with-small-margin-left" translate>courses.list.number_of_students</small>:
+								<small class="truncate" >{{course.enrollments}}</small>
+							</div>
+						</div>
+					</div>
+					<div class="small-2 columns" style="margin-top: 35px;">
+						<a href="" class="right button tiny success" style="padding: 3px 10px;border-radius: 4px;margin-bottom: 0;font-size: 12px;" ng-if="location_state=='lti_course_list'" ng-click="embed('course',course.id,$event,course.name)">
+							<i class="fi-link size-12"/><span translate>lti.embed</span>
+						</a>
+						<a href="" class="right button tiny success" style="padding: 3px 10px;border-radius: 4px;margin-bottom: 0;font-size: 12px;" ng-if="location_state=='lti_help'" ng-click="choose_item('course',course.id,$event,course.name)">
+							<span translate>lti.select</span>
+						</a>						
+						<a href="" class="right button tiny success" style="padding: 3px 10px;border-radius: 4px;margin-bottom: 0;font-size: 12px;" ng-if="location_state=='lti_tool_redirect'" ng-click="lti_tool_redirect('course',course.id,$event,course.name)">
+							<span translate>lti.select</span>
+						</a>						
+
+					</div>
+				</div>
+			</accordion-heading>
+		          <accordion>
+		          <accordion-group ng-repeat="(group_key , group) in course.groups" id="second_accordion" class="accordion-group overflow-auto" open="" is-open="quizzes_sign" style="width: 100%;background-color: #BFBFBF;border-bottom: 1px solid white;" >
+				      <accordion-heading class="accordion-heading" >
+				        <div class="row collapse"  style="padding: 4px 26px;">
+				          <div class="small-1 columns" style="margin-top: 5px;">
+					          <i ng-show="quizzes_sign" class='fi-minus size-10 color-black' style="margin-right: 20px;float: left;"></i>
+					          <i ng-hide="quizzes_sign" class='fi-plus size-10 color-black'  style="margin-right: 20px;float: left;"></i>
+				          </div>
+				          <div class="small-9 columns" style="word-wrap: break-word;" >{{group.name}}</div>
+				          <div class="small-2 columns" >
+							<a href="" class="right button tiny success" style="padding: 3px 10px;border-radius: 4px;margin-bottom: 0;font-size: 12px;" ng-if="location_state=='lti_course_list'" ng-click="embed('group',group.id,$event,group.name)">
+								<i class="fi-link size-12"/><span translate>lti.embed</span>
+							</a>
+							<a href="" class="right button tiny success" style="padding: 3px 10px;border-radius: 4px;margin-bottom: 0;font-size: 12px;" ng-if="location_state=='lti_help'" ng-click="choose_item('group',group.id,$event,group.name)">
+								<span translate>lti.select</span>
+							</a>
+							<a href="" class="right button tiny success" style="padding: 3px 10px;border-radius: 4px;margin-bottom: 0;font-size: 12px;" ng-if="location_state=='lti_tool_redirect'" ng-click="lti_tool_redirect('group',group.id,$event,group.name)">
+								<span translate>lti.select</span>
+							</a>
+
+				          </div>
+				        </div>
+				      </accordion-heading>
+					    <div ng-repeat="(item_key , item) in group.items" class="last-child item " style="border-bottom: 1px solid white;">
+							<div class="row collapse" style="padding: 6px 30px;">
+								<div class="small-1 columns">
+									<i ng-if="item.type == 'lecture'" class="fi-video with-tiny-margin-right left color-gray ng-scope" title="Video" style="float: left;" ></i>
+									<i ng-if="item.type == 'quiz'" class="fi-clipboard-notes with-tiny-margin-right left color-gray ng-scope" title="Quiz" style="float: left;" ></i>
+									<i ng-if="item.type == 'customlink'" class="fi-link with-tiny-margin-right left color-gray ng-scope" title="Link" style="float: left;" ></i>
+								</div>
+						        <div class="show-inline small-9 columns"  style="word-wrap: break-word;">{{item.name}}</div>
+						        <div class="small-2 columns" >
+									<a href="" class="right button tiny success" style="padding: 3px 10px;border-radius: 4px;margin-bottom: 0;font-size: 12px;" ng-if="location_state=='lti_course_list'" ng-click="embed(item.type,item.id,$event,item.name)">
+										<i class="fi-link size-12"/><span translate>lti.embed</span>
+									</a>
+									<a href="" class="right button tiny success" style="padding: 3px 10px;border-radius: 4px;margin-bottom: 0;font-size: 12px;" ng-if="location_state=='lti_help'" ng-click="choose_item(item.type,item.id,$event,item.name)">
+										<span translate>lti.select</span>
+									</a>
+									<a href="" class="right button tiny success" style="padding: 3px 10px;border-radius: 4px;margin-bottom: 0;font-size: 12px;" ng-if="location_state=='lti_tool_redirect'" ng-click="lti_tool_redirect(item.type,item.id,$event,item.name)">
+										<span translate>lti.select</span>
+									</a>								
+						        </div>
+					        </div>
+				      </div>
+			      	  <div ng-show="!(group.items)" style="padding-left: 10%;background: #d3d3d3;border-bottom: 1px solid white;"><span translate>button.no</span> <span translate>lti.items</span></div>
+				</accordion-group>
+				</accordion>
+				<div ng-show="!(course.groups)" style="padding-left: 10%;background: #E1E1E1;border-bottom: 1px solid white;"><span translate>button.no</span> <span translate>lti.modules</span></div>
+		    </accordion-group>
+		    <br><br><br>
+		</div>
+		<div ng-show="!courses" align="center">
+			<span translate>button.no</span> <span translate>lti.courses</span>
+		</div>
+	</accordion>
+	<div ng-show="create_new_account"  align="center" style="width: 85%; margin:0 auto;">
+		<span translate>lti.no_account</span> <a href class=""  ng-click="join()" translate>account.sign_in</a>
+	</div>
+	<div ng-show="no_common_courses"  align="center" style="width: 85%; margin:0 auto;" translate>lti.contact_teacher</div>
+</div>
+<div ng-if="loading_lti" style="height: 150px">
+  <center style="position: relative;top:25%">
+    <loading size="big" show="true"></loading>
+  </center>
+</div>
+<div ng-if="selected_lauch_url">
+  <div>
+    <ul>
+      <li style="list-style-type: initial;" ng-if="consumer_key">
+        <div class="config-line" >
+        	<div class="config-title"><b>Consumer Key: </b></div>
+        	<div class="config-val">{{consumer_key}}</div>
+        </div>
+      </li>
+      <li style="list-style-type: initial;" ng-if="shared_sceret">
+        <div class="config-line" >
+        	<div class="config-title"><b>Secret Key: </b></div>
+        	<div class="config-val">{{shared_sceret}}</div>
+        </div>
+      </li>
+      <li style="list-style-type: initial;">
+        <div class="config-line" >
+        	<div class="config-title"><b>Launch URL: </b></div>
+        	<div class="config-val">{{sl_url}}</div>
+        </div>
+      </li>
+    </ul>
+  </div>
+</div>
+
+
+<div ng-if="selected_resource">
+  <div>
+	<h4><center> Resource Selected</center> </h4>
+	<p><center>You've picked the resource that users will see when the load this tool at this point in your course from now on.</center> </p>
+  </div>
+</div>

@@ -1,0 +1,38 @@
+<div class="modal-header" ng-hide="hide_content">
+    <h3><i class="step fi-comment-quotes size-38"></i><span translate>feedback.what_you_think</span></h3>
+</div>
+<div class="modal-body" ng-hide="hide_content">
+    <p translate>feedback.instructions</p>
+    <hr/>
+    <div ng-show="!current_user">
+        <div style="margin-bottom:5px"><b translate>global.name</b>:</div>
+        <input type="text" id="report_name" class="string name optional" name="user[name]" ng-model="user.name" size="50" autocomplete="off" />
+        <div style="margin-bottom:5px"><b translate>global.email</b>:</div>
+        <input type="email" id="report_email" class="string email optional" ng-model="user.email" pattern="^[-aA-zZ0-9_+\.]+\@([-aA-zZ0-9]+\.)+[aA-zZ0-9]{2,4}$" name="user[email]" size="50" autocomplete="off" />
+    </div>
+    <div>
+        <div style="margin-bottom:5px"><b translate>feedback.like_to_comment</b>:</div>
+         <select ng-model="selected_type" ng-options="type.text for type in issue_types" ng-change="selectedScalableWebsiteTypeEnable(selected_type)">
+        </select>
+
+    </div>
+    <div>
+        <select ng-model="selected_scalable_website_type" ng-options="type.text for type in issue_scalable_website_types" ng-hide="hide_issue_scalable_website_types" >
+        </select>
+    </div>
+    <center>
+        <small ng-show="no_text"  class="error text-left">{{no_text}}</small>
+        <textarea rows="5" cols="12" style="height: 170px;" placeholder="{{'feedback.leave_feedback'|translate}}" ng-model="technical_data">
+        </textarea>
+        <loading size="small" show="sending_technical" />
+    </center>
+</div>
+<div class="modal-body text-center" ng-show="hide_content">
+        <i class="step fi-comment-quotes color-green" style="font-size: 155px;"></i>
+        <h2 class="color-green with-margin text-center"><b translate>feedback.thanks</b></h2>
+</div>
+<div class="modal-footer" ng-hide="hide_content">
+    <br />
+    <button class="button small" ng-click="sendTechnical(selected_type, selected_scalable_website_type, technical_data, user)" translate="button.send"></button>
+    <button class="button small alert" ng-click="cancel()" translate="button.cancel"></button>
+</div>

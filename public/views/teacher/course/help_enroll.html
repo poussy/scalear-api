@@ -1,0 +1,73 @@
+<!--[htmlclean-protect]-->
+<div class="well well-lg" style="text-align: left;">
+  <h3><span translate>enroll_email.help_enroll</span></h3>
+  <p translate>enroll_email.instruction</p>
+  <br>
+  <tabset>
+    <tab heading="Regular Student">
+      <p translate>enroll_email.to_get_started
+      </p>
+      <div class="panel">
+        <div id="enrollment_message" ngclipboard data-clipboard-target="#enrollment_message" ngclipboard-success="copySuccess(e);" ngclipboard-error="copyError(e);">
+          <p><span translate>enroll_email.dear_student</span>,</p>
+          <p class='no-margin'>
+            <span translate translate-values='{course_name: course.name}'>enroll_email.this_term_new_system_part_1</span><a href="{{enrollment_url}}">{{enrollment_url}}</a><span translate>enroll_email.this_term_new_system_part_2</span>.
+            <br>
+            <br>
+          </p>
+          <p><span translate>enroll_email.sincerely</span>,
+            <br />
+            <span>{{current_user.name+' '+current_user.last_name}}</span>
+            <br>
+          </p>
+          <!-- <p>
+            <span translate>enroll_email.go_to</span> <a href="{{'home'| href}}">{{'home'| href}}</a>
+            <span translate>enroll_email.add_course_by_choosing_part_1</span><b>{{course.unique_identifier}}</b><span translate translate-values='{short_name: course.short_name}'> enroll_email.add_course_by_choosing_part_2</span>
+          </p> -->
+        </div>
+        <div class="well well-lg" style="color: gray;font-size: 12px;font-weight: bold;float: right"><span translate>courses.information.tooltip.click_to_copy</span></div>
+
+      </div>
+      <div >
+        <span translate>enroll_email.if_problem</span>
+
+        <ul>
+          <li ><span translate>enroll_email.ask_student</span> <b translate>enroll_email.check_spam</b>	<span translate>enroll_email.conf_email</span></li>
+
+          <li ><span translate>enroll_email.ask_student</span> <b translate>enroll_email.enroll_manual</b> <span translate>enroll_email.by_go </span> <a href="{{'home'| href}}">{{'home'| href}}</a>	<span translate>enroll_email.and_joining</span><b> {{course.unique_identifier}}.</b></li>
+
+          <li ><b translate>enroll_email.contact</b>	<span translate> enroll_email.from_help</span></li>
+        </ul>
+      </div>
+      <div >
+        <b translate>enroll_email.guest_stu </b><span translate>enroll_email.you_may </span> <a href="{{enrollment_url_guest}}">{{enrollment_url_guest}}</a>.	<span translate>enroll_email.guest_may</span>:	<b>{{course.guest_unique_identifier}}</b>.
+      </div>
+      <div class="clear-both modal-footer">
+        <button class ='button right' type="button" name="button" ng-click="close()" style='margin: 1rem' translate>button.close</button>
+      </div>
+    </tab>
+    <!-- <tab heading="Guest Student">
+      <div class="panel">
+        <div id="guest_enrollment_message" ngclipboard data-clipboard-target="#guest_enrollment_message" ngclipboard-success="copySuccess(e);" ngclipboard-error="copyError(e);">
+          <p><span translate>enroll_email.dear_student</span>,</p>
+          <p class='no-margin'>
+            <span translate translate-values='{course_name: course.name}'>enroll_email.this_term_new_system_part_1</span><a href="{{enrollment_url_guest}}">{{enrollment_url_guest}}</a><span translate>enroll_email.this_term_new_system_part_2</span>.
+            <br>
+            <br>
+          </p>
+          <p><span translate>enroll_email.sincerely</span>,
+            <br />
+            <span>{{current_user.name+' '+current_user.last_name}}</span>
+            <br>
+          </p>
+          <p>
+            <span translate>enroll_email.go_to</span> <a href="{{'home'| href}}">{{'home'| href}}</a>
+            <span translate>enroll_email.add_course_by_choosing_part_1</span><b>{{course.guest_unique_identifier}}</b><span translate translate-values='{short_name: course.short_name}'> enroll_email.add_course_by_choosing_part_2</span>
+          </p>
+        </div>
+        <div class="well well-lg" style="color: gray;font-size: 12px;font-weight: bold;float: right"><span translate>courses.information.tooltip.click_to_copy</span></div>
+      </div>
+    </tab> -->
+  </tabset>
+</div>
+<!--[/htmlclean-protect]-->

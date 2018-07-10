@@ -1,0 +1,34 @@
+<div class="announcement-box panel no-padding">
+	<!-- <div>
+		<delete_button  size="big" color='dark' action="deleteannouncement(announcement)" ng-hide="announcement.show"/>
+		</delete_button>
+	</div> -->
+
+	<div >
+		<delete_button class="right with-margin-right" size="big" text="
+		false" overlaymode="false" action="deleteannouncement(announcement)" ng-hide="announcement.show"/>
+	</div>
+
+	<div class="time-label uppercase blue color-white">
+		<small>{{announcement.created_at | fromNow}}</small>
+	</div>
+	<div ng-click="showannouncement(announcement)" ng-mouseover="announcement.overclass = 'icon-pencil'" ng-mouseleave="announcement.overclass= ''" ng-if="!announcement.show">
+		<blockquote class="announcement-body dark-text with-padding">
+			<span ng-bind-html='announcement.announcement'></span>
+		</blockquote>
+		<center class="large-12 coulmns" ng-if="announcement.announcement.trim()==''" translate>global.empty</center>
+		<i ng-if="!announcement.show" ng-class="announcement.overclass"></i>
+		<span class="errormessage" ng-show="announcement.errors">{{announcement.errors.announcement.join()}}</span>
+	</div>
+	<div ng-if="announcement.show" style="padding:15px">
+    	<!-- <div text-angular ng-model="announcement.announcement" ta-toolbar-button-class="button secondary tiny"></div>
+    	<div class = "with-margin-left">
+			<br>			 -->
+			<div>
+				<rich-textarea  ng-model="announcement.announcement" style="width: 98%;height: 200px;margin: 10px 0;" />
+			</div>
+			<button id="save_button" class="button tiny" ng-click="saveannouncement(announcement)" ng-disabled="saving" translate>button.save</button>
+			<button id="close_button" class="button alert tiny" ng-click="hideannouncement('announcement')" ng-disabled="saving" translate>button.close</button>
+		</div>
+	</div>
+</div>

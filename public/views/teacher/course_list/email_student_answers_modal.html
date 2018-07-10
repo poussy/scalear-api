@@ -1,0 +1,20 @@
+<style>
+.reveal-modal{
+    height:auto;
+    overflow: hidden;
+}
+</style>
+<!-- <center> -->
+<div>
+    <h3 ><span translate>global.welcome</span> <span translate>global.to</span> {{course.name}} </h3>
+    <div class="modal-body" >
+        <div translate>courses.information.receive_student_ask_email_question</div>
+        <div translate>courses.information.change_email_question</div>
+    </div>
+    <div class="modal-footer right">
+        <br/>
+        <button class="button small success" ng-click="updateEmailDiscussion(true)" translate="courses.information.button.send_email_reminder"></button>
+        <button class="button small alert" ng-click="updateEmailDiscussion(false)" translate="button.no_thanks"></button>
+    </div>
+</div>
+<!-- </center> -->

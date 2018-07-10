@@ -1,0 +1,22 @@
+<div>
+  <div ng-show="moduledata.title">
+    <h3>
+      <b><span ng-hide='moduledata.review_page_trigger'><span translate>button.next</span> <span translate>global.module</span>: </span> {{::moduledata.title}} </span></b>
+      <span style="font-size: 22px;">
+        <span ng-show=" ( moduledata.due_date > 0 && moduledata.due_date_enabled ) && (moduledata.time_left_string != 00)" >
+          <span translate>events.due</span>
+          <span> - in</span>
+          <span>{{::moduledata.time_left_string}}</span>
+          <span translate>time.hours</span>
+        </span>
+        <span ng-hide="moduledata.due_date > 0 || moduledata.review_page_trigger"  translate>events.due_date_passed</span>
+        <span ng-show="moduledata.time_left_string == 0 "  translate>dashboard.less_one_hour</span>
+      </span>
+    </h3>
+    <p>{{subtitle}}</p>
+  </div>
+  <div>
+    <h5><b translate>dashboard.student_completion</b></h5>
+    <highchart id="teacher_completion" ng-if="moduledata.students_completion" class="" config="student_completion_chart_config" style="width: 100%;height: 70px;"></highchart>
+  </div>
+</div>

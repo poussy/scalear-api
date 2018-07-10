@@ -1,0 +1,79 @@
+<style>
+table [class*="column"] + [class*="column"]:last-child{
+    float: none;
+}
+table.table_matrix_height{
+    margin-bottom: 0
+}
+
+table.table_matrix_height tbody{
+    overflow-x: hidden !important;
+}
+.column-width{
+    min-width: 115px;
+    max-width: 250px
+}
+@media only screen and (min-width:64.063em) {
+  .table_matrix_height{
+    height: 54vh !important;
+  }
+}
+
+@media only screen and (min-width:84.063em) {
+  .table_matrix_height{
+    height: 66vh !important;
+  }
+}
+</style>
+
+<div style="border:1px solid lightgray;padding: 5px;display:-webkit-inline-box;display:-moz-box;margin-bottom:10px" ng-init="status_img={
+    finished_on_time:'images/Finished_on_Time.png',
+    finished_not_on_time:'images/Finished_Not_on_time.png',
+    not_finished:'images/Not_Finished.png'}">
+    <div ng-repeat="(stat, img) in status_img">
+        <img ng-src="{{img}}" style="width:12px">
+        <span style="margin-right:10px;font-size:12px;display:inline" translate>{{'progress.'+stat}}</span>
+    </div>
+</div>
+<button ng-if="exportProgress != null" class="right button tiny secondary" ng-click="exportProgress()" style="margin-bottom: 10px;" >Export</button>
+<table fixed-header class="table_matrix_height" style="width:100%">
+    <thead>
+        <tr>
+            <th class="column-width"></th>
+            <th class="column-width" ng-repeat="name in columnNames track by $index">
+                <center><span >{{::name}}</span></center>
+            </th>
+        </tr>
+    </thead>
+    <tbody> <!-- class="scroll_container" -->
+        <tr ng-repeat="student in students" >
+            <td class="column-width"><span tooltip="{{student.email}}" tooltip-append-to-body="true" tooltip-placement="right">{{student.full_name}}</span></td>
+            <td class="state column-width" ng-repeat='module in status[student.id] track by $index'>
+                <span ng-if="::( module.length == 8)">
+                    <center>
+                       <span ng-if="::(module[7]==1)">
+                            <img tooltip=" {{'progress.tooltip.watched_video' | translate}}:{{module[6]}}%, {{module[2]}}/{{module[3]}} {{'progress.tooltip.quizzes_solved' | translate}}, {{module[4]}}/{{module[5]}} {{'progress.tooltip.quizzes_optional_solved' | translate}}." tooltip-append-to-body="true" tooltip-placement="left" class="marker" ng-src="{{status_img[student.status[module[0]].split(' ').join('_').toLowerCase()||getImg(module[1])]}}"
+                            style="width:15px; cursor: pointer;" pop-over='popover_options' unique='true'>
+                        </span>
+                        <span ng-if="::( (module[7]==2) && (module[4]!=0) )">
+                            <img tooltip="{{'progress.tooltip.correct' | translate}} {{module[2]}}/{{module[3]}} , {{module[4]}} {{'progress.tooltip.question_not_checked' | translate}}." tooltip-append-to-body="true" tooltip-placement="left" class="marker" ng-src="{{status_img[student.status[module[0]].split(' ').join('_').toLowerCase()||getImg(module[1])]}}" style="width:15px; cursor: pointer;" pop-over='popover_options' unique='true'>
+                        </span>
+                        <span ng-if="::( (module[7]==2) && (module[4]==0) )">
+                            <img tooltip="{{'progress.tooltip.completed' | translate}} {{module[2]}}/{{module[3]}} ." tooltip-append-to-body="true" tooltip-placement="left" class="marker" ng-src="{{status_img[student.status[module[0]].split(' ').join('_').toLowerCase()||getImg(module[1])]}}" style="width:15px; cursor: pointer;" pop-over='popover_options' unique='true'>
+                        </span>                    
+                        <div ng-if="module[1]>0 && !student.status[module[0]]" >{{::'('+module[1]+' '+('time.days'|translate)+')'}}</div>
+                    </center>
+                </span>
+                <span ng-if="::( module.length == 4 )">
+                    <center>
+                        <img class="marker"
+                        ng-src="{{status_img[student.status[module[0]].split(' ').join('_').toLowerCase()||getImg(module[1])]}}"
+                        style="width:15px; cursor: pointer;" pop-over='popover_options' unique='true'>
+                        <div ng-if="module[1]>0 && !student.status[module[0]]" >{{::'('+module[1]+' '+('time.days'|translate)+')'}}</div>
+                    </center>
+                </span>
+            </td>
+        </tr>
+        <!-- <tr infinite-scroll='remaining()' infinite-scroll-disabled='scrolldisabled' infinite-scroll-immediate-check='false' infinite-scroll-container="'.scroll_container'"></tr> -->
+    </tbody>
+</table>

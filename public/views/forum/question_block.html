@@ -1,0 +1,34 @@
+<div id="show_question">
+  <table class="table" style="margin-top: 10px;background: rgb(249, 249, 249);">
+    <tr>
+      <td colspan="2" style="padding:5px" class="hide-for-semi-medium">
+        <div><i ng-show="error_message" class="size-12 color-red"><br>{{error_message}}<br></i></div>
+        <rich-textarea ng-disabled="preview_as_student" class="text_block" placeholder="{{'lectures.button.ask_question' | translate}}" ng-model="current_question" style="width: 96%; height: 100%;"></rich-textarea>
+      </td>
+      <td colspan="2" style="padding:5px" class="show-for-semi-medium">
+        <div><i ng-show="error_message" class="size-12 color-red"><br>{{error_message}}<br></i></div>
+        <textarea ng-disabled="preview_as_student" class="text_block" placeholder="{{'lectures.button.ask_question' | translate}}" ng-model="current_question" style="width: 96%; height: 100%;" />
+      </td>
+    </tr>
+    <tr ng-if="preview_as_student">
+      <td colspan="2" style="padding:5px">
+        <div><i class="size-12 color-red" translate>discussion.cannot_ask_question_preview</i></div>
+      </td>
+    </tr>
+    <tr>
+      <td style="width:70%;padding:5px">
+        <input type="text" ng-model="item.time" style="width: 96%; margin-bottom: 0px;" />
+        <small class="error position-absolute z-one" ng-show="time_error" ng-bind="time_error"></small>
+        <select ng-model='privacy' ng-disabled="item.data.isEdit" ng-options="f.text for f in choices" style="width: 100%; margin-top: 1rem;"></select>
+      </td>
+      <td ng-if="!item.data.isEdit" stlye="padding:0">
+        <button ng-disabled="preview_as_student  || ask_button_clicked" type="button" class="button tiny" ng-click="postQuestion(item)" translate>discussion.button.ask</button>
+        <button type="button" class="button tiny alert" ng-click="cancelQuestion(item)" translate>discussion.button.cancel</button>
+      </td>
+      <td ng-if="item.data.isEdit">
+        <button type="button" class="button tiny" ng-click="updateQuestion(item)" translate>discussion.button.save</button>
+        <button type="button" class="button tiny alert" ng-click="item.data.isEdit=false" translate>discussion.button.cancel</button>
+      </td>
+    </tr>
+  </table>
+</div>

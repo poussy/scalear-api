@@ -1,0 +1,38 @@
+<div class="small-12 column">
+    <form ng-submit="change_password()" novalidate>
+        <div class="with-margin">
+            <div class="right">
+                <div class="show-inline" ng-show="$parent.current_lang=='sv'" ng-cloak>
+                    <a style="cursor:pointer;" ng-click="$parent.changeLanguage('en')"><img src="images/sweden.png" style="width:25px;height:15px;" /></a>
+                </div>
+                <div class="show-inline" ng-show="$parent.current_lang=='en'" ng-cloak>
+                    <a style="cursor:pointer;" ng-click="$parent.changeLanguage('sv')"><img src="images/uk.png" style="width:25px;height:15px;" /></a>
+                </div>
+            </div>
+            <h3 class="show-inline" translate>account.password.forgot_password</h3>
+        </div>
+        <center>
+
+        <div class='row'>
+            <div class="large-6 large-centered medium-9 medium-centered small-12 columns">
+                <fieldset class="with-margin-bottom">
+                    <legend><i class="fi-lock size-21"></i><span translate>account.security</span></legend>
+                    <div class="large-12 columns">
+                        <label><span translate>account.password</span>
+                            <input ng-disabled="sending" type="password" id="setting_user_password" ng-model="user.password" ng-class="{error: user.errors.password}" autocomplete="off" placeholder="Password" />
+                            <small ng-show="user.errors.password" class="error with-tiny-padding">{{user.errors.password.join()}}</small>
+                        </label>
+                    </div>
+                    <div class="large-12 columns">
+                        <label><span translate>account.password.password_confirmation</span>
+                            <input ng-disabled="sending" type="password" id="setting_user_password_confirmation" ng-model="user.password_confirmation" ng-class="{error: user.errors.password_confirmation}" autocomplete="off" placeholder="Password confirmation"/>
+                            <small ng-show="user.errors.password_confirmation" class="error with-tiny-padding">{{user.errors.password_confirmation.join()}}</small>
+                        </label>
+                    </div>
+                </fieldset>
+            </div>
+        </div>
+        <button id="change_password" type="submit" ng-disabled="sending" class="button valign-bottom" translate>account.password.change_password</button>
+    </center>
+    </form>
+</div>

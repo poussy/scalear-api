@@ -1,0 +1,13 @@
+<div class="row">
+	<div class="small-12 columns">
+		<h4>
+			<b><span translate>editor.link_editor</span>:</b>
+			<span>{{link.name}}</span>
+		</h4>
+	</div>
+</div>
+<div ng-if="link.url!='Empty' && link.url!='http://'" class="row">
+	<div class="small-12 columns">
+		<embed  width="100%" height="100%" name="plugin" embed-src="{{$sce.trustAsResourceUrl(link.url)}}" src="{{$sce.trustAsResourceUrl(link.url)}}" style="min-height:70vh;border:1px solid lightgrey">
+	</div>
+</div>

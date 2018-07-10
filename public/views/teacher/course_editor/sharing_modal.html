@@ -1,0 +1,39 @@
+<!-- build:css(.tmp/styles) styles/shared_item.css -->
+<link rel="stylesheet" href="styles/sharedItem.css"/>
+<!-- endbuild -->
+<div>
+	<h3><i class="fi-social-skillshare size-38"></i> <span translate>context_menu.share_copy</span></h3>
+	<div class="small-12 columns" style="margin: 0 auto;">
+		<form ng-submit="shareItem()" novalidate>
+			<div class="small-2 columns no-padding-right">
+				<label class="inline size-18"><span translate>sharing.teacher_email</span>:</label>
+			</div>
+			<div class="small-6 columns no-padding-left">
+				<input type="email" ng-model="selected_teacher.email" class="string email optional" ng-class="{error: errors}" pattern="^[-aA-zZ0-9_+\.]+\@([-aA-zZ0-9]+\.)+[aA-zZ0-9]{2,4}$" />
+				<small ng-show="errors" class="error with-tiny-padding">{{errors}}</small>
+			</div>
+			<div class="small-2 columns left">
+				<button type="submit" class="button success small left" translate>context_menu.share</button>
+			</div>
+		</form>
+	</div>
+	<br />
+	<div class="shared-tree small-12 column">
+		<ul>
+			<li>
+				<a style="border: 2px solid rgb(0, 162, 86);">
+					<input type="checkbox" ng-model="selected_module.selected" ng-click="selectAll(selected_module,$event)" class="no-margin looks-like-a-link"/>
+					<b><span translate>groups.module</span>:</b> {{selected_module.name}}
+				</a>
+				<ul>
+					<li ng-repeat="item in selected_module.items">
+						<a >
+							<input type="checkbox" class="no-margin looks-like-a-link" ng-model="item.selected" ng-click="selectItem(selected_module,item,$event)"/>
+							<b>{{'sharing.'+(item.quiz_type|| item.class_name) | translate}}:</b> {{item.name}}
+						</a>
+					</li>
+				</ul>
+			</li>
+		</ul>
+	</div>	
+</div>

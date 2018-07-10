@@ -1,0 +1,74 @@
+<style>
+    .reveal-modal{
+        top: 2.5%;
+        padding: 1.25rem;
+        height: initial;
+    }
+</style>
+<h4 ><b translate>content.add_new_content</b>:</h4>
+
+<div class="small-12 medium-10 large-10 medium-centered large-centered columns">
+    <div class="row">
+        <div class="large-4 medium-12 small-12 with-small-margin-top columns">
+            <h4 class="color-violet text-bold" translate>content.types.video</h4>
+            <div class="subheader" translate>content.types.video_desc</div>
+        </div>
+        <div class="large-2 medium-4 small-6 columns left">
+            <a id="video_item" type="button" class="th violet" ng-click="addItem('video')" >
+                <img style="margin: 10%; width: 80%; height: 80%;" src="/images/video_symbol.png">
+            </a>
+            <center><h5 translate>content.types.video</h5></center>
+        </div>
+        <div class="large-2 medium-4 small-6 columns left">
+            <a id="pi_video_item" type="button" class="th orange" ng-click="addItem('inclass_video')" >
+                <img style="margin: 10%; width: 80%; height: 80%;" src="/images/video_symbol.png">
+            </a>
+            <center><h5 translate>content.types.inclass_video</h5></center>
+        </div>
+        <div class="large-2 medium-4 small-6 columns left">
+            <a id="dp_video_item" type="button" class="th green" ng-click="addItem('distance_peer')" >
+                <img style="margin: 10%; width: 80%; height: 80%;" src="/images/video_symbol.png">
+            </a>
+            <center><h5 translate>content.types.distance_peer_video</h5></center>
+        </div>
+    </div>
+</div>
+
+<div class="small-12 medium-10 large-10 medium-centered large-centered columns">
+    <div class="row">
+        <div class="large-4 medium-12 small-12 with-small-margin-top columns">
+            <h4 class="color-olive text-bold" translate>content.types.quiz_or_survey</h4>
+            <div class="subheader" translate>content.types.quiz_or_survey_desc</div>
+        </div>
+        <div class="large-2 medium-3 small-6 with-small-margin-top columns">
+            <a id="quiz_item" type="button" class="th olive" ng-click="addItem('quiz')">
+                <img style="margin: 10%; width: 80%; height: 80%;" src="/images/quiz_symbol.png">
+            </a>
+            <center><h5 translate>content.types.quiz</h5></center>
+        </div>
+        <div class="left large-2 medium-3 small-6 with-small-margin-top columns">
+            <a id="survey_item" type="button" class="th olive" ng-click="addItem('survey')" >
+                <img style="margin: 10%; width: 80%; height: 80%;" src="/images/survey_symbol.png">
+            </a>
+            <center><h5 translate>content.types.survey</h5></center>
+        </div>
+    </div>
+</div>
+<div class="small-12 medium-10 large-10 medium-centered large-centered columns">
+    <div class="row">
+        <div class="large-4 medium-12 small-12 with-small-margin-top columns">
+            <h4 class="color-grey text-bold" translate>content.types.customlink</h4>
+            <div class="subheader" translate>content.types.link_desc</div>
+        </div>
+        <div class="large-2 medium-4 small-6 with-small-margin-top columns left">
+           <center> <a id="link_item" type="button" class="th grey" ng-click="addItem('link')" style="width:94%">
+                <img style="margin: 4% 0" src="/images/link_icon_dark.png">
+            </a></center>
+            <center><h6 translate>content.types.customlink</h6></center>
+        </div>
+    </div>
+</div>
+
+<div class="modal-footer clear-both">
+    <button class="button small alert right no-margin" ng-click="cancel()" translate="button.cancel"></button>
+</div>

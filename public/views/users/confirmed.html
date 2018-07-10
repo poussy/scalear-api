@@ -1,0 +1,57 @@
+<style>
+	.ngdialog.dialogwidth800 .ngdialog-content{
+		width : 95%;
+		overflow: scroll;
+		height: 95%;
+	}
+.disabled {
+  cursor: not-allowed;
+}
+</style>
+
+
+<center>
+	<div class="small-8" ng-hide="student_or_teacher">
+		<h2><span translate>global.welcome</span>
+		<span translate>global.to</span>
+			<span  style="font-weight: 300;">Scalable<span class="no-padding color-green" style="font-weight: 400;">Learning</span></span>!
+		</h2>
+		<span class="with-small-margin-left" translate>navigation.int_video</span>
+		<div class="small-8 with-margin-top">
+			<button type="button" class="button success" ng-click="set_student_or_teacher('T')"><span class="with-small-margin-left" translate>navigation.teacher</span></button>
+			<button type="button" class="button success" ng-click="set_student_or_teacher('S')"><span class="with-small-margin-left" translate>navigation.student</span></button>
+		</div>
+	</div>
+
+	<div class="small-8" ng-show="student_or_teacher">
+		<div class="small-8" ng-show="student_or_teacher">
+			<h2><span translate>global.welcome</span>
+			<span translate>global.to</span>
+				<span  style="font-weight: 300;">Scalable<span class="no-padding color-green" style="font-weight: 400;">Learning</span></span>!
+			</h2>
+			<youtube id="intro_video" class="flex-video widescreen with-light-border" url="intro_url" player="player" autoplay='0' controls='1' style="z-index: 1;">
+
+		</div>
+		<div class="small-8 with-margin-top">
+			<!-- <p> -->
+			<p ng-show="!student">
+				<span translate>intro.teacher_introduction</span>
+				<a  class="color-green" ng-click="watchedIntro()" translate>intro.skip</a>
+				<span translate>intro.teacher_skip_intro</span>
+			</p>
+			<p ng-show="student">
+				<span translate>intro.student_introduction</span>
+				<span>Scalable</span><span class="color-green" style="font-weight: bold" >Learning</span>
+		        <span translate>intro.student_introduction_cont</span> 
+        		<a class="color-green" ng-click="watchedIntro()" translate>intro.skip</a> 
+				<span translate>intro.student_skip_intro</span>
+			</p>
+			<h5 class="subheader" ng-show="show_ending"><span translate>intro.redirect_courselist</span>{{remaining}}<span class="with-small-margin-left" translate>time.seconds</span>...</h5>			
+			<button type="button" ng-show="show_ending"  class="button success" ng-click="watchedIntro()"><span class="with-small-margin-left" translate>intro.go_to</span><span class="with-small-margin-left" translate>navigation.courses</span></button>
+		</div>
+	</div>
+<!-- 	<div>
+		<span translate>intro.by_using_service</span>
+		<a class="color-green" ui-sref="privacy" translate>privacy.policy</a>
+	</div> -->
+</center>

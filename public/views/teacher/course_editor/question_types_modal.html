@@ -1,0 +1,127 @@
+<style>
+    .reveal-modal{
+        top: 2.5%;
+        padding: 1.25rem;
+        height: initial;
+    }
+</style>
+<h4><b translate>content.questions.insert_video_question</b>:</h4>
+
+<div class="small-12 medium-10 large-10 medium-centered large-centered columns">
+    <div class="row">
+        <div class="large-4 medium-12 small-12 with-small-margin-top columns">
+            <h4 class="color-violet text-bold" translate>content.questions.categories.on_video.title</h4>
+            <div class="subheader size-14" translate>content.questions.categories.on_video.desc</div>
+        </div>
+        <div class="large-2 medium-4 small-6 columns">
+            <a id='ocq' type="button" class="th violet" ng-class="{thumbactive: question_type == 'ocq'}" ng-model="question_type" ng-click="addQuiz('invideo','OCQ')" >
+                <img style="margin: 10%; width: 80%; height: 80%;" src="/images/quiz_symbol.png">
+            </a>
+            <center><h6 translate>content.questions.types.ocq</h6></center>
+        </div>
+        <div class="large-2 medium-4 small-6 left columns">
+            <a id='mcq' type="button" class="th violet" ng-class="{thumbactive: question_type == 'mcq'}" ng-model="question_type" ng-click="addQuiz('invideo','MCQ')" >
+                <img style="margin: 10%; width: 80%; height: 80%;" src="/images/mcq_symbol.png">
+            </a>
+            <center><h6 translate>content.questions.types.mcq</h6></center>
+        </div>
+        <div class="large-2 medium-4 small-6 columns" ng-hide="lecture.inclass || lecture.distance_peer">
+            <a id='drag' type="button" class="th violet" ng-class="{thumbactive: question_type == 'drag'}" ng-model="question_type" ng-click="addQuiz('invideo','drag')" >
+                <img style="margin: 10%; width: 80%; height: 80%;" src="/images/drag_symbol.png">
+            </a>
+            <center><h6 translate>content.questions.types.drag</h6></center>
+        </div>
+        <div class="large-2 medium-3 small-6 left columns" ng-hide="lecture.inclass || lecture.distance_peer">
+            <a id='in_free_text' type="button" class="th violet" ng-class="{thumbactive: question_type == 'text'}" ng-model="question_type" ng-click="addQuiz('invideo','Free Text Question')" >
+                <img style="margin: 10%; width: 80%; height: 80%;" src="/images/text_symbol.png">
+            </a>
+            <center><h6 translate>content.questions.types.text</h6></center>
+        </div>
+    </div>
+</div>
+
+<div class="small-12 medium-10 large-10 medium-centered large-centered columns">
+    <div class="row">
+        <div class="large-4 medium-12 small-12 with-small-margin-top columns">
+            <h4 class="color-olive text-bold" translate>content.questions.categories.text_quiz.title</h4>
+            <div class="subheader size-14" translate>content.questions.categories.text_quiz.desc</div>
+        </div>
+        <div class="large-2 medium-3 small-6 with-small-margin-top columns">
+            <a id='ocq_text'type="button" class="th olive" ng-class="{thumbactive: question_type == 'ocq_html'}" ng-model="question_type" ng-click="addQuiz('html','OCQ')" >
+                <img style="margin: 10%; width: 80%; height: 80%;" src="/images/quiz_symbol.png">
+            </a>
+            <center><h6 translate>content.questions.types.ocq</h6></center>
+        </div>
+        <div class="large-2 medium-3 small-6 with-small-margin-top columns">
+            <a id='mcq_text' type="button" class="th olive" ng-class="{thumbactive: question_type == 'mcq_html'}" ng-model="question_type" ng-click="addQuiz('html','MCQ')" >
+                <img style="margin: 10%; width: 80%; height: 80%;" src="/images/mcq_symbol.png">
+            </a>
+            <center><h6 translate>content.questions.types.mcq</h6></center>
+        </div>
+        <div class="large-2 medium-3 small-6 with-small-margin-top columns" ng-hide="lecture.inclass || lecture.distance_peer">
+            <a id='drag_text' type="button" class="th olive" ng-class="{thumbactive: question_type == 'drag_html'}" ng-model="question_type" ng-click="addQuiz('html','drag')" >
+                <img style="margin: 10%; width: 80%; height: 80%;" src="/images/drag_symbol.png">
+            </a>
+            <center><h6 translate>content.questions.types.drag</h6></center>
+        </div>
+        <div class="large-2 medium-3 small-6 with-small-margin-top columns" ng-hide="lecture.inclass || lecture.distance_peer">
+            <a id='free_text' type="button" class="th olive" ng-class="{thumbactive: question_type == 'text_html'}" ng-model="question_type" ng-click="addQuiz('html','Free Text Question')" >
+                <img style="margin: 10%; width: 80%; height: 80%;" src="/images/text_symbol.png">
+            </a>
+            <center><h6 translate>content.questions.types.text</h6></center>
+        </div>
+    </div>
+</div>
+<div class="small-12 medium-10 large-10 medium-centered large-centered columns">
+    <div class="row">
+        <div class="large-4 medium-12 small-12 with-small-margin-top columns">
+            <h4 class="color-grey text-bold" translate>content.questions.categories.on_video_survey.title</h4>
+            <div class="subheader size-14" translate>content.questions.categories.on_video_survey.desc</div>
+        </div>
+        <div class="large-2 medium-4 small-6 with-small-margin-top columns">
+            <a id='ocq_survey' type="button" class="th grey" ng-class="{thumbactive: question_type == 'ocq'}" ng-model="question_type" ng-click="addQuiz('survey','OCQ')" >
+                <img style="margin: 10%; width: 80%; height: 80%;" src="/images/quiz_symbol.png">
+            </a>
+            <center><h6 translate>content.questions.types.ocq</h6></center>
+        </div>
+        <div class="large-2 medium-4 small-6 with-small-margin-top columns">
+            <a id='mcq_survey' type="button" class="th grey" ng-class="{thumbactive: question_type == 'mcq'}" ng-model="question_type" ng-click="addQuiz('survey','MCQ')" >
+                <img style="margin: 10%; width: 80%; height: 80%;" src="/images/mcq_symbol.png">
+            </a>
+            <center><h6 translate>content.questions.types.mcq</h6></center>
+        </div>
+        <div class="large-2 medium-0 small-0 with-small-margin-top columns">
+        </div>
+        <div class="large-2 medium-0 small-0 with-small-margin-top columns">
+        </div>
+    </div>
+</div>
+
+<div class="small-12 medium-10 large-10 medium-centered large-centered columns">
+    <div class="row">
+        <div class="large-4 medium-12 small-12 with-small-margin-top columns">
+            <h4 class="color-grey text-bold" translate>content.questions.categories.text_survey.title</h4>
+            <div class="subheader size-14" translate>content.questions.categories.text_survey.desc</div>
+        </div>
+        <div class="large-2 medium-4 small-6 with-small-margin-top columns">
+            <a id='ocq_html_survey' type="button" class="th grey" ng-class="{thumbactive: question_type == 'ocq'}" ng-model="question_type" ng-click="addQuiz('html_survey','OCQ')" >
+                <img style="margin: 10%; width: 80%; height: 80%;" src="/images/quiz_symbol.png">
+            </a>
+            <center><h6 translate>content.questions.types.ocq</h6></center>
+        </div>
+        <div class="large-2 medium-4 small-6 with-small-margin-top columns">
+            <a id='mcq_html_survey' type="button" class="th grey" ng-class="{thumbactive: question_type == 'mcq'}" ng-model="question_type" ng-click="addQuiz('html_survey','MCQ')" >
+                <img style="margin: 10%; width: 80%; height: 80%;" src="/images/mcq_symbol.png">
+            </a>
+            <center><h6 translate>content.questions.types.mcq</h6></center>
+        </div>
+        <div class="large-2 medium-0 small-0 with-small-margin-top columns">
+        </div>
+        <div class="large-2 medium-0 small-0 with-small-margin-top columns">
+        </div>
+    </div>
+</div>
+
+<div class="modal-footer clear-both">
+    <button class="button small alert right" ng-click="cancel()" translate="button.cancel"></button>
+</div>

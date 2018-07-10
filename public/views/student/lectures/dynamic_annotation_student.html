@@ -1,0 +1,4 @@
+<div unique='true' class='component transparent-darkblue-hover'  ng-style="{width: (data.width*100)+'%', height: (data.height*100)+'%', left: (data.xcoor*100)+'%', top: (data.ycoor*100)+'%'}" style="position: absolute;bottom: 0;border: 1px groove #e6e6e6;padding: 5px;z-index: 1;font-size: 14px;border-radius: 5px;" >
+  <div class="color-white text-left" ng-bind-html="data[textToShow] | parseUrlFilter:'_blank'" ng-click="actionBtn()" style="font-size:2.4vh;width: 100%;overflow-x: hidden;overflow-y: auto;height: 100%;"></div>
+  <a ng-hide="!closeBtn" ng-click="closeBtn()"><i class="color-white size-14 fi-x" style="top: 0;position: absolute;margin: 5px;float: right;right: 0;line-height: 0;"></i></a>
+</div>

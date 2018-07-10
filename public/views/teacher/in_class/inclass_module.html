@@ -1,0 +1,83 @@
+<!-- build:css(.tmp/styles) styles/inclass.css -->
+<link rel="stylesheet" href="styles/teacher/inclass.css" />
+<link rel="stylesheet" href="styles/teacher/teacher_common.css" />
+<!-- endbuild -->
+<div class="inclass" >
+    <h4 ng-show="::(module.name)" class="small-12 columns with-small-padding-top with-margin-bottom">
+		<b><span translate>inclass.review</span>: </b>
+		<span>{{::module.name}} </span>
+	</h4>
+    <div class="small-12 medium-12 large-3 columns" id='details'>
+        <center>
+            <button class="display_inclass button green-color-white" ng-click="display()" ng-disabled="!inclass_ready" translate>inclass.start_inclass</button>
+            <br>
+        </center>
+        <inclass_estimate time-quiz="time_parameters.quiz" , time-question="time_parameters.question" , video-quiz-count="review_video_quiz_count" , question-count="review_question_count" survey-count="review_survey_count" quiz-count="review_quiz_count" inclass-quiz-time="inclass_quizzes_time" inclass-quiz-count="inclass_quizzes_count" />
+    </div>
+    <div class="main_content small-12 medium-12 large-9 columns" >
+        <center>
+            <loading size="big" show="!module.items" />
+        </center>
+        <div class="row" ng-repeat="module_item in module.items">
+            <div ng-if="::(module_item.class_name=='lecture')" ng-init='lec=module_item' class="small-12 columns">
+                <p class="title light-grey dark-text" >{{::lec.name}} </p>
+                <ul class="ul_item vline_slim inner_content" ng-repeat="item in timeline['lecture'][lec.id]['filtered'].items|filter:data:'!!'" style="clear:both">
+                    <li ng-if="::(item.type=='discussion')" class="li_inner color-coral">
+                        <inner_title type="'inclass.discussion' | translate" class="small-10 columns" style="margin-right:5px; float:none" />
+                        <ul style="padding:5px;padding-right:0;color:black;font-weight:normal;font-size: 14px;">
+                            <li ng-repeat="discussion in item.data">
+                                <show_box ng-init="discussion.hide = !discussion.hide" value="discussion.hide" action="updateHideDiscussion(discussion.id, discussion.hide)" text="global.visible" class="right" />
+                                <div ng-bind-html="::(discussion.content)"></div>
+                                <ul>
+                                    <li class="size-14" ng-repeat="comment in discussion.comments">
+                                        <show_box ng-init="comment.hide = !comment.hide" value="comment.hide" action="updateHideComment(comment, discussion)" text="global.visible" class="right" />
+                                        <i ng-bind-html="::(comment.content)"></i>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </li>
+                    <li ng-if="item.type.indexOf('confused') !=-1" class="li_inner color-blue" ng-class="{'color-red': item.type.indexOf('really') != -1}">
+                        <inner_title type="'inclass.'+item.type| translate" itemtitle="item.data.count" class="small-10 columns" style="margin-right:5px; float:none"/>
+                        <show_box value="item.data.show" action="updateHideConfused(lec.id, item.time, item.data.show, item.type.indexOf('really') != -1)" text="global.visible" class="right"/>
+                    </li>
+                    <li ng-if="item.type=='charts' || item.type=='inclass'" class="li_inner" ng-class="::{'color-green': item.type=='charts', 'color-orange': item.type=='inclass'}">
+                        <inner_title type="'inclass.'+item.data.type.toLowerCase() | translate" itemtitle="item.data.title" class="small-10 columns" style="margin-right:5px; float:none" />
+                        <show_box value="item.data.show" action="updateHideQuiz(item)" text="global.visible" class="right" />
+                    </li>
+                    <li ng-if="::(item.type=='primary_marker')" class="li_inner color-gray" >
+                        <inner_title type="'inclass.'+item.type.toLowerCase() | translate" itemtitle="item.data.title" class="small-10 columns" style="margin-right:5px; float:none" />
+                        <show_box value="item.data.show" action="updateHideMarker(item)" text="global.visible" class="right" />
+                    </li>
+                    <li ng-if="::(item.type=='free_question')" class="li_inner color-coral">
+                        <inner_title type="'inclass.free_text_question' | translate" itemtitle="item.data.title" class="small-10 columns" style="margin-right:5px; float:none" />
+                        <show_box value="item.data.show" action="updateHideQuiz(item)" text="global.visible" class="right" />
+                        <ul style="clear:both;padding:5px;padding-right:0;color:black;font-weight:normal;font-size: 14px;">
+                            <li ng-repeat="answer in item.data.answers">
+                                <show_box text="global.visible" ng-init="answer.hide = !answer.hide" value="answer.hide" action="updateHideResponseOnlineQuiz(answer)" style="float:right" />
+                                <div ng-bind-html="::(answer.online_answer)" ></div>
+                            </li>
+                        </ul>
+                    </li>
+                    <!-- <li ng-if="item.type=='inclass'" class="li_inner color-green">
+						<inner_title type="'inclass.'+item.data.type.toLowerCase() | translate" itemtitle="item.data.title" class="small-10 columns" style="margin-right:5px; float:none"/>
+						<show_box value="item.data.hide" action="updateHideQuiz(item.data.id,item.data.hide)" class="right"/>
+					</li> -->
+                </ul>
+            </div>
+            <div ng-if="::(module_item.class_name=='quiz')" ng-init='quiz=module_item' class="small-12 columns">
+                <p class="title light-grey dark-text"> {{::quiz.name}} </p>
+                <ul class="ul_item vline_slim inner_content" ng-repeat="item in timeline[quiz.quiz_type][quiz.id]['filtered'].items|filter:data:'!!'">
+                    <li ng-if="::(item.type=='Free Text Question')" class="li_inner color-coral">
+                        <inner_title type="'inclass.free_text_question' | translate" itemtitle="item.data.title" class="small-10 columns" style="margin-right:5px; float:none" />
+                        <show_box value="item.data.show" action="updateHideQuizQuestion(quiz, item)" text="global.visible" class="right" />
+                    </li>
+                    <li ng-if="::(item.type=='charts')" class="li_inner color-blue">
+                        <inner_title type="'inclass.'+module_item.quiz_type | translate" itemtitle="item.data.title" class="small-10 columns" style="margin-right:5px; float:none" />
+                        <show_box value="item.data.show" action="updateHideQuizQuestion(quiz, item)" text="global.visible" class="right" />
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

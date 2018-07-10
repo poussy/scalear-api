@@ -1,0 +1,152 @@
+  <div ng-if="welcome_message"  class="small-12 medium-8 large-9 columns right">
+    <div style="padding: 25px; margin: 10px 0px; border-bottom: 1px solid lightgrey; margin-bottom: 55px;" id="welcome_message"> 
+          <span ng-bind-html="welcome_message"></span> 
+    </div> 
+  </div> 
+
+<form novalidate class="form-horizontal" name="form" ng-submit="createCourse()">
+  <div class="small-12 medium-4 large-3 columns">
+    <h3 class="show-for-medium ng-binding">
+      <i class="fi-book"></i>
+      <span translate>navigation.new_course</span>
+    </h3>
+    <div class="course-image left show-for-medium-up">
+      <img ng-src="{{course.image_url || '../images/course_image.png'}}" fallback-src="../images/course_image.png" loading-src />
+    </div>
+    <div style="position: absolute; margin-top: 220px;" class="show-for-medium-up">
+      <div class="large-10 column with-small-margin-bottom no-padding">
+        <i class="fi-photo size-18"></i> <small class="with-tiny-margin-left" translate>courses.course_image_url</small>
+        <div>
+          <input type="text" ng-model="course.image_url" ng-class="{error: server_errors['image_url']}" />
+          <small class="error with-tiny-padding" ng-show="server_errors['image_url']">{{server_errors['image_url'].join()}}</small>
+        </div>
+      </div>
+      <div class="large-10 column with-small-margin-bottom no-padding">
+        <i class="fi-calendar size-18"></i> <small class="with-tiny-margin-left" translate>courses.start_date</small>
+        <div>
+          <input name="date" type="text" datepicker-popup="" ng-model="course.start_date" ng-required="true" ng-class="{error: server_errors['start_date']}" />
+          <small id="error_start_date" class="error with-tiny-padding" ng-show="server_errors['start_date']">{{server_errors['start_date'].join()}}</small>
+        </div>
+      </div>
+      <div class="large-10 column with-small-margin-bottom no-padding left">
+        <i class="fi-web size-18"></i> <small class="with-tiny-margin-left" translate>courses.time_zone</small>
+        <div>
+          <select name="timezone" ng-model="course.time_zone" ng-options="element.value for element in timezones" ng-class="{error: server_errors['time_zone']}"></select>
+          <small class="error with-tiny-padding" ng-show="server_errors['time_zone']">{{server_errors['time_zone'].join()}}</small>
+        </div>
+      </div>
+      <div class="large-10 column with-small-margin-bottom no-padding left">
+        <i class="fi-calendar size-18"></i> <small class="with-tiny-margin-left" translate>courses.end_date</small>
+        <div>
+          <input name="date" type="text" datepicker-popup="" ng-model="course.end_date" ng-required="true" ng-class="{error: server_errors['end_date']}" />
+          <small id="error_end_date" class="error with-tiny-padding" ng-show="server_errors['end_date']">{{server_errors['end_date'].join()}}</small>
+        </div>
+      </div>
+      <div class="large-10 column with-small-margin-bottom no-padding left">
+        <i class="fi-calendar size-18"></i> <small class="with-tiny-margin-left" translate>courses.disable_registration</small>
+        <input type="checkbox" ng-change="toggleRegistration()" style="margin-left: 10px;" ng-model="disable_registration_checked">
+        <div>
+          <input name="date" type="text" ng-hide="!disable_registration_checked" datepicker-popup="" ng-model="course.disable_registration" ng-class="{error: server_errors['disable_registration']}" />
+          <small class="error with-tiny-padding" ng-show="server_errors['disable_registration'] && disable_registration_checked">{{server_errors['disable_registration'].join()}}</small>
+        </div>
+      </div>
+      <div class="large-10 column with-small-margin-bottom no-padding left">
+        <i class="fi-x-circle size-18"></i> <small class="with-tiny-margin-left" tooltip="{{'courses.limit_registration_domain_description' | translate}}" translate>courses.limit_registration_domain</small>
+        <div>
+          <a id="registration_domain" class="" ng-click="toggleDomain($event)">
+              <div ng-repeat="(key , domain) in course.selected_subdomain">
+                <div ng-show="domain"> {{key}}</div>
+              </div>
+          </a>
+          <small class="error with-tiny-padding" ng-show="server_errors['limit_registration_domain'] && limit_registration_domain_checked">{{server_errors['limit_registration_domain'].join()}}</small>
+        </div>
+      </div>
+      <div class="large-10 column with-small-margin-bottom no-padding left">
+
+        <i class="fi-mail size-18"></i> <small class="with-tiny-margin-left" translate>courses.information.receive_student_ask_email</small>
+        <input type="checkbox" style="margin-left: 10px;" ng-model="course.email_discussion" >
+      </div>
+
+    </div>
+  <!-- </div> -->
+  </div>
+  <div class="small-12 medium-8 large-9 columns right">
+    <h3 class="show-for-small ng-binding"><i class="fi-book"></i> <span translate>navigation.new_course</span></h3>
+    <div class="title color-green with-margin-bottom small-12 columns no-padding">
+      <span class="small-4 columns no-padding">
+        <h5 translate class="subheader">courses.short_name</h5>
+        <input name="short" type="text" ng-model="course.short_name" ng-class="{error: server_errors['short_name']}" />
+        <small class="error with-tiny-padding" ng-show="server_errors['short_name']">{{server_errors['short_name'].join()}}</small>
+      </span>
+      <span class="small-8 columns no-padding">
+        <h5 translate class="subheader">courses.course_name</h5>
+        <input name="name" type="text" ng-model="course.name" ng-class="{error: server_errors['name']}" />
+        <small class="error with-tiny-padding" style="border-left: 1px white solid;" ng-show="server_errors['name']">{{server_errors['name'].join()}}</small>
+      </span>
+    </div>
+    <div class="show-for-small-only with-padding-bottom">
+      <center>
+        <img class="small-7" ng-src="{{course.image_url || '../images/course_image.png'}}" fallback-src="../images/course_image.png" loading-src />
+        <div class="with-tiny-margin-bottom no-padding small-10 with-margin-top">
+          <span class="left">
+            <i class="fi-photo size-18"></i> <small class="with-tiny-margin-left" translate>courses.course_image_url</small>
+          </span>
+          <div>
+            <input type="text" ng-model="course.image_url" ng-class="{error: server_errors['image_url']}" />
+            <small class="error with-tiny-padding" ng-show="server_errors['image_url']">{{server_errors['image_url'].join()}}</small>
+          </div>
+        </div>
+        <div class="with-tiny-margin-bottom no-padding small-10">
+          <span class="left">
+            <i class="fi-calendar size-18"></i> <small class="with-tiny-margin-left" translate>courses.start_date</small>
+          </span>
+          <div>
+            <input name="date" type="text" datepicker-popup="" ng-model="course.start_date" ng-required="true" ng-class="{error: server_errors['start_date']}" />
+            <small class="error with-tiny-padding" ng-show="server_errors['start_date']">{{server_errors['start_date'].join()}}</small>
+          </div>
+        </div>
+        <div class="with-tiny-margin-bottom no-padding small-10">
+          <span class="left">
+            <i class="fi-web size-18"></i> <small class="with-tiny-margin-left" translate>courses.time_zone</small>
+          </span>
+          <div>
+            <select name="timezone" ng-model="course.time_zone" ng-options="element.value for element in timezones" ng-class="{error: server_errors['time_zone']}"></select>
+            <small class="error with-tiny-padding" ng-show="server_errors['time_zone']">{{server_errors['time_zone'].join()}}</small>
+          </div>
+        </div>
+        <div class="with-tiny-margin-bottom no-padding small-10">
+          <span class="left">
+            <i class="fi-calendar size-18"></i> <small class="with-tiny-margin-left" translate>courses.end_date</small>
+          </span>
+          <div>
+            <input name="date" type="text" datepicker-popup="" ng-model="course.end_date" ng-required="true" ng-class="{error: server_errors['end_date']}" />
+            <small class="error with-tiny-padding" ng-show="server_errors['end_date']">{{server_errors['end_date'].join()}}</small>
+          </div>
+        </div>
+      </center>
+      <hr />
+    </div>
+    <h5 translate class="subheader">courses.information.description</h5>
+    <p style="font-weight: 200;">
+      <rich-textarea rows="3" style="height: 150px;" ng-model="course.description" ng-class="{error: server_errors['description']}">importing </rich-textarea>
+      <small class="error with-tiny-padding" ng-show="server_errors['description']">{{server_errors['description'].join()}}</small>
+    </p>
+    <h5 translate class="subheader">courses.prerequisites</h5>
+    <p style="font-weight: 200;">
+      <rich-textarea rows="3" style="height: 100px;" ng-model="course.prerequisites" ng-class="{error: server_errors['prerequisites']}"></rich-textarea>
+      <small class="error with-tiny-padding" ng-show="server_errors['prerequisites']">{{server_errors['prerequisites'].join()}}</small>
+    </p>
+    <h5 translate class="subheader">courses.new.copy_from_existing</h5>
+    <h5 style="line-height:1"><small translate>courses.new.course_item_shift</small></h5>            
+    <div class="row with-margin-bottom">
+      <div class="small-10 columns">
+        <select ng-model="import_from" ng-change="addImportInformation()" ng-options="element as element.short_name+' | '+element.name for element in importing | orderBy:'name'"></select>
+      </div>
+      <div ng-show="import_from" class="small-2 columns" style="margin-top: 3px;">
+        <button type="button" class="button secondary tiny" ng-click="unselectCourse()"><span translate>courses.new.button.unselect</span></button>
+      </div>
+    </div>
+    <button ng-disabled="submitting" type="submit" class="button success right"><span translate>courses.new.button.create_course</span></button>
+  </div>
+</form>
+          <!-- <div class="button" ng-click="toggleDomain($event)" >ALL </div> -->

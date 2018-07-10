@@ -1,0 +1,15 @@
+<tr>
+	<td style="padding: 0px;" class="timeline-icon-container text-right valign-top">
+	  <div ng-click="seek()(item.time, item.data.lecture_id)" class="solved timeline-item" tooltip-placement="left" tooltip="{{formattedTime}}" tooltip-append-to-body="true">
+	    <img class="notes_img" src="../images/note-timeline.png" />
+	  </div>
+	</td>
+	<td style="padding: 0px;" colspan="3">   
+		<div id="show_note"> 
+		    <div class="table">
+		    	<!-- {{item.data.data}} -->
+	            <notes-area value="data().data.data" save="saveNote" delete="deleteNote()"/>
+		    </div>
+		</div>        
+	</td>
+</tr>

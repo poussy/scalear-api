@@ -1,0 +1,15 @@
+<loading size="big" show="loading"></loading>
+
+<div ng-hide='loading' >
+	<section class='admin-uni' ng-show="current_user.roles.includes(9)">
+	  {{current_user.university}} ({{ domain }})
+	</section>
+	<section class='admin-uni' ng-show="current_user.roles.includes(5)"> All</section>
+	<div class="admin-message-box">
+		<h2 translate="navigation.welcome_message"></h2>
+		<p translate translate-values='{domain: domain}'>welcome_messages.description</p>
+		<rich-textarea name="welcome_message_area"  class="admin-rich-area-text" ng-model="welcome_message" ng-attr ng-attr-placeholder="{{::('statistics.write_welcome_message' | translate)}}"  autofocus />
+		<button class="success button with-small-padding admin-button" ng-click="submitWelcomeMessage()" style="" translate>button.submit</button>
+	</div>
+
+</div>

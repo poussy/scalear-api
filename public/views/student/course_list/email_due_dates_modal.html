@@ -1,0 +1,20 @@
+<style>
+.reveal-modal{
+    height:auto;
+    overflow: hidden;
+}
+</style>
+<!-- <center> -->
+<div>
+    <h3 ><span translate>global.welcome</span> <span translate>global.to</span> {{course.name}} <span ng-if="teachers" class="dark-text" style="word-wrap: break-word;"><span class="dark-text" translate>courses.information.taught_by_small_cap</span> <span ng-repeat="teacher in teachers" style="font-weight: 400; padding-left:4px"><span >{{teacher.name}}</span><span ng-if="$index < teachers.length-1">, </span></span></span></h3>
+    <div class="modal-body" >
+        <div translate>courses.information.receive_due_dates_email_question</div>
+        <div translate>courses.information.change_email_question</div>
+    </div>
+    <div class="modal-footer right">
+        <br/>
+        <button class="button small success" ng-click="updateDueDateEmail(true)" translate="courses.information.button.send_email_reminder"></button>
+        <button class="button small alert" ng-click="updateDueDateEmail(false)" translate="button.no_thanks"></button>
+    </div>
+</div>
+<!-- </center> -->

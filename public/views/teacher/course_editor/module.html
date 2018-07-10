@@ -1,0 +1,6 @@
+<div id='module_{{module.id}}' class="disable_selection text-right position-relative" style="padding: 5px; min-height: 35px;border-bottom: 1px solid white;display:inline-block;width: 100%;word-wrap: break-word;">
+	<div class="position-relative">
+		<div class="show-inline left text-left module_name" style="width: 83%;">{{::module.name}}</div>
+		<small class="color-grey" style="padding:1px"><span >{{::module.total_time && (module.total_time| formattime:'h:mm:ss') || ''}}</span></small>
+	</div>
+</div>

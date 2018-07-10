@@ -1,0 +1,55 @@
+<div class="small-12 column" ng-repeat='question in quiz.questions'>
+   <div class="small-12 column with-margin" ng-if="question.question_type=='header'" ng-bind-html="question.content"></div>
+   <div ng-if="question.question_type!='header'">
+        <div class='panel small-12 column'>
+            <div class="small-12 columns no-padding">
+                <div ng-init="ind = getIndex()" class="left">{{ind}}.</div>
+                <div class="small-8 columns left" ng-bind-html="question.content"></div>
+                <div class="small-2 columns right" ng-if='quiz.quiz_type=="quiz" && question.question_type!="Free Text Question"'>
+                    <p ng-if='correct[question.id]==1' class='color-green correct right' translate='lectures.correct'></p>
+                    <p ng-if='correct[question.id]==0' class='color-red incorrect right' translate='lectures.incorrect'></p>
+                </div>
+                <div class="small-2 columns right" ng-if='quiz.quiz_type=="quiz" && question.question_type=="Free Text Question"'>
+                    <p ng-if='correct[question.id]==0' class='color-gray under_review right' translate='quizzes.grade.under_review'></p>
+                    <p ng-if='correct[question.id]==1' class='color-red incorrect right' translate='quizzes.grade.incorrect'></p>
+                    <p ng-if='correct[question.id]==2' class='color-orange partial right' translate='quizzes.grade.partial'></p>
+                    <p ng-if='correct[question.id]==3' class='color-green correct right' translate='quizzes.grade.correct'></p>
+                </div>
+            </div>
+            <div class="small-12 columns">
+                <div class="small-12 column" ng-if='question.question_type == "Free Text Question"'>
+                    <textarea ng-model='studentAnswers[question.id]'></textarea>
+                    <div ng-bind-html="explanation[question.answers[0].id]"></div>
+                </div>
+                <div ng-if='question.question_type.toUpperCase()=="OCQ" || question.question_type.toUpperCase()=="MCQ"' ng-repeat='answer in question.answers'>
+                    <div class="small-12 columns" ng-if='question.question_type=="MCQ"' width='10px;'>
+                        <label class="with-margin-top">
+                            <input class="left with-small-margin-right with-tiny-margin-top" atleastone ng-model='studentAnswers[question.id][answer.id]' ng-checked='studentAnswers[question.id][answer.id]'  name='ocq_{{question.id}}' type='checkbox' ng-change='updateValues({{question.id}})' ng-class="{error: submitted && !valid(question.id)}"/>
+                            <div ng-bind-html="answer.content" pop-over="answer.options"></div>
+
+                            <small class='error' ng-show='submitted && !valid(question.id)' translate>quizzes.must_choose_answer</small>
+                        </label>
+                    </div>
+
+                    <div class="small-12 columns" ng-if='question.question_type=="OCQ"' width='10px;'>
+                        <label class="with-margin-top">
+                            <input class="left with-margin-right" atleastone ng-model='studentAnswers[question.id]' value='{{answer.id}}'  name='ocq_{{question.id}}' type='radio' ng-change='updateValues({{question.id}})' ng-class="{error: submitted && !valid(question.id)}"/>
+                            <div ng-bind-html="answer.content" pop-over="answer.options"></div>
+                            <small class='error' ng-show='submitted && !valid(question.id)' translate>quizzes.must_choose_answer</small>
+                        </label>
+                    </div>
+                </div>
+                <div ng-if='question.question_type.toUpperCase()=="DRAG"'>
+                    <div class="small-12 columns with-margin-top">
+                       <ul class='sortable custome' ui-sortable ng-model='studentAnswers[question.id]'>
+                          <li ng-repeat='answer in studentAnswers[question.id]' class='ui-state-default with-small-padding with-tiny-margin' pop-over="drag_explanation[$index]">
+                             <div class='ui-icon ui-icon-arrowthick-2-n-s handle must-show-inline valign-middle'></div>
+                             <div class="must-show-inline" ng-bind-html="answer" ></div>
+                          </li>
+                       </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+   </div>
+</div>

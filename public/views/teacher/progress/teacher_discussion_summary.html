@@ -1,0 +1,44 @@
+<div>
+  <div>
+    <h5 style="margin-bottom: 10px">
+      <b>
+        <span translate>global.questions</span>
+        <span style="color: #008CBA">( {{moduledata.unanswered_questions_count}} <span translate>dashboard.unanswered_questions</span> )</span>
+      </b>
+    </h5>
+<!--     <div class="center" style="margin-left: 25px">
+      <div ng-repeat="lecture in moduledata.unanswered_questions">
+        <div style="background-color:#BADAA5;padding: 5px 10px;"><b>{{lecture.name}}</b></div>
+        <div ng-repeat="question in lecture.question" ng-click="goTo('course.module.progress' , moduledata.course_id,moduledata.id, 'disc_'+question.id+'a'+question.lecture_id)" class="dashboard_question">
+          <span ng-show="question.privacy">[Public]</span>
+          <span ng-hide="question.privacy">[Privacy]</span>
+          <span ng-bind-html="question.content"></span>
+        </div>
+      </div>
+    </div -->
+  <div class="center" style="margin-left: 25px">
+    <div ng-repeat="lecture in moduledata.unanswered_questions">
+      <div style="background-color:#BADAA5;padding: 5px 10px;"><b>{{lecture.name}}</b></div>
+      <div ng-repeat="question in lecture.questions" ng-click="goTo('course.module.progress' , moduledata.course_id,moduledata.id, 'disc_'+question.id+'a'+question.lecture_id)" class="dashboard_question">
+        <!-- <span ng-if="question.comments">(<span style="color: #008CBA" translate>dashboard.unanswered_questions</span>)</span> -->
+      <span ng-hide="question.comments_count"><span style="color: #008CBA" translate>dashboard.unanswered_questions</span> : </span>
+        <span ng-show="question.privacy">[Public]</span>
+        <span ng-hide="question.privacy">[Privacy]</span>
+        <span ng-bind-html="question.content"></span>
+        <div class="center" style="margin-left: 50px">
+          <div ng-repeat="comment in question.comments">
+            <b><span ng-bind-html="comment.name"></span> :</b> <span ng-bind-html="comment.content"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+    <br>
+    <br>
+  </div>
+<!--   <div ng-show="moduledata.unanswered_questions_count">
+    <a class="button small green module-review" ng-click='goTo("course.module.progress" , moduledata.course_id,moduledata.id)' translate>dashboard.review_select_inclass_material</a>
+    <a class="button small green module-review right" ng-click='goTo("course.module.inclass" , moduledata.course_id,moduledata.id)' translate>dashboard.start_inclass</a>
+  </div> -->
+</div>

@@ -1,0 +1,246 @@
+<style>
+img {
+  border: 2px solid lightgrey;
+}
+
+div.centered_image {
+  width: 80%;
+  margin: 0 auto;
+}
+
+.disabled-text {
+  border-radius: 3px;
+  border: 1px darkgrey solid;
+  background-color: lightgrey;
+  padding: 2px 20px;
+  font-size: 12px;
+  color: #555;
+  text-align: center;
+}
+
+.config-line .config-title{
+	display:inline-block;
+	width:20%
+}
+
+.config-line .config-val{
+	display:inline-block;
+	width:60%
+}
+
+</style>
+<div ng-if="!loading">
+  <div class="left-navigation hide-for-small-only left medium-3 large-3 columns" mac-affix>
+    <ul class="side-nav">
+      <h3 ng-if="!current_user">
+		  	<i class="fi-page-multiple size-18"></i>
+		  	<span translate>help.lti</span>
+		  </h3>
+      <!-- <div ng-if="consumer_key == 'organization'">
+        <li><a ng-click="scroll('organization_lti')">organization lti</a></li>
+      </div> -->
+      <li><a ng-click="scroll('integrating_sl_lms')">Integrating ScalableLearning with your LMS</a></li>
+      <li><a ng-click="scroll('add_sL_tool_to_course')">Add the ScalableLearning tool to your Course</a></li>
+      <li><a ng-click="scroll('add_sL_tool_to_canvas_course')">Adding the ScalableLearning tool to Canvas course</a></li>
+
+      <li><a ng-click="scroll('link_sL_content')">Linking ScalableLearning content to your course</a></li>
+      <li><a ng-click="scroll('add_sL_tool_to_course_to_canvas_lms')">Add ScalableLearning to Canvas LMS</a></li>
+      <!-- <li><a ng-click="scroll('add_sL_tool_to_course_to_not_canvas_lms')">Add ScalableLearning to NOT Canvas LMS</a></li> -->
+      <li><a ng-click="scroll('configurations')">Configurations</a></li>
+      <li><a ng-click="scroll('getting_help')">Getting Help</a></li>
+    </ul>
+  </div>
+  <div class="with-margin-top small-12 medium-9 large-9 columns">
+    <div id="integrating_sl_lms">
+      <h4 class="color-green">Integrating ScalableLearning with your LMS</h4>
+      <p>
+        ScalableLearning supports the <a ng-href="http://www.imsglobal.org/activity/learning-tools-interoperability" target="_blank">Learning Tools Interoperability </a> (LTI) standard for connecting to a wide variety of Learning Management Systems (LMS). If your school or university uses an LTI-compatible LMS (such as Canvas, Moodle, Blackboard, etc.), you can easily embed links to ScalableLearning material.
+      </p>
+      <p>
+        To use ScalableLearning with your LMS, your LMS first needs to know how to communicate with ScalableLearning. Typically this will be setup by your LMS administrator, but if it is not, you can make the connection yourself in a simple online form.
+      </p>
+      <p>
+        Here is an example of how to use ScalableLearning with Canvas through LTI. If you are using a different LMS, you will need to consult its documentation for where to find the external tools button, but otherwise it should be similar.
+      </p>
+      <p> 
+        <a ng-click="scroll('add_sL_tool_to_canvas_course')">Click this link for instructions on how to connect ScalableLearning with Canvas</a>. The following are instructions for other LMS. You will need to consult its documentation for where to find the external tools button. 
+      </p>
+    </div>
+    <div id="add_sL_tool_to_course">
+      <h4 class="color-green">Add the ScalableLearning tool to your Course</h4>
+      <p>
+        In your LMS, consult the documentation for where and how to add external tools. Once you find the external tool configuration page, fill in the information below to configure the tool (<a ng-click="scroll('configurations')">configure your keys here</a>).
+        <div>
+          <ul>
+            <li style="list-style-type: initial;">
+              <div class="config-line" >
+                <div class="config-title"><b>Launch URL: </b></div>
+                <div class="config-val">{{lti_url_embed}}</div>
+              </div>
+            </li>
+            <li style="list-style-type: initial;" ng-if="consumer_key">
+              <div class="config-line" >
+                <div class="config-title"><b>Consumer Key: </b></div>
+                <div class="config-val">{{consumer_key}}</div>
+              </div>
+            </li>
+            <li style="list-style-type: initial;" ng-if="shared_sceret">
+              <div class="config-line" >
+                <div class="config-title"><b>Secret Key: </b></div>
+                <div class="config-val">{{shared_sceret}}</div>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </p>
+      <p>
+        After submitting these configuration, open up the newly added link to the external tool to select your course content.
+          <div class="centered_image"><img src="images/EXTERNAL_TOOL_IMG.png" /></div>
+          <br>      
+      </p>
+      <p>
+        Once you select your content you should be done. The added link now points to the selected content. Follow the same instructions to add more content to your LMS course. Note to choose a different content, you will need to first delete the current link and create a new one.
+      </p>
+    </div>
+    <div id="add_sL_tool_to_canvas_course">
+      <h4 class="color-green">Adding the ScalableLearning tool to Canvas course</h4>
+      <p>
+        In Canvas, go to your course and choose <b>Settings</b> then <b>Apps</b> at the top. You will be shown all the external tools that are installed in your LMS. <b>Search</b> for “ScalableLearning” choose it, and then click <b>Add App</b> to install it. If you do not find ScalableLearning, then follow the instructions at the end for manually adding it to your account.
+      </p>
+      <div class="centered_image"><img src="images/lti-1-find-apps.png" /></div>
+      <br>
+    </div>
+    <div id="link_sL_content">
+      <h4 class="color-green">Linking ScalableLearning content to your course</h4>
+      <ul>
+        <li style="list-style-type: initial;">
+          <p>In Canvas, go into a <b>Module</b> in your course and click the <b>+ icon</b> to <b>Add Material</b> to your module.</p>
+          <div class="centered_image"><img src="images/lti-2-add-to-module.png" /></div>
+          <br>
+        </li>
+        <li style="list-style-type: initial;">
+          <p>Choose <b>External Tool</b> from the add dialog and select <b>ScalableLearning</b> from the list.</p>
+          <div class="centered_image"><img src="images/lti-3-add-external-tool.png" /></div>
+          <br>
+          <div class="centered_image"><img src="images/lti-4-add-scalable-learning.png" /></div>
+        </li>
+        <li style="list-style-type: initial;">
+          <p>Choose the ScalableLearning content you would like to link and click <b>Embed</b>.</p>
+          <div class="centered_image"><img src="images/lti-5-add-select-from-scalablelearning.png" /></div>
+          <br>
+        </li>
+        <li style="list-style-type: initial;">
+          <p>Click <b>Add Item</b> to add it to your Canvas course. You can select a whole course or just parts of a course by clicking on the <b>+ Icon</b> to expand the list of course items.</p>
+        </li>
+      </ul>
+    </div>
+    <div id="add_sL_tool_to_course_to_canvas_lms">
+      <h4 class="color-green">Add ScalableLearning to Canvas LMS (if it is not already added)</h4>
+      <span ng-if="consumer_key != 'organization'">
+	      <p>
+	        If you do not see ScalableLearning in your LMS, you can manually add it by going to <b>Settings</b> then selecting <b>Apps</b> at the top and clicking on <b>View App configurations</b> and choosing <b>+ App</b> to add a new App. To add ScalableLearning, fill in the information from below and click <b>Submit</b>. You can then follow the instructions above for Linking ScalableLearning content to your course.
+	      </p>
+	      <div>
+	        <ul>
+	          <li style="list-style-type: initial;">
+	          	<div class="config-line" >
+		            <div class="config-title"><b>Configuration Type:</b></div>
+		            <div class="config-val">By URL</div>
+	            </div>
+	          </li>
+	          <li style="list-style-type: initial;">
+	         		<div class="config-line" >
+		          	<div class="config-title"><b>Name:</b></div>
+		            <div class="config-val">ScalableLearning</div>
+	            </div>
+	          </li>
+	          <li style="list-style-type: initial;" ng-if="consumer_key">
+	            <div class="config-line" >
+	            	<div class="config-title"><b>Consumer Key: </b></div>
+	            	<div class="config-val">{{consumer_key}}</div>
+	            </div>
+	          </li>
+	          <li style="list-style-type: initial;" ng-if="shared_sceret">
+	            <div class="config-line" >
+	            	<div class="config-title"><b>Secret Key: </b></div>
+	            	<div class="config-val">{{shared_sceret}}</div>
+	            </div>
+	          </li>
+	          <li style="list-style-type: initial;">
+	            <div class="config-line" >
+	            	<div class="config-title"><b>Config URL: </b></div>
+	            	<div class="config-val">{{lti_url_xml}}</div>
+	            </div>
+	          </li>
+	        </ul>
+	      </div>
+	      <br>
+	      <div class="centered_image"><img src="images/lti-add-tool.png" /></div>
+	      <br>
+	    </span>
+	    <span ng-if="consumer_key == 'organization'">
+	    	Your school has already installed ScalableLearning into their LMS. If you are unable to find it with the instructions above, please contact your school's help desk for assistance.
+	    </span>
+    </div>
+    <div id="configurations">
+      <h4 class="color-green">Configurations</h4>
+        <div>
+          <ul>
+            <li style="list-style-type: initial;" ng-if="consumer_key">
+              <div class="config-line" >
+                <div class="config-title"><b>Consumer Key: </b></div>
+                <div class="config-val">{{consumer_key}}</div>
+              </div>
+            </li>
+            <li style="list-style-type: initial;" ng-if="shared_sceret">
+              <div class="config-line" >
+                <div class="config-title"><b>Secret Key: </b></div>
+                <div class="config-val">{{shared_sceret}}</div>
+              </div>
+            </li>
+          </ul>
+        </div>
+        <div>
+          <button class="button small success" ng-click="generateNewLtiKeys()" >Generate Keys</button>
+        </div>
+        <br>
+      <div>
+      <p>
+        If you're facing problems adding content to your course, you can directly select your content from here and generate a launch URL.      
+      </p>
+        <button class="button small success" ng-disabled="!consumer_key" ng-click="generateLaunchUrl()" >Generate Launch URL </button>
+      </div>
+
+    </div> 
+    <div id="getting_help">
+      <h4 class="color-green">Getting Help</h4>
+      <p>If you need help configuring your LMS with ScalableLearning we encourage you to contact your IT department as they will have the most experience with LTI on your system. If they need more information, please encourage them to contact us by choosing <b>Support</b> from the <b>Help</b> menu.</p>
+    </div>
+    
+    <div id="whitespace" class="hide-for-small-only">
+      <p>
+        <br>
+        <br>
+        <br>
+        <br>
+        <br>
+        <br>
+        <br>
+        <br>
+        <br>
+        <br>
+        <br>
+        <br>
+        <br>
+        <br>
+        <br>
+        <br>
+      </p>
+    </div>
+  </div>
+</div>
+<div ng-if="loading" style="height: 150px">
+  <center style="position: relative;top:25%">
+    <loading size="big" show="true"></loading>
+  </center>
+</div>

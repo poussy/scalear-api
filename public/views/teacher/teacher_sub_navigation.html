@@ -1,0 +1,107 @@
+<div>
+  <top-bar class="sub-header whitesmoke">
+    <ul class="title-area">
+      <li class="name">
+        <h1 class="disable_selection">
+          <a id="content_navigator" class="truncate dark-text sub-header-component" ng-class="{'green-color-white': ContentNavigator.status, 'dark-medium-grey-hover': !ContentNavigator.status}" ng-click="toggleNavigator()" style="width: 300px;margin-right:10px">
+            <i ng-class="{'arrow_down_icon': !ContentNavigator.status, 'arrow_up_white_icon': ContentNavigator.status }"></i>
+            <i ng-class="{'arrow_down_icon': !ContentNavigator.status, 'arrow_up_white_icon': ContentNavigator.status }" style="position:absolute;top:2px;left:15px"></i>
+            <span>{{course.short_name}}: {{course.selected_module.name || 'content_navigator.select_module' | translate}}</span>
+          </a>
+        </h1>
+      </li>
+      <li toggle-top-bar class="menu-icon">
+        <a href=""></a>
+      </li>
+      <li></li>
+    </ul>
+    <ul class="title-area right" ng-if="('**.module.course_editor.**' | includedByState)">
+      <li class="name">
+        <h1 class="disable_selection right">
+          <a class="truncate dark-text sub-header-component dark-medium-grey" ng-class="{'blue-color-white': DetailsNavigator.status, 'dark-medium-grey-blue-hover': !DetailsNavigator.status}" ng-click="toggleDetails()" style="width: 300px;">
+            <i ng-class="{'arrow_down_icon': !DetailsNavigator.status, 'arrow_up_white_icon': DetailsNavigator.status }"></i>
+            <i ng-class="{'arrow_down_icon': !DetailsNavigator.status, 'arrow_up_white_icon': DetailsNavigator.status }" style="position:absolute;top:2px;left:15px"></i>
+            <span translate>editor.details</span>
+          </a>
+        </h1>
+      </li>
+    </ul>
+    <top-bar-section>
+      <ul class="right" ng-if="('**.module.progress.**' | includedByState)">
+        <li has-dropdown ng-init="initFilters()">
+          <a class="whitesmoke-hover dark-text sub-header-component size-14" href="" translate>global.settings</a>
+          <ul class="lighter-grey-no-hover" top-bar-dropdown>
+            <li>
+              <div class="settings-menu-item looks-like-a-link lighter-grey dark-text sub-header-component" ng-click="updateProgressItemFilter('lecture_quizzes')">
+                <input id="showChartsCheckbox" ng-checked="progress_item_filter.lecture_quizzes" type="checkbox" style="top: 1px;" />
+                <span translate>course_settings.show_lecture_quizzes</span>
+              </div>
+            </li>
+            <li>
+              <div class="settings-menu-item looks-like-a-link lighter-grey dark-text sub-header-component" ng-click="updateProgressItemFilter('confused')">
+                <input id="showConfusedCheckbox" ng-checked="progress_item_filter.confused" type="checkbox" style="top: 1px;" />
+                <span translate>course_settings.show_confused</span>
+              </div>
+            </li>
+            <li>
+              <div class="settings-menu-item looks-like-a-link lighter-grey dark-text sub-header-component" ng-click="updateProgressItemFilter('discussion')">
+                <input id="showDiscussionCheckbox" ng-checked="progress_item_filter.discussion" type="checkbox" style="top: 1px;" />
+                <span translate>course_settings.show_discussion</span>
+              </div>
+            </li>
+            <li>
+              <div class="settings-menu-item looks-like-a-link lighter-grey dark-text sub-header-component" ng-click="updateProgressFilter('quiz')">
+                <input id="showfreeCheckbox" ng-checked="progress_filter.quiz" type="checkbox" style="top: 1px;" />
+                <span translate>course_settings.show_quizzes</span>
+              </div>
+            </li>
+            <li>
+              <div class="settings-menu-item looks-like-a-link lighter-grey dark-text sub-header-component" ng-click="updateProgressFilter('survey')">
+                <input id="showfreeCheckbox" ng-checked="progress_filter.survey" type="checkbox" style="top: 1px;" />
+                <span translate>course_settings.show_surveys</span>
+              </div>
+            </li>
+            <li>
+              <div class="settings-menu-item looks-like-a-link lighter-grey dark-text sub-header-component" ng-click="print()">
+                <i class="fi-print size-18" style="margin-right:2px"></i>
+                <span translate>course_settings.print</span>
+              </div>
+            </li>
+          </ul>
+        </li>
+      </ul>
+      <!-- Left Nav Section -->
+      <ul class="left" id="teacher_left_nav">
+        <li>
+          <a id="content" class="whitesmoke dark-text with-tiny-padding-left with-tiny-padding-right" page-name="navigation.information">
+            <div ng-class="{'subnav-item-active': ('course.course_editor' | includedByState) || ('course.module.course_editor.**' | includedByState)}" ng-click="goToEditor()" class="whitesmoke-hover round-subheader size-14" translate>global.edit</div>
+          </a>
+        </li>
+        <li>
+          <a id="progress" class="whitesmoke dark-text with-tiny-padding-left with-tiny-padding-right">
+            <div class="whitesmoke-hover round-subheader size-14" ng-class="{'subnav-item-active': ('course.progress' | includedByState) ||('**.progress_overview' | includedByState) || ('course.progress_main' | includedByState) || ('course.module.progress.**' | includedByState) || ('course.module.progress_details' | includedByState) || ('course.module.progress_statistics' | includedByState) || ('course.module.progress_students' | includedByState) || ('course.progress_graph' | includedByState)}" ng-click="goToProgress()" translate>navigation.review</div>
+          </a>
+        </li>
+        <li>
+          <a id="inclass" class="whitesmoke dark-text with-tiny-padding-left with-tiny-padding-right">
+            <div class="whitesmoke-hover round-subheader size-14" ng-click="goToClass()" ng-class="{'subnav-item-active': ('course.inclass' | includedByState) || ('course.module.inclass.**' | includedByState) }" translate>navigation.in_class</div>
+          </a>
+        </li>
+        <li has-dropdown>
+          <a id="administrator" class="whitesmoke dark-text with-tiny-padding-left with-tiny-padding-right">
+            <div class="whitesmoke-hover round-subheader size-14" ng-class="{'subnav-item-active': ('course.enrolled_students' | includedByState) || ('course.announcements' | includedByState) || ('course.edit_course_information' | includedByState)}"><span translate>navigation.administration</span><i class="dropdown_arrow"></i></div>
+          </a>
+          <ul class="lighter-grey-no-hover" top-bar-dropdown>
+            <li><a id="course_info" class="lighter-grey dark-text sub-header-component" ui-sref="course.edit_course_information" ui-sref-active="nav-inner-item-active" translate>navigation.course_information</a></li>
+            <li><a class="lighter-grey dark-text sub-header-component" ui-sref="course.edit_course_information" translate>navigation.add_teacher</a></li>
+            <div class="divider border-grey medium-opacity"></div>
+            <li><a id="enrolled_students" class="lighter-grey dark-text sub-header-component" ui-sref="course.enrolled_students" ui-sref-active="nav-inner-item-active" translate>navigation.student_list</a></li>
+            <li><a id="add_students" enroll-help-modal ng-click="openHelpModal(course)" class="lighter-grey dark-text sub-header-component"><span translate>navigation.add_students</span></a></li>
+            <div class="divider border-grey medium-opacity"></div>
+            <li><a id="announcements" class="lighter-grey dark-text sub-header-component" ui-sref="course.announcements" ui-sref-active="nav-inner-item-active" translate>navigation.announcements</a></li>
+          </ul>
+        </li>
+      </ul>
+    </top-bar-section>
+  </top-bar>
+</div>

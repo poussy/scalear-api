@@ -1,0 +1,109 @@
+<div class="small-12">
+	<table class="table small-12" >
+		<tr>
+			<td class="right-border"><span translate>editor.details.title</span>:</td>
+			<td>
+				<details-text id="item_name" value="quiz.name" save="updateQuiz()" validate="validateQuiz" column="name"></details-text>
+			</td>
+		</tr>
+	  <tr id="bg_fix" style="height:60px" >
+	    <td class="right-border small-4"><span translate>editor.details.in_order</span>:</td>
+	    <td class="small-8">
+          <span tooltip="{{'editor.tooltip.students_must_complete_inorder'| translate}}" tooltip-placement="left" tooltip-append-to-body="true" >
+		      <input type="checkbox" ng-model="quiz.required_module" ng-change="updateQuiz()" class="no-margin">
+		      <span class="size-12" translate>editor.details.use_module_in_order</span>
+	      </span>
+	      <br>
+	        <span tooltip="{{'editor.tooltip.students_must_complete_inorder'| translate}}" tooltip-placement="left" tooltip-append-to-body="true">
+	          <input ng-disabled="quiz.required_module" type="checkbox" ng-model="quiz.required"  ng-change='updateQuiz()'>
+	          <span class="size-12" translate>editor.details.in_order</span>
+	        </span>
+	    </td>
+	  </tr>
+	  <tr id="bg_fix" style="height:60px" >
+	    <td class="right-border small-4"><span translate>editor.details.required</span>:</td>
+	    <td class="small-8">
+          <span tooltip="{{'editor.tooltip.students_must_complete_required'| translate}}" tooltip-placement="left" tooltip-append-to-body="true" >
+		      <input type="checkbox" ng-model="quiz.graded_module" ng-change="updateQuiz()" class="no-margin">
+		      <span class="size-12" translate>editor.details.use_module_required</span>
+	      </span>
+	      <br>
+	        <span tooltip="{{'editor.tooltip.students_must_complete_required'| translate}}" tooltip-placement="left" tooltip-append-to-body="true">
+	          <input ng-disabled="quiz.graded_module" type="checkbox" ng-model="quiz.graded"  ng-change='updateQuiz()'>
+	          <span class="size-12" translate>editor.details.required</span>
+	        </span>
+	    </td>
+	  </tr>
+<!-- 		<tr ng-if="quiz.quiz_type=='quiz'">
+			<td class="right-border"><span translate>editor.details.retries</span>:</td>
+			<td>
+				<details-number min="0" value="quiz.retries" save="updateQuiz()" validate="validateQuiz" column="retries" ></details-number><br />
+				</td>
+		</tr> -->
+		<tr >
+			<td class="right-border"><span translate>editor.details.retries</span>:</td>
+			<td>
+				<details-number min="1" value="quiz.retries" save="updateQuiz()" validate="validateQuiz" column="retries" ></details-number><br />
+				</td>
+		</tr>
+		<tr>
+		<!-- 	<td class="right-border"><span translate>editor.details.appearance_date</span>:</td>
+			<td>
+				<input type="checkbox" ng-model="quiz.appearance_time_module" ng-change="updateQuiz()" class="no-margin">
+				<span class="size-12" translate>editor.details.use_module</span>
+				<span ng-hide="!quiz.appearance_time_module">
+					<span tooltip-placement="left" tooltip="{{'editor.tooltip.invisible' | translate}}" ng-hide="visible(quiz.appearance_time)" class="icon pull-right" style="width:20px; height:20px;"><img src='images/error.png'/></span>
+					<div style="border-radius: 3px; border: 1px darkgrey solid; background-color: lightgrey; margin-top: 10px; font-size: 12px; color: #555; text-align: center;">
+					{{quiz.appearance_time | amDateFormat:'DD MMM YYYY, HH:mm'}}
+					</div>
+				</span>
+				<br />
+				<span ng-hide="quiz.appearance_time_module">
+					<span translate>editor.details.set_date</span>:<br>
+					<details-date date="quiz.appearance_time" save="updateQuiz(data, type)" validate="validateQuiz" column="appearance_time"></details-date>
+					<span tooltip-placement="left" tooltip="{{'editor.tooltip.invisible' | translate}}" ng-hide="visible(quiz.appearance_time)" class="icon pull-right" style="width:20px; height:20px;"><img src='images/error.png'/></span>
+					<br>
+					<details-time class="timepicker" time="quiz.appearance_time" save="updateQuiz(data, type)" validate="validateQuiz" column="appearance_time"></details-time>
+				</span>
+			</td> -->
+			<td class="right-border"><span translate>editor.details.appearance_date</span>:</td>
+			<td>
+				<div style="border-radius: 3px; border: 1px darkgrey solid; background-color: lightgrey; margin-top: 10px; font-size: 12px; color: #555; text-align: center;">
+					<span ng-show="(quiz.appearance_time | visible)" translate>editor.tooltip.visible_quiz</span>
+					<span ng-show="!(quiz.appearance_time | visible)" translate >editor.tooltip.invisible_quiz</span>
+				</div>
+			</td>
+		</tr>
+		<tr>
+			<td class="right-border"><span translate>editor.details.due_date</span>:</td>
+			<td>
+				<input type="checkbox" ng-model="due_date_enabled" ng-change="updateDueDate();updateQuiz()" class="no-margin">
+				<span class="size-12" translate>editor.details.has_due_date</span>
+				<div ng-show="due_date_enabled">
+					<span ng-hide="disable_module_due_controls">
+						<input type="checkbox" ng-model="quiz.due_date_module" ng-change="updateQuiz()" class="no-margin">
+						<span class="size-12" translate>editor.details.use_module_due</span>
+					</span>
+					<br />
+					<div ng-hide="!quiz.due_date_module">
+						<div style="border-radius: 3px; border: 1px darkgrey solid; background-color: lightgrey; margin-top: 10px; font-size: 12px; color: #555; text-align: center;">
+							{{quiz.due_date | amDateFormat:'DD MMM YYYY, HH:mm'}}
+						</div>
+					</div>
+  					<span ng-hide="quiz.due_date_module">
+  						<span translate>editor.details.set_date</span>:<br>
+  						<details-date date="quiz.due_date" save="updateQuiz(data, type)" validate="validateQuiz" column="due_date"></details-date>
+  						<br />
+						<details-time class="timepicker" time="quiz.due_date" save="updateQuiz(data, type)" validate="validateQuiz" column="due_date"></details-time>
+  					</span>
+  				</div>
+			</td>
+		</tr>
+		<tr>
+			<td class="right-border"><span translate>editor.details.student_link_quiz</span>:</td>
+			<td class="break-text">
+				<span >{{link_url}}</span>
+			</td>
+		</tr>
+	</table>
+</div>

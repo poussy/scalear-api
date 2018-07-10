@@ -1,0 +1,120 @@
+<div ng-switch="mode" class="content-navigator-container disable_selection ease_in_out" ng-class="{'content-containeropen small-12 medium-4 large-2 columns no-padding no-margin': open_navigator}">
+	<span ng-switch-when="courseware">
+		<div class="modules_container" style="height:100%;overflow:auto">
+			<accordion class="accordion no-margin">
+				<span>
+					<accordion-group class="accordion-group" is-open="false" ng-click="goToCourseInfoStudent()">
+						<accordion-heading class="accordion-heading">
+						<div id="course_info" style="padding: 5px;border-bottom: 1px solid white;" ng-class="{currentmodule: ('**.course_information.**' | includedByState)}">
+							<div class="show-inline" translate>navigation.course_information</div>
+						</div>
+						</accordion-heading>
+					</accordion-group>
+					<accordion-group class="module accordion-group" ng-repeat="module in modules | orderBy: 'position'" is-open="($state.params.module_id == module.id)">
+						<accordion-heading class="accordion-heading">
+							<div id='module_{{module.id}}' class="valign-middle" ng-click="showModuleCourseware(module, $event)" title="{{::(module.name)}}" ng-class="{'currentmodule selectedmodule': currentmodule.id == module.id}" style="padding: 5px;border-bottom: 1px solid white;display:inline-block;width: 100%;">
+								<div class="row" style="width: 100%;margin-left: auto;margin-right: auto;margin-top: 0;margin-bottom: 0;">
+									<div class="small-1 no-padding columns no-padding-left" style="min-height: 1px;">
+										<module-progress-check class="left" module="module" />
+									</div>
+									<div class="small-9 columns no-padding">
+										<i ng-if="::(!(module.appearance_time | visible))" style="margin-right:5px;float:left;color:#c41c24" class="fi-alert" tooltip="{{'editor.tooltip.invisible'|translate}} {{module.appearance_time| fromNow}}" tooltip-placement="right" tooltip-append-to-body="true"  ></i>
+										<div class=" module_name" style="word-wrap: break-word;" >{{::module.name}} </div>
+									</div>
+									<div class="small-2 no-padding text-right columns">
+										<small class="color-grey" >{{::module.total_time | formattime:'h:mm:ss'}}</small>
+									</div>
+								</div>
+							</div>
+						</accordion-heading>
+						<ul>
+							<li class="inclass_button orange disable_selection size-13 text-right last-child item looks-like-a-link" style="display:inline-block; padding: 2px; min-height: 24px;box-shadow: 1px 0px 4px grey;border-radius: 2px;color:white;width:100%" ng-if="module.has_inclass" ui-sref="course.module.student_inclass({ module_id: module.id })">
+								<div class="position-relative" style="height: 30px;">
+									<div class="show-inline valign-middle left text-left" style="padding-left:15px;line-height: 2.5">Start In-class Session</div>
+								</div>
+							</li>
+							<li class="disable_selection size-13 text-right last-child item looks-like-a-link" style="display:inline-block; width: 100%;padding: 2px; min-height: 24px;"  ng-title="{{::item.name}}"  ng-class="{currentitem: currentitem.id == item.id,'blink_btn':item.blink, 'disabled':(!(item.appearance_time | visible) && item.inclass && !(current_user.roles.includes(6)) )}" ng-repeat="item in module.items" ng-click="showItem(item, 'courseware')" >
+								<div ng-if="::(item.class_name != 'customlink')" class="position-relative" style="height: 20px;" >
+									<i class="no-padding fi-check color-green left with-tiny-margin-right ease_in_out" ng-class="{'no-opacity':!item.done}" ></i>
+									<i ng-if="::(item.class_name == 'lecture' && !(item.appearance_time | visible) && ( (current_user.roles.includes(6)) ) )" style="margin-right:5px;float:left;color:#c41c24" class="fi-alert" tooltip="{{('editor.tooltip.invisible'|translate) + ' '+ ('editor.tooltip.invisible_cont' | translate) +' '+ (item.appearance_time| fromNow) }}" tooltip-placement="right" tooltip-append-to-body="true"  ></i>
+									<i ng-if="::(item.class_name == 'quiz' && !(item.appearance_time | visible) && !item.inclass)" style="margin-right:5px;float:left;color:#c41c24" class="fi-alert" tooltip="{{ ('editor.tooltip.invisible_quiz'|translate)}}" tooltip-placement="right" tooltip-append-to-body="true"  ></i>
+									<i ng-if="::(item.class_name == 'lecture' && !item.inclass && !item.distance_peer)" class="fi-video with-tiny-margin-right left color-gray" ng-title="{{::('content_navigator.lecture' | translate)}}"></i>
+									<i ng-if="::(item.class_name == 'lecture' && item.inclass)" class="fi-comment-video with-tiny-margin-right left color-gray" ng-title="{{::('content_navigator.lecture' | translate)}}"></i>
+									<i ng-if="::(item.class_name == 'lecture' && item.distance_peer)" class="fi-torsos-all with-tiny-margin-right left color-gray" ng-title="{{::('content_navigator.lecture' | translate)}}"></i>
+									<i ng-if="::(item.class_name == 'quiz' && item.quiz_type == 'quiz')" class="fi-clipboard-notes with-tiny-margin-right left color-gray" ng-title="{{::('content_navigator.quiz' | translate)}}"></i>
+									<i ng-if="::(item.class_name == 'quiz' && item.quiz_type == 'survey')" class="fi-clipboard-pencil with-tiny-margin-right left color-gray" ng-title="{{::('content_navigator.survey' | translate)}}"></i>
+									<div class="show-inline valign-middle left text-left" style="width: 65%;">{{::item.name}} </div>
+									<div class="no-padding text-right">
+										<small class="color-grey" ng-show="::(item.duration)" >{{::item.duration | formattime:'h:mm:ss'}}</small>
+									</div>
+									<!-- <div class="color-dark-grey" ng-show="::(item.duration)" >{{::item.duration | formattime:'h:mm:ss'}}</div> -->
+								</div>
+								<a ng-if="::(item.class_name == 'customlink')" class="position-relative" style="height: 20px;" ng-href="{{::item.url}}" target="_blank">
+									<i class="no-padding fi-check color-green left with-tiny-margin-right no-opacity"></i>
+									<i class="fi-link with-tiny-margin-right left color-gray" title="{{::('content_navigator.customlink' | translate)}}"></i>
+									<div class="truncate-70 show-inline valign-middle left text-left" >{{::item.name}}</div>
+								</a>
+							</li>
+						</ul>
+					</accordion-group>
+				</span>
+			</accordion>
+		</div>
+	</span>
+	<span ng-switch-when="editor" ng-if="'**.course_editor.**' | includedByState">
+		<div class="content-navigator-bottom-container-height modules_container no-margin" context-menu data-target="content-menu">
+			<ul class="content-menu dropdown-menu text-left">
+				<li><a ng-click="addModule()" translate>editor.button.add_module</a></li>
+				<li ng-show="clipboard.type == 'module'">
+					<div class="divider border-grey medium-opacity"></div>
+					<a ng-click='paste($event)' translate>context_menu.paste</a>
+				</li>
+			</ul>
+			<accordion class="accordion no-margin" >
+				<span ui-sortable="moduleSortableOptions" ng-model='modules'>
+					<accordion-group  class="module accordion-group" ng-repeat="module in modules" is-open="{{currentmodule.id == module.id}}" context-menu data-target="module-menu" >
+						<accordion-heading class="accordion-heading">
+							<module_edit   data="module" ng-class="{'currentmodule selectedmodule': currentmodule.id == module.id}" ng-click="showModule(module,$event)" jqyoui-droppable="{stack:false,onDrop:'pasteDraggedItem({moduleId:module.id})'}" data-drop="true" data-jqyoui-options />
+						</accordion-heading>
+	          			<span class="items" ui-sortable="itemSortableOptions" ng-model='module.items'>
+		            		<li class="last-child item looks-like-a-link "  ng-repeat="item in module.items" ng-class="{currentitem: currentitem.id == item.id}">
+	             				<item_edit data-drag="true" style='width: 100%' data-jqyoui-options="{revert: 'invalid', helper: 'clone'}" jqyoui-draggable="{animate:true,onStart:'copyDraggedItem({draggedItem:item})'}"  data="item" ng-click="showItem(item, 'course_editor')" />
+		            		</li>
+		            	</span>
+		            	<button id="new_item" class="button tiny green-color-white" module-content-modal open-modal="openOnlineContentModal" ng-click="openOnlineContentModal()" style="margin: 8px 16px;"><span translate>editor.button.add_content</span></button>
+		            	<ul class="module-menu dropdown-menu text-left">
+										<li><a ng-click='copy($event)' >{{::'context_menu.copy'| translate}}</a></li>
+										<li ng-show="clipboard.type"><a ng-click='paste($event, module.id)' >{{::'context_menu.paste'| translate}}</a></li>
+										<li><a ng-click='share($event)' ></a>{{::'context_menu.share'| translate}}</li>
+									</ul>
+					</accordion-group>
+				</span>
+			</accordion>
+			<i ng-show="!modules.length" class="muted"><br /><span style="padding-left:10px" translate>content_navigator.empty</span>...</i>
+		</div>
+		<center class="content-navigator-bottom-container">
+			<button id="add_module" class="button small green no-margin left" ng-click="addModule()" translate>editor.button.add_module</button>
+			<button class="button small orange no-margin right" ng-click="preview()" style="width: 43%;padding: 7px 20px;" translate>editor.button.preview_student</button>
+		</center>
+	</span>
+	<span ng-switch-when="editor" ng-if="!('**.course_editor.**' | includedByState)">
+		<div class="modules_container" style="height:100%;overflow:auto">
+			<accordion class="accordion no-margin">
+				<span>
+					<accordion-group class="module accordion-group" ng-repeat="module in modules" is-open="{{currentmodule.id == module.id}}">
+						<accordion-heading class="accordion-heading">
+							<module data="module" ng-class="{'currentmodule selectedmodule': currentmodule.id == module.id}" ng-click="showModule(module,$event)" >
+							</module>
+						</accordion-heading>
+	          			 <span class="items">
+		            		<li class="last-child item looks-like-a-link" ng-repeat="item in module.items" ng-class="{currentitem: currentitem.id == item.id}">
+	             				<item data="item" ng-click="showItem(item, 'course_editor')" />
+		            		</li>
+		            	</span>
+					</accordion-group>
+				</span>
+			</accordion>
+			<i ng-show="!modules.length" class="muted"><br /><span style="padding-left:10px" translate>content_navigator.empty</span>...</i>
+		</div>
+	</span>
+</div>

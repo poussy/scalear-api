@@ -1,0 +1,32 @@
+<div >
+    <table style="width: 100%;" class="no-border transparent with-tiny-margin">
+        <tr>
+            <td style="padding-bottom: 0px; padding-top: 0px; border-top: 1px solid white;">
+                <div>
+                    <div class="screen-name">
+                        <b >{{::comment.screen_name}} </b>
+                        <div class="timestamp with-small-margin-left">
+                            <span >{{::comment.created_at | fromNow}} </span>
+                            <span ng-if="comment.flags_count > 0" style="color: red;">
+                                <span style="color: #a1a1a1">  </span>
+                                <span translate>discussion.flagged_comment</span>
+                            </span>
+                        </div>
+                    </div>
+                    <div ng-show="::(comment.user_id == current_user.id)" style="font-size: 10px; float: right; display: inline-block;">
+                        <delete_button size="small" action="delete()(comment)" vertical="false" text="false" style="display: inline-block; color: #a1a1a1;" ></delete_button>
+                    </div>
+                    <span ng-if="::(comment.user_id != current_user.id && !preview_as_student)">
+                        <div style="display: inline-block; float: right;" >
+                            <flag-button name="flag_comment" flagged="comment.user_flag" flag="flagComment()" unflag="unflagComment()"></flag-button>
+                        </div>
+                        <div class="like-button">
+                           <voting-button votes-count="comment.votes_count" voted="comment.user_vote" up="upvoteComment()" down="downvoteComment()" direction="horizontal"></voting-button>
+                        </div>
+                    </span>
+                    <div class="comment_body break-text" ng-text-truncate="comment.content" ng-tt-words-threshold="30"  style="white-space: pre-line"></div>
+                </div>
+            </td>
+        </tr>
+    </table>
+</div>

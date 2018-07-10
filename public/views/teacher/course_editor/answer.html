@@ -1,0 +1,3 @@
+ <div ng-init='ocq_correct="images/button_green.png"; ocq_incorrect="images/button8.png"; mcq_correct="images/checkbox_green.gif"; mcq_incorrect="images/checkbox.gif";' ng-style="{left: (data.xcoor*100)+'%', top: (data.ycoor*100)+'%', position: 'absolute', lineHeight:'0px'}" data-drag='true' data-jqyoui-options="{containment:'.ontop'}" jqyoui-draggable="{animate:true, onStop:'calculatePosition', onStart:'answerDragStart'}" style="z-index:auto !important" >
+	<img ng-src='{{imgName}}' ng-class="answerClass"  pop-over='popover_options' unique='true' ng-click='updateValues()' />
+</div>

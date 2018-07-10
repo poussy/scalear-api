@@ -1,0 +1,19 @@
+<h3><i class="fi-mail size-30"></i> <span translate>mailer.send_email</span></h3>
+<div class="small-12 columns">
+    <label><span translate>mailer.to</span>
+        <div class="panel with-tiny-padding overflow-y-auto" style="max-height: 70px;">
+            <span id="to" name="emails" class="secondary alert-box label with-tiny-margin" ng-repeat="email in batch_emails">{{email}}</span> 
+        </div> 
+    </label>
+</div>
+<div class="small-12 columns">
+    <label><span translate>mailer.subject</span>
+      <input id="subject" type="text" name="subject" ng-model="subject" placeholder="Input your email subject..." />
+    </label>
+</div>
+<div class="small-12 columns email-forum">
+    <span translate>mailer.email_body</span>
+    <div class="panel" text-angular ng-model="message"></div>
+</div>
+<br />
+<button type="button" class="button right" id="send_emails"  ng-click="sendBatchEmail(subject, message)" ng-disabled="!final_emails || !subject || !message"><span translate>mailer.send</span></button>

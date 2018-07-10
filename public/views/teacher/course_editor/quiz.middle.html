@@ -1,0 +1,46 @@
+<div class="row">
+	<div class="small-12 columns">
+		<h4 ><b><span>{{'editor.'+quiz.quiz_type+'_editor' | translate}}</span>: </b>{{quiz.name}}</h4>
+	</div>
+</div>
+<div class="row">
+	<div class="small-12 columns">
+		<span translate>editor.details.instructions</span>:
+		<big-area value="quiz.instructions" save="quiz.update()" validate="validateQuiz" column="instructions"></big-area>
+	</div>
+</div>
+<br>
+<div class="panel" style="padding: 0 15px;">
+	<div ng-show="!preview">
+		<form name='tform' novalidate ui-sortable="quizSortableOptions" ng-model='questions'>
+			<div ng-repeat="question in questions" class="row soft-border quiz_sort">
+				<answerform ng-if="question.question_type!='header'" submitted="submitted" subtype="quiz.quiz_type" quiz="question" column="content" columna="content" save="saveQuestions()" add="addAnswer" remove="removeAndSaveAnswer" removeq="removeAndSaveQuestions" index="$index" sortable="true" />
+				<div ng-if="question.question_type=='header'" class="small-12 columns" style="text-align:left" >
+					<img src='images/move2.png' class='handle' title="{{'editor.messages.drag_to_reorder'|translate}}" style="margin-top:2px"/>
+					<label class='q_label'><span translate>editor.header</span>:</label>
+					<delete_button  size='small' mode="content_navigator" color='dark' action='removeHeader($index)' class="right with-small-margin-right" save="saveQuestions()" ></delete_button>
+					<div text-angular ng-change="saveQuestions()" ng-model="question.content" ta-toolbar-button-class="button secondary tiny" ></div>
+				</div>
+			</div>
+		</form>
+		<div class="row" style="margin-top:10px">
+			<center>
+				<div ng-show="submitted && !hide_alerts">
+					<alert type="alert.type" close="closeAlerts()">{{alert.msg| translate}}</alert>
+				</div>
+				<div class="large-block-grid-4">
+				<button class="button small" name="add_question" ng-click="addQuestion()" translate>editor.button.add_question</button>
+				<button class="button small" name="add_header" ng-click="addHeader()" translate>editor.button.add_header</button>
+				<span ng-if="!module_visible">
+					<button class="button small green disabled" tooltip-placement="bottom" tooltip-append-to-body="true" tooltip="{{'editor.tooltip.quiz_publish_status' | translate}}" translate>button.publish</button>
+				</span>
+				<span ng-if="module_visible">
+					<button class="button small green" name="save_publish" ng-click="publish()" ng-if="!publish_state_visible" translate>button.publish</button>
+					<button class="button small green" name="save_publish" ng-click="unpublish()" ng-if="publish_state_visible" translate>button.unpublish</button>
+					<span ng-show="saved" style="font-size:  x-small;color: #a9a7a7;left: 5%;position: relative; ">Saved at: {{ currentDate }}</span>
+				</span>
+				</div>
+			</center>
+		</div>
+	</div>
+</div>

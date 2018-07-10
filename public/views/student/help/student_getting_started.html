@@ -1,0 +1,104 @@
+<div class="left-navigation hide-for-small-only left medium-3 large-3 columns" mac-affix>
+	<ul class="side-nav">
+	<h3 ng-if="!current_user"><i class="fi-page-multiple size-18"></i> {{'help.getting_started' | translate}}</h3>
+	  <li><a ng-click="scroll('intro')" >Introduction</a></li>
+	  <li><a ng-click="scroll('enroll')" >Joining a Class</a></li>
+	  <li><a ng-click="scroll('due')" >What is Due Next?</a></li>
+	  <li><a ng-click="scroll('interaction')" >Questions, Notes, and Confused</a></li>
+	  <li><a ng-click="scroll('progress')" >Course Progress</a></li>
+	  <li><a ng-click="scroll('feedback')" >Technical Problems or Feedback</a></li>
+	  <li><a ng-click="scroll('privacy')" >Privacy</a></li>
+	</ul>
+</div>
+<div class="with-margin-top small-12 medium-9 large-9 columns">
+	<center>
+		<div id="intro" class="small-10 with-margin-bottom">
+			<h2 class="color-green text-left">Introduction to <span class"dark-text">Scalable</span>Learning (3 min)</h2>
+			<youtube id="intro_video" class="flex-video widescreen with-light-border" url="intro_url" autoplay='0' controls='1' style="z-index: 1;">
+		</div>
+	</center>
+	<div id="enroll">
+		<h4 class="color-green">Joining a Class</h4>
+		<p>
+			To join a course you need a Course Enrollment key from your instructor. This key will be in the form ABCDE-12345. Once you have your key you can join the course. If you don’t have a key please contact your instructor.
+		</p>
+		<p>
+			<ol>
+				<li>
+					Choose "Join a new course" from the "Courses" menu.
+				</li>
+				<li>
+					Enter the course Enrollment Key and click "Enroll".
+				</li>
+				<li>
+					You can now go to the course from the "Courses" menu.
+				</li>
+			</ol>
+		</p>
+	</div>
+	<div id="due">
+		<h4 class="color-green">What is Due Next?</h4>
+		<p>
+			To see what is due next, click on "Dashboard", this will give you an overview of all your courses, recent announcements, and when assignments are due in each course.
+		</p>
+	</div>
+	<div id="interaction">
+		<h4 class="color-green">Questions, Notes, and Confused</h4>
+		<ul>
+			<h5 class="subheader">Asking a Question</h5>
+			<img class="with-margin" src="images/student_question_screen_shot.png" />
+			<p>
+				To ask a question during a lecture, click on the <b>Ask a Question</b>  button or type "q" on the keyboard. Your question will appear next to the video in the <b>Timeline</b>. You can go back to the question at any time by clicking on it in the timeline.
+
+				You can choose whether a question is public (visible to the whole class) or private (visible only to the teacher). You can also reply to other students’ questions and delete your own questions with the X icon. If you find an inappropriate or offensive question or reply, please click on the flag to inform the teacher.
+			</p>
+			
+		</ul>
+		<ul>
+			<h5 class="subheader">Taking Notes</h5>
+			<img class="with-margin" src="images/student_note_screen_shot.png" />
+			<p>
+				You can take a note by clicking the <b>New Note</b> button or typing "n" on the keyboard. Your note will appear next to the video in the Timeline. You can go back to the note at any time by clicking on it in the timeline.
+			</p>
+			
+		</ul>
+		<ul>
+			<h5 class="subheader">If You're Confused</h5>
+			<p>
+				If you’re confused press the <b>I’m Confused</b> button, or type "c" on the keyboard to let your teacher know that you’re confused at that point in the video.
+			</p>
+
+		</ul>
+	</div>
+	<div id="progress">
+		<h4 class="color-green">Course Progress</h4>
+		<img class="with-margin" src="images/student_progress_screenshot.png" />
+		<ul>
+			<p>
+				To review your course progress, show the green <b>Contents</b> list on the left side of any video. A green check indicates that you have completed an item.
+			</p>
+		</ul>
+	</div>
+	<div id="feedback">
+		<h4 class="color-green">Technical Problems or Feedback</h4>
+		<ul>
+			<p>
+				If you have technical problems or feedback about ScalableLearning, please choose "Feedback" from the "Help" menu and we'll get back to you as quickly as we can. We truly appreciate your comments and feedback.
+			</p>
+		</ul>
+	</div>
+
+	<div id="privacy">
+		<h4 class="color-green">Privacy</h4>
+		<ul>
+			<p>
+				ScalableLearning takes your privacy seriously and we encourage you to read our privacy policy under the "Help" menu.
+			</p>
+		</ul>
+	</div>
+    <div id="whitespace" class="hide-for-small-only">
+        <p>
+            <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+        </p>
+	</div>
+</div>

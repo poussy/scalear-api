@@ -1,0 +1,9 @@
+<span style="margin-top: 5px;">
+	<a href="" ng-hide="showfield" ng-click="toggleField()" class="comment_button" translate>discussion.comment</a>
+  <div ng-show="showfield">
+    <div style="float:left;width:70%;margin-right:10px">
+  	 <rich-textarea name="comment_area"  style="overflow: hidden;padding: 4px; resize: none;height: 45px;" ng-model="comment" ng-attr ng-attr-placeholder="{{::('discussion.write_comment' | translate)}}"  autofocus />
+    </div>
+    <button class="tiny success button with-small-padding" ng-click="submitComment()" style="float: left;width: 25%;">Add comment</button>
+  </div>
+</span>

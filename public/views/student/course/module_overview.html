@@ -1,0 +1,20 @@
+<div class="dashboard separator" style="margin: 0 20px">
+  <student-module-summary moduledata="module_summary"/>
+  <div ng-if="module_summary.loading.summary" style="height: 150px">
+    <center style="position: relative;top:25%">
+      <loading size="big" show="true"></loading>
+    </center>
+  </div>
+  <student-online-quiz-summary moduledata="module_summary"/>
+  <div ng-if="module_summary.loading.online_quiz" style="height: 150px">
+    <center style="position: relative;top:25%">
+      <loading size="big" show="true"></loading>
+    </center>
+  </div>
+  <student-discussion-summary moduledata="module_summary"/>
+  <div ng-if="module_summary.loading.discussion" style="height: 150px">
+    <center style="position: relative;top:25%">
+      <loading size="big" show="true"></loading>
+    </center>
+  </div>
+</div>

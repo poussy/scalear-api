@@ -1,0 +1,18 @@
+<form name="myForm" >
+<div id="selected_subdomain_modal" class="ngdialog-message">
+<h3><b><span translate>courses.limit_registration_domain</span></b></h3>
+<ul>
+  <li><input type="radio" ng-model="subdomain.boolean" id="all" value="all" ng-change="setBooleanDomain();"><span translate>courses.limit_registration_all_students</span></li>
+  <li><input type="radio" ng-model="subdomain.boolean" id="custom" value="custom" ng-change="setBooleanDomain();" ><span translate>courses.limit_registration_domain_description</span></li>
+  </form>
+  <div ng-show=subdomain.boolean=="custom">
+    <ul style="margin-bottom: 5px;" ng-repeat="domain in subdomains track by $index">
+      <input class="valign-middle" ng-change="updateDomainList()" type="checkbox" name="mcq" ng-model="course_domain.selected_subdomain[domain]" style="margin: auto;margin-right: 10px;"/>{{domain}}
+    </ul>
+  </div>
+</ul>
+</div>
+<div class="modal-footer right">
+    <br/>
+    <button id="registration_domain_modal_close" class="button small success" ng-click="close()" translate="global.done"></button>
+</div>

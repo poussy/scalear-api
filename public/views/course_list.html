@@ -1,0 +1,60 @@
+<!-- build:css(.tmp/styles) styles/course_item.css -->
+<link rel="stylesheet" href="styles/courseItem.css" />
+<!-- endbuild -->
+<div id="main_course_list">
+  <center>
+    <loading size="big" show="!(course_loading)"></loading>
+  </center>
+  <div ng-show="(teacher_courses && teacher_courses.length) || (student_courses && student_courses.length)" class="row">
+    <div class="small-12 columns course_list">
+      <!-- Course selection/filter buttons -->
+      <div class="small-12 medium-4 left columns button-group with-small-margin-top" step-text="You can filter the list of courses by selecting different filters." step-index="1" step-placement="bottom" step-append-to-body="false" page-name="{{current}}">
+        <button type="button" class="left button tiny" ng-class="{active: course_filter == '!!'}" ng-click="filterCourse('!!')"  translate>courses.list.all</button>
+        <button type="button" class="left button tiny" ng-class="{active: course_filter == false}" ng-click="filterCourse(false)"  translate>courses.list.current</button>
+        <button type="button" class="left button tiny" ng-class="{active: course_filter == true}" ng-click="filterCourse(true)"  translate>courses.list.all_finished</button>
+      </div>
+      <div class="small-7 medium-4 columns with-small-margin-top">
+        <input type="search" ng-model="searchText" placeholder="{{'global.search' | translate}}" />
+        <span ng-show="filtered_teacher">
+          <br />
+          <a ng-click="removeFilter()" style="cursor:pointer" translate>courses.list.button.back</a>
+          <br />
+        </span>
+      </div>
+      <div class="small-5 medium-2 right columns with-small-margin-top">
+        <!-- Course order menu -->
+        <a class="button tiny dropdown" dropdown-toggle="#sort_list"><span translate>courses.list.button.sort_by</span></a>
+        <ul id="sort_list" class="f-dropdown">
+          <li><a href="" ng-click="order('start_date')" translate>courses.start_date</a></li>
+          <li><a href="" ng-click="order('short_name')" translate>courses.course_code</a></li>
+          <li><a href="" ng-click="order('name')" translate>courses.course_name</a></li>
+          <li><a href="" ng-click="order('enrollments')">#<span translate>global.students</span></a></li>
+          <li><a href="" ng-click="order('lectures')">#<span translate>courses.list.lectures</span></a></li>
+          <li><a href="" ng-click="order('quiz')">#<span translate>courses.list.quizzes</span></a></li>
+          <li><a href="" ng-click="order('survey')">#<span translate>courses.list.surveys</span></a></li>
+        </ul>
+        <!-- Button for adding new course -->
+        <!-- <a class="button tiny right green" ui-sref="new_course" translate>courses.list.button.new_course</a> -->
+        <br />
+      </div>
+    </div>
+  </div>
+  <div ng-if="student_courses.length > 0">
+    <h5 class="muted" style="border-bottom: 1px solid lightgray;"><strong>Student</strong></h5>
+    <course-item ng-repeat="course in student_courses|orderBy:column:is_reverse |filter:searchText|filter:{ended:course_filter}" course='course' teachers='course.teacher_enrollments' unenroll="unenrollCourse"></course-item>
+    <hr />
+  </div>
+  <div ng-if="teacher_courses.length > 0">
+    <h5 class="muted" style="border-bottom: 1px solid lightgray;"><strong>Teacher</strong></h5>
+    <teacher-course-item ng-repeat="course in teacher_courses|filter:filtered_teacher|orderBy:column:is_reverse |filter:searchText|filter:{ended:course_filter}" course='course' teachers='course.teacher_enrollments' deletecourse="deleteCourse" filterteacher="filterTeacher" currentuser="current_user"></teacher-course-item>
+    <hr />
+  </div>
+  <div ng-show="(teacher_courses.length == 0 ) || (student_courses.length == 0) && course_loading">
+    <center style="height:120px">
+      <!-- <h5 class="muted" translate>courses.list.messages.create_enroll_instruction</h5> -->
+      <h5 class="muted" translate>courses.list.messages.enroll_instruction</h5>
+      <!-- <br> -->
+      <h5 class="muted" translate>courses.list.messages.create_instruction</h5>
+    </center>
+  </div>
+</div>

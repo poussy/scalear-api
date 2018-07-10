@@ -1,0 +1,17 @@
+{
+  "name": "angular-sanitize",
+  "main": "./angular-sanitize.js",
+  "dependencies": {
+    "angular": "1.2.0"
+  },
+  "homepage": "https://github.com/karimAlaa/bower-angular-sanitize",
+  "_release": "2cef799d86",
+  "_resolution": {
+    "type": "branch",
+    "branch": "custom_sanitizer",
+    "commit": "2cef799d864e75e9fb2b9b73c32dd51cc50af9b8"
+  },
+  "_source": "https://github.com/karimAlaa/bower-angular-sanitize.git",
+  "_target": "custom_sanitizer",
+  "_originalSource": "https://github.com/karimAlaa/bower-angular-sanitize.git"
+}

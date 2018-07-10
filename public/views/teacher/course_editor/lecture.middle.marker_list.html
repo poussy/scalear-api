@@ -1,0 +1,22 @@
+<table class="table small-12 columns no-margin-bottom">
+	<tbody>
+		<tr ng-repeat="marker in lecture.timeline.items| filter:{type:'marker'}|orderBy:'time'" ng-class="{wheat: marker.data.id == getSelectedMarker().id}">
+			<td style="padding: 0.3625rem 0.3rem;">
+				<div class="small-12 columns no-padding">
+					<delete_button class="right with-small-margin-right" size="small" color='dark' mode="content_navigator" action="deleteMarker(marker.data)" padded="true" />
+					<span ng-click="showMarker(marker.data)">
+						<div class="small-4 columns size-10">
+							<span class="looks-like-a-link" translate>editor.note</span>
+						</div>
+						<div class="small-4 left columns size-10">
+							<span class="looks-like-a-link">{{marker.data.time|format}}</span>
+						</div>
+						<div class="small-12 columns">
+							<span class="quiz_title color-blue2 looks-like-a-link" ng-bind-html="marker.data.title"></span>
+						</div>
+					</span>
+				</div>
+			</td>
+		</tr>
+	</tbody>
+</table>

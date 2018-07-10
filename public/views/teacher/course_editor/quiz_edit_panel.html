@@ -1,0 +1,98 @@
+<div id="editing">
+    <h6 class="row no-margin color-wheat wheat" style="padding:10px;">
+        <div>{{double_click_msg |translate}}</div>
+        <div class="row" style="margin-top:10px;text-align:left;margin-left:0;">
+            <div class="small-12 columns" style="margin-bottom: 5px;"><span translate>editor.quiz_question</span>:</div>
+            <div class="small-12 left columns" style="margin-bottom: 15px;">
+                <div><rich-textarea class="quiz_name" type="text" ng-model="selected_quiz.question"></div>
+                <small class="error" ng-show="quiz_errors.name_error" ng-bind="quiz_errors.name_error"></small>
+            </div>
+        </div>
+        <!-- <div class="row" style="text-align:left;margin-left:0;">
+        <div class="small-3 columns"><span translate>editor.start_time</span>:</div>
+        <div class="small-3 left columns no-padding" style="margin-bottom: 5px;">
+        <input class="quiz_start_time" type="text" ng-model="selected_quiz.start_formatedTime" style="height: 30px;margin-bottom:0;">
+        <small class="error position-absolute z-one" ng-show="time_error" ng-bind="time_error"></small>
+        </div>
+        </div> -->
+
+        <div class="row" style="text-align:left;margin-left:0;">
+            <div class="small-3 columns"><span translate>editor.quiz_time</span>:</div>
+            <div class="small-6 left columns no-padding" style="margin-bottom: 5px;">
+                <input class="quiz_time" type="text" ng-model="selected_quiz.formatedTime" style="height: 30px;margin-bottom:0;">
+                <small class="error position-absolute z-one" ng-show="quiz_errors.time_error" ng-bind="quiz_errors.time_error"></small>
+            </div>
+        </div>
+        <div class="row" style="text-align:left;margin-left:0;">
+            <div class="small-3 columns"><span translate>editor.details.required</span>:</div>
+            <div class="small-6 left columns no-padding" style="margin-bottom: 5px;">
+                <input class="quiz_required" type="checkbox" ng-model="selected_quiz.graded" style="height: 30px;margin-bottom:20px;" >
+            </div>
+        </div>
+        <div ng-show="invideo_quiz_type" class="row" style="text-align:left;margin-left:0;">
+            <div class="small-3 columns"><span translate>editor.details.display_text</span>:
+            </div>
+            <div class="small-6 left columns no-padding" style="margin-bottom: 5px;">
+                <input class="quiz_display_text no-margin with-tiny-margin-right" type="checkbox" ng-model="selected_quiz.display_text" style="margin:0px;" ><span translate>editor.details.display_text_explain</span>
+            </div>
+        </div>
+
+        <!-- <div class="row" style="text-align:left;margin-left:0;">
+        <div class="small-3 columns"><span translate>editor.end_time</span>:</div>
+        <div class="small-3 left columns no-padding" style="margin-bottom: 10px;">
+        <input class="quiz_end_time" type="text" ng-model="selected_quiz.end_formatedTime" style="height: 30px;margin-bottom:0;">
+        <small class="error position-absolute z-one" ng-show="time_error" ng-bind="time_error"></small>
+        </div>
+        </div>
+
+        <div class="row" style="text-align:left;margin-left:0;">
+        <div class="small-11 left columns" >
+        <lable><span>Online</span> <input class="inclass_choice" type="radio" name="inclass" ng-model="selected_quiz.inclass" ng-value="false" ></lable>
+        <lable style="padding-left:10px"><span>Inclass</span> <input class="inclass_choice" type="radio" name="inclass" ng-model="selected_quiz.inclass" ng-value="true" ></lable>
+        </div>
+        </div> -->
+        <div ng-show="lecture.inclass  || lecture.distance_peer" >
+            <div class="row" style="text-align:left;margin-left:0;">
+                <div class="small-11 left columns" >
+                    <lable>
+                        <span translate>editor.start_time</span>
+                        <input class="inclass_choice" type="checkbox" ng-change="updateQuizStartTime()" ng-model="selected_quiz.has_start">
+                    </lable>
+                    <lable style="padding-left:10px"><span translate>editor.end_time</span>
+                         <input class="inclass_choice" type="checkbox" ng-model="selected_quiz.has_end" ng-change="updateQuizEndTime()">
+                    </lable>
+                </div>
+            </div>
+            <div class="row" style="text-align:left;margin-left:0;" ng-hide="lecture.distance_peer">
+                <div class="small-4 columns"><span translate>editor.intro_timer</span>:</div>
+                <div class="small-3 left columns no-padding" style="margin-bottom: 5px;">
+                    <input type="text" ng-model="selected_quiz.intro_formatedTime" style="height: 30px;margin-bottom:0;">
+                    <small class="error position-absolute z-one" ng-show="quiz_errors.intro_timer_error" ng-bind="quiz_errors.intro_timer_error"></small>
+                </div>
+            </div>
+            <div class="row" style="text-align:left;margin-left:0;">
+                <div class="small-4 columns"><span translate>editor.self_timer</span>:</div>
+                <div class="small-3 left columns no-padding" style="margin-bottom: 5px;">
+                    <input type="text" ng-model="selected_quiz.self_formatedTime" style="height: 30px;margin-bottom:0;">
+                    <small class="error position-absolute z-one" ng-show="quiz_errors.self_timer_error" ng-bind="quiz_errors.self_timer_error"></small>
+                </div>
+            </div>
+            <div class="row" style="text-align:left;margin-left:0;">
+                <div class="small-4 columns"><span translate>editor.group_timer</span>:</div>
+                <div class="small-3 left columns no-padding" style="margin-bottom: 5px;">
+                    <input type="text" ng-model="selected_quiz.group_formatedTime" style="height: 30px;margin-bottom:0;">
+                    <small class="error position-absolute z-one" ng-show="quiz_errors.group_timer_error" ng-bind="quiz_errors.group_timer_error"></small>
+                </div>
+            </div>
+            <div class="row" style="text-align:left;margin-left:0;" ng-hide="lecture.distance_peer">
+                <div class="small-4 columns"><span translate>editor.discussion_timer</span>:</div>
+                <div class="small-3 left columns no-padding">
+                    <input type="text" ng-model="selected_quiz.discussion_formatedTime" style="height: 30px;margin-bottom:0;">
+                    <small class="error position-absolute z-one" ng-show="quiz_errors.discussion_timer_error" ng-bind="quiz_errors.discussion_timer_error"></small>
+                </div>
+            </div>
+        </div>
+        <delete_button size="big" action="deleteQuizButton(selected_quiz);" vertical="false" text="true" style="margin:10px;margin-left:0;float:right;margin-top:0;"></delete_button>
+        <button id="save_quiz_button" ng-disabled="disable_save_button" class="button tiny" style="float:right" ng-click="saveQuizBtn({ exit: true })" translate>events.done</button>
+    </h6>
+</div>

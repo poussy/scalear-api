@@ -1,0 +1,20 @@
+<li class='drag-answer ui-state-default'>
+	<ng-form name='aform'>
+		<div class='row' style='padding: 5px 12px;'>
+			<div class="small-12 columns no-padding">
+				<div class='small-1 columns' style="margin-top: 7px;">
+					<img class='drag-item looks-like-a-hook' src='images/move2.png' />
+				</div>
+				<div class='small-9 columns'>
+					<div><rich-textarea ng-change='save()' placeholder="{{'editor.answer'|translate}}" ng-model='answer[columna]' name='answer' style='margin-bottom:0'/></div>
+					<small class='error' ng-show='submitted && aform.answer.$error.required && !hide_valid' ><span translate>error_message.required</span>!</small>
+        	<div><rich-textarea ng-change='save()' class='no-margin explain' name='explanation' placeholder="{{'editor.explanation'|translate}}" ng-model='answer.explanation' /></div>
+					<!-- <small class='error' ng-show='submitted && aform.answer.$error.required && !hide_valid' ><span translate>error_message.required</span>!</small> -->
+				</div>
+				<div style="margin-top: 7px;">
+					<delete_button size='small' mode="content_navigator" color='dark' action='removeAnswer($index, quiz)' ng-click='aform.answer.$error.required && submitted && (hide_valid=!hide_valid)' />
+				</div>
+			</div>
+		</div>
+	</ng-form>
+</li>

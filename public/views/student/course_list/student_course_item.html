@@ -1,0 +1,45 @@
+<div class="whole-box light-grey">
+	<div ui-sref="course({ course_id: course.id })" class="looks-like-a-link course-image right hide-for-small-only" style="padding-left: 0px;">
+		<img ng-src="{{course.image_url || '../images/course_image.png'}}" />
+	</div>
+	<div class="right inline with-small-margin">
+		<delete_button size="big" tooltiptext="courses.list.tooltip.unenroll" mode="content_navigator" color='dark' action="unenroll(course)" />
+	</div>
+  	<div class="small-11 medium-8 large-9 columns" style="padding-top: 10px; padding-bottom: 10px; display: inline-block;">
+
+		<h5 class="truncate">
+			<a ui-sref="course({ course_id: course.id })" class="title looks-like-a-link truncate" style="font-weight: 300;">{{course.short_name}} | {{course.name}}</a>
+		</h5>
+		<h6 class="dark-text" ng-if="teachers">
+			<span class="dark-text" translate>courses.information.taught_by</span>
+			<span ng-repeat="teacher in teachers" style="font-weight: 400; padding-left:4px">{{teacher.user.name +' '+ teacher.user.last_name}}
+				<span ng-if="$index < teachers.length-1">, </span>
+			</span>
+		</h6>
+		<div ng-bind-html='course.description'>
+		</div>
+		<div class="bottom-bar">
+			<div class="small-6 medium-4 large-4 columns with-small-margin-bottom">
+				<i class="fi-calendar size-18"></i><small class="with-small-margin-left" translate>courses.start_date</small>
+				<div class="with-medium-margin-left">
+					<small class="truncate">{{course.start_date | amDateFormat:'DD MMMM YYYY'}}</small>
+				</div>
+			</div>
+			<div class="small-6 medium-4 large-4 columns with-small-margin-bottom">
+				<i class="fi-calendar size-18"></i><small class="with-small-margin-left" translate>courses.end_date</small>
+				<div class="with-medium-margin-left">
+					<small class="truncate">{{course.end_date | amDateFormat:'DD MMMM YYYY'}}</small>
+				</div>
+			</div>
+<!-- 			<div class="small-6 medium-4 large-4 columns with-small-margin-bottom">
+				<i class="fi-clock size-18"></i><small class="with-small-margin-left" translate>courses.duration</small>
+				<div class="with-medium-margin-left">
+					<small class="truncate">{{course.duration}} {{'time.weeks' | translate}}</small>
+				</div>
+			</div>
+ -->			<div class="small-6 medium-4 large-4 columns with-small-margin-bottom left" ng-if="course.ended">
+				<i class="fi-check size-18"></i></i><small class="with-small-margin-left" translate>courses.list.finished</small>
+			</div>
+		</div>
+  	</div>
+</div>

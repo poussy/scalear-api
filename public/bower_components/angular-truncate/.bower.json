@@ -1,0 +1,13 @@
+{
+  "name": "angular-truncate",
+  "homepage": "https://github.com/lorenooliveira/ng-text-truncate",
+  "_release": "v2.0",
+  "_resolution": {
+    "type": "tag",
+    "tag": "v2.0",
+    "commit": "64e72c0db40c1cd841bd598519b73a9829d3f7c6"
+  },
+  "_source": "https://github.com/lorenooliveira/ng-text-truncate.git",
+  "_target": "v2.0",
+  "_originalSource": "https://github.com/lorenooliveira/ng-text-truncate.git"
+}

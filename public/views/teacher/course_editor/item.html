@@ -1,0 +1,12 @@
+<li class="disable_selection size-13 text-right" style="padding: 2px; min-height: 24px;display:inline-block;width: 100%;">
+	<div class="position-relative" style="height: 20px;" >
+		<i ng-if="::(item.class_name == 'lecture' && !item.inclass && !item.distance_peer)" class="fi-video with-tiny-margin-right left color-gray" title="{{::('content_navigator.lecture' | translate)}}"></i>
+		<i ng-if="::(item.class_name == 'lecture' && item.inclass)" class="fi-comment-video with-tiny-margin-right left color-gray" title="{{::('content_navigator.inclass_lecture' | translate)}}"></i>
+		<i ng-if="::(item.class_name == 'lecture' && item.distance_peer)" class="fi-torsos-all with-tiny-margin-right left color-gray" title="{{::('content_navigator.inclass_lecture' | translate)}}"></i>
+		<i ng-if="::(item.class_name == 'quiz' && item.quiz_type == 'quiz')" class="fi-clipboard-notes with-tiny-margin-right left color-gray" title="{{::('content_navigator.quiz' | translate)}}"></i>
+		<i ng-if="::(item.class_name == 'quiz' && item.quiz_type == 'survey')" class="fi-clipboard-pencil with-tiny-margin-right left color-gray" title="{{::('content_navigator.survey' | translate)}}"></i>
+		<i ng-if="::(item.class_name == 'customlink')" class="fi-link with-tiny-margin-right left color-gray" title="{{::('content_navigator.customlink' | translate)}}"></i>
+		<div class="show-inline valign-middle left text-left" style="width: 65%">{{::item.name}} </div>
+		<small class="color-dark-grey with-small-margin-right"><span >{{::item.duration && (item.duration| formattime:'h:mm:ss') || '' }} </span></small>
+	</div>
+</li>

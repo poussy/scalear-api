@@ -1,0 +1,22 @@
+<li class="disable_selection size-13 text-right" style="padding: 2px; min-height: 24px;display:inline-block;width: 100%;" context-menu data-target="item-menu" >
+	<div class="position-relative" style="height: 20px;" >
+		<delete_button class="with-tiny-margin-left right z-one" size='small' color='dark' action='remove(event)' mode="content_navigator" moduleitem="true" style="padding-right: 2px;"/>
+		<img class="left handle" src="images/move2.png" title='{{::("editor.messages.drag_to_reorder"|translate)}}' />
+		<i ng-if="item.class_name == 'lecture' && !item.inclass && !item.distance_peer" class="fi-video with-tiny-margin-right left color-gray" title="{{::('content_navigator.lecture' | translate)}}"></i>
+		<i ng-if="item.class_name == 'lecture' && item.inclass" class="fi-comment-video with-tiny-margin-right left color-gray" title="{{::('content_navigator.inclass_lecture' | translate)}}"></i>
+		<i ng-if="item.class_name == 'lecture' && item.distance_peer" class="fi-torsos-all with-tiny-margin-right left color-gray" title="{{::('content_navigator.inclass_lecture' | translate)}}"></i>
+		<i ng-if="item.class_name == 'quiz' && item.quiz_type == 'quiz'" class="fi-clipboard-notes with-tiny-margin-right left color-gray" title="{{::('content_navigator.quiz' | translate)}}"></i>
+		<i ng-if="item.class_name == 'quiz' && item.quiz_type == 'survey'" class="fi-clipboard-pencil with-tiny-margin-right left color-gray" title="{{::('content_navigator.survey' | translate)}}"></i>
+		<i ng-if="item.class_name == 'customlink'" class="fi-link with-tiny-margin-right left color-gray" title="{{::('content_navigator.customlink' | translate)}}"></i>
+		<i ng-if="!(item.appearance_time | visible) && item.class_name == 'quiz'" style="margin-right:5px;float:left;color: #c41c24" class="fi-alert" tooltip="{{'editor.tooltip.invisible_quiz'|translate}}" tooltip-placement="right" tooltip-append-to-body="true" ></i>
+		<i ng-if="!(item.appearance_time | visible) && item.class_name == 'lecture'" style="margin-right:5px;float:left;color: #c41c24" class="fi-alert" tooltip="{{('editor.tooltip.invisible'|translate) + ' '+ ('editor.tooltip.invisible_cont' | translate) +' '+ (item.appearance_time| fromNow) }}"  tooltip-placement="right" tooltip-append-to-body="true" ></i>
+
+		<div class="show-inline valign-middle left text-left" style="width: 65%">{{item.name}}</div>
+		<small class="color-dark-grey" style="padding:1px"><span>{{item.duration && (item.duration| formattime:'h:mm:ss') || ''}}</span></small>
+	</div>
+	<ul class="item-menu dropdown-menu text-left" >
+		<li><a ng-click='copy($event)' >{{::'context_menu.copy' |translate}}</a></li>
+		<li ng-show="clipboard.type && clipboard.type != 'module'"><a ng-click='paste($event)' >{{::'context_menu.paste' | translate}} </a></li>
+		<li><a ng-click='share($event)' >{{::'context_menu.share' | translate}}</a></li>
+	</ul>
+</li>
