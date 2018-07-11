@@ -83,6 +83,11 @@ class Course < ApplicationRecord
 		self.teacher_enrollments.create(:user_id => user.id, :role_id => 4)
 	end
 
+	def async_destroy
+		self.destroy
+	end
+	handle_asynchronously :async_destroy, :run_at => Proc.new { 1.seconds.from_now }
+
 	# def surveys
 	# end
 
@@ -447,7 +452,7 @@ class Course < ApplicationRecord
 		self.save!
 
 	end
-  handle_asynchronously :import_course, :run_at => Proc.new { 15.seconds.from_now }
+  handle_asynchronously :import_course, :run_at => Proc.new { 5.seconds.from_now }
 
 	# def self.our(user)
 	# end
