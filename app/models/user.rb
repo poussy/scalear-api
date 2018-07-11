@@ -49,9 +49,9 @@ class User < ActiveRecord::Base
 
 
   validates :name, :presence => true
-  validates :last_name, :presence => true
+  # validates :last_name, :presence => true
   validates :screen_name, :presence => true, :uniqueness => true
-  validates :university, :presence => true
+  # validates :university, :presence => true
   validate :password_complexity
   
 
@@ -84,7 +84,7 @@ class User < ActiveRecord::Base
   end
 
   def info_complete
-    return self.valid?
+    return self.last_name && self.university
   end
 
   def intro_watched
