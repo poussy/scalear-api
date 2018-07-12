@@ -304,7 +304,7 @@ class Course < ApplicationRecord
 			#send_file t.path, :type => 'application/zip',
 			#                  :disposition => 'attachment',
 			#                  :filename => file_name
-			UserMailer.delay.attachment_email(current_user, file_name, t.path, I18n.locale)#.deliver
+			UserMailer.attachment_email(current_user, file_name, t.path, I18n.locale).deliver
 			t.close
 	end
 	handle_asynchronously :export_course, :run_at => Proc.new { 5.seconds.from_now }
