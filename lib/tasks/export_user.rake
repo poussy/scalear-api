@@ -145,7 +145,7 @@ task :export_user, [:email] => :environment do |t, args|
                         z.write(value)
                 end
         end
-        UserMailer.attachment_email(User.new(name:"ahmed",email:"okasha@novelari.com"), file_name, t.path, I18n.locale).deliver
+        UserMailer.attachment_email(User.new(name:"ahmed",email:"okasha@novelari.com"),Course.last, file_name, t.path, I18n.locale).deliver
         t.close
     end
 

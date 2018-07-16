@@ -173,12 +173,15 @@ class User < ActiveRecord::Base
           grades<<[g.id, self.finished_lecture_test?(g),views,1].flatten
       elsif g.class.name.downcase == 'quiz'
         if g.quiz_type == 'survey'
-          # grades<<[g.id, self.finished_survey_test?(g),1,1,1,1,1,1]
+          ### id , day_finished , quiz solved , total quiz , optional quiz solved , 0, 0, (1for lecture // 2for quiz // 3 for exam)
           grades<<[g.id, self.finished_survey_test_with_completed_question_count?(g),2].flatten
         else
-          # grades<<[g.id, self.finished_quiz_test?(g),0,0,0,0,0,0]
-          ### id , day_finished , quiz solved , total quiz , optional quiz solved , 0, 0, (1for lecture // 2for quiz)
-          grades<<[g.id, self.finished_quiz_test_with_correct_question_count?(g),2].flatten
+          if g.exam
+            ### id , day_finished , quiz solved , total quiz , optional quiz solved , 0, 0, (1for lecture // 2for quiz // 3 for exam), correct questions threshold to pass exam
+            grades<<[g.id, self.finished_quiz_test_with_correct_question_count?(g),3,g.correct_question_count].flatten
+          else
+            grades<<[g.id, self.finished_quiz_test_with_correct_question_count?(g),2].flatten
+          end
         end
       end
     end
@@ -200,9 +203,9 @@ class User < ActiveRecord::Base
     inst=self.quiz_statuses.select{|v| v.quiz_id==quiz.id and v.status=="Submitted"}[0]
     day_finished = 0
     total_question_count = quiz.questions.where("question_type !=?", 'header').count
-    ocq_mcq_grade = self.quiz_grades.includes(:question,:quiz).where(quiz_id: quiz.id).uniq{|q| q.question_id}.group_by{|a| a.grade} #0.0 ,1.0
-    drag_grades = self.free_answers.includes(:question,:quiz).select{|answer| answer.quiz_id ==quiz.id && answer.question.question_type == 'drag'}.uniq{|q| q.question_id}.group_by{|a| a.grade} #0
-    free_text_grades = self.free_answers.includes(:question,:quiz).select{|answer| answer.quiz_id ==quiz.id && answer.question.question_type != 'drag'}.uniq{|q| q.question_id}.group_by{|a| a.grade} #1
+    ocq_mcq_grade = self.quiz_grades.includes(:question,:quiz).where(quiz_id: quiz.id).to_a.uniq{|q| q.question_id}.group_by{|a| a.grade} #0.0 ,1.0 
+    drag_grades = self.free_answers.includes(:question,:quiz).select{|answer| answer.quiz_id ==quiz.id && answer.question.question_type == 'drag'}.to_a.uniq{|q| q.question_id}.group_by{|a| a.grade} #0
+    free_text_grades = self.free_answers.includes(:question,:quiz).select{|answer| answer.quiz_id ==quiz.id && answer.question.question_type != 'drag'}.to_a.uniq{|q| q.question_id}.group_by{|a| a.grade} #1
     correct_answers_question = (ocq_mcq_grade[1.0] || []).count +  (drag_grades[1] || []).count + (free_text_grades[2] || []).count + (free_text_grades[3] || []).count
     not_checked_question = (free_text_grades[0] || []).count
 
@@ -398,6 +401,7 @@ class User < ActiveRecord::Base
 
 
   def finished_lectures_test(group)
+    puts "entered action-------------"
     status = {}
     self.assignment_item_statuses.select{|a| a.group_id == group.id && !a.quiz_id}.each do |s|
       status[s.lecture_id] = s.status
@@ -435,8 +439,10 @@ class User < ActiveRecord::Base
         (!q.online_answers.empty? || q.question_type=="Free Text Question") &&
         (status[q.lecture_id].nil? || status[q.lecture_id] !=1)
       }.size== a.size+b.size) #solved all    //.select{|q| q.lecture.graded == true}
+      puts "if---------------"
       return -1 #-1 means not finished
     else
+      pp "else-----------------"
       # 0 means finished on time, any other n, means finished late with n as the late days
 
       a.each do |m|

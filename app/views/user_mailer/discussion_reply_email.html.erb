@@ -1,17 +1,11 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
-  </head>
-  <body>
-  	<p>You asked a question in <%= @lecture.name%> in <%= @module.name%>:</p>
-    <p>"<%= @post.content.html_safe %>"</p>
-    <br />
-    <p><%= @comment_owner.screen_name%> responded</p>
+<p><%= t('user_mailer.you_have_answer',{module_name:@module.name})%></p>
+<strong><%= t('user_mailer.you_asked')%></strong>
 
-    <p>"<%= @comment.content.html_safe %>"</p>
-    <p>
-      <%= link_to "Click to view your question and the video", Rails.configuration.frontend_host+@url, :target => '_blank' %>
-    </p>
-  </body>
-</html>
+<div style="color:#676363"><%= @post.content.html_safe %></div>
+<br />
+<strong><%= @comment_owner.screen_name%> <%=t('user_mailer.responded')%></strong>
+
+<div style="color:#676363"><%= @comment.content.html_safe %></div>
+<p><%= t('user_mailer.reply_to_comment')%> <%= link_to t('user_mailer.here'), Rails.configuration.frontend_host+@url, :target => '_blank' %></p>
+
+<%= render partial: 'footer', locals: {role:"student"} %>
