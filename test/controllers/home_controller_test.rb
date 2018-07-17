@@ -92,7 +92,7 @@ class HomeControllerTest < ActionDispatch::IntegrationTest
 		assert_equal ActionMailer::Base.deliveries.last["bcc"].value, ["karim@novelari.com"]
 		assert_equal ActionMailer::Base.deliveries.last["reply-to"].value, "okasha@gmail.com"		
 		subject = @course3.short_name.to_s 
-		subject += ": Student issue "
+		subject += " Student help request "
 		assert_equal ActionMailer::Base.deliveries.last["subject"].value, subject
 
 		assert ActionMailer::Base.deliveries.last.encoded.include?('1.2.3.4')
@@ -109,7 +109,7 @@ class HomeControllerTest < ActionDispatch::IntegrationTest
 		assert_equal ActionMailer::Base.deliveries.last["bcc"].value, ["karim@novelari.com"]
 		assert_equal ActionMailer::Base.deliveries.last["reply-to"].value, "okasha@gmail.com"		
 		subject = @course3.short_name.to_s 
-		subject += ": Student issue "
+		subject += " Student help request "
 		assert_equal ActionMailer::Base.deliveries.last["subject"].value, subject
 
 		assert ActionMailer::Base.deliveries.last.encoded.include?('1.2.3.4')
@@ -126,7 +126,7 @@ class HomeControllerTest < ActionDispatch::IntegrationTest
 		assert_equal ActionMailer::Base.deliveries.last["bcc"].value, ["karim@novelari.com"]
 		assert_equal ActionMailer::Base.deliveries.last["reply-to"].value, "okasha@gmail.com"		
 		subject = @course3.short_name.to_s 
-		subject += ": Student issue "
+		subject += " Student help request "
 		assert_equal ActionMailer::Base.deliveries.last["subject"].value, subject
 
 		assert ActionMailer::Base.deliveries.last.encoded.include?('1.2.3.4')
@@ -143,7 +143,7 @@ class HomeControllerTest < ActionDispatch::IntegrationTest
 		assert_equal ActionMailer::Base.deliveries.last["bcc"].value, ["karim@novelari.com"]
 		assert_equal ActionMailer::Base.deliveries.last["reply-to"].value, "okasha@gmail.com"		
 		subject = @course3.short_name.to_s 
-		subject += ": Student issue "
+		subject += " Student help request "
 		assert_equal ActionMailer::Base.deliveries.last["subject"].value, subject
 
 		assert ActionMailer::Base.deliveries.last.encoded.include?('1.2.3.4')
@@ -163,7 +163,7 @@ class HomeControllerTest < ActionDispatch::IntegrationTest
 		assert_equal ActionMailer::Base.deliveries.last["bcc"].value, ["karim@novelari.com"]
 		assert_equal ActionMailer::Base.deliveries.last["reply-to"].value, ""		
 		subject = @course3.short_name.to_s 
-		subject += ": Student issue "
+		subject += " Student help request "
 		assert_equal ActionMailer::Base.deliveries.last["subject"].value, subject
 
 		assert ActionMailer::Base.deliveries.last.encoded.include?('1.2.3.4')
@@ -181,7 +181,7 @@ class HomeControllerTest < ActionDispatch::IntegrationTest
 		assert_equal ActionMailer::Base.deliveries.last["bcc"].value, [""]
 		assert_equal ActionMailer::Base.deliveries.last["reply-to"].value, "okasha@gmail.com"
 		assert_equal ActionMailer::Base.deliveries.last["to"].value, ["teacher-support@scalear.zendesk.com"]
-		assert_equal ActionMailer::Base.deliveries.last["subject"].value, 'issue_website_type'
+		assert_equal ActionMailer::Base.deliveries.last["subject"].value, 'ScalableLearning Technical Problem: issue_website_type'
 
 		assert ActionMailer::Base.deliveries.last.encoded.include?('1.2.3.4')
 		assert ActionMailer::Base.deliveries.last.encoded.include?('chrome')
@@ -199,7 +199,7 @@ class HomeControllerTest < ActionDispatch::IntegrationTest
 		assert_equal ActionMailer::Base.deliveries.last["bcc"].value, [""]
 		assert_equal ActionMailer::Base.deliveries.last["reply-to"].value, "okasha@gmail.com"
 		assert_equal ActionMailer::Base.deliveries.last["to"].value, ["teacher-support@scalear.zendesk.com"]
-		assert_equal ActionMailer::Base.deliveries.last["subject"].value, 'issue_website_type'
+		assert_equal ActionMailer::Base.deliveries.last["subject"].value, 'ScalableLearning Technical Problem: issue_website_type'
 
 		assert ActionMailer::Base.deliveries.last.encoded.include?('1.2.3.4')
 		assert ActionMailer::Base.deliveries.last.encoded.include?('chrome')
@@ -215,7 +215,7 @@ class HomeControllerTest < ActionDispatch::IntegrationTest
 
 		assert_equal ActionMailer::Base.deliveries.count , deliveries_count+ 1
 		assert_equal ActionMailer::Base.deliveries.last["to"].value, ["teacher-support@scalear.zendesk.com"]
-		assert_equal ActionMailer::Base.deliveries.last["subject"].value, 'Homepage Contact Request'
+		assert_equal ActionMailer::Base.deliveries.last["subject"].value, 'ScalableLearning Homepage Contact Request'
 
 		assert ActionMailer::Base.deliveries.last.encoded.include?('this is for testing')
 	end

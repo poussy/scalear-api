@@ -1,22 +1,8 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
-  </head>
-  <body>
   	
-    <h3><%= t('user_mailer.new_announcement') %> - <%= "#{@course.short_name} - #{@course.name}" %> </h3>
+    <h3><%= t('user_mailer.new_announcement',{teacher_name:@course.user.name, course_name:@course.name})%> </h3>
     <p>
       <%= raw @announcement.announcement %>
     </p>
-    <% if @course.discussion_link!=""%>
-    <p>
-      <%= t('user_mailer.to_contact_use') %> <%= link_to t('user_mailer.online_course_forum'), url_with_protocol(@course.discussion_link), :target => '_blank' %>
-    </p>
-    <% end %>
-    <p>
-       <%= link_to t('user_mailer.check_course_website'), Rails.configuration.frontend_host+@url, :target => '_blank' %>
-    </p>
+    <%= render partial: 'thank_you_footer' %>
+    <%= render partial: 'footer', locals: {role:"student"}%>
     
-  </body>
-</html>

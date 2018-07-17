@@ -83,6 +83,11 @@ class Course < ApplicationRecord
 		self.teacher_enrollments.create(:user_id => user.id, :role_id => 4)
 	end
 
+	def async_destroy
+		self.destroy
+	end
+	handle_asynchronously :async_destroy, :run_at => Proc.new { 1.seconds.from_now }
+
 	# def surveys
 	# end
 
@@ -333,7 +338,7 @@ class Course < ApplicationRecord
     #send_file t.path, :type => 'application/zip',
     #                  :disposition => 'attachment',
     #                  :filename => file_name
-    UserMailer.delay.attachment_email(current_user, file_name, t.path, I18n.locale)#.deliver
+    UserMailer.delay.attachment_email(current_user, @course, file_name, t.path, I18n.locale)#.deliver
     t.close
   end
   handle_asynchronously :export_student_csv, :run_at => Proc.new { 5.seconds.from_now }
@@ -454,7 +459,7 @@ class Course < ApplicationRecord
 		self.save!
 
 	end
-  handle_asynchronously :import_course, :run_at => Proc.new { 15.seconds.from_now }
+  handle_asynchronously :import_course, :run_at => Proc.new { 5.seconds.from_now }
 
 	# def self.our(user)
 	# end
@@ -788,8 +793,7 @@ class Course < ApplicationRecord
        z.write(csv_file)
       end
 
-      UserMailer.delay.attachment_email(current_user, file_name, t.path, I18n.locale)
-      # UserMailer.attachment_email(current_user, file_name, t.path, I18n.locale).deliver
+      UserMailer.delay.attachment_email(current_user, @course, file_name, t.path, I18n.locale)
       t.close
     end
     handle_asynchronously :export_school_data, :run_at => Proc.new { 5.seconds.from_now }

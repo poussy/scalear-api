@@ -1,14 +1,9 @@
-<!DOCTYPE html>
-<html>
-	<head>
-		<meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
-	</head>
-	<body>
-		<p>The student <%=@post_owner.screen_name%> asked the following question in <%= @course.short_name %> "<%= @lecture.name%>"</p>
-		<br />
-		<p><%= Time.at(@post.time.round).utc.strftime("%H:%M:%S") %>: "<%= link_to @post.content.html_safe, Rails.configuration.frontend_host+@url, :target => '_blank' %>"</p>
-		<p>You are receiving this email because you are listed as a teacher for the course <%= @course.name %> on Scalable-Learning.com. If you would like to disable these emails you may do so on the <%= link_to "Course Administration page", Rails.configuration.frontend_host+@url2, :target => '_blank' %>.</p>
-	</body>
-</html>
+<p><%=t('user_mailer.you_have_question')%></p>
+<p><%=t('user_mailer.student') %> <%=@post_owner.screen_name%> </p>
+<p><%=t('user_mailer.lecture') %> <%=@lecture.name%></p>
+<p><%=t('user_mailer.question') %> <b><%=@post.content.html_safe%></b></p>
 
-	
+<p><%=t('user_mailer.reply_to_question') %> <%= link_to t('user_mailer.here'), $frontend_host+@url, :target => '_blank' %></p>
+
+<%= render partial: 'thank_you_footer' %>
+<%= render partial: 'footer', locals: {role:"teacher"} %>
