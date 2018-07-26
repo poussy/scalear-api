@@ -8,7 +8,19 @@ task :export_watched_video, [:course_array] => :environment do |t, args|
 
 
       vid_duration = {}
-      Course.where(name:['cc','cccc']).find_each do |c|
+      Course.where(name:['Public International Law (RGBUIER002) - Working group 1 & 2',
+                         'Public International Law (RGBUIER002) - Working group 3 & 4',
+                         'Public International Law (RGBUIER002) - Working group 5, 8 & 15 ',
+                         'Public International Law (RGBUIER002) - Working group 6 & 11',
+                         'Public International Law (RGBUIER002) - Working group 7 & 9',
+                         'Public International Law (RGBUIER002) - Working group 10, 13 & 18',
+                         'Public International Law (RGBUIER002) - Working group 12 & 17',
+                         'Public International Law (RGBUIER002) - Working group 14 & 19',
+                         'Public International Law (RGBUIER002) - Working group 16, 22 & 25',
+                         'Public International Law (RGBUIER002) - Working group 20 & 24',
+                         'Public International Law (RGBUIER002) - Working group 21 & 23',
+                         'Public International Law (RGBUIER002) - Working group 26 (HH)',
+                         'Public International Law (RGBUIER002)']).find_each do |c|
         for l in c.lectures
           vid_duration[l.id]= [l.name,l.duration]
 
@@ -16,16 +28,25 @@ task :export_watched_video, [:course_array] => :environment do |t, args|
       end
       pp vid_duration
 
-      Course.where(name:['cc','cccc']).find_each do |c|
+      Course.where(name:['Public International Law (RGBUIER002) - Working group 1 & 2',
+                         'Public International Law (RGBUIER002) - Working group 3 & 4',
+                         'Public International Law (RGBUIER002) - Working group 5, 8 & 15 ',
+                         'Public International Law (RGBUIER002) - Working group 6 & 11',
+                         'Public International Law (RGBUIER002) - Working group 7 & 9',
+                         'Public International Law (RGBUIER002) - Working group 10, 13 & 18',
+                         'Public International Law (RGBUIER002) - Working group 12 & 17',
+                         'Public International Law (RGBUIER002) - Working group 14 & 19',
+                         'Public International Law (RGBUIER002) - Working group 16, 22 & 25',
+                         'Public International Law (RGBUIER002) - Working group 20 & 24',
+                         'Public International Law (RGBUIER002) - Working group 21 & 23',
+                         'Public International Law (RGBUIER002) - Working group 26 (HH)',
+                         'Public International Law (RGBUIER002)']).find_each do |c|
 
          for e in c.enrollments
               LectureView.where(course_id:c.id, user_id: e.user_id).find_each do |lv|
                 pp lv.lecture_id
                 if (vid_duration[lv.lecture_id][1] != nil)
                    watch_time = (lv.percent)*vid_duration[lv.lecture_id][1]/100
-                   pp watch_time
-                   pp vid_duration[lv.lecture_id][1]
-                   pp "------------------------------"
                 else
                    watch_time = 0
                 end
@@ -42,7 +63,19 @@ task :export_watched_video, [:course_array] => :environment do |t, args|
 
 
       vid = {}
-      Course.where(name:['cc','cccc']).find_each do |c|
+      Course.where(name:['Public International Law (RGBUIER002) - Working group 1 & 2',
+                         'Public International Law (RGBUIER002) - Working group 3 & 4',
+                         'Public International Law (RGBUIER002) - Working group 5, 8 & 15 ',
+                         'Public International Law (RGBUIER002) - Working group 6 & 11',
+                         'Public International Law (RGBUIER002) - Working group 7 & 9',
+                         'Public International Law (RGBUIER002) - Working group 10, 13 & 18',
+                         'Public International Law (RGBUIER002) - Working group 12 & 17',
+                         'Public International Law (RGBUIER002) - Working group 14 & 19',
+                         'Public International Law (RGBUIER002) - Working group 16, 22 & 25',
+                         'Public International Law (RGBUIER002) - Working group 20 & 24',
+                         'Public International Law (RGBUIER002) - Working group 21 & 23',
+                         'Public International Law (RGBUIER002) - Working group 26 (HH)',
+                         'Public International Law (RGBUIER002)']).find_each do |c|
         for l in c.lectures
           vid[l.id]= [l.name,l.duration,0]
 
@@ -50,17 +83,25 @@ task :export_watched_video, [:course_array] => :environment do |t, args|
       end
       pp vid
       watch_time = 0
-      Course.where(name:['cc','cccc']).find_each do |c|
+      Course.where(name:['Public International Law (RGBUIER002) - Working group 1 & 2',
+                         'Public International Law (RGBUIER002) - Working group 3 & 4',
+                         'Public International Law (RGBUIER002) - Working group 5, 8 & 15 ',
+                         'Public International Law (RGBUIER002) - Working group 6 & 11',
+                         'Public International Law (RGBUIER002) - Working group 7 & 9',
+                         'Public International Law (RGBUIER002) - Working group 10, 13 & 18',
+                         'Public International Law (RGBUIER002) - Working group 12 & 17',
+                         'Public International Law (RGBUIER002) - Working group 14 & 19',
+                         'Public International Law (RGBUIER002) - Working group 16, 22 & 25',
+                         'Public International Law (RGBUIER002) - Working group 20 & 24',
+                         'Public International Law (RGBUIER002) - Working group 21 & 23',
+                         'Public International Law (RGBUIER002) - Working group 26 (HH)',
+                         'Public International Law (RGBUIER002)']).find_each do |c|
 
          for e in c.enrollments
               LectureView.where(course_id:c.id, user_id: e.user_id).find_each do |lv|
                 pp lv.lecture_id
                 if (vid[lv.lecture_id][1] != nil)
                    watch_time = (lv.percent)*vid[lv.lecture_id][1]/100
-                   pp watch_time
-                   pp vid[lv.lecture_id][1]
-                   pp "------------------------------"
-                   pp vid[lv.lecture_id][2]
                    vid[lv.lecture_id][2] = vid[lv.lecture_id][2]+watch_time
                 else
                    watch_time = 0
