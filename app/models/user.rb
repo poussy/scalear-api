@@ -53,7 +53,7 @@ class User < ActiveRecord::Base
   validates :screen_name, :presence => true, :uniqueness => true
   # validates :university, :presence => true
   validate :password_complexity
-  
+
 
   serialize :completion_wizard
 
@@ -165,6 +165,7 @@ class User < ActiveRecord::Base
   end
 
   def grades_angular_all_items(group)
+
     grades=[]
     ### id , day_finished , quiz solved , total quiz , optional quiz solved , optional total quiz , precentage, (1for lecture // 2for quiz)
     group.get_sub_items.each do |g|
@@ -203,7 +204,7 @@ class User < ActiveRecord::Base
     inst=self.quiz_statuses.select{|v| v.quiz_id==quiz.id and v.status=="Submitted"}[0]
     day_finished = 0
     total_question_count = quiz.questions.where("question_type !=?", 'header').count
-    ocq_mcq_grade = self.quiz_grades.includes(:question,:quiz).where(quiz_id: quiz.id).to_a.uniq{|q| q.question_id}.group_by{|a| a.grade} #0.0 ,1.0 
+    ocq_mcq_grade = self.quiz_grades.includes(:question,:quiz).where(quiz_id: quiz.id).to_a.uniq{|q| q.question_id}.group_by{|a| a.grade} #0.0 ,1.0
     drag_grades = self.free_answers.includes(:question,:quiz).select{|answer| answer.quiz_id ==quiz.id && answer.question.question_type == 'drag'}.to_a.uniq{|q| q.question_id}.group_by{|a| a.grade} #0
     free_text_grades = self.free_answers.includes(:question,:quiz).select{|answer| answer.quiz_id ==quiz.id && answer.question.question_type != 'drag'}.to_a.uniq{|q| q.question_id}.group_by{|a| a.grade} #1
     correct_answers_question = (ocq_mcq_grade[1.0] || []).count +  (drag_grades[1] || []).count + (free_text_grades[2] || []).count + (free_text_grades[3] || []).count
@@ -228,7 +229,7 @@ class User < ActiveRecord::Base
       return 0
     else
       return (inst.created_at.to_date - survey.due_date.to_date).to_i  #solved after lecture due date
-    end    
+    end
   end
 
   def finished_survey_test_with_completed_question_count?(survey)
@@ -253,7 +254,7 @@ class User < ActiveRecord::Base
       viewed=self.lecture_views.select{|v| v.lecture_id == lecture.id && v.percent == 100}[0]
       max=a1=a2=c=0
       all_online_quiz = lecture.online_quizzes.includes(:online_answers).select{|f| (!f.online_answers.empty? || f.question_type=="Free Text Question" )}.group_by {|n| n.graded? ? :graded : :not_graded}
-      all_online_quiz_grades = lecture.online_quiz_grades.includes(:online_quiz).select{|v|  v.user_id==self.id && v.attempt == 1}.uniq{|v| v.online_quiz_id}.group_by {|n| n.online_quiz.graded? ? :graded : :not_graded}
+      all_online_quiz_grades = lecture.online_quiz_grades.includes(:online_quiz).where(["user_id=? and attempt=1",self.id]).select('distinct(online_quiz_id),id,user_id').group_by {|n| n.online_quiz.graded? ? :graded : :not_graded}
       all_free_online_quiz_grades = lecture.free_online_quiz_grades.includes(:online_quiz).select{|v| v.user_id==self.id && v.attempt == 1}.uniq{|v| v.online_quiz_id}.group_by {|n| n.online_quiz.graded? ? :graded : :not_graded}
 
       total= all_online_quiz[:graded] || []
@@ -401,7 +402,6 @@ class User < ActiveRecord::Base
 
 
   def finished_lectures_test(group)
-    puts "entered action-------------"
     status = {}
     self.assignment_item_statuses.select{|a| a.group_id == group.id && !a.quiz_id}.each do |s|
       status[s.lecture_id] = s.status
@@ -439,10 +439,8 @@ class User < ActiveRecord::Base
         (!q.online_answers.empty? || q.question_type=="Free Text Question") &&
         (status[q.lecture_id].nil? || status[q.lecture_id] !=1)
       }.size== a.size+b.size) #solved all    //.select{|q| q.lecture.graded == true}
-      puts "if---------------"
       return -1 #-1 means not finished
     else
-      pp "else-----------------"
       # 0 means finished on time, any other n, means finished late with n as the late days
 
       a.each do |m|
@@ -520,15 +518,15 @@ class User < ActiveRecord::Base
   def anonymise
 
     self.encrypted_email = Digest::SHA256.hexdigest (self.email).to_s
-            
+
     ## use email as key for encryption
     key   = ActiveSupport::KeyGenerator.new(self.email).generate_key(ENV['hash_salt'],32)
     crypt = ActiveSupport::MessageEncryptor.new(key)
-    encrypted_name = crypt.encrypt_and_sign(self.name)   
-    encrypted_screen_name = crypt.encrypt_and_sign(self.screen_name)   
+    encrypted_name = crypt.encrypt_and_sign(self.name)
+    encrypted_screen_name = crypt.encrypt_and_sign(self.screen_name)
     encrypted_last_name = crypt.encrypt_and_sign(self.last_name)
     encrypted_university = crypt.encrypt_and_sign(self.university)
-    self.encrypted_data = {'name' => encrypted_name, 'last_name' => encrypted_last_name, 
+    self.encrypted_data = {'name' => encrypted_name, 'last_name' => encrypted_last_name,
         'screen_name' => encrypted_screen_name,'university' => encrypted_university}
     self.name = "Archived"
     self.last_name = "user"
@@ -549,7 +547,7 @@ class User < ActiveRecord::Base
     ## use user's email to decrypt information
     key   = ActiveSupport::KeyGenerator.new(email).generate_key(ENV['hash_salt'],32)
     crypt = ActiveSupport::MessageEncryptor.new(key)
-    
+
     self.name =crypt.decrypt_and_verify(self.encrypted_data['name'])
     self.last_name = crypt.decrypt_and_verify(self.encrypted_data['last_name'])
     self.screen_name =crypt.decrypt_and_verify(self.encrypted_data['screen_name'])

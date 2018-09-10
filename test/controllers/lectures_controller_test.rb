@@ -52,9 +52,9 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 		assert ability2.can?(:new_quiz_angular, @lecture2)
 	end
 
-	
+
 	test "sort action should sort items" do
-		
+
 		assert_equal @group3.custom_links.find(1).position,1
 		assert_equal @group3.custom_links.find(2).position,2
 		assert_equal @group3.quizzes.find(1).position,3
@@ -64,28 +64,28 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 			[
 				{id: 1 , "class_name": "quiz"},{id: 1, class_name: "customlink"},
 				{id: 2, class_name: "customlink"}, {id: 3, class_name: "lecture"}
-			], 
+			],
 			group: 3}, headers: @user3.create_new_auth_token
-		
+
 		@group3.reload
 
 		assert_equal @group3.custom_links.find(1).position,2
 		assert_equal @group3.custom_links.find(2).position,3
 		assert_equal @group3.quizzes.find(1).position,1
 		assert_equal @group3.lectures.find(3).position,4
-		
+
 	end
 
 	test "user should be able to add new lecture" do
-		
+
 		lectures_count = @group3.lectures.count
 
 		get '/en/courses/3/lectures/new_lecture_angular', params: {distance_peer: false, group: 3, inclass: false}, headers: @headers
-		
+
 		@group3.reload
-		
+
 		assert_equal @group3.lectures.count, lectures_count+1
-		
+
 	end
 
 	test "should be able to edit lecture" do
@@ -109,7 +109,7 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 		assert_equal lecture.due_date, Time.zone.parse('2017-10-7')
 		assert_equal lecture.position, 1
 		assert_not lecture.graded
-		
+
 	end
 
 	test "should be able to delete lecture" do
@@ -117,7 +117,7 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 		assert @course3.lectures.where(id: 3).present?
 
 			delete '/en/courses/3/lectures/3', headers: @user3.create_new_auth_token
-		
+
 		assert @course3.lectures.where(id: 3).empty?
 	end
 
@@ -129,11 +129,11 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 		assert lecture.graded
 		assert_equal lecture.appearance_time, '2017-9-8'
 		assert_equal lecture.due_date, '2017-10-8'
-		
+
 		@inclass_session_count = InclassSession.count
 		## parent module has required ==false and graded ==false
 		put '/en/courses/3/lectures/3', params: {:lecture => {required_module: true, graded_module: true, appearance_time_module: true, due_date_module: true, inclass: true}}, headers: @headers, as: :json
-		
+
 		lecture.reload
 
 		assert_not lecture.required
@@ -161,8 +161,8 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 		post '/en/courses/3/lectures/lecture_copy', params: {lecture_id: 3, module_id: 3}, headers: @headers, as: :json
 
 		assert_equal group.lectures.size, lectures_count + 1
-		
-		
+
+
 		lecture_from = Lecture.find(3)
 		new_lecture = Lecture.last
 
@@ -174,7 +174,7 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 		assert_equal InclassSession.count , (@inclass_session_count + lecture.online_quizzes.count)
 		assert_equal Event.count , (@event_count + lecture.events.count)
 		assert_equal OnlineMarker.count , (@online_marker_count + lecture.online_markers.count)
-		
+
 	end
 
 	test "should copy lecture to other group" do
@@ -187,7 +187,7 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 
 		group.reload
 		assert_equal group.lectures.size, 1
-		
+
 		lecture_from = Lecture.find(3)
 		new_lecture = Lecture.last
 
@@ -197,7 +197,7 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 		assert_equal group.due_date, new_lecture.due_date
 		assert_equal group.appearance_time, new_lecture.appearance_time
 
-		
+
 	end
 
 	test "should create online quiz" do
@@ -213,43 +213,43 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 
 	test "should create quiz with question according to quiz_type param" do
 		lecture = lectures(:lecture3)
-		
+
 		get '/en/courses/3/lectures/3/new_quiz_angular', params:{end_time:28, inclass:false,ques_type:"OCQ",quiz_type:"survey",start_time:28,time:28}, headers: @headers
 		lecture.reload
 		assert_equal lecture.online_quizzes.last_created_record.question, "New Survey"
-		
-		
+
+
 		get '/en/courses/3/lectures/3/new_quiz_angular', params:{end_time:28, inclass:false,ques_type:"OCQ",quiz_type:"html_survey",start_time:28,time:28}, headers: @headers
 		lecture.reload
 		assert_equal lecture.online_quizzes.last_created_record.question, "New Survey"
-		
+
 		get '/en/courses/3/lectures/3/new_quiz_angular', params:{end_time:28, inclass:false,ques_type:"OCQ",quiz_type:"invideo",start_time:28,time:28}, headers: @headers
 		lecture.reload
 		assert_equal lecture.online_quizzes.last_created_record.question, "New Quiz"
 	end
-	
+
 	test "should create quiz with right params" do
 		lecture = lectures(:lecture3)
-		
+
 		get '/en/courses/3/lectures/3/new_quiz_angular', params:{end_time:50, inclass:false, ques_type:"OCQ",quiz_type:"invideo",start_time:10,time:15}, headers: @headers
-		
+
 		lecture.reload
-		
+
 		assert_equal lecture.online_quizzes.last_created_record.question_type, "OCQ"
 		assert_equal lecture.online_quizzes.last_created_record.quiz_type, "invideo"
 		assert_equal lecture.online_quizzes.last_created_record.inclass, false
 		assert_equal lecture.online_quizzes.last_created_record.start_time, 10
 		assert_equal lecture.online_quizzes.last_created_record.time, 15
 		assert_equal lecture.online_quizzes.last_created_record.end_time, 50
-		
+
 	end
-	
+
 	test "should add new_marker " do
 		url = '/en/courses/'+@course1.id.to_s+'/lectures/'+@lecture1.id.to_s+'/new_marker'
-		post url , params: { marker: {time:15,duration:5,xcoor:0.5,ycoor:0.2,height:1.1,width:2.3}},headers: @user1.create_new_auth_token 
+		post url , params: { marker: {time:15,duration:5,xcoor:0.5,ycoor:0.2,height:1.1,width:2.3}},headers: @user1.create_new_auth_token
 		resp =  JSON.parse response.body
 		assert_response :success
-		assert_equal resp['marker']['time'] , 15.0	
+		assert_equal resp['marker']['time'] , 15.0
 		assert_equal resp['marker']['duration'] , 5
 		assert_equal resp['marker']['xcoor'] , 0.5
 		assert_equal resp['marker']['ycoor'] , 0.2
@@ -259,22 +259,22 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 
 	test "should new_marker for invalid time" do
 		url = '/en/courses/'+@course1.id.to_s+'/lectures/'+@lecture1.id.to_s+'/new_marker'
-		post url , params: { marker: {time:'aaa'}},headers: @user1.create_new_auth_token 
+		post url , params: { marker: {time:'aaa'}},headers: @user1.create_new_auth_token
 		resp =  JSON.parse response.body
-		assert_response 400		
+		assert_response 400
 		assert_equal resp['errors']['time'][0] , "is not a number"
 	end
 
 	test 'validate validate_lecture_angular method ' do
 		url = '/en/courses/'+@course1.id.to_s+'/lectures/'+@lecture1.id.to_s+'/validate_lecture_angular'
-		put  url , params: {lecture: { name:'toto' } } ,headers: @user1.create_new_auth_token 
+		put  url , params: {lecture: { name:'toto' } } ,headers: @user1.create_new_auth_token
 		assert_response :success
 		resp =  JSON.parse response.body
 		assert_equal resp['nothing'] , true
 	end
 	test 'validate validate_lecture_angular method and respone 422 for title is empty' do
 		url = '/en/courses/'+@course1.id.to_s+'/lectures/'+@lecture1.id.to_s+'/validate_lecture_angular'
-		put  url , params: {lecture: { name:'' }} ,headers: @user1.create_new_auth_token 
+		put  url , params: {lecture: { name:'' }} ,headers: @user1.create_new_auth_token
 		assert_response 422
 		resp =  JSON.parse response.body
 		assert_equal resp['errors'].count , 1
@@ -282,7 +282,7 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 	end
 	test 'validate validate_lecture_angular method and respone 422' do
 		url = '/en/courses/'+@course1.id.to_s+'/lectures/'+@lecture1.id.to_s+'/validate_lecture_angular'
-		put  url , params: {lecture: { due_date_module:false ,  due_date:DateTime.now + 3.months } } ,headers: @user1.create_new_auth_token 
+		put  url , params: {lecture: { due_date_module:false ,  due_date:DateTime.now + 3.months } } ,headers: @user1.create_new_auth_token
 		assert_response 422
 		resp =  JSON.parse response.body
 		assert_equal resp['errors'].count , 1
@@ -290,7 +290,7 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 	end
 	test 'validate validate_lecture_angular method and respone 422 for retries is not position' do
 		url = '/en/courses/'+@course1.id.to_s+'/lectures/'+@lecture1.id.to_s+'/validate_lecture_angular'
-		put  url , params: {lecture: { inclass:true , distance_peer:true  }} ,headers: @user1.create_new_auth_token 
+		put  url , params: {lecture: { inclass:true , distance_peer:true  }} ,headers: @user1.create_new_auth_token
 		assert_response 422
 		resp =  JSON.parse response.body
 		assert_equal resp['errors'].count , 1
@@ -301,27 +301,27 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 		@html_ocq_online_quiz1 = online_quizzes(:html_ocq_online_quiz1)
 
 		url = '/en/courses/'+@course1.id.to_s+'/lectures/'+@lecture1.id.to_s+'/get_html_data_angular'
-		get url , params: { quiz: @html_ocq_online_quiz1.id.to_s},headers: @user1.create_new_auth_token 
+		get url , params: { quiz: @html_ocq_online_quiz1.id.to_s},headers: @user1.create_new_auth_token
 		resp =  JSON.parse response.body
-		assert_response :success	
+		assert_response :success
 		assert_equal resp['answers'].count , 2
 	end
 
 	test "should get_html_data_angular after updating online_quizzes" do
 		@html_ocq_online_quiz1 = online_quizzes(:html_ocq_online_quiz1)
 		@html_ocq_online_answer_correct2 = online_answers(:html_ocq_online_answer_correct2)
-		
+
 		@html_ocq_online_answer_correct2.update_attribute(:online_quiz_id,4)
 		url = '/en/courses/'+@course1.id.to_s+'/lectures/'+@lecture1.id.to_s+'/get_html_data_angular'
-		get url , params: { quiz: @html_ocq_online_quiz1.id.to_s},headers: @user1.create_new_auth_token 
+		get url , params: { quiz: @html_ocq_online_quiz1.id.to_s},headers: @user1.create_new_auth_token
 		resp =  JSON.parse response.body
-		assert_response :success	
+		assert_response :success
 		assert_equal resp['answers'].count , 1
 		@html_ocq_online_answer_correct2.update_attribute(:online_quiz_id,@html_ocq_online_quiz1.id)
 		url = '/en/courses/'+@course1.id.to_s+'/lectures/'+@lecture1.id.to_s+'/get_html_data_angular'
-		get url , params: { quiz: @html_ocq_online_quiz1.id.to_s},headers: @user1.create_new_auth_token 
+		get url , params: { quiz: @html_ocq_online_quiz1.id.to_s},headers: @user1.create_new_auth_token
 		resp =  JSON.parse response.body
-		assert_response :success	
+		assert_response :success
 		assert_equal resp['answers'].count , 2
 	end
 
@@ -329,26 +329,26 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 		@ocq_online_quiz1 = online_quizzes(:ocq_online_quiz1)
 
 		url = '/en/courses/'+@course1.id.to_s+'/lectures/'+@lecture1.id.to_s+'/get_old_data_angular'
-		get url , params: { quiz: @ocq_online_quiz1.id.to_s},headers: @user1.create_new_auth_token 
+		get url , params: { quiz: @ocq_online_quiz1.id.to_s},headers: @user1.create_new_auth_token
 		resp =  JSON.parse response.body
-		assert_response :success	
+		assert_response :success
 		assert_equal resp['answers'].count , 2
 	end
 	test "should get_old_data_angular after updating online_quizzes" do
 		@ocq_online_quiz1 = online_quizzes(:ocq_online_quiz1)
 		@ocq_online_answer_correct1 = online_answers(:ocq_online_answer_correct1)
-		
+
 		@ocq_online_answer_correct1.update_attribute(:online_quiz_id,4)
 		url = '/en/courses/'+@course1.id.to_s+'/lectures/'+@lecture1.id.to_s+'/get_old_data_angular'
-		get url , params: { quiz: @ocq_online_quiz1.id.to_s},headers: @user1.create_new_auth_token 
+		get url , params: { quiz: @ocq_online_quiz1.id.to_s},headers: @user1.create_new_auth_token
 		resp =  JSON.parse response.body
-		assert_response :success	
+		assert_response :success
 		assert_equal resp['answers'].count , 1
 		@ocq_online_answer_correct1.update_attribute(:online_quiz_id,@ocq_online_quiz1.id)
 		url = '/en/courses/'+@course1.id.to_s+'/lectures/'+@lecture1.id.to_s+'/get_old_data_angular'
-		get url , params: { quiz: @ocq_online_quiz1.id.to_s},headers: @user1.create_new_auth_token 
+		get url , params: { quiz: @ocq_online_quiz1.id.to_s},headers: @user1.create_new_auth_token
 		resp =  JSON.parse response.body
-		assert_response :success	
+		assert_response :success
 		assert_equal resp['answers'].count , 2
 	end
 
@@ -370,13 +370,13 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 			{"answer":"Answer 3","xcoor":0.391872278664732,"ycoor":0.437437332782549,"correct":true,"explanation":"",
 				"width":0.0188679245283019,"height":0.0335051546391753,"pos":0,"sub_ycoor":0.347437332782549,"sub_xcoor":0.391872278664732,
 				"created_at":"2017-11-22T18:17:09.083Z","updated_at":"2017-11-22T18:17:09.083Z"}],
-			"quiz_title":"<p class=\"medium-editor-p\">ocq </p>"} ,headers: @user1.create_new_auth_token 
+			"quiz_title":"<p class=\"medium-editor-p\">ocq </p>"} ,headers: @user1.create_new_auth_token
 		resp =  JSON.parse response.body
 		assert_equal OnlineAnswer.where(id: @ocq_online_answer_correct1.id).count , 1
 		assert_equal OnlineAnswer.where(id: @ocq_online_answer2.id).count , 0
-		assert_response :success	
+		assert_response :success
 		assert_equal @ocq_online_quiz1.online_answers.count , 3
-		assert_equal resp['notice'] , "Quiz was successfully saved" 
+		assert_equal resp['notice'] , "Quiz was successfully saved"
 	end
 
 	test "should update percent view if view is present with the highest percent" do
@@ -403,7 +403,7 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 		assert_difference 'OnlineQuizGrade.where(online_quiz_id:1,online_answer_id: 6, lecture_id: 3).size' do
 			post '/en/courses/3/lectures/3/save_online', params: {quiz: 1, answer: 6, distance_peer:false, in_group: false}, headers: @headers2, as: :json
 		end
-		
+
 		assert_equal decode_json_response_body['msg'], "Successfully Submitted"
 		assert_equal decode_json_response_body['correct'], 1
 		assert_equal decode_json_response_body['explanation'], ["explanation for answer1"]
@@ -425,14 +425,14 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 	end
 
 	test "drag question" do
-		
+
 		post '/en/courses/3/lectures/3/save_online', params: {
-			quiz: 5, 
+			quiz: 5,
 			answer:{
 				"11":"<p class=\"medium-editor-p\">answer3</p>",
 				"12":"<p class=\"medium-editor-p\">answer2</p>",
-				"13":"<p class=\"medium-editor-p\">answer1</p>"}, 
-			distance_peer:false, 
+				"13":"<p class=\"medium-editor-p\">answer1</p>"},
+			distance_peer:false,
 			in_group: false}, headers: @headers2, as: :json
 		assert_equal decode_json_response_body['explanation'], ["item 1 incorrect here because....","correct because..","item 3 is incorrect because.."]
 		assert_equal decode_json_response_body['detailed_exp'], {"11" => [false,"item 1 incorrect here because...."],"12"=>[true,"correct because.."],"13"=>[false,"item 3 is incorrect because.."]}
@@ -447,19 +447,19 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 			post '/en/courses/3/lectures/3/save_online', params: {quiz: 1, answer: 6, distance_peer:false, in_group: false}, headers: @headers2, as: :json
 
 		end
-		
-		
+
+
 	end
 
 	test "free text should create quiz grade 0 if no answer was specified" do
-		
+
 		post '/en/courses/3/lectures/3/save_online', params: {quiz: 2, answer: "answer for free text", distance_peer:false, in_group: false}, headers: @headers2, as: :json
 		assert_equal FreeOnlineQuizGrade.where(online_quiz_id:2).first["grade"], 0
 		assert_equal decode_json_response_body["explanation"], {"2"=>"<p class=\"medium-editor-p\">explanation free text</p>"}
 	end
 
 	test "free text should create quiz grade 1 if answer is right" do
-		
+
 		post '/en/courses/3/lectures/3/save_online', params: {quiz: 3, answer: "answer for free text", distance_peer:false, in_group: false}, headers: @headers2, as: :json
 		assert_equal FreeOnlineQuizGrade.where(online_quiz_id:3).first["grade"], 1
 		assert_equal decode_json_response_body["explanation"], {"3"=>"<p class=\"medium-editor-p\">explanation free text</p>"}
@@ -490,29 +490,29 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 	end
 
 	test "html drag question correct" do
-		
+
 		post '/en/courses/3/lectures/3/save_html', params: {
-			quiz: 8, 
+			quiz: 8,
 			answer: ["<p class=\"medium-editor-p\">answer1</p>","<p class=\"medium-editor-p\">answer2</p>"]}, headers: @headers2, as: :json
 
 		assert_equal decode_json_response_body['correct'],true
-		
+
 		assert_equal decode_json_response_body['explanation'],{
 			"8"=> {
 				"<p class=\"medium-editor-p\">answer1</p>"=>"<p class='medium-editor-p'>explanation 1</p>",
 				"<p class=\"medium-editor-p\">answer2</p>"=>"<p class='medium-editor-p'>explanation 2</p>"
 			}
-		} 
+		}
 	end
 
 	test "html drag question incorrect should not return explanation" do
-		
+
 		post '/en/courses/3/lectures/3/save_html', params: {
-			quiz: 8, 
+			quiz: 8,
 			answer: ["<p class=\"medium-editor-p\">answer2</p>","<p class=\"medium-editor-p\">answer1</p>"]}, headers: @headers2, as: :json
 
 		assert_equal decode_json_response_body['correct'],false
-		
+
 		assert decode_json_response_body['explanation'].empty?
 	end
 
@@ -521,19 +521,19 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 		post '/en/courses/3/lectures/3/save_html', params: {quiz: 6, answer: "15", distance_peer:false, in_group: false}, headers: @headers2, as: :json
 		# second
 		post '/en/courses/3/lectures/3/save_html', params: {quiz: 6, answer: "14", distance_peer:false, in_group: false}, headers: @headers2, as: :json
-		
+
 		assert_equal OnlineQuizGrade.where(online_quiz_id:6,online_answer_id: 14, lecture_id: 3).first['attempt'], 2
 	end
 
 	test "html free text should create quiz grade 0 if no answer was specified" do
-		
+
 		post '/en/courses/3/lectures/3/save_html', params: {quiz: 9, answer: "answer for free text", distance_peer:false, in_group: false}, headers: @headers2, as: :json
 		assert_equal FreeOnlineQuizGrade.where(online_quiz_id:9).first["grade"], 0
 		assert_equal decode_json_response_body["explanation"], {"9"=>"<p class=\"medium-editor-p\">explanation free text</p>"}
 	end
 
 	test "html free text should create quiz grade 1 if answer is right" do
-		
+
 		post '/en/courses/3/lectures/3/save_html', params: {quiz: 10, answer: "answer free text", distance_peer:false, in_group: false}, headers: @headers2, as: :json
 		assert_equal FreeOnlineQuizGrade.where(online_quiz_id:10).first["grade"], 3
 		assert_equal decode_json_response_body["explanation"], {"10"=>"<p class=\"medium-editor-p\">explanation free text</p>"}
@@ -548,52 +548,52 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 
 		post '/en/courses/3/lectures/3/log_video_event', params: {"event":"pause","from_time":161.776062,"in_quiz":false,"speed":1,"volume":0.8,"fullscreen":false}, headers: @headers2, as: :json
 		assert_equal VideoEvent.where(lecture_id:3, group_id:3, course_id:3).last["event_type"], 2
-		
+
 		post '/en/courses/3/lectures/3/log_video_event', params: {"event":"seek","from_time":161.776062,"in_quiz":false,"speed":1,"volume":0.8,"fullscreen":false}, headers: @headers2, as: :json
 		assert_equal VideoEvent.where(lecture_id:3, group_id:3, course_id:3).last["event_type"], 3
 
 		post '/en/courses/3/lectures/3/log_video_event', params: {"event":"fullscreen","from_time":161.776062,"in_quiz":false,"speed":1,"volume":0.8,"fullscreen":false}, headers: @headers2, as: :json
 		assert_equal VideoEvent.where(lecture_id:3, group_id:3, course_id:3).last["event_type"], 4
-		
+
 	end
 
 	test "get_lecture_data_angular requirement" do
 		# lecture 3 is required and quiz 1 is required and its appearance time <= today
 		get '/en/courses/3/lectures/3/get_lecture_data_angular', headers: @headers2
 		assert_equal decode_json_response_body["lecture"]["requirements"], {"lecture"=>[], "quiz"=>[1]}
-		
-		Quiz.find(1).update_attribute(:appearance_time,Time.now + 2.days) 
+
+		Quiz.find(1).update_attribute(:appearance_time,Time.now + 2.days)
 		get '/en/courses/3/lectures/3/get_lecture_data_angular', headers: @headers2
 		assert_equal decode_json_response_body["lecture"]["requirements"], {"lecture"=>[], "quiz"=>[]}
 
 	end
 
 	test "get_lecture_data_angular next_item should be next lecture or quiz in group" do
-		
+
 		get '/en/courses/3/lectures/3/get_lecture_data_angular', headers: @headers2
 		assert_equal decode_json_response_body["next_item"], {"id"=>4, "class_name"=>"lecture", "group_id"=>3}
 		# if next item is lecture and inclass, its appearance time must be < today
-		Lecture.find(4).update_attribute(:inclass,true) 
+		Lecture.find(4).update_attribute(:inclass,true)
 		Lecture.find(4).update_attribute(:appearance_time,Time.now + 2.days)
 		get '/en/courses/3/lectures/3/get_lecture_data_angular', headers: @headers2
 		assert decode_json_response_body["next_item"].empty?
-		
+
 	end
-	
+
 	test "get_lecture_data_angular alert message should return due date" do
-		
+
 		get '/en/courses/3/lectures/3/get_lecture_data_angular', headers: @headers2
 		lecture =lectures(:lecture3)
 		due_date = I18n.localize(lecture.due_date, :format => '%d %b')
-		days_to_today = (Time.zone.now.to_date - lecture.due_date.to_date).to_i 
+		days_to_today = (Time.zone.now.to_date - lecture.due_date.to_date).to_i
 		assert_equal decode_json_response_body["alert_messages"], {"due"=>[due_date, days_to_today, "days"]}
 
 	end
-	
+
 	test "get_lecture_data_angular should change updated_at of lecture_view or create new one if no lecture_views are present" do
 
 		old_lecture_view = LectureView.where(lecture_id: 3).first
-		
+
 		get '/en/courses/3/lectures/3/get_lecture_data_angular', headers: @headers2
 		# same lecture_view but changed updated_at
 		## /10.floor to remove last digit because it fails because of seconds' differences, and we dont need to assert with that kind of precision
@@ -606,13 +606,13 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 		# new lecture_view
 		assert_equal LectureView.where(lecture_id: 3).first.updated_at.to_i/10.floor, Time.zone.now.to_i/10.floor
 		assert_not LectureView.where(lecture_id: 3).first == old_lecture_view
-		
+
 	end
 
 	test "should create new note if no id was sent" do
 
 		notes = VideoNote.where(lecture_id:3, user_id:6).size
-		
+
 		post '/en/courses/3/lectures/3/save_note', params:{"data":"<p class=\"medium-editor-p\">note1</p>","time":10} , headers: @headers2, as: :json
 
 		assert_equal decode_json_response_body["notice"], "Note was successfully saved"
@@ -633,11 +633,11 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 	test "check_if_invited_distance_peer should respond with enrolled students if no invitations" do
 		get "/en/courses/3/lectures/3/check_if_invited_distance_peer", headers: @headers2
 		assert_equal decode_json_response_body["students"], [
-			{"id"=>nil, "name"=>"Ahmed", "email"=>"ahmed@gmail.com", "last_name"=>"aly", "full_name"=>"Ahmed aly", "status"=>nil, "lower"=>"ahmed"}, 
-			{"id"=>nil, "name"=>"Hossam", "email"=>"Hossam@gmail.com", "last_name"=>"aly", "full_name"=>"Hossam aly", "status"=>nil, "lower"=>"hossam"}, 
-			{"id"=>nil, "name"=>"Karim", "email"=>"Karim@gmail.com", "last_name"=>"aly", "full_name"=>"Karim aly", "status"=>nil,"lower"=>"karim"}, 
+			{"id"=>nil, "name"=>"Ahmed", "email"=>"ahmed@gmail.com", "last_name"=>"aly", "full_name"=>"Ahmed aly", "status"=>nil, "lower"=>"ahmed"},
+			{"id"=>nil, "name"=>"Hossam", "email"=>"Hossam@gmail.com", "last_name"=>"aly", "full_name"=>"Hossam aly", "status"=>nil, "lower"=>"hossam"},
+			{"id"=>nil, "name"=>"Karim", "email"=>"Karim@gmail.com", "last_name"=>"aly", "full_name"=>"Karim aly", "status"=>nil,"lower"=>"karim"},
 			{"id"=>nil, "name"=>"Mohamed", "email"=>"Mohamed@gmail.com", "last_name"=>"aly", "full_name"=>"Mohamed aly", "status"=>nil, "lower"=>"mohamed"}]
-		
+
 		assert_equal decode_json_response_body["invite_status"], "no_invitation"
 	end
 
@@ -649,7 +649,7 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 		@student.user_distance_peers.create(online_quiz_id:4,distance_peer_id:1,status:0,online:false)
 		UserDistancePeer.create(user_id:3,online_quiz_id:4,distance_peer_id:1,status:0,online:false)
 		get "/en/courses/3/lectures/3/check_if_invited_distance_peer", headers: @headers2
-		
+
 		assert_equal decode_json_response_body["invite"],"a.okasha"
 		assert_equal decode_json_response_body["invite_status"],"invited"
 		assert_equal decode_json_response_body["distance_peer_id"],1
@@ -668,7 +668,7 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 		assert_equal decode_json_response_body["distance_peer"]["id"], 1
 		assert_equal decode_json_response_body["distance_peer"]["status"], 1
 
-	
+
 	end
 
 	test "check_if_in_distance_peer_session should return other user's distance peer if different statuses and updated after" do
@@ -684,7 +684,7 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 		assert_equal decode_json_response_body["distance_peer"]["id"], 2
 		assert_equal decode_json_response_body["distance_peer"]["status"], 2
 
-	
+
 	end
 
 	test "invite_student_distance_peer if not already invited" do
@@ -740,7 +740,7 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 
 		assert_equal decode_json_response_body["status"], 0
 		assert_equal UserDistancePeer.all.map{|u|u.status},[1,1]
-		
+
 	end
 
 	test "cancel_session_distance_peer should delete distance_peer" do
@@ -754,9 +754,9 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 		get "/en/courses/3/lectures/3/cancel_session_distance_peer", params:{distance_peer_id:5}, headers: @headers2
 
 		assert_not DistancePeer.exists?(id:5)
-		
+
 		## distance peer doesnt exists
-		
+
 		get "/en/courses/3/lectures/3/cancel_session_distance_peer", params:{distance_peer_id:5}, headers: @headers2
 		assert_equal decode_json_response_body["distance_peer"],"deleted"
 	end
@@ -778,7 +778,7 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 		UserDistancePeer.find(10).destroy
 		get "/en/courses/3/lectures/3/change_status_distance_peer", params:{distance_peer_id:5, online_quiz_id:5, status:3}, headers: @headers2
 		assert_equal decode_json_response_body["distance_peer"], "no_peer_session"
-		
+
 	end
 
 	test "check_if_distance_peer_status_is_sync" do
@@ -801,7 +801,7 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 		UserDistancePeer.find(11).destroy
 		get "/en/courses/3/lectures/3/check_if_distance_peer_status_is_sync", params:{distance_peer_id:5}, headers: @headers2
 		assert_equal decode_json_response_body["distance_peer"],"no_peer_session"
-		
+
 	end
 
 	test "check_if_distance_peer_is_alive should end session if second user state is 6" do
@@ -827,13 +827,13 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 		UserDistancePeer.find(11).destroy
 		get "/en/courses/3/lectures/3/check_if_distance_peer_is_alive", params:{distance_peer_id:5}, headers: @headers2
 		assert_equal decode_json_response_body["distance_peer"],"no_peer_session"
-		
+
 	end
 
 
-	
-	
-	
+
+
+
 	test "change_status_angular should change status assignment_item_status, or create new one with specified status" do
 		# will create one if empty
 		assert Lecture.find(3).assignment_item_statuses.empty?
@@ -843,8 +843,8 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 		post "/en/courses/3/lectures/3/change_status_angular", params:{user_id:6, status: 1}, headers: @headers, as: :json
 		assert_equal Lecture.find(3).assignment_item_statuses.first["status"], 1
 		assert_equal Lecture.find(3).assignment_item_statuses.size, 1
-      
-      
+
+
     end
 
 	test "confused should add confused to lecture" do
@@ -858,13 +858,13 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 		# confused at 30 already exists with very set to false
 		assert_changes 'Lecture.find(3).confuseds.where(time: 30).first.very', from: false, to: true do
 			post '/en/courses/3/lectures/3/confused', params: {time: 36}, headers: @headers2, as: :json
-			
+
 		end
 		assert_equal decode_json_response_body["msg"], "Saved"
 		# confused at 30 already exists with very set to TRUE already
 		post '/en/courses/3/lectures/3/confused', params: {time: 36}, headers: @headers2, as: :json
 		assert_equal decode_json_response_body["msg"], "ask"
-		
+
 	end
 
 	test "confused_show_inclass should show/hide confuseds" do
@@ -875,7 +875,7 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 		assert_changes 'Lecture.find(3).confuseds.where(time: 30).first.hide', from: true, to: false do
 			post '/en/courses/3/lectures/3/confused_show_inclass', params: {time: 30, hide: false, very: false}, headers: @headers, as: :json
 		end
-		
+
 	end
 
 	test "delete_note" do
@@ -892,7 +892,7 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 		resp =  JSON.parse(JSON.parse(response.body)['notes'][0])
 		assert_response :success
 		assert_equal resp.count , 1
-	end	
+	end
 	test "export_notes after adding 2 note in lecture" do
 		VideoNote.create(lecture_id:3, user_id:6, data: "new note", id: 6)
 		VideoNote.create(lecture_id:3, user_id:6, data: "new note", id: 7)
@@ -901,7 +901,7 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 		resp =  JSON.parse(JSON.parse(response.body)['notes'][0])
 		assert_equal resp.count , 2
 
-	end	
+	end
 	test "export_notes after adding 2 note in lecture from 1 student and 1 note from different student" do
 		VideoNote.create(lecture_id:3, user_id:6, data: "new note", id: 6)
 		VideoNote.create(lecture_id:3, user_id:6, data: "new note", id: 7)
@@ -910,7 +910,7 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 		resp =  JSON.parse(JSON.parse(response.body)['notes'][0])
 		assert_response :success
 		assert_equal resp.count , 2
-	end	
+	end
 	test "export_notes after adding 2 note in lecture and then deleting 1 note  " do
 		VideoNote.create(lecture_id:3, user_id:6, data: "new note", id: 6)
 		VideoNote.create(lecture_id:3, user_id:6, data: "new note", id: 7)
@@ -919,6 +919,6 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 		resp =  JSON.parse(JSON.parse(response.body)['notes'][0])
 		assert_response :success
 		assert_equal resp.count , 1
-	end	
+	end
 
 end
