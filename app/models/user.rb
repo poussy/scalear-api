@@ -402,7 +402,6 @@ class User < ActiveRecord::Base
 
 
   def finished_lectures_test(group)
-    puts "entered action-------------"
     status = {}
     self.assignment_item_statuses.select{|a| a.group_id == group.id && !a.quiz_id}.each do |s|
       status[s.lecture_id] = s.status
@@ -440,10 +439,8 @@ class User < ActiveRecord::Base
         (!q.online_answers.empty? || q.question_type=="Free Text Question") &&
         (status[q.lecture_id].nil? || status[q.lecture_id] !=1)
       }.size== a.size+b.size) #solved all    //.select{|q| q.lecture.graded == true}
-      puts "if---------------"
       return -1 #-1 means not finished
     else
-      pp "else-----------------"
       # 0 means finished on time, any other n, means finished late with n as the late days
 
       a.each do |m|
