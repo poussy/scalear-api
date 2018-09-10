@@ -1,59 +1,52 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
-	<head>
-		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-		<title>Please confirm your ScalableLearning account</title>
-		<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-	</head>
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <style>
+      body{
+        font-family:'Helvetica Neue','Helvetica','Roboto',Arial,'sans-serif';
+      }
+    </style>
+  </head>
 
-	<style>
-	a{
-		color:#5da423
-	}
-	td{
-		color:black;
-	}
-	</style>
+  <body>
+    <div style=" padding-top:50px; width:100%;height:100%">
+      <table style="margin:0 auto; width:60%;">
+        <tr>
+          <td >
+          <div style="margin:0 auto; width:400px;">
+            <%= image_tag "/assets/images/logo_banner.jpg", :size=> "400x65", :alt => "ScalableLearning Logo" %>
+          </div>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <div style="box-shadow: 0 2px 2px 2px #88888861; padding: 20px; border-top:4px solid green" >
+				
+				<p><%=t("mailer.thanks_sign_up")%> scalable-learning.com. <%= t("mailer.click_here_confirm")%></p>
+		
+				<p><%= link_to nil, confirmation_url(@resource, {confirmation_token: @token, config: message['client-config'].to_s, redirect_url: message['redirect-url']}).html_safe %></p>
+				
+				<p><%=t("mailer.we_recommend_use")%> Google's <a href="http://www.google.com/chrome">Chrome</a> <%=t("mailer.browser_for_best_experience")%>.</p>
+				
+				<p><%=t("mailer.contact_us")%></p>
 
-	<body>
-		<table border="0" cellpadding="0" cellspacing="0" width="100%">
-			<tr>
-				<td style="padding: 0 0 30px 0;">
-					<table align="center" border="0" cellpadding="0" cellspacing="0">
-						<tr>
-							<td align="left" style="padding: 40px 0 30px 30px; font-size: 28px; font-weight: bold; font-family: Arial, sans-serif;">
-								<%= image_tag "logo_banner.jpg", :alt => "ScalableLearning Logo" %>
-								<!-- <span style="font-weight:200">Scalable</span><span style="padding-left:0px; color:#5da423;font-weight: bold;">Learning</span> -->
-							</td>
-						</tr>
-						<tr>
-							<td bgcolor="#ffffff" style="padding: 20px 30px;">
-								<table border="0" cellpadding="0" cellspacing="0" width="100%">
-									<tr>
-										<td style="color: #153643; font-family: Arial, sans-serif; font-size: 24px;">
-											<b><%= @resource.name %>, <%=t("mailer.thanks_sign_up")%> scalable-learning.com.</b>
-										</td>
-									</tr>
-									<tr>
-										<td style="padding-top:20px; color: #153643; font-family: Arial, sans-serif; font-size: 16px; line-height: 20px;">
-											Click here to confirm :<br/> <%= link_to nil, confirmation_url(@resource, {confirmation_token: @token, config: message['client-config'].to_s, redirect_url: message['redirect-url']}).html_safe %><br/><br/>
-											(<%=t("mailer.copy_paste_link")%>.)
-											<br/><br/>
-											<%=t("mailer.we_recommend_use")%> Google's <a href="http://www.google.com/chrome">Chrome</a> <%=t("mailer.browser")%>. <%=t("mailer.other_browsers")%>.
-											<br/>
-											<br/>
-											-The Scalable<span style="padding-left:0px; color:#5da423;font-weight: bold;">Learning</span> Team
-										</td>
-									</tr>
-									<tr>
-										<td  style="padding: 20px 0 30px 0; color: #999999; font-family: Arial, sans-serif; font-size: 14px; line-height: 18px;"><%=t("mailer.mail_sent_to")%> <%= @resource.name %> <%= @resource.last_name %> <%=t("at")%> <%= @resource.university %> <%=t("mailer.to_confirm")%> <span>scalable-learning.com.</span> <%=t("mailer.ignore_email")%>.</td>
-									</tr>
-								</table>
-							</td>
-						</tr>
-					</table>
-				</td>
-			</tr>
-		</table>
-	</body>
+				<div>Cheers,</div>
+				<div>-The <strong>Scalable</strong><span style="color:green">Learning </span>team</div>
+
+
+				<center style="font-size:80%;border-top: 1px solid lightgray;padding-top: 15px;margin-top:15px; color: #636567;">
+					<div><%=t('user_mailer.you_are_recieving_mail')=%></div>
+					
+					<%= mail_to "support@scalable-learning.com","support@scalable-learning.com",{:style=>'color:#636567'}%> - 
+					<%= link_to t('user_mailer.privacy'), Rails.configuration.frontend_host+"privacy", {:style=>'color:#636567', :target=> '_blank'} %><br>
+					<span>© 2018 ScalableLearning – RISE SICS AB, Box 1264, SE-164 29 Kista, Sweden</span>
+				</center>
+									
+            </div>
+          </td>
+        </tr>
+      </table>
+    </div>
+  </body>
 </html>

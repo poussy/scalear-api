@@ -1,20 +1,9 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
-  </head>
-  <body>
-    <p>
-        Your account on ScalableLearning has been pseudonymized. 
-        This means that we no longer retain personally identifiable information about your account 
-        (email, user name, online name) and cannot contact you via email.
-    </p>
-    <p>
-        If you would like to recover or completely delete your account, 
-        simply login again with your account's original email address.
-    </p>
+<p>
+    <%=t('user_mailer.account_pseudoanonymized')%>
+</p>
+<p>
+    <%=t('user_mailer.recover_account')%>
+</p>
 
-    <p>Thank you for using ScalableLearning,</p>
-    <p>The ScalableLearning Team</p>
-  </body>
-</html>
+<%= render partial: 'thank_you_footer' %>
+<%= render partial: 'footer' %>

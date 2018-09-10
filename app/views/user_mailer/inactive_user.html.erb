@@ -1,19 +1,14 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
-  </head>
-  <body>
-    <p>Your account on ScalableLearning has been inactive for a year. If you would like to keep your account active, please simply login. If you do nothing, 
-        your account will be pseudoanonymized to protect your privacy. 
-        This means we will encrypt your name and email address. If you later wish to recover your 
-        account you can do so by simply logging in and recovering your password.
-    </p>
-    <p>
-        If you would like to delete your data entirely, simply login and delete your account.
-    </p>
+<p>
+  Your account on ScalableLearning has been inactive for a year. In following our <%= link_to "privacy policy", $frontend_host+"privacy"%>, 
+  we will psudonymize your account to remove personally identifiable information in one week.
+</p>
+<p>
+    If you would like to keep your account active, please login again in the next week.
+    If you would like to delete your data entirely, please login and delete your account.
+    If you do nothing, your account will be psudonymized in one week. Once your account is 
+    psudonymized we will no longer be able to contact you, but you can recover your account by logging in again.
+</p>
 
-    <p>Sincerely,</p>
-    <p>The ScalableLearning Team</p>
-  </body>
-</html>
+<%= render partial: 'thank_you_footer' %>
+<%= render partial: 'footer' %>
+
