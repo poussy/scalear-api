@@ -254,7 +254,7 @@ class User < ActiveRecord::Base
       viewed=self.lecture_views.select{|v| v.lecture_id == lecture.id && v.percent == 100}[0]
       max=a1=a2=c=0
       all_online_quiz = lecture.online_quizzes.includes(:online_answers).select{|f| (!f.online_answers.empty? || f.question_type=="Free Text Question" )}.group_by {|n| n.graded? ? :graded : :not_graded}
-      all_online_quiz_grades = lecture.online_quiz_grades.includes(:online_quiz).where(["user_id=? and attempt=1",self.id]).select('distinct(online_quiz_id),id,user_id').group_by {|n| n.online_quiz.graded? ? :graded : :not_graded}
+      all_online_quiz_grades = lecture.online_quiz_grades.includes(:online_quiz).where(["user_id=? and attempt=1",self.id]).select('distinct(online_quiz_id),id,user_id,created_at').group_by {|n| n.online_quiz.graded? ? :graded : :not_graded}
       all_free_online_quiz_grades = lecture.free_online_quiz_grades.includes(:online_quiz).select{|v| v.user_id==self.id && v.attempt == 1}.uniq{|v| v.online_quiz_id}.group_by {|n| n.online_quiz.graded? ? :graded : :not_graded}
 
       total= all_online_quiz[:graded] || []
