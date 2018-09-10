@@ -221,7 +221,7 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 
 		get '/en/courses/3/lectures/3/new_quiz_angular', params:{end_time:28, inclass:false,ques_type:"OCQ",quiz_type:"html_survey",start_time:28,time:28}, headers: @headers
 		lecture.reload
-		assert_equal lecture.online_quizzes.last_created_record.question, "New Survey"
+		assert_equal lecture.online_quizzes.last_created_record.question, "New Quiz"
 
 		get '/en/courses/3/lectures/3/new_quiz_angular', params:{end_time:28, inclass:false,ques_type:"OCQ",quiz_type:"invideo",start_time:28,time:28}, headers: @headers
 		lecture.reload
