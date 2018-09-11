@@ -345,8 +345,6 @@ class Course < ApplicationRecord
 
 		addition_days = ((new_course.start_date.to_date - from.start_date.to_date) .to_i).days
 
-
-
 		from.groups.each do |g|
 			new_group= g.dup
 			new_group.course_id = new_course.id
@@ -413,8 +411,8 @@ class Course < ApplicationRecord
 					new_event.quiz_id = new_quiz.id
 					new_event.course_id = new_course.id
 					new_event.group_id = new_group.id
-					new_event.start_at = Date.today + 200.years
-					new_event.end_at = Date.today + 200.years
+					new_event.start_at = e.start_at + addition_days
+					new_event.end_at = e.end_at + addition_days
 					new_event.save(:validate => false)
 				end
 
@@ -443,9 +441,9 @@ class Course < ApplicationRecord
 				new_event= e.dup
 				new_event.course_id = new_course.id
 				new_event.group_id = new_group.id
-				new_event.save(:validate => false)
 				new_event.start_at = e.start_at + addition_days
 				new_event.end_at = e.end_at + addition_days
+				new_event.save(:validate => false)
 			end
 		end
 		self.importing = false
