@@ -27,7 +27,6 @@ class Quiz < ApplicationRecord
   validates :name, :appearance_time,:due_date,:course_id, :group_id, :presence => true
   validates_inclusion_of :appearance_time_module, :due_date_module,:required_module , :graded_module, :in => [true, false]
 
-  validates_datetime :appearance_time, :on_or_after => lambda{|m| m.group.appearance_time}, :on_or_after_message => "must be after module appearance time"
   validate :due_before_module_due_date
 
   after_destroy :clean_up
