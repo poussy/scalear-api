@@ -65,10 +65,10 @@ class QuizzesController < ApplicationController
         grades=current_user.quiz_grades.where(:quiz_id => params[:id], :question_id => q.id).pluck(:answer_id)
         correct1= current_user.quiz_grades.where(:quiz_id => params[:id], :question_id => q.id)[0]
         free_answers=current_user.free_answers.where(:quiz_id => params[:id], :question_id => q.id)
-        
+
         if q.question_type=="MCQ" && !grades.empty?
           s_grades[q.id]={}
-          grades.each do |a| 
+          grades.each do |a|
             s_grades[q.id][a]=true #112:{186:true,187:true} selected answers
             explanation[a] = answers[index].select{|ans|ans.id == a}[0].explanation if quiz.show_explanation #add explanations for selected answer
           end
@@ -79,13 +79,13 @@ class QuizzesController < ApplicationController
           explanation[grades[0]]=answers[index].select{|ans|ans.id == grades[0]}[0].explanation if quiz.show_explanation #add explanation for selected answer
           correct[q.id]=correct1.grade if !correct1.nil?
           answers[index].each{|ans| explanation[ans.id] = ans.explanation} if correct[q.id] == 1.0 #add all explanations if answer is correct
-          
+
         elsif q.question_type.upcase=="DRAG" && !free_answers.empty?
           exp=[]
           free_answers[0].answer.each do |drag|
             exp.append(q.answers[0].explanation[drag_origin_answer.index(drag)])
           end
-          explanation[q.answers[0].id]=exp if free_answers[0].grade == 1 
+          explanation[q.answers[0].id]=exp if free_answers[0].grade == 1
           s_grades[q.id]=free_answers[0].answer
           correct[q.id]=free_answers[0].grade
         elsif q.question_type.upcase=="FREE TEXT QUESTION" && !free_answers.empty?
@@ -93,7 +93,7 @@ class QuizzesController < ApplicationController
           s_grades[q.id]=free_answers[0].answer
           correct[q.id]=free_answers[0].grade
         end
-      
+
         # remove explanations from answers
         if q.question_type.upcase=="DRAG"
           answers[index][0].explanation = []
@@ -153,8 +153,8 @@ class QuizzesController < ApplicationController
     quiz[:requirements] = requirements
 
 
-    render :json => {:quiz =>quiz,:next_item => next_item,  :questions => questions, :answers => answers, 
-      :quiz_grades => s_grades, :status => status, :correct => correct, 
+    render :json => {:quiz =>quiz,:next_item => next_item,  :questions => questions, :answers => answers,
+      :quiz_grades => s_grades, :status => status, :correct => correct,
       :explanation => explanation , :alert_messages=>@alert_messages}
   end
 
@@ -247,7 +247,7 @@ class QuizzesController < ApplicationController
     if @quiz.valid?
       render json:{ :nothing => true }
     else
-      render json: {errors:@quiz.errors.full_messages}, status: :unprocessable_entity 
+      render json: {errors:@quiz.errors.full_messages}, status: :unprocessable_entity
     end
 
   end
@@ -266,22 +266,22 @@ class QuizzesController < ApplicationController
 
   # def handle_exception(exception)
   # end
-  
+
   # def correct_user
   # end
-  
+
   # def set_zone
   # end
-  
+
   # def index
   # end
-  
+
   # def show
   # end
-  
+
   # def new
   # end
-  
+
   def show_question_inclass  #updating a survey question (hidden or not)
     ques_id= params[:question]
     show = params[:show]
@@ -297,7 +297,7 @@ class QuizzesController < ApplicationController
       render :json => {:errors => [I18n.t("quizzes.could_not_update_question")]}, :status => 400
     end
   end
-  
+
   def show_question_student  #updating a survey question (hidden or not)
     ques_id= params[:question]
     show = params[:show]
@@ -330,7 +330,7 @@ class QuizzesController < ApplicationController
       render :json => {:notice => [I18n.t("controller_msg.response_saved")]}
     end
   end
-  
+
   def hide_responses
       if params[:hide]["hide"]
         hidden=I18n.t("hidden")
@@ -344,7 +344,7 @@ class QuizzesController < ApplicationController
         render :json => {:errors => [I18n.t("quizzes.could_not_update_response")]}, :status => 400
       end
   end
-  
+
   def hide_response_student
     if params[:hide]["hide"]
       hidden=I18n.t("hidden")
@@ -357,7 +357,7 @@ class QuizzesController < ApplicationController
       render :json => {:errors => [I18n.t("quizzes.could_not_update_response")]}, :status => 400
     end
   end
-  
+
   def delete_response
       answer=params[:answer]
       if FreeAnswer.find(answer).update_attributes(:response => "")
@@ -366,7 +366,7 @@ class QuizzesController < ApplicationController
         render :json => {:errors => [I18n.t("controller_msg.could_not_delete_response")]}, :status => 400
       end
   end
-  
+
   def make_visible
     if params[:visible]
       hidden=I18n.t("visible")
@@ -381,7 +381,7 @@ class QuizzesController < ApplicationController
       render :json => {:errors => [I18n.t("controller_msg.could_not_update_#{x.quiz_type}")]}, :status => 400
     end
   end
-    
+
   def update_questions_angular
 
     @questions = params[:questions]
@@ -396,18 +396,18 @@ class QuizzesController < ApplicationController
 
         @questions.each_with_index do |new_q, index|
           if !new_q["id"].nil? #old one
-            
+
             old_questions<<new_q["id"].to_i
             @current_q=Question.find(new_q["id"])
 
             z= @current_q.update_attributes!(:content => new_q["content"], :question_type => new_q["question_type"], :position => index+1)
             if !new_q["answers"].nil?
-             
+
               if(@current_q.question_type == "Free Text Question" && new_q["match_type"] =='Free Text')
                   @current_q.answers.each do |ans|
                     ans.destroy
                   end
-                  
+
                   new_q["answers"].each do |new_ans|
                     y = @current_q.answers.create(:content =>"" , :correct => new_ans["correct"],:explanation => new_ans["explanation"])
                     old_answers<<y.id.to_i
@@ -471,10 +471,10 @@ class QuizzesController < ApplicationController
     Quiz.transaction do
 
       params[:student_quiz].each do |q,a|
-      
+
       ques=Question.find(q)
       temp_explanation[ques.id] = {}
-      
+
       if ques.question_type.upcase != "DRAG"
         ques.answers.each do |answer|
           temp_explanation[ques.id][answer.id] = answer.explanation
@@ -486,9 +486,9 @@ class QuizzesController < ApplicationController
           exp.append(ques.answers[0].explanation[drag_origin_answer.index(drag)])
         end
         temp_explanation[ques.id][ques.answers[0].id]=exp
-        
+
       end
-      
+
       if ques.question_type != 'header'
         current_user.quiz_grades.where(:question_id => ques.id, :quiz_id => params[:id]).destroy_all
         current_user.free_answers.where(:question_id => ques.id, :quiz_id => params[:id]).destroy_all
@@ -579,20 +579,7 @@ class QuizzesController < ApplicationController
         #rollback .. can't submit
       end
     else
-    #if save
-      if @status.status=="Submitted" #can't save if already submitted!
-        #rollback
-        return_value=I18n.t("controller_msg.cant_save_already_submitted")
-        raise ActiveRecord::Rollback
-      end
-      if @status.attempts <= @quiz.retries
-        @status.update_attributes!( :attempts => @status.attempts + 1)
-       else
-        return_value=I18n.t("controller_msg.cant_submit_no_more_attempts")
-        raise ActiveRecord::Rollback
-        #rollback .. can't submit
-      end
-
+      @status.touch
     end
     correct_ans={} if @status.status!="Submitted"
     explanation = {} if @status.status!="Submitted"
@@ -618,7 +605,7 @@ class QuizzesController < ApplicationController
   #alert_messages=get_alert_messages(@quiz,status)
   render :json => {:errors => return_value.blank? ? [I18n.t("transaction_rolled_back")]:[return_value]}, :status => 400
   end
- 
+
   def update_grade
     if @quiz.free_answers.find(params[:answer_id]).update_attributes(:grade => params[:grade])
       render :json => {:notice => I18n.t("controller_msg.grade_updated")}
@@ -626,7 +613,7 @@ class QuizzesController < ApplicationController
       render :json => {:errors => [I18n.t("controller_msg.grade_update_fail")]}, :status => 400
     end
   end
-  
+
   # def quiz_copy
   # end
 
@@ -646,8 +633,8 @@ class QuizzesController < ApplicationController
 private
 
   def quiz_params
-    params.require(:quiz).permit(:course_id, :instructions, :name, :questions_attributes, :group_id, :due_date, 
-        :appearance_time,:appearance_time_module, :due_date_module, :required_module , :inordered_module,:position, 
+    params.require(:quiz).permit(:course_id, :instructions, :name, :questions_attributes, :group_id, :due_date,
+        :appearance_time,:appearance_time_module, :due_date_module, :required_module , :inordered_module,:position,
         :type, :visible, :required, :retries, :current_user, :inordered, :graded, :graded_module, :quiz_type, :requirements, :exam, :correct_question_count, :show_explanation)
   end
-end 
+end
