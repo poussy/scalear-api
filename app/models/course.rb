@@ -312,10 +312,11 @@ class Course < ApplicationRecord
 			UserMailer.attachment_email(current_user, @course, file_name, t.path, I18n.locale).deliver
 			t.close
 	end
-	handle_asynchronously :export_course, :run_at => Proc.new { 5.seconds.from_now }
+	# handle_asynchronously :export_course, :run_at => Proc.new { 5.seconds.from_now }
 
 
 	def export_student_csv(current_user)
+		@course = Course.find(id)
     enrolled = users
     csv_files={}
     csv_files[:student_list]= CSV.generate do |csv_student_list|
@@ -338,10 +339,10 @@ class Course < ApplicationRecord
     #send_file t.path, :type => 'application/zip',
     #                  :disposition => 'attachment',
     #                  :filename => file_name
-    UserMailer.delay.attachment_email(current_user, @course, file_name, t.path, I18n.locale)#.deliver
+    UserMailer.attachment_email(current_user, @course, file_name, t.path, I18n.locale).deliver
     t.close
   end
-  handle_asynchronously :export_student_csv, :run_at => Proc.new { 5.seconds.from_now }
+  # handle_asynchronously :export_student_csv, :run_at => Proc.new { 5.seconds.from_now }
 
 
 	def import_course(import_from)
