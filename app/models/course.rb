@@ -316,7 +316,7 @@ class Course < ApplicationRecord
 
 
 	def export_student_csv(current_user)
-		@course = Course.find(id)
+		@course = self
     enrolled = users
     csv_files={}
     csv_files[:student_list]= CSV.generate do |csv_student_list|
