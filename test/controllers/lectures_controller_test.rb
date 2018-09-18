@@ -213,19 +213,20 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 
 	test "should create quiz with question according to quiz_type param" do
 		lecture = lectures(:lecture3)
-
+		lecture.online_quizzes.destroy_all
 		get '/en/courses/3/lectures/3/new_quiz_angular', params:{end_time:28, inclass:false,ques_type:"OCQ",quiz_type:"survey",start_time:28,time:28}, headers: @headers
 		lecture.reload
-		assert_equal lecture.online_quizzes.last_created_record.question, "New Survey"
-
+		assert_equal lecture.online_quizzes.first.question, "New Survey"
+		lecture.online_quizzes.destroy_all
 
 		get '/en/courses/3/lectures/3/new_quiz_angular', params:{end_time:28, inclass:false,ques_type:"OCQ",quiz_type:"html_survey",start_time:28,time:28}, headers: @headers
 		lecture.reload
-		assert_equal lecture.online_quizzes.last_created_record.question, "New Survey"
+		assert_equal lecture.online_quizzes.first.question, "New Survey"
+		lecture.online_quizzes.destroy_all
 
 		get '/en/courses/3/lectures/3/new_quiz_angular', params:{end_time:28, inclass:false,ques_type:"OCQ",quiz_type:"invideo",start_time:28,time:28}, headers: @headers
 		lecture.reload
-		assert_equal lecture.online_quizzes.last_created_record.question, "New Quiz"
+		assert_equal lecture.online_quizzes.first.question, "New Quiz"
 	end
 
 	test "should create quiz with right params" do

@@ -79,6 +79,14 @@ class SamlController < ApplicationController
       email = attributes["mail"].downcase rescue ""
       saml_user = User.find_by_email(email)
       if saml_user.nil?
+        # search for anonymised users
+        user = User.get_anonymised_user(email)
+        if !user.nil? 
+          user = user.deanonymise(email)
+          user.last_sign_in_at = Time.now
+          token = user.create_new_auth_token
+          return "#/users/login?#{token.to_query}"
+        end
        return "#/users/signup?#{attributes.to_query}&saml=true"
       else
         if !saml_user.saml
@@ -89,8 +97,8 @@ class SamlController < ApplicationController
           saml_user.skip_confirmation!
           saml_user.save
         end
+        saml_user.last_sign_in_at = Time.now
         token = saml_user.create_new_auth_token
-        
         return "#/users/login?#{token.to_query}"
       end
     end
