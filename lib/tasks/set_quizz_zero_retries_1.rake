@@ -1,0 +1,1 @@
+Quiz.where('quizzes.retries = 0').update_all('retries = 1')`
