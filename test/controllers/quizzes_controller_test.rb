@@ -562,7 +562,7 @@ class QuizzesControllerTest < ActionDispatch::IntegrationTest
 
     end
 
-    test "save_student_quiz_angular student cannot save if already submitted" do
+    test "save_student_quiz_angular student can save if already submitted" do
 
       post '/en/courses/3/quizzes/1/save_student_quiz_angular' , 
         params: {
@@ -592,7 +592,7 @@ class QuizzesControllerTest < ActionDispatch::IntegrationTest
         }, 
         headers: @headers2 , as: :json
 
-      assert_equal decode_json_response_body["errors"], ["Can't Save - Already Submitted Quiz"]
+      assert_equal decode_json_response_body['notice'], ["Quiz was successfully saved"]
 
       assert_equal QuizStatus.where(quiz_id:1, course_id: 3, user_id: 6).first["status"], "Submitted"
 
