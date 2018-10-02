@@ -73,7 +73,7 @@ class SamlController < ApplicationController
 
       # add university from email domain if missings
       if attributes["o"].nil? || attributes["o"].empty?
-        attributes["o"] = attributes["mail"].split('@')[1].match(/(\w+\.\w+$)/)[1]
+        attributes["o"] = attributes["mail"].split('@')[1].match(/(\w+\.\w+$)/)[1] rescue ""
       end
 
       email = attributes["mail"].downcase rescue ""

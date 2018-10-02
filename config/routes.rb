@@ -63,10 +63,11 @@ Rails.application.routes.draw do
       end
     end
 
-    get 'lti/(:action)' => 'lti#(:action)'
+    get  'lti/(:action)' => 'lti#(:action)'
     post 'lti/(:action)' => 'lti#(:action)'
     get  'saml/saml_signin' => 'saml#saml_signin'
     get  'saml/get_domain' => 'saml#get_domain'
+    get  'saml/metadata' => 'saml#metadata'
     post 'saml/consume' => 'saml#consume'
     
     resources :courses do
