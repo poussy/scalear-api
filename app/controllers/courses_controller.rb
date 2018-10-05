@@ -54,17 +54,17 @@ class CoursesController < ApplicationController
 
 		if current_user.is_administrator?
 			total_teacher_courses = Course.count
-			teacher_courses= Course.order("start_date DESC").limit(params[:limit]).offset(params[:offset]).includes([{:teacher_enrollments => [:user]}, :enrollments, :lectures, :quizzes])
+			teacher_courses= Course.order("start_date DESC, id DESC").limit(params[:limit]).offset(params[:offset]).includes([{:teacher_enrollments => [:user]}, :enrollments, :lectures, :quizzes])
 		elsif current_user.is_school_administrator?
 			school_domain = UsersRole.where(:user_id => current_user.id, :role_id => 9).first.organization.domain rescue ''
 			if !school_domain.blank?
 				course_ids = TeacherEnrollment.joins(:user).where("users.email like ? or users.id = ?", "%#{school_domain}%", current_user.id).pluck(:course_id).uniq 
 				total_teacher_courses = course_ids.size
-				teacher_courses = Course.order("start_date DESC").where(:id => course_ids).limit(params[:limit]).offset(params[:offset]).includes([{:teacher_enrollments => [:user]}, :enrollments, :lectures, :quizzes])
+				teacher_courses = Course.order("start_date DESC, id DESC").where(:id => course_ids).limit(params[:limit]).offset(params[:offset]).includes([{:teacher_enrollments => [:user]}, :enrollments, :lectures, :quizzes])
 			end
 		else
 			total_teacher_courses = current_user.subjects_to_teach.count
-			teacher_courses = current_user.subjects_to_teach.order("start_date DESC").limit(params[:limit]).offset(params[:offset]).includes([{:teacher_enrollments => [:user]}, :enrollments, :lectures, :quizzes])
+			teacher_courses = current_user.subjects_to_teach.order("start_date DESC, id DESC").limit(params[:limit]).offset(params[:offset]).includes([{:teacher_enrollments => [:user]}, :enrollments, :lectures, :quizzes])
 		end
 
 		if teacher_courses
