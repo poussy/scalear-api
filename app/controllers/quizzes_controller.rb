@@ -578,8 +578,20 @@ class QuizzesController < ApplicationController
         raise ActiveRecord::Rollback
         #rollback .. can't submit
       end
-    else
-      @status.touch
+    #if save
+    else 
+      #if survey inc number of attempts
+      if @quiz.quiz_type == "survey"
+        if @status.attempts <= @quiz.retries
+          @status.update_attributes!( :attempts => @status.attempts + 1)
+        else
+          return_value=I18n.t("controller_msg.cant_submit_no_more_attempts")
+          raise ActiveRecord::Rollback
+        end
+      #if quiz don't inc number of attempts  
+      else
+        @status.touch 
+      end  
     end
     correct_ans={} if @status.status!="Submitted"
     explanation = {} if @status.status!="Submitted"
