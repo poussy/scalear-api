@@ -1,7 +1,7 @@
 namespace :db do
     desc "Get Weekly on mondays active statistics"  
         task :weekly_update_statistics, [:platform]=> [:environment] do |t, args|
-        if Date.today.sunday?   
+        if Date.today.monday?   
             dev_null = Logger.new("/dev/null")
             Rails.logger = dev_null
             ActiveRecord::Base.logger = dev_null
