@@ -14,10 +14,10 @@ class UserMailer < ApplicationMailer
 	end
 
 
-	def weekly_update_statistics(users, statistics,platform)		
+	def weekly_update_statistics(users, statistics, platform)		
 		@statistics = statistics
 		@platform = platform
-		mail(:to => users, :subject => "Weekly statistics", :from => "\"ScalableLearning\" <no-reply@scalable-learning.com>")
+		mail(:to => users, :subject => "Weekly statistics"+Date.today.to_s(:long), :from => "\"ScalableLearning\" <no-reply@scalable-learning.com>")
 	end
 
 	def teacher_email(course, email, role, locale)

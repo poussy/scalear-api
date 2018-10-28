@@ -1,35 +1,36 @@
 namespace :db do
     desc "Get Weekly on mondays active statistics"  
         task :weekly_update_statistics, [:platform]=> [:environment] do |t, args|
-        if Date.today.monday?   
+        if Date.today.sunday?   
             dev_null = Logger.new("/dev/null")
             Rails.logger = dev_null
             ActiveRecord::Base.logger = dev_null
-            new_users = User.where("created_at between ? and ?", 1.week.ago.midnight, DateTime.now.midnight)
-            new_courses = Course.where("created_at between ? and ?", 1.week.ago.midnight, DateTime.now.midnight)
-            updated_users = User.where("updated_at between ? and ?", 1.week.ago.midnight, DateTime.now.midnight)
-            updated_courses = Course.where("updated_at between ? and ?", 1.week.ago.midnight, DateTime.now.midnight)
-            lec_views = LectureView.where("updated_at between ? and ?", 1.week.ago.midnight, DateTime.now.midnight)
-            quiz_solved = QuizGrade.where("updated_at between ? and ?", 1.week.ago.midnight, DateTime.now.midnight)
-            updated_note= VideoNote.where("updated_at between ? and ?", 1.week.ago.midnight, DateTime.now.midnight)
-            updated_confused= Confused.where("updated_at between ? and ?", 1.week.ago.midnight, DateTime.now.midnight)
-            updated_modules = Group.where("updated_at between ? and ? ", 1.week.ago.midnight, DateTime.now.midnight)
-            updated_lectures= Lecture.where("updated_at between ? and ? ", 1.week.ago.midnight, DateTime.now.midnight)
-            updated_quizzes = Quiz.where("updated_at between ? and ? ", 1.week.ago.midnight, DateTime.now.midnight)
-            updated_links = CustomLink.where("updated_at between ? and ? ", 1.week.ago.midnight, DateTime.now.midnight)
-            announcements = Announcement.where("updated_at between ? and ? ", 1.week.ago.midnight, DateTime.now.midnight)
+            createdAt_last_week_query = "created_at between '#{1.week.ago.midnight}' and '#{DateTime.now.midnight}'"
+            updatedAt_last_week_query = "updated_at between '#{1.week.ago.midnight}' and '#{DateTime.now.midnight}'"
+            updatedAt_last_week_midnight_query = "updated_at between '#{1.week.ago.midnight}' and '#{DateTime.now.midnight}'"
+            
+            new_users = User.where(createdAt_last_week_query)
+            new_courses = Course.where(createdAt_last_week_query)
+            
+            updated_users = User.where(updatedAt_last_week_query)
+            updated_courses = Course.where(updatedAt_last_week_query)
+            lec_views = LectureView.where(updatedAt_last_week_query)
+            quiz_solved = QuizGrade.where(updatedAt_last_week_query)
+            updated_note= VideoNote.where(updatedAt_last_week_query)
+            updated_confused= Confused.where(updatedAt_last_week_query)
+            
+            updated_modules = Group.where(updatedAt_last_week_midnight_query)
+            updated_lectures= Lecture.where(updatedAt_last_week_midnight_query)
+            updated_quizzes = Quiz.where(updatedAt_last_week_midnight_query)
+            updated_links = CustomLink.where(updatedAt_last_week_midnight_query)
+            announcements = Announcement.where(updatedAt_last_week_midnight_query)
 
-            new_students = new_users.select{|u| u.has_role?('Student')}.count
-            new_teachers = new_users.count - new_students
-
-            updated_students = updated_users.map{|u| u.id}
             student_lec_views = lec_views.map{|l| l.user_id}
             student_quiz_solved = quiz_solved.map{|q| q.user_id}
             student_updated_note = updated_note.map{|n| n.user_id}
             student_updated_confused = updated_confused.map{|c| c.user_id}
             active_students = ( student_lec_views+ student_quiz_solved + student_updated_note + student_updated_confused).uniq.count
 
-            # updated_teachers = updated_users.select{|u| !u.has_role?('student')}.map{|u| u.id}
             teacher_updated_modules = updated_modules.map{|g| g.course.user_id}
             teacher_updated_lectures= updated_lectures.map{|l| l.course.user_id}
             teacher_updated_quizzes = updated_quizzes.map{|q| q.course.user_id}
@@ -63,7 +64,7 @@ namespace :db do
 
             users = ["poussy@novelari.com","david.black-schaffer@it.uu.se","sverker@sics.se"]
 
-            UserMailer.delay.weekly_update_statistics(users,statistics,args['platform'])
+            UserMailer.weekly_update_statistics(users,statistics,args['platform']).deliver_now
         end
     end 
 end
