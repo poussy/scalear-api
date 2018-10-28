@@ -13,6 +13,13 @@ class UserMailer < ApplicationMailer
 		mail(:bcc => users, :subject => "(#{@course.short_name}) Announcement", :from => "\"ScalableLearning\" <no-reply@scalable-learning.com>", :reply_to => @reply_to)
 	end
 
+
+	def weekly_update_statistics(users, statistics, platform)		
+		@statistics = statistics
+		@platform = platform
+		mail(:to => users, :subject => "Weekly statistics ( #{Date.today.to_s(:long)} )", :from => "\"ScalableLearning\" <no-reply@scalable-learning.com>")
+	end
+
 	def teacher_email(course, email, role, locale)
 		I18n.locale=locale
 		@reply_to= course.user.email
