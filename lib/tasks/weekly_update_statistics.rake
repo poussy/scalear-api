@@ -1,6 +1,6 @@
 namespace :db do
     desc "Get Weekly on mondays active statistics"  
-        task :weekly_active_monday => :environment do |t, args|
+        task :weekly_update_statistics, [:platform]=> [:environment] do |t, args|
         if Date.today.monday?   
             dev_null = Logger.new("/dev/null")
             Rails.logger = dev_null
@@ -50,20 +50,20 @@ namespace :db do
             course_updated_links = updated_links.map{|l| l.course_id}
             course_announcements = announcements.map{|a| a.course_id}
             active_courses = (updated_courses + course_lec_views + course_quiz_solved + course_updated_note + course_updated_confused + course_updated_modules + course_updated_lectures + course_updated_quizzes + course_updated_links + course_announcements).uniq.count
-
-            p "#{new_users.count} new users (#{new_students} students, #{new_teachers} teachers)"
+       
+            p "#{new_users.count} new users"
             p "#{active_users} active users (#{active_students} students, #{active_teachers} teachers)"
             p "#{new_courses.count} new courses"
             p "#{active_courses} active courses"
-            file_name = "weekly update.txt"
-            File.write(file_name,
-            "#{new_users.count} new users \n
-             #{active_users} active users \n
-             #{new_courses.count} new courses\n
-             #{active_courses} active courses")
-             t = Tempfile.new(file_name)
-             UserMailer.attachment_email(User.new(name:"poussy",email:"poussy@novelari.com"),Course.last, file_name, t.path, I18n.locale).deliver
-             t.close
+
+            statistics = "#{new_users.count} new users \n
+            ##{active_users} active users (#{active_students} students, #{active_teachers} teachers) \n
+            #{new_courses.count} new courses\n
+            #{active_courses} active courses"
+
+            users = ["poussy@novelari.com","david.black-schaffer@it.uu.se","sverker@sics.se"]
+
+            UserMailer.delay.weekly_update_statistics(users,statistics,args['platform'])
         end
     end 
 end
