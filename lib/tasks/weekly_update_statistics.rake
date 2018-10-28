@@ -7,7 +7,7 @@ namespace :db do
             ActiveRecord::Base.logger = dev_null
             createdAt_last_week_query = "created_at between '#{1.week.ago.midnight}' and '#{DateTime.now.midnight}'"
             updatedAt_last_week_query = "updated_at between '#{1.week.ago.midnight}' and '#{DateTime.now.midnight}'"
-            updatedAt_last_week_midnight_query = "updated_at between '#{1.week.ago.midnight}' and '#{DateTime.now.midnight}'"
+         
             
             new_users = User.where(createdAt_last_week_query)
             new_courses = Course.where(createdAt_last_week_query)
@@ -19,11 +19,11 @@ namespace :db do
             updated_note= VideoNote.where(updatedAt_last_week_query)
             updated_confused= Confused.where(updatedAt_last_week_query)
             
-            updated_modules = Group.where(updatedAt_last_week_midnight_query)
-            updated_lectures= Lecture.where(updatedAt_last_week_midnight_query)
-            updated_quizzes = Quiz.where(updatedAt_last_week_midnight_query)
-            updated_links = CustomLink.where(updatedAt_last_week_midnight_query)
-            announcements = Announcement.where(updatedAt_last_week_midnight_query)
+            updated_modules = Group.where(updatedAt_last_week_query)
+            updated_lectures= Lecture.where(updatedAt_last_week_query)
+            updated_quizzes = Quiz.where(updatedAt_last_week_query)
+            updated_links = CustomLink.where(updatedAt_last_week_query)
+            announcements = Announcement.where(updatedAt_last_week_query)
 
             student_lec_views = lec_views.map{|l| l.user_id}
             student_quiz_solved = quiz_solved.map{|q| q.user_id}
@@ -62,9 +62,9 @@ namespace :db do
             #{new_courses.count} new courses\n
             #{active_courses} active courses"
 
-            users = ["poussy@novelari.com","david.black-schaffer@it.uu.se","sverker@sics.se"]
+            users = ["poussy@novelari.com", "david.black-schaffer@it.uu.se", "sverker@sics.se"]
 
-            UserMailer.weekly_update_statistics(users,statistics,args['platform']).deliver_now
+            UserMailer.weekly_update_statistics(users, statistics, args['platform']).deliver_now
         end
     end 
 end
