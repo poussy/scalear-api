@@ -57,10 +57,11 @@ namespace :db do
             p "#{new_courses.count} new courses"
             p "#{active_courses} active courses"
 
-            statistics = "#{new_users.count} new users \n
-            ##{active_users} active users (#{active_students} students, #{active_teachers} teachers) \n
-            #{new_courses.count} new courses\n
-            #{active_courses} active courses"
+            statistics = "<pre>
+            #{new_users.count} new users 
+            #{active_users} active users (#{active_students} students, #{active_teachers} teachers) 
+            #{new_courses.count} new courses 
+            #{active_courses} active courses</pre>"
 
             users = ["poussy@novelari.com", "david.black-schaffer@it.uu.se", "sverker@sics.se"]
 
