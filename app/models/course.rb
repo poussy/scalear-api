@@ -148,7 +148,6 @@ class Course < ApplicationRecord
 			csv_files[:online_quiz_grades]= CSV.generate do |csv_online_quiz_grade|
 			csv_files[:free_online_quiz_grades]= CSV.generate do |csv_free_online_quiz_grade|
 			csv_files[:confused]= CSV.generate do |csv_confused|
-			csv_files[:lecture_questions]= CSV.generate do |csv_lecture_question|
 			csv_files[:discussions] = CSV.generate do |csv_discussion|
 			csv_files[:pauses]= CSV.generate do |csv_pause|
 			csv_files[:backs]= CSV.generate do |csv_back|
@@ -176,7 +175,6 @@ class Course < ApplicationRecord
 					csv_online_quiz_grade << OnlineQuizGrade.column_names
 					csv_free_online_quiz_grade << FreeOnlineQuizGrade.column_names
 					csv_confused << Confused.column_names
-					# csv_lecture_question << LectureQuestion.column_names
 					csv_discussion << Forum::Post.get('column_names')
 					csv_pause << VideoEvent.column_names
 					csv_back<< VideoEvent.column_names
@@ -195,7 +193,6 @@ class Course < ApplicationRecord
 					@course.announcements.each do |announcement|
 							csv_announcement << announcement.attributes.values_at(* Announcement.column_names)
 					end
-					# @course.groups.each
 					@course.groups.each do |g|
 							csv_group << g.attributes.values_at(* Group.column_names)
 					end
@@ -226,9 +223,6 @@ class Course < ApplicationRecord
 					@course.confuseds.each do |confused|
 							csv_confused << confused.attributes.values_at(* Confused.column_names)
 					end
-					# @course.lecture_questions.each do |lecture_question|
-					# 		csv_lecture_question << lecture_question.attributes.values_at(* LectureQuestion.column_names)
-					# end
 					@course.video_events.where(:event_type => 2).each do |pause|
 							csv_pause << pause.attributes.values_at(* VideoEvent.column_names)
 					end
@@ -270,7 +264,6 @@ class Course < ApplicationRecord
 							csv_events << d.attributes.values_at(* Event.column_names)
 					end
 
-			end
 			end
 			end
 			end
@@ -470,7 +463,7 @@ class Course < ApplicationRecord
 	# end
 
   def export_for_transfer
-    @course = Course.where(:id => id).includes([:groups , :custom_links, {:quizzes => [{:questions => :answers}, :quiz_statuses, :quiz_grades, :free_answers]},:lectures, :lecture_views, :confuseds, :pauses, :backs, :lecture_questions, :free_online_quiz_grades, :online_quiz_grades, {:online_quizzes => :online_answers}, :announcements, :assignment_statuses])[0]
+    @course = Course.where(:id => id).includes([:groups , :custom_links, {:quizzes => [{:questions => :answers}, :quiz_statuses, :quiz_grades, :free_answers]},:lectures, :lecture_views, :confuseds, :pauses, :backs, :free_online_quiz_grades, :online_quiz_grades, {:online_quizzes => :online_answers}, :announcements, :assignment_statuses])[0]
 
     csv_files={}
 
