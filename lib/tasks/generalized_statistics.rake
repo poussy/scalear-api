@@ -34,7 +34,7 @@ namespace :db do
                         z.write(value)
                 end
         end
-        UserMailer.delay.attachment_email(User.new(name:"poussy",email:"poussy@novelari.com"),Course.last, file_name, t.path, I18n.locale)
+        UserMailer.attachment_email(User.new(name:"poussy",email:"poussy@novelari.com"),Course.last, file_name, t.path, I18n.locale).deliver_now
         t.close    
     end 
 
