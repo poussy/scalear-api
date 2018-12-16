@@ -631,6 +631,10 @@ class Course < ApplicationRecord
 					domain = UsersRole.where(:user_id => current_user.id, :role_id => 9).first.organization.domain rescue ''
 			end
 
+			if(current_user.is_administrator? &&  domain.downcase == 'all')
+					school_course = school_course.all
+			end
+			
 			if(domain.downcase != "all")
 					school_course = school_course.select{|c| c.teachers.select{|t| t.email.split("@").last.include?(domain) }.size>0}
 			end
