@@ -617,7 +617,7 @@ class Course < ApplicationRecord
 	end
 	# handle_asynchronously :export_modules_progress, :run_at => Proc.new { 5.seconds.from_now }
 
-	def self.school_admin_statistics_course_ids(raw_start_date, raw_end_date, current_user,course_ids)
+	def self.school_admin_statistics_course_ids(raw_start_date, raw_end_date, current_user, course_ids)
 
 			start_date = DateTime.parse(raw_start_date).midnight
 			end_date = DateTime.parse(raw_end_date).midnight

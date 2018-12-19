@@ -20,7 +20,7 @@ class KpisController < ApplicationController
     host   = ENV['INFLUXDB_HOST']
     port = Integer(ENV['INFLUXDB_PORT'])
 
-    @client  =  InfluxDB::Client.new database, :username => username, :password => password, :host => host, :port => port, :time_precision => 's', :retry => 1
+    @client  =  InfluxDB::Client.new database, :username => username, :password => password, :host => host, :port => port, :time_precision => 's', :retry => -1
     # @client  = TempoDB::Client.new( api_key, api_secret, api_host, api_port, api_secure )
     @series = ["Registration",
                "Login",
@@ -66,8 +66,8 @@ class KpisController < ApplicationController
     statistics = get_statistics(retrive_date.to_s)
     @series = @series.map { |s| s.to_sym }
     @series.each do |key|
-      # data = [TempoDB::DataPoint.new(retrive_date + 1.day  1.second, statistics[key])]
-      data= {:time => (retrive_date + 1.day  1.second).to_i, :value => statistics[key]}
+      # data = [TempoDB::DataPoint.new(retrive_date + 1.day - 1.second, statistics[key])]
+      data= {:time => (retrive_date + 1.day - 1.second).to_i, :value => statistics[key]}
       #@client.write_key(key.to_s,data)
       @client.write_point(key.to_s,data)
     end
@@ -77,7 +77,7 @@ class KpisController < ApplicationController
   def init_data
     start_date = Date.new(params[:year].to_i,params[:month].to_i,params[:day].to_i)
     end_date = Date.yesterday
-    day_count = (end_date  start_date ).to_i
+    day_count = (end_date - start_date ).to_i
     totals={}
     formated_data = {}
     for i in 0..day_count
@@ -96,13 +96,13 @@ class KpisController < ApplicationController
           data = statistics[key.to_sym]
         end
         if(!formated_data[key.to_sym])
-          formated_data[key.to_sym] = [TempoDB::DataPoint.new(retrive_date + 1.day  1.second, data)]
+          formated_data[key.to_sym] = [TempoDB::DataPoint.new(retrive_date + 1.day - 1.second, data)]
         else
-          formated_data[key.to_sym] << TempoDB::DataPoint.new(retrive_date + 1.day  1.second, data)
+          formated_data[key.to_sym] << TempoDB::DataPoint.new(retrive_date + 1.day - 1.second, data)
         end
       end
       p statistics
-      puts ""
+      puts "----"
     end
      # p formated_data
      #    puts "****"
@@ -117,7 +117,7 @@ class KpisController < ApplicationController
     start_date = params[:start]
     end_date = params[:end]
     #start_date = DateTime.parse(params[:start])
-    end_date = DateTime.parse(params[:end]).strftime('%Y%m%d %H:%M:%S')
+    end_date = DateTime.parse(params[:end]).strftime('%Y-%m-%d %H:%M:%S')
     #render json: @client.read(start_date, end_date, :keys => keys)[0]
     query_string = "select value from "+keys+" where time > '"+start_date+"' and time < '"+end_date+"' order asc"
     series =  @client.query query_string
@@ -142,8 +142,8 @@ class KpisController < ApplicationController
   end
 
 	def read_totals_for_duration
-    render json: Course.school_admin_statistics_course_ids(params[:start_date],params[:end_date],current_user, JSON.parse(params[:course_ids]))  
-  end
+		render json: Course.school_admin_statistics_course_ids(params[:start_date], params[:end_date], current_user, JSON.parse(params[:course_ids]))
+	end
 
 	def get_report_data_course_duration
 		render json: Course.school_admin_statistics_course_data(params[:start_date],params[:end_date], params[:course_ids] )
