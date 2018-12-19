@@ -101,8 +101,6 @@ class KpisController < ApplicationController
           formated_data[key.to_sym] << TempoDB::DataPoint.new(retrive_date + 1.day - 1.second, data)
         end
       end
-      p statistics
-      puts "----"
     end
      # p formated_data
      #    puts "****"
@@ -137,7 +135,6 @@ class KpisController < ApplicationController
     else
       sql_query = "users.email like '%"+domain+"%'"
     end
-
     render json: Course.joins(:user).where(sql_query).pluck(:id)
   end
 

@@ -48,7 +48,6 @@ Rails.application.routes.draw do
         get "get_welcome_message"
         post "submit_welcome_message"
         post "agree_to_privacy_policy"
-        get 'get_all_courses_ids'
       end
       collection do
         get "teacher"
@@ -369,6 +368,7 @@ Rails.application.routes.draw do
         get 'read_series'
         post 'init_data'
         get 'export_school_statistics'
+        get 'get_all_courses_ids'
       end
     end
 
