@@ -101,8 +101,6 @@ class KpisController < ApplicationController
           formated_data[key.to_sym] << TempoDB::DataPoint.new(retrive_date + 1.day - 1.second, data)
         end
       end
-      p statistics
-      puts "----"
     end
      # p formated_data
      #    puts "****"
@@ -127,9 +125,21 @@ class KpisController < ApplicationController
   def read_totals
     render json: get_totals(params[:school])
   end
+  def get_all_courses_ids
+    domain = params[:domain]
+    if (!current_user.is_administrator? &&  (domain.downcase == 'all'||domain.nil?))#not SL admin but a school admin
+      domain = UsersRole.where(:user_id => current_user.id, :role_id => 9).first.organization.domain rescue ''
+    end
+    if (domain.nil? || domain==="All")
+      sql_query = "users.email like '%%'"
+    else
+      sql_query = "users.email like '%"+domain+"%'"
+    end
+    render json: Course.joins(:user).where(sql_query).pluck(:id)
+  end
 
 	def read_totals_for_duration
-		render json: Course.school_admin_statistics_course_ids(params[:start_date],params[:end_date], params[:domain], current_user)
+		render json: Course.school_admin_statistics_course_ids(params[:start_date], params[:end_date], current_user, JSON.parse(params[:course_ids]))
 	end
 
 	def get_report_data_course_duration
@@ -143,6 +153,20 @@ class KpisController < ApplicationController
   def export_school_statistics
     Course.export_school_admin(params[:start_date],params[:end_date], params[:domain], current_user)
     render :json => {:notice => ['Statistics will be exported to CSV and sent to your Email']}
+  end
+  def get_all_youtube_urls
+    render json: Lecture.where("url like ? or url like ?","%www.youtu%","%www.y2u%").pluck(:url,:course_id).uniq
+  end
+    
+  def get_all_youtube_data
+    urls_courses_ids=JSON.parse(params[:urls_courses_ids]) #[[url, course id],...]
+    youtube_video_data = {} # {youtube video id:{email,course,teacher}}
+    urls_courses_ids.each do |url_course_id|
+      youtube_video_id = url_course_id[0].split("=")[1].split("&")[0]
+      youtube_video_course = Course.find(url_course_id[1])
+      youtube_video_data[youtube_video_id] = {:email=>youtube_video_course.user.email,:course=>youtube_video_course.short_name,:teacher=>youtube_video_course.user.name}
+    end
+    render json: youtube_video_data
   end
 
 	private
