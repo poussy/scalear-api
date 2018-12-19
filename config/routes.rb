@@ -48,6 +48,7 @@ Rails.application.routes.draw do
         get "get_welcome_message"
         post "submit_welcome_message"
         post "agree_to_privacy_policy"
+        get 'get_all_courses_ids'
       end
       collection do
         get "teacher"
