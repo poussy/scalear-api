@@ -101,8 +101,6 @@ class KpisController < ApplicationController
           formated_data[key.to_sym] << TempoDB::DataPoint.new(retrive_date + 1.day - 1.second, data)
         end
       end
-      p statistics
-      puts "----"
     end
      # p formated_data
      #    puts "****"
@@ -127,9 +125,21 @@ class KpisController < ApplicationController
   def read_totals
     render json: get_totals(params[:school])
   end
+  def get_all_courses_ids
+    domain = params[:domain]
+    if (!current_user.is_administrator? &&  (domain.downcase == 'all'||domain.nil?))#not SL admin but a school admin
+      domain = UsersRole.where(:user_id => current_user.id, :role_id => 9).first.organization.domain rescue ''
+    end
+    if (domain.nil? || domain==="All")
+      sql_query = "users.email like '%%'"
+    else
+      sql_query = "users.email like '%"+domain+"%'"
+    end
+    render json: Course.joins(:user).where(sql_query).pluck(:id)
+  end
 
 	def read_totals_for_duration
-		render json: Course.school_admin_statistics_course_ids(params[:start_date],params[:end_date], params[:domain], current_user)
+		render json: Course.school_admin_statistics_course_ids(params[:start_date], params[:end_date], current_user, JSON.parse(params[:course_ids]))
 	end
 
 	def get_report_data_course_duration
