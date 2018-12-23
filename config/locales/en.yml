@@ -379,6 +379,9 @@ en:
     incorrect_because: "Incorrect because"
     enter_explanation: "Please Enter Explanation"
     deleted_user: "Deleted User"
+    errors:
+        due_date_pass_after_appearance_date: "must be after appearance time"
+        due_date_must_be_after_items: "must be after items due date"
   courses:
     could_not_delete_course: "Could not delete course"
     lecture_quizzes: "Lecture Quizzes"
