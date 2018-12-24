@@ -1,4 +1,5 @@
 class Group < ApplicationRecord
+	
 	belongs_to :course, :touch => true
 	
 	has_many :lectures, -> { order('position') }, :dependent => :destroy
@@ -16,7 +17,7 @@ class Group < ApplicationRecord
 	has_many :online_quiz_grades
 	has_many :online_quizzes
 	has_many :video_events
-
+	set_locale()
 	after_destroy :clean_up
 
 	validates :appearance_time, :course_id, :name, :due_date, :position , :presence => true
@@ -26,8 +27,10 @@ class Group < ApplicationRecord
 	
 	validate :appearance_date_must_be_before_items
 	validate :due_date_must_be_after_items
-	validates_datetime :due_date, :on_or_after => lambda{|m| m.appearance_time}, :on_or_after_message => I18n.t("groups.errors.due_date_pass_after_appearance_date")
-
+	validates_datetime :due_date, :on_or_after => lambda{|m| m.appearance_time}, :on_or_after_message => I18n.t('groups.errors.due_date_pass_after_appearance_date')
+	puts "==================" 
+	puts I18n.locale
+	puts "==================" 
 	attribute :total_time 
 	attribute :items
 	attribute :total_questions
@@ -1025,27 +1028,39 @@ end
 	end
 	handle_asynchronously :export_student_statistics_csv, :run_at => Proc.new { 5.seconds.from_now }
 	  
-
+	def set_locale
+		logger.debug "* Accept-Language: #{request.env['HTTP_ACCEPT_LANGUAGE']}"
+		I18n.locale = extract_locale_from_accept_language_header
+		logger.debug "* Locale set to '#{I18n.locale}'"
+	end
+	   
+	  
 	private
 
+	
+		def extract_locale_from_accept_language_header
+		  request.env['HTTP_ACCEPT_LANGUAGE'].scan(/^[a-z]{2}/).first
+		end
 		def appearance_date_must_be_before_items
+			set_locale()
 			error=false
 			lectures.each do |l|
 				if l.appearance_time < appearance_time and l.appearance_time_module==false
 					error=true
 				end
 			end
-			errors.add(:appearance_time, I18n.t("groups.errors.appearance_date_must_be_before_items") ) if error		
+			errors.add(:appearance_time, I18n.t('groups.errors.appearance_date_must_be_before_items') ) if error		
 		end
 		
 		def due_date_must_be_after_items
+			set_locale()
 			error=false
 			(lectures+quizzes).each do |l|
 				if l.due_date > due_date and l.due_date_module==false and l.due_date < (Time.now + 100.years)
 					error=true
 				end
 			end
-			errors.add(:due_date, I18n.t("groups.errors.due_date_must_be_after_items") ) if error
+			errors.add(:due_date, I18n.t('groups.errors.due_date_must_be_after_items') ) if error
 		end
 
 		def clean_up
