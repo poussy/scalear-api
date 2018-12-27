@@ -368,6 +368,9 @@ Rails.application.routes.draw do
         get 'read_series'
         post 'init_data'
         get 'export_school_statistics'
+        get 'get_all_courses_ids'
+        get 'get_all_youtube_urls'
+        get 'get_all_youtube_data'
       end
     end
 

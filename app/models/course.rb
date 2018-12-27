@@ -617,28 +617,12 @@ class Course < ApplicationRecord
 	end
 	# handle_asynchronously :export_modules_progress, :run_at => Proc.new { 5.seconds.from_now }
 
-	def self.school_admin_statistics_course_ids(raw_start_date, raw_end_date, domain = 'All', current_user)
-			# raw_start_date = "01-December-2016" #start_date
-			# raw_end_date = "10-January-2017" #end_date
-			if domain.nil?
-					domain == 'All'
-			end
+	def self.school_admin_statistics_course_ids(raw_start_date, raw_end_date, current_user, course_ids)
+
 			start_date = DateTime.parse(raw_start_date).midnight
 			end_date = DateTime.parse(raw_end_date).midnight
 
-			school_course = Course.includes([:user,:teachers])
-			if (!current_user.is_administrator? &&  domain.downcase == 'all')
-					domain = UsersRole.where(:user_id => current_user.id, :role_id => 9).first.organization.domain rescue ''
-			end
-	
-			if(current_user.is_administrator? &&  domain.downcase == 'all')
-				school_course = school_course.all
-			end
-		
-			if(domain.downcase != "all")
-					school_course = school_course.select{|c| c.teachers.select{|t| t.email.split("@").last.include?(domain) }.size>0}
-			end
-			course_ids = school_course.map{|c| c.id}
+			school_course = Course.includes([:user,:teachers]).where("courses.id in (?)",course_ids)			
 
 			course_quizzes = Quiz.select("id, course_id, updated_at").where(:course_id => course_ids)
 			course_quizzes_ids = course_quizzes.map(&:id)

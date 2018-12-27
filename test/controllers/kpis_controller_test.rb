@@ -19,7 +19,7 @@ class KpisControllerTest < ActionDispatch::IntegrationTest
 		total_courses = Course.where('start_date BETWEEN ? AND ?', unique_start.beginning_of_day, unique_start.end_of_day)
 
 		url = '/en/kpis/read_totals_for_duration'
-		get url ,params: { start_date:raw_start_date , end_date: raw_end_date, domain:'' },headers: @admin_user.create_new_auth_token 
+		get url ,params: { start_date:raw_start_date , end_date: raw_end_date, course_ids: total_courses.pluck(:id).to_json},headers: @admin_user.create_new_auth_token 
 		resp =  JSON.parse response.body
 		assert_response :success
 		assert_equal resp['total_courses'] , total_courses.count 
