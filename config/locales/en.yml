@@ -324,7 +324,7 @@ en:
     module_successfully_created: "Module was successfully created"
     module_successfully_updated: "Module was successfully updated"
     module_name: "Module Name"
-    appearance_date: "Appearance Dates"
+    appearance_date: "Appearance Date"
     appearance_time: "Appearance Time"
     due_date: "Due Date"
     description: "Description"
