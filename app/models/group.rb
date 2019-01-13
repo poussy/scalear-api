@@ -1041,7 +1041,7 @@ end
 					error=true
 				end
 			end
-			errors.add(:appearance_time, I18n.t('groups.errors.appearance_date_must_be_before_items') ) if error		
+			errors.add(:appearance_dates, I18n.t('groups.errors.appearance_date_must_be_before_items') ) if error		
 		end
 		
 		def due_date_must_be_after_items
