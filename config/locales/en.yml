@@ -380,7 +380,7 @@ en:
     enter_explanation: "Please Enter Explanation"
     deleted_user: "Deleted User"
     errors:
-        appearance_date_must_be_before_items: "must be before items"
+        appearance_date_must_be_before_items: "must be before all items' appearance date"
         due_date_pass_after_appearance_date: "must be after appearance time"
         due_date_must_be_after_items: "must be after items due date"
   courses:
