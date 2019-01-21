@@ -83,7 +83,7 @@ class SamlController < ApplicationController
         user = User.get_anonymised_user(email)
         if !user.nil? 
           user = user.deanonymise(email)
-          user.last_sign_in_at = Time.now
+          user.current_sign_in_at = Time.now
           token = user.create_new_auth_token
           return "#/users/login?#{token.to_query}"
         end
@@ -97,7 +97,7 @@ class SamlController < ApplicationController
           saml_user.skip_confirmation!
           saml_user.save
         end
-        saml_user.last_sign_in_at = Time.now
+        saml_user.current_sign_in_at = Time.now
         token = saml_user.create_new_auth_token
         return "#/users/login?#{token.to_query}"
       end
