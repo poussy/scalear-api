@@ -39,18 +39,18 @@ a_free3:
   question_id: 3
   content: "abcd"
   correct: false
-  explanation: "<p class=\"medium-editor-p\">exp free text</p>"
+  explanation: "<p class=\"medium-editor-p\">exp free text of abcd</p>"
   #answer for free text with regular expression
 a_free5:
   id: 7
   question_id: 5
   content: /(Waterloo|waterloo)/
   correct: false
-  explanation: "<p class=\"medium-editor-p\">exp free text</p>"
+  explanation: "<p class=\"medium-editor-p\">exp free text answer_id:7 , question_id:5 </p>"
   #answer for free 
 a_free6:
   id: 8
   question_id: 6
   content: ""
   correct: false
-  explanation: "<p class=\"medium-editor-p\">exp free text</p>"
+  explanation: "<p class=\"medium-editor-p\">exp free text id answer_id:8,question_id:6</p>"
