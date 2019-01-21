@@ -528,8 +528,8 @@ class QuizzesController < ApplicationController
             return_value=I18n.t("controller_msg.unanswered_questions")
             raise ActiveRecord::Rollback
           end
-          if !ques.answers.empty?          
-              explanation[ques.answers[0].id]= ques.answers[0].explanation if ((a == ques.answers[0].content && !ques.answers[0].content.empty?)||( ques.answers[0].content.empty? )) #In case of match question:only show explanation if answer is correct, in case of no match:only show explanation if the answer is not blank          
+          if !a.empty?         
+              explanation[ques.answers[0].id]= ques.answers[0].explanation if ((a == ques.answers[0].content && !ques.answers[0].content.empty?)||( ques.answers[0].content.empty? )) #In case of match question:only show explanation if answer is correct, in case of no match:only show explanation if the answer is not blank            
           end   
         end
 
