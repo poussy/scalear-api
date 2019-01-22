@@ -18,7 +18,7 @@ class SamlController < ApplicationController
   end
 
   def get_domain
-    render json: {domains: JSON.load(open("https://md.nordu.net/swamid.json?role=idp"))}
+    render json: {domains: JSON.load(open("http://md.nordu.net/swamid.json?role=idp"))}
   end
 
   def consume
