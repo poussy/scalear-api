@@ -1,4 +1,5 @@
 class Group < ApplicationRecord
+	
 	belongs_to :course, :touch => true
 	
 	has_many :lectures, -> { order('position') }, :dependent => :destroy
@@ -26,7 +27,7 @@ class Group < ApplicationRecord
 	
 	validate :appearance_date_must_be_before_items
 	validate :due_date_must_be_after_items
-	validates_datetime :due_date, :on_or_after => lambda{|m| m.appearance_time}, :on_or_after_message => I18n.t("group.errors.due_date_pass_after_appearance_date")
+	validates_datetime :due_date, :on_or_after => lambda{|m| m.appearance_time}, :on_or_after_message => I18n.t('groups.errors.due_date_pass_after_appearance_date')
 
 	attribute :total_time 
 	attribute :items
@@ -1026,26 +1027,32 @@ end
 	handle_asynchronously :export_student_statistics_csv, :run_at => Proc.new { 5.seconds.from_now }
 	  
 
+		
+
+	   
+	  
 	private
 
 		def appearance_date_must_be_before_items
+
 			error=false
 			lectures.each do |l|
 				if l.appearance_time < appearance_time and l.appearance_time_module==false
 					error=true
 				end
 			end
-			errors.add(:appearance_time, I18n.t("group.errors.appearance_date_must_be_before_items") ) if error		
+			errors.add(:appearance_dates, I18n.t('groups.errors.appearance_date_must_be_before_items') ) if error		
 		end
 		
 		def due_date_must_be_after_items
+
 			error=false
 			(lectures+quizzes).each do |l|
 				if l.due_date > due_date and l.due_date_module==false and l.due_date < (Time.now + 100.years)
 					error=true
 				end
 			end
-			errors.add(:due_date, I18n.t("group.errors.due_date_must_be_after_items") ) if error
+			errors.add(:due_date, I18n.t('groups.errors.due_date_must_be_after_items') ) if error
 		end
 
 		def clean_up

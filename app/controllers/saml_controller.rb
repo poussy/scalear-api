@@ -83,7 +83,7 @@ class SamlController < ApplicationController
         user = User.get_anonymised_user(email)
         if !user.nil? 
           user = user.deanonymise(email)
-          user.last_sign_in_at = Time.now
+          user.current_sign_in_at = Time.now
           token = user.create_new_auth_token
           return "#/users/login?#{token.to_query}"
         end
@@ -97,7 +97,7 @@ class SamlController < ApplicationController
           saml_user.skip_confirmation!
           saml_user.save
         end
-        saml_user.last_sign_in_at = Time.now
+        saml_user.current_sign_in_at = Time.now
         token = saml_user.create_new_auth_token
         return "#/users/login?#{token.to_query}"
       end
@@ -109,7 +109,7 @@ class SamlController < ApplicationController
       settings.assertion_consumer_service_url = "https://#{request.host}/saml/consume"
       settings.issuer                         = "https://#{request.host}"
       settings.idp_cert_fingerprint           = "12:60:D7:09:6A:D9:C1:43:AD:31:88:14:3C:A8:C4:B7:33:8A:4F:CB"
-      settings.idp_metadata = "http://md.nordu.net/entities/#{CGI.escape($connect_to ||'')}"
+      settings.idp_metadata = "https://md.nordu.net/entities/#{CGI.escape($connect_to ||'')}"
       settings.display_name="Scalable Learning"
       settings.description={}
       settings.description["en"]="Blended learning platform for interactive in-class and online education."
