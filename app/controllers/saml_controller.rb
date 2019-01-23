@@ -18,7 +18,7 @@ class SamlController < ApplicationController
   end
 
   def get_domain
-    render json: {domains: JSON.load(open("http://md.nordu.net/swamid.json?role=idp"))}
+    render json: {domains: JSON.load(open("https://md.nordu.net/swamid.json?role=idp"))}
   end
 
   def consume
@@ -109,7 +109,7 @@ class SamlController < ApplicationController
       settings.assertion_consumer_service_url = "https://#{request.host}/saml/consume"
       settings.issuer                         = "https://#{request.host}"
       settings.idp_cert_fingerprint           = "12:60:D7:09:6A:D9:C1:43:AD:31:88:14:3C:A8:C4:B7:33:8A:4F:CB"
-      settings.idp_metadata = "http://md.nordu.net/entities/#{CGI.escape($connect_to ||'')}"
+      settings.idp_metadata = "https://md.nordu.net/entities/#{CGI.escape($connect_to ||'')}"
       settings.display_name="Scalable Learning"
       settings.description={}
       settings.description["en"]="Blended learning platform for interactive in-class and online education."
