@@ -397,7 +397,7 @@ class Course < ApplicationRecord
 				new_quiz= q.dup
 				new_quiz.course_id = new_course.id
 				new_quiz.group_id = new_group.id
-				new_quiz.visible= false
+				new_quiz.visible= q.visible
 				if new_course.end_date.to_time < q.appearance_time #unpublished
 					new_quiz.appearance_time =  Date.today + 200.years
 				elsif from.end_date.to_time > q.appearance_time #published
@@ -450,7 +450,7 @@ class Course < ApplicationRecord
 		self.save!
 
 	end
-  handle_asynchronously :import_course, :run_at => Proc.new { 5.seconds.from_now }
+    handle_asynchronously :import_course, :run_at => Proc.new { 5.seconds.from_now }
 
 	# def self.our(user)
 	# end

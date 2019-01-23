@@ -40,7 +40,7 @@ class GroupTest < ActiveSupport::TestCase
 		@lecture1.save
 		@group1.appearance_time = '2017-9-18'.to_datetime
 		assert_not @group1.valid?
-		assert_equal [ :appearance_time ], @group1.errors.keys
+		assert_equal [ :appearance_dates ], @group1.errors.keys
 
 		# # ## validate the due date is after the items due date
 		@group1.appearance_time = '2017-9-9'.to_datetime
