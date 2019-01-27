@@ -623,5 +623,24 @@ class QuizzesControllerTest < ActionDispatch::IntegrationTest
       end
       assert_equal decode_json_response_body, {"notice"=>["Survey is now visible"]}
     end
+
+    test "save_student_quiz_angular should save survey answer whether empty or not for question of free question" do
+      Quiz.create(id: 50,name: 'test survey with free text question', retries: 1, group_id: 3 , course_id: 3, appearance_time_module: false, appearance_time: '2017-9-10', 
+			due_date_module: false, due_date: '2017-10-9', position: 16, required: true, required_module: false, graded: false, graded_module: false, visible: true, 
+			quiz_type: 'survey', instructions: "Please fill the survey")
+		
+		  Question.create(id: 55,quiz_id: 50, content: "<p class=\"medium-editor-p\">free text survey</p>", question_type: "Free Text Question", show: true, position: 1, student_show: true, match_type: nil)
+    
+      post '/en/courses/3/quizzes/50/save_student_quiz_angular' , 
+        params: {
+          "student_quiz":{
+            "55":"good course"
+          },
+          "commit":"save"
+        }, 
+        headers: @headers2 , as: :json
+      assert_equal decode_json_response_body['notice'], ["Survey was successfully saved"]
+
+     end
     
 end
