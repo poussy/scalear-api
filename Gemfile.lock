@@ -222,10 +222,6 @@ GEM
     websocket-driver (0.6.5)
       websocket-extensions (>= 0.1.0)
     websocket-extensions (0.1.2)
-    whois (4.0.7)
-    whois-parser (1.1.0)
-      activesupport (>= 4)
-      whois (>= 4.0.6)
     zip-zip (0.3)
       rubyzip (>= 1.0.0)
 
@@ -262,8 +258,6 @@ DEPENDENCIES
   spring-watcher-listen (~> 2.0.0)
   tzinfo-data
   validates_timeliness (~> 4.0)
-  whois (~> 4.0, >= 4.0.7)
-  whois-parser (~> 1.1)
   zip-zip
 
 RUBY VERSION
