@@ -16,9 +16,25 @@ class SamlController < ApplicationController
     action, content = request.create({},connect_to)
     render json: {saml_url: content, action: action}
   end
-
+  def clear_saml_domains
+    SamlDomain.delete_all
+    ActiveRecord::Base.connection.reset_pk_sequence!('saml_domains')
+  end  
+  def update_saml_domains(nordu_domains)
+    clear_saml_domains
+    nordu_domains.each do |d|
+      new_domain = SamlDomain.create(:descr=>d["descr"],:title=>d["title"],:auth=>d["auth"],:keywords=>d["keywords"],:scope=>d["scope"],:entityID=>d["entityID"],:dataType=>d["type"],:hidden=>d["hidden"],:icon=>d["icon"])
+      new_domain.save
+    end  
+  end 
   def get_domain
-    render json: {domains: JSON.load(open("https://md.nordu.net/swamid.json?role=idp"))}
+    begin 
+      nordu_domains = JSON.load(open("https://md.nordu.net/swamid.json?role=idp"))
+      update_saml_domains(nordu_domains)
+    rescue
+      nordu_domains = SamlDomain.all
+    end     
+    render json: {domains:nordu_domains }
   end
 
   def consume

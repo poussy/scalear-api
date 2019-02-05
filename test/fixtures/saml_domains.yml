@@ -1,0 +1,23 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  descr: MyText
+  title: MyText
+  auth: MyText
+  keywords: MyText
+  scope: MyText
+  entityID: MyText
+  dataType: MyText
+  hidden: MyText
+  icon: MyText
+
+two:
+  descr: MyText
+  title: MyText
+  auth: MyText
+  keywords: MyText
+  scope: MyText
+  entityID: MyText
+  dataType: MyText
+  hidden: MyText
+  icon: MyText
