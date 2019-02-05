@@ -49,7 +49,6 @@ gem 'rack-cors', ' ~> 1.0.1'
 gem 'cancancan', '~> 2.0'
 gem 'validates_timeliness', '~> 4.0' 
 gem 'delayed_job_active_record'
-
 gem 'rubyzip', '>= 1.0.0' # will load new rubyzip version
 gem 'zip-zip' # will load compatibility for old rubyzip API.
 gem 'settingslogic'

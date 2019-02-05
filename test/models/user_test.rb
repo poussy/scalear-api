@@ -53,7 +53,5 @@ class UserTest < ActiveSupport::TestCase
     assert_equal deanonymised_user.university, "nile"
     assert_not deanonymised_user.encrypted_data
   end
-  
-
 
 end

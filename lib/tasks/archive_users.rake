@@ -8,6 +8,7 @@ namespace :gdpr do
             emails = [];
             inactive_users = User.where('current_sign_in_at < ? AND encrypted_data is null', 1.year.ago.midnight-1.week)
             inactive_users.each do |user|
+            update_organization(user)    
             user_data = user.dup
             result = user.anonymise
                 if result == "success"
@@ -23,5 +24,19 @@ namespace :gdpr do
             UserMailer.anonymisation_report(ENV['anonymisation_report_mail'], successes, failures).deliver_now
         end
     end
+
+    def update_organization(user)
+        domain = user.email.split('@')[1]
+        user_org = Organization.where(:domain=>domain).first
+        if !user_org
+            new_org=Organization.create(:domain=>domain,:name=>'arbitrary')
+            new_org.save
+            user_org=new_org
+        end 
+        u_roles = UsersRole.where(:user_id=>user.id)   
+        u_roles.each do |role|
+            role.update_attribute('organization_id',user_org.id) 
+        end           
+    end   
 
 end
