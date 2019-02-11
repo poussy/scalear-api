@@ -20,6 +20,14 @@ class SamlController < ApplicationController
     SamlDomain.delete_all
     ActiveRecord::Base.connection.reset_pk_sequence!('saml_domains')
   end  
+  def is_nordu_domains_valid(nordu_domains)
+    if nordu_domains.instance_of?Array
+       nordu_domains.each{|d| return false if !d.instance_of?Hash} 
+       return true
+    else 
+       return false   
+    end   
+  end  
   def update_saml_domains(nordu_domains)
     clear_saml_domains
     nordu_domains.each do |d|
@@ -30,7 +38,7 @@ class SamlController < ApplicationController
   def get_domain
     begin 
       nordu_domains = JSON.load(open("https://md.nordu.net/swamid.json?role=idp"))
-      update_saml_domains(nordu_domains)
+      update_saml_domains(nordu_domains) if is_nordu_domains_valid(nordu_domains)
     rescue
       nordu_domains = SamlDomain.all
     end     
