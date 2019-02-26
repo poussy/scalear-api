@@ -520,7 +520,7 @@ class User < ActiveRecord::Base
     self.encrypted_email = Digest::SHA256.hexdigest (self.email).to_s
 
     ## use email as key for encryption
-    key   = ActiveSupport::KeyGenerator.new(self.email).generate_key(ENV['hash_salt'],32)
+    key   = ActiveSupport::KeyGenerator.new(self.email).generate_key('<JSj\\cr34!gJ2*XS4<`?p6T7$Wf*(}K',32)
     crypt = ActiveSupport::MessageEncryptor.new(key)
     encrypted_name = crypt.encrypt_and_sign(self.name)
     encrypted_screen_name = crypt.encrypt_and_sign(self.screen_name)
@@ -545,12 +545,12 @@ class User < ActiveRecord::Base
   def deanonymise email
     self.email = email
     ## use user's email to decrypt information
-    key   = ActiveSupport::KeyGenerator.new(email).generate_key(ENV['hash_salt'],32)
+    key   = ActiveSupport::KeyGenerator.new(email).generate_key('<JSj\\cr34!gJ2*XS4<`?p6T7$Wf*(}K',32)
     crypt = ActiveSupport::MessageEncryptor.new(key)
 
     self.name =crypt.decrypt_and_verify(self.encrypted_data['name'])
     self.last_name = crypt.decrypt_and_verify(self.encrypted_data['last_name'])
-    self.screen_name =crypt.decrypt_and_verify(self.encrypted_data['screen_name'])
+    self.screen_name = retreive_screen_name(crypt.decrypt_and_verify(self.encrypted_data['screen_name']))
     self.university =crypt.decrypt_and_verify(self.encrypted_data['university'])
     self.encrypted_email = nil
     self.encrypted_data = nil
@@ -558,6 +558,11 @@ class User < ActiveRecord::Base
     self.skip_reconfirmation!
     self
   end
+
+  def retreive_screen_name screen_name
+    screen_name +='.' if User.find_by_screen_name(screen_name)
+    return screen_name
+  end  
 
   def self.get_anonymised_user email
     encrypted_email = Digest::SHA256.hexdigest (email) rescue ""
