@@ -1,4 +1,5 @@
-class LecturesController < ApplicationController
+class LecturesController < ApplicationController 
+
 	load_and_authorize_resource
 		# @lecture is already loaded
 
@@ -534,8 +535,11 @@ class LecturesController < ApplicationController
 		@lecture = Lecture.find(params[:id])
 		@course= params[:course_id]
 		lec_destory = false
+	
+	
 		ActiveRecord::Base.transaction do
 			lec_destory = @lecture.destroy
+			delete_vimeo_video(@lecture)
 		end
 		if lec_destory
 			## waitin for shared item table
@@ -545,7 +549,7 @@ class LecturesController < ApplicationController
 		else
 			render json: {:errors => [I18n.t("lectures.could_not_delete_lecture")]}, :status => 400
 		end
-  	end
+  end
 
 	def sort #called from module_editor to sort the lectures (by dragging)
 		group = Group.find(params[:group])
@@ -1047,5 +1051,13 @@ private
 			:aspect_ratio, :slides, :appearance_time_module, :due_date_module,:required_module , :inordered_module, 
 			:position, :required, :inordered, :start_time, :end_time, :type, :graded, :graded_module, :inclass, :distance_peer,
 			:skip_ahead,:skip_ahead_module)
+	end
+
+	def delete_vimeo_video(lecture)	
+		if @lecture.url.include?('vimeo.com/')
+			vimeo = VimeoMe2::VimeoObject.new('3dff7caaf118638cb8c3b59bf5f41b24')	
+			vid_id = @lecture.url.split('vimeo.com/')[1]
+			vimeo.delete('/videos/'+vid_id.to_s, code:204)
+		end		
 	end
 end
