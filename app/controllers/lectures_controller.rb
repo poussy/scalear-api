@@ -535,11 +535,13 @@ class LecturesController < ApplicationController
 		@lecture = Lecture.find(params[:id])
 		@course= params[:course_id]
 		lec_destory = false
-	
-	
+	  course_teachers_ids = @lecture.course.teachers.pluck(:id)
+	  lecture_url_used_elsewhere = Lecture.find_by_url(@lecture.url)
 		ActiveRecord::Base.transaction do
 			lec_destory = @lecture.destroy
-			delete_vimeo_video(@lecture)
+			if (course_teachers_ids.inlcudes?current_user.id && !lecture_url_used_elsewhere)
+				delete_vimeo_video(@lecture)
+			end	
 		end
 		if lec_destory
 			## waitin for shared item table
