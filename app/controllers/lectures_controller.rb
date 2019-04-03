@@ -535,11 +535,10 @@ class LecturesController < ApplicationController
 		@lecture = Lecture.find(params[:id])
 		@course= params[:course_id]
 		lec_destory = false
-	  course_teachers_ids = @lecture.course.teachers.pluck(:id)
 	  lecture_url_used_elsewhere = Lecture.find_by_url(@lecture.url)
 		ActiveRecord::Base.transaction do
 			lec_destory = @lecture.destroy
-			if (course_teachers_ids.inlcudes?current_user.id && !lecture_url_used_elsewhere)
+			if (!lecture_url_used_elsewhere)
 				delete_vimeo_video(@lecture)
 			end	
 		end
@@ -1057,7 +1056,7 @@ private
 
 	def delete_vimeo_video(lecture)	
 		if @lecture.url.include?('vimeo.com/')
-			vimeo = VimeoMe2::VimeoObject.new('3dff7caaf118638cb8c3b59bf5f41b24')	
+			vimeo = VimeoMe2::VimeoObject.new(ENV["VIMEO_DELETION_TOKEN"])	
 			vid_id = @lecture.url.split('vimeo.com/')[1]
 			vimeo.delete('/videos/'+vid_id.to_s, code:204)
 		end		
