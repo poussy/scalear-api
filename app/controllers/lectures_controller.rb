@@ -93,7 +93,7 @@ class LecturesController < ApplicationController
 	def update_vimeo_table
 		@new_vimeo_upload = VimeoUpload.new(:vimeo_url=>params["url"],:user_id=>current_user.id)
 		if @new_vimeo_upload.save
-			render json:{new_vimeo_upload: @group, :notice => ["lectures.video_successfully_uploaded"]}
+			render json:{new_vimeo_upload: @new_vimeo_upload, :notice => ["lectures.video_successfully_uploaded"]}
 		else
 			render json: {:errors => @new_vimeo_upload.errors}, status: 400
 		end
@@ -1051,8 +1051,17 @@ class LecturesController < ApplicationController
 					render json:{ :distance_peer => "no_peer_session"}
 			end
 	end
-
-	# # def end_distance_peer_session
+	def get_upload_access_token
+		url = "https://api.vimeo.com/oauth/authorize/client"
+		response = HTTParty.post(url, basic_auth:{username:ENV['VIMEO_CLIENT_ID'],password:ENV["VMEO_CLIENT_SECRET"]},body:{grant_type:"client_credentials",scope:"public private upload video_files "})
+		upload_token=token.parsed_response['access_token']
+		if upload_token
+			render json:{upload_token:upload_token, :notice => ["Token generated successfully"]}
+		else
+			render json: {:errors => upload_token.errors}, status: 400
+		end
+	end
+		# # def end_distance_peer_session
 	# # end
 
 private
