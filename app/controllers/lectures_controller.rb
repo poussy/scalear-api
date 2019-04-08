@@ -90,6 +90,15 @@ class LecturesController < ApplicationController
 
 	end
 
+	def update_vimeo_table
+		@new_vimeo_upload = VimeoUpload.new(:vimeo_url=>params["url"],:user_id=>current_user.id)
+		if @new_vimeo_upload.save
+			render json:{new_vimeo_upload: @group, :notice => ["lectures.video_successfully_uploaded"]}
+		else
+			render json: {:errors => @new_vimeo_upload.errors}, status: 400
+		end
+	end	
+
   def update_percent_view
     lecture = Lecture.find(params[:id])
     end_offset_percent = ( (lecture.duration - 5) * 100 ) / lecture.duration rescue 0
@@ -1055,10 +1064,11 @@ private
 	end
 
 	def delete_vimeo_video(lecture)	
-		if @lecture.url.include?('vimeo.com/')
+		if lecture.url.include?('vimeo.com/')
 			vimeo = VimeoMe2::VimeoObject.new(ENV["VIMEO_DELETION_TOKEN"])	
-			vid_id = @lecture.url.split('vimeo.com/')[1]
+			vid_id = lecture.url.split('vimeo.com/')[1]
 			vimeo.delete('/videos/'+vid_id.to_s, code:204)
+		  VimeoUpload.find_by_url(lecture.url).destroy
 		end		
 	end
 end

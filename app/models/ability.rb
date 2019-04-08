@@ -38,7 +38,7 @@ class Ability
       ## Lecture
         can [:create, :index, :update, :destroy, :show, :new_lecture_angular, :get_old_data_angular, :get_html_data_angular, :new_quiz_angular, :new_marker,
              :save_answers_angular, :add_answer_angular, :add_html_answer_angular, :remove_html_answer_angular, :remove_answer_angular, :sort, :validate_lecture_angular, 
-             :lecture_copy,  :create_or_update_survey_responses, :change_status_angular, :delete_response, :confused_show_inclass], Lecture do |lecture|
+             :lecture_copy,  :create_or_update_survey_responses, :update_vimeo_table,:change_status_angular, :delete_response, :confused_show_inclass], Lecture do |lecture|
                 lecture.course.correct_teacher(user)
         end
         can [:show, :get_lecture_data_angular, :confused, :back, :pause, :confused_question, :save_online, :save_html, :save_note, :delete_note ,:load_note, :switch_quiz, 

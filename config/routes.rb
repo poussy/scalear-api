@@ -267,6 +267,7 @@ Rails.application.routes.draw do
         post 'lecture_copy'
         get 'export_notes'
         post 'update_percent_view'
+        post 'update_vimeo_table'
         post 'change_status_angular'
         post 'create_or_update_survey_responses'
         delete 'delete_response'
