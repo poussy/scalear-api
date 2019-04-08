@@ -268,6 +268,7 @@ Rails.application.routes.draw do
         get 'export_notes'
         post 'update_percent_view'
         post 'update_vimeo_table'
+        get 'get_upload_access_token'
         post 'change_status_angular'
         post 'create_or_update_survey_responses'
         delete 'delete_response'
