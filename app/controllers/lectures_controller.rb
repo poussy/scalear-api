@@ -544,10 +544,13 @@ class LecturesController < ApplicationController
 		@lecture = Lecture.find(params[:id])
 		@course= params[:course_id]
 		lec_destory = false
-	  lecture_url_used_elsewhere = Lecture.find_by_url(@lecture.url)
+	  lecture_url_used_elsewhere = Lecture.where(:url=>@lecture.url).count
 		ActiveRecord::Base.transaction do
 			lec_destory = @lecture.destroy
-			if (!lecture_url_used_elsewhere)
+			puts "<----------------------->"
+			puts lecture_url_used_elsewhere
+			if (lecture_url_used_elsewhere==1)
+				puts "in call delete_vimeo_video"
 				delete_vimeo_video(@lecture)
 			end	
 		end
@@ -1053,15 +1056,25 @@ class LecturesController < ApplicationController
 	end
 	def get_upload_access_token
 		url = "https://api.vimeo.com/oauth/authorize/client"
-		response = HTTParty.post(url, basic_auth:{username:ENV['VIMEO_CLIENT_ID'],password:ENV["VMEO_CLIENT_SECRET"]},body:{grant_type:"client_credentials",scope:"public private upload video_files "})
-		upload_token=token.parsed_response['access_token']
+		ENV["VIMEO_CLIENT_ID"]='b85638f4311e2d68742dc4e88023a2b569fa369d'
+		ENV["VMEO_CLIENT_SECRET"]='Le6TaiJHtLTUBo07z+NCkmF4U6MIaUS2y3zHZusioYSQneV5WzXJVPbUnDrdSGgcgfpbhpElsN8qtWDC1cqgGKENctBuTDXAV6wL6jy1AAEpjKxVMTZ3s7EMiPDOHkoI'
+		response = HTTParty.post(url, basic_auth:{username:ENV["VIMEO_CLIENT_ID"],password:ENV["VMEO_CLIENT_SECRET"]},body:{grant_type:"client_credentials",scope:"private create edit delete interact upload video_files public"})
+		puts "response=======>"
+		puts response
+		#upload_token= response.parsed_response['access_token'] 
+		upload_token= "e6783970f529d6099598c4a7357a9aae"
 		if upload_token
 			render json:{upload_token:upload_token, :notice => ["Token generated successfully"]}
 		else
-			render json: {:errors => upload_token.errors}, status: 400
+			render json: {:errors => response['developer_message']}, status: 400
 		end
 	end
-		# # def end_distance_peer_session
+
+	def revoke_upload_access_token
+		url='https://api.vimeo.com/tokens'
+		body = { 'tokens': [{'access_token': 'e6783970f529d6099598c4a7357a9aae' }]}
+		HTTParty.delete(url,basic_auth:{username:ENV["VIMEO_CLIENT_ID"],password:ENV["VMEO_CLIENT_SECRET"]},body:body.to_json)
+	end	# # def end_distance_peer_session
 	# # end
 
 private
@@ -1074,10 +1087,12 @@ private
 
 	def delete_vimeo_video(lecture)	
 		if lecture.url.include?('vimeo.com/')
+			puts "in delete vimeo video"
+			ENV["VIMEO_DELETION_TOKEN"]="d2684da2a163a93e8dab589d1dca99a9"
 			vimeo = VimeoMe2::VimeoObject.new(ENV["VIMEO_DELETION_TOKEN"])	
 			vid_id = lecture.url.split('vimeo.com/')[1]
 			vimeo.delete('/videos/'+vid_id.to_s, code:204)
-		  VimeoUpload.find_by_url(lecture.url).destroy
+		  VimeoUpload.find_by_vimeo_url(lecture.url).destroy
 		end		
 	end
 end
