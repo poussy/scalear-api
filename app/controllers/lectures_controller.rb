@@ -544,14 +544,15 @@ class LecturesController < ApplicationController
 		@lecture = Lecture.find(params[:id])
 		@course= params[:course_id]
 		lec_destory = false
-	  lecture_url_used_elsewhere = Lecture.where(:url=>@lecture.url).count
+	  lecture_url_not_used_elsewhere = Lecture.where(:url=>@lecture.url).count==1
 		ActiveRecord::Base.transaction do
 			lec_destory = @lecture.destroy
 			puts "<----------------------->"
-			puts lecture_url_used_elsewhere
-			if (lecture_url_used_elsewhere==1)
+			puts lecture_url_not_used_elsewhere
+			if (lecture_url_not_used_elsewhere && is_vimeo(@lecture))
 				puts "in call delete_vimeo_video"
-				delete_vimeo_video(@lecture)
+			#	vid_vimeo_id=@lecture.url.split('https://vimeo.com/')[1]
+				delete_vimeo_video
 			end	
 		end
 		if lec_destory
@@ -1076,6 +1077,29 @@ class LecturesController < ApplicationController
 		HTTParty.delete(url,basic_auth:{username:ENV["VIMEO_CLIENT_ID"],password:ENV["VMEO_CLIENT_SECRET"]},body:body.to_json)
 	end	# # def end_distance_peer_session
 	# # end
+	def is_vimeo(lecture)
+		if lecture.url.include?('vimeo.com/')
+			return true 
+		else	
+			return false
+		end
+	end	
+
+	def delete_vimeo_video		
+  	if params['vimeo_vid_id']
+			vid_vimeo_id = params['vimeo_vid_id'] 
+		else 	
+			vid_vimeo_id=@lecture.url.split('https://vimeo.com/')[1]
+		end	
+		puts "++++++++++++++++++++++++++++++++"
+		puts vid_vimeo_id
+		puts "++++++++++++++++++++++++++++++++"
+		ENV["VIMEO_DELETION_TOKEN"]="d2684da2a163a93e8dab589d1dca99a9"
+		vimeo = VimeoMe2::VimeoObject.new(ENV["VIMEO_DELETION_TOKEN"])		
+		vimeo.delete('/videos/'+vid_vimeo_id.to_s, code:204)
+		vimeo_upload_record = VimeoUpload.find_by_vimeo_url("https://vimeo.com/"+vid_vimeo_id.to_s)
+		vimeo_upload_record.destroy if vimeo_upload_record				
+	end
 
 private
 	def lecture_params
@@ -1085,14 +1109,5 @@ private
 			:skip_ahead,:skip_ahead_module)
 	end
 
-	def delete_vimeo_video(lecture)	
-		if lecture.url.include?('vimeo.com/')
-			puts "in delete vimeo video"
-			ENV["VIMEO_DELETION_TOKEN"]="d2684da2a163a93e8dab589d1dca99a9"
-			vimeo = VimeoMe2::VimeoObject.new(ENV["VIMEO_DELETION_TOKEN"])	
-			vid_id = lecture.url.split('vimeo.com/')[1]
-			vimeo.delete('/videos/'+vid_id.to_s, code:204)
-		  VimeoUpload.find_by_vimeo_url(lecture.url).destroy
-		end		
-	end
+
 end
