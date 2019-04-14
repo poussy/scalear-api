@@ -1060,6 +1060,7 @@ class LecturesController < ApplicationController
 		ENV["VIMEO_CLIENT_ID"]='b85638f4311e2d68742dc4e88023a2b569fa369d'
 		ENV["VMEO_CLIENT_SECRET"]='Le6TaiJHtLTUBo07z+NCkmF4U6MIaUS2y3zHZusioYSQneV5WzXJVPbUnDrdSGgcgfpbhpElsN8qtWDC1cqgGKENctBuTDXAV6wL6jy1AAEpjKxVMTZ3s7EMiPDOHkoI'
 		response = HTTParty.post(url, basic_auth:{username:ENV["VIMEO_CLIENT_ID"],password:ENV["VMEO_CLIENT_SECRET"]},body:{grant_type:"client_credentials",scope:"private create edit delete interact upload video_files public"})
+		HTTParty.delete(url, basic_auth:{username:ENV["VIMEO_CLIENT_ID"],password:ENV["VMEO_CLIENT_SECRET"]},Authorization:'bearer 213130d118930849f3396f019e5ddac3')
 		puts "response=======>"
 		puts response
 		#upload_token= response.parsed_response['access_token'] 
@@ -1072,9 +1073,8 @@ class LecturesController < ApplicationController
 	end
 
 	def revoke_upload_access_token
-		url='https://api.vimeo.com/tokens'
-		body = { 'tokens': [{'access_token': 'e6783970f529d6099598c4a7357a9aae' }]}
-		HTTParty.delete(url,basic_auth:{username:ENV["VIMEO_CLIENT_ID"],password:ENV["VMEO_CLIENT_SECRET"]},body:body.to_json)
+		# HTTParty.delete('https://api.vimeo.com/tokens',headers:{"Authorization"=>"bearer 213130d118930849f3396f019e5ddac3"})
+		HTTParty.delete('https://api.vimeo.com/tokens',headers:{"Authorization"=>"bearer "+params[:upload_token]})
 	end	# # def end_distance_peer_session
 	# # end
 	def is_vimeo(lecture)
