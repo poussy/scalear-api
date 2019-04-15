@@ -547,11 +547,7 @@ class LecturesController < ApplicationController
 	  lecture_url_not_used_elsewhere = Lecture.where(:url=>@lecture.url).count==1
 		ActiveRecord::Base.transaction do
 			lec_destory = @lecture.destroy
-			puts "<----------------------->"
-			puts lecture_url_not_used_elsewhere
 			if (lecture_url_not_used_elsewhere && is_vimeo(@lecture))
-				puts "in call delete_vimeo_video"
-			#	vid_vimeo_id=@lecture.url.split('https://vimeo.com/')[1]
 				delete_vimeo_video
 			end	
 		end
@@ -1091,14 +1087,15 @@ class LecturesController < ApplicationController
 		else 	
 			vid_vimeo_id=@lecture.url.split('https://vimeo.com/')[1]
 		end	
-		puts "++++++++++++++++++++++++++++++++"
-		puts vid_vimeo_id
-		puts "++++++++++++++++++++++++++++++++"
-		ENV["VIMEO_DELETION_TOKEN"]="d2684da2a163a93e8dab589d1dca99a9"
-		vimeo = VimeoMe2::VimeoObject.new(ENV["VIMEO_DELETION_TOKEN"])		
-		vimeo.delete('/videos/'+vid_vimeo_id.to_s, code:204)
+		ENV["VIMEO_DELETION_TOKEN"]="f1288e94e5a779f5f4e9cd3934c119b1"
+	  begin
+			vimeo_video = VimeoMe2::Video.new(ENV["VIMEO_DELETION_TOKEN"],vid_vimeo_id)	
+			vimeo_video.destroy	
+		rescue =>ex
+			puts ex		
+		end	
 		vimeo_upload_record = VimeoUpload.find_by_vimeo_url("https://vimeo.com/"+vid_vimeo_id.to_s)
-		vimeo_upload_record.destroy if vimeo_upload_record				
+		vimeo_upload_record.destroy if vimeo_upload_record		
 	end
 
 private
