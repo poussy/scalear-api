@@ -48,7 +48,8 @@ class LecturesController < ApplicationController
 		end 
 
 		did_he_change_lecture_type = @lecture.inclass != params[:lecture][:inclass]
-
+	  puts "lecture params ==========>"
+		puts lecture_params
 		if @lecture.update_attributes(lecture_params)
 			##### remove all onlinequiz.inclass_session and check added it if type isdistance peer
 			@lecture.events.where(:quiz_id => nil, :group_id => @lecture.group.id).destroy_all
@@ -1055,7 +1056,7 @@ class LecturesController < ApplicationController
 		url = "https://api.vimeo.com/oauth/authorize/client"
 		ENV["VIMEO_CLIENT_ID"]='b85638f4311e2d68742dc4e88023a2b569fa369d'
 		ENV["VMEO_CLIENT_SECRET"]='Le6TaiJHtLTUBo07z+NCkmF4U6MIaUS2y3zHZusioYSQneV5WzXJVPbUnDrdSGgcgfpbhpElsN8qtWDC1cqgGKENctBuTDXAV6wL6jy1AAEpjKxVMTZ3s7EMiPDOHkoI'
-		response = HTTParty.post(url, basic_auth:{username:ENV["VIMEO_CLIENT_ID"],password:ENV["VMEO_CLIENT_SECRET"]},body:{grant_type:"client_credentials",scope:"private create edit delete interact upload video_files public"})
+		# response = HTTParty.post(url, basic_auth:{username:ENV["VIMEO_CLIENT_ID"],password:ENV["VMEO_CLIENT_SECRET"]},body:{grant_type:"client_credentials",scope:"private create edit delete interact upload video_files public"})
 		HTTParty.delete(url, basic_auth:{username:ENV["VIMEO_CLIENT_ID"],password:ENV["VMEO_CLIENT_SECRET"]},Authorization:'bearer 213130d118930849f3396f019e5ddac3')
 		puts "response=======>"
 		puts response
