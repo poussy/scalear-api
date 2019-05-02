@@ -90,9 +90,30 @@ class LecturesController < ApplicationController
 		end
 
 	end
+	def get_uploading_status
+		current_upload = VimeoUpload.find_by_lecture_id(params["id"].to_i)
+		@progress = current_upload.status if current_upload
+		puts "------------------------------------------------------"
+		puts "---------------------get_uploading_status---------------------------------"
+		puts @progress
+		puts "------------------------------------------------------"
+		if current_upload==nil
+			render json:{status: 	"none", :notice => ["lectures.no_video_upload"]}
+	  elsif 	@progress
+			render json:{status: 	@progress, :notice => ["lectures.video_is_transcoding"]}
+		else
+			render json: {:errors => "error"}, status: 400
+		end
+	end	
 
 	def update_vimeo_table
-		@new_vimeo_upload = VimeoUpload.new(:vimeo_url=>params["url"],:user_id=>current_user.id)
+		if params["status"] == "complete" && params["status"]
+			@new_vimeo_upload=VimeoUpload.find_by_vimeo_url(params["url"])
+			@new_vimeo_upload.status="complete"
+		else
+			@new_vimeo_upload = VimeoUpload.new(:vimeo_url=>params["url"],:user_id=>current_user.id,:status=>'transcoding',:lecture_id=>params["id"])
+		end
+
 		if @new_vimeo_upload.save
 			render json:{new_vimeo_upload: @new_vimeo_upload, :notice => ["lectures.video_successfully_uploaded"]}
 		else
@@ -1083,7 +1104,12 @@ class LecturesController < ApplicationController
 	end	
 
 	def delete_vimeo_video		
-  	if params['vimeo_vid_id']
+		puts "++++++++++++++++++++"
+		puts params
+		puts "++++++++++++++++++++"
+		if params['vimeo_vid_id']==0
+			vid_vimeo_id = VimeoUpload.find_by_lecture_id(params['id']).vimeo_url.split('https://vimeo.com/')[1]
+		elsif params['vimeo_vid_id']
 			vid_vimeo_id = params['vimeo_vid_id'] 
 		else 	
 			vid_vimeo_id=@lecture.url.split('https://vimeo.com/')[1]
