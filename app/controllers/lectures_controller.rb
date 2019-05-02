@@ -1106,7 +1106,7 @@ class LecturesController < ApplicationController
 	def delete_vimeo_video		
 		puts "++++++++++++++++++++"
 		puts params
-		puts "++++++++++++++++++++"
+		puts "+++++++++++++++++++"
 		if params['vimeo_vid_id']==0
 			vid_vimeo_id = VimeoUpload.find_by_lecture_id(params['id']).vimeo_url.split('https://vimeo.com/')[1]
 		elsif params['vimeo_vid_id']
