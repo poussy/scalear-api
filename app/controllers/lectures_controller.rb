@@ -110,6 +110,7 @@ class LecturesController < ApplicationController
 		if params["status"] == "complete" && params["status"]
 			@new_vimeo_upload=VimeoUpload.find_by_vimeo_url(params["url"])
 			@new_vimeo_upload.status="complete"
+			@lecture.update(name:params["title"]) if @lecture.name == "New Lecture"
 		else
 			@new_vimeo_upload = VimeoUpload.new(:vimeo_url=>params["url"],:user_id=>current_user.id,:status=>'transcoding',:lecture_id=>params["id"])
 		end
@@ -120,7 +121,21 @@ class LecturesController < ApplicationController
 			render json: {:errors => @new_vimeo_upload.errors}, status: 400
 		end
 	end	
-
+	def get_vimeo_video_id
+		current_upload = VimeoUpload.find_by_lecture_id(params["id"].to_i)
+		@vimeo_video_id = current_upload.vimeo_url.split('https://vimeo.com/')[1] if current_upload
+		puts "------------------------------------------------------"
+		puts "---------------------get_vimeo_video_id---------------------------------"
+		puts @vimeo_video_id
+		puts "------------------------------------------------------"
+		if current_upload==nil
+			render json:{ vimeo_video_id: 	"none", :notice => ["lectures.no_video_upload"]}
+	  elsif 	@vimeo_video_id
+			render json:{ vimeo_video_id: 	@vimeo_video_id, :notice => ["lectures.vimeo_video_id_is_returned"]}
+		else
+			render json:{ :errors => "error"}, status: 400
+		end
+	end
   def update_percent_view
     lecture = Lecture.find(params[:id])
     end_offset_percent = ( (lecture.duration - 5) * 100 ) / lecture.duration rescue 0
@@ -1103,17 +1118,27 @@ class LecturesController < ApplicationController
 		end
 	end	
 
-	def delete_vimeo_video		
-		puts "++++++++++++++++++++"
+	def delete_vimeo_video				
+		puts "=====================delete_vimeo_video=============="
 		puts params
-		puts "+++++++++++++++++++"
-		if params['vimeo_vid_id']==0
-			vid_vimeo_id = VimeoUpload.find_by_lecture_id(params['id']).vimeo_url.split('https://vimeo.com/')[1]
-		elsif params['vimeo_vid_id']
+		puts "====================================================="
+		#extract vimeo video ID
+		if params['vimeo_vid_id']==10 #delete called from the FE, Delete video 
+	    puts "===================delete called from the FE when press on Delete video"
+			upload = VimeoUpload.find_by_lecture_id(params['id'])
+			vid_vimeo_id = upload.vimeo_url.split('https://vimeo.com/')[1]
+			#reset lecture
+			@lecture.update(url:"none")
+			@lecture.update(duration:0)
+			
+		elsif params['vimeo_vid_id']	#delete called from the FE , to cancel transcoding
+			puts "===================delete called from the FE , to cancel transcoding"
 			vid_vimeo_id = params['vimeo_vid_id'] 
-		else 	
+		else 	#delete internally called at BE
+			puts "===================delete internally called at BE"
 			vid_vimeo_id=@lecture.url.split('https://vimeo.com/')[1]
 		end	
+		#clean up SL vimeo account
 		ENV["VIMEO_DELETION_TOKEN"]="f1288e94e5a779f5f4e9cd3934c119b1"
 	  begin
 			vimeo_video = VimeoMe2::Video.new(ENV["VIMEO_DELETION_TOKEN"],vid_vimeo_id)	
@@ -1121,6 +1146,7 @@ class LecturesController < ApplicationController
 		rescue =>ex
 			puts ex		
 		end	
+		#clean up VimeoUpload table
 		vimeo_upload_record = VimeoUpload.find_by_vimeo_url("https://vimeo.com/"+vid_vimeo_id.to_s)
 		vimeo_upload_record.destroy if vimeo_upload_record		
 	end

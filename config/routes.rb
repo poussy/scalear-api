@@ -269,6 +269,7 @@ Rails.application.routes.draw do
         post 'update_percent_view'
         post 'update_vimeo_table'
         get 'get_uploading_status'
+        get 'get_vimeo_video_id'
         post 'delete_vimeo_video'
         get 'get_upload_access_token'
         post 'change_status_angular'
