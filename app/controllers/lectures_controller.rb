@@ -1130,10 +1130,11 @@ class LecturesController < ApplicationController
 			#reset lecture
 			@lecture.update(url:"none")
 			@lecture.update(duration:0)
-			
+			@lecture.update(name:"New Lecture") 
 		elsif params['vimeo_vid_id']	#delete called from the FE , to cancel transcoding
 			puts "===================delete called from the FE , to cancel transcoding"
 			vid_vimeo_id = params['vimeo_vid_id'] 
+			@lecture.update(name:"New Lecture") 
 		else 	#delete internally called at BE
 			puts "===================delete internally called at BE"
 			vid_vimeo_id=@lecture.url.split('https://vimeo.com/')[1]
