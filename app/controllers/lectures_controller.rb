@@ -1088,29 +1088,7 @@ class LecturesController < ApplicationController
 					render json:{ :distance_peer => "no_peer_session"}
 			end
 	end
-	# def get_upload_access_token
-	# 	url = "https://api.vimeo.com/oauth/authorize/client"
-	# 	ENV["VIMEO_CLIENT_ID"]='b85638f4311e2d68742dc4e88023a2b569fa369d'
-	# 	ENV["VMEO_CLIENT_SECRET"]='Le6TaiJHtLTUBo07z+NCkmF4U6MIaUS2y3zHZusioYSQneV5WzXJVPbUnDrdSGgcgfpbhpElsN8qtWDC1cqgGKENctBuTDXAV6wL6jy1AAEpjKxVMTZ3s7EMiPDOHkoI'
-	# 	# response = HTTParty.post(url, basic_auth:{username:ENV["VIMEO_CLIENT_ID"],password:ENV["VMEO_CLIENT_SECRET"]},body:{grant_type:"client_credentials",scope:"private create edit delete interact upload video_files public"})
-	# 	HTTParty.delete(url, basic_auth:{username:ENV["VIMEO_CLIENT_ID"],password:ENV["VMEO_CLIENT_SECRET"]},Authorization:'bearer 213130d118930849f3396f019e5ddac3')
-	# 	puts "response=======>"
-	# 	puts response
-	# 	#upload_token= response.parsed_response['access_token'] 
-	# 	upload_token= "158e50263e24a8eba295b3a554a26bb6"#"e6783970f529d6099598c4a7357a9aae"
-	# 	if upload_token
-	# 		render json:{upload_token:upload_token, :notice => ["Token generated successfully"]}
-	# 	else
-	# 		render json: {:errors => response['developer_message']}, status: 400
-	# 	end
-	# end
 
-	def revoke_upload_access_token
-		# HTTParty.delete('https://api.vimeo.com/tokens',headers:{"Authorization"=>"bearer 213130d118930849f3396f019e5ddac3"})
-		ENV['vimeo_token']='e6783970f529d6099598c4a7357a9aae'
-		HTTParty.delete('https://api.vimeo.com/tokens',headers:{"Authorization"=>"bearer "+ENV['vimeo_token']})
-	end	# # def end_distance_peer_session
-	# # end
 	def is_vimeo(lecture)
 		if lecture.url.include?('vimeo.com/')
 			return true 
@@ -1120,13 +1098,13 @@ class LecturesController < ApplicationController
 	end	
 	
 	def extract_upload_details(response)
-		video_info_access_token="b97fb8ab110c5aa54f73267911fc5051"
+		video_info_access_token="b97fb8ab110c5aa54f73267911fc5051"#<<<<<<<<<----------env var
 		parsed_response = JSON.parse(response)
 		vimeo_video_id = parsed_response['uri'].split('videos/')[1]
 		upload_link = parsed_response['upload']['upload_link']
 		ticket_id = upload_link.match(/\?ticket_id=[0-9]*/)[0].split('=')[1]
 		video_file_id = upload_link.match(/\&video_file_id=[0-9]*/)[0].split('=')[1]
-		signature = upload_link.match(/signature%([0-9]*[a-zA-Z]*)*/)[0].split('%')[1]
+		signature = upload_link.match(/\&signature=([0-9]*[a-zA-Z]*)*/)[0].split('=')[1]
 		complete_url ='https://api.vimeo.com/users/96206044/uploads/'+ticket_id+'?video_file_id='+video_file_id+'&upgrade=true&signature='+signature
 		details = {'complete_url':complete_url,'ticket_id':ticket_id,'upload_link_secure':upload_link,'video_id':vimeo_video_id,'video_info_access_token':video_info_access_token}
 		return details
@@ -1135,65 +1113,78 @@ class LecturesController < ApplicationController
 	def get_vimeo_upload_details
 		response = HTTParty.post('https://api.vimeo.com/me/videos',headers:{"Authorization"=>"bearer e6783970f529d6099598c4a7357a9aae","Content-Type"=>"application/json","Accept"=>"application/vnd.vimeo.*+json;version=3.4"})	
 		details = extract_upload_details(response)
-		if response
-			render json:{details:details, :notice => ["upload details is retreived successfully"]}
+		if response.code == 201 
+			render json: {details:details, :notice => ["upload details is retreived successfully"]}
 		else
 			render json: {:errors => response['developer_message']}, status: 400
 		end
 	end	
+
 	def delete_complete_link
 		ENV['vimeo_token']='e6783970f529d6099598c4a7357a9aae'
-		puts "===========delete_complete_link=========="
-		puts params
-		puts "-================================="
-		HTTParty.delete(params[:link],headers:{"Authorization"=>"bearer "+ENV['vimeo_token']})
+		response = HTTParty.delete(params[:link],headers:{"Authorization"=>"bearer "+ENV['vimeo_token']})
+		if response.code == 201
+			render json:{deletion:response, :notice => ["complete link deletion is done successfully"]}
+		else 
+			render json: {:errors => resposne['the completion link is not deleted']}, status:400
+		end		
 	end	
+
 	def delete_vimeo_video				
-		puts "=====================delete_vimeo_video=============="
+		puts "<<<<<<<<<<<<<<<<<<delete_vimeo_video>>>>>>>>>>>>>>>"
 		puts params
-		puts "====================================================="
+		puts "<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>"
 		#extract vimeo video ID
-		if params['vimeo_vid_id']==10 #delete called from the FE, Delete video 
-	    puts "===================delete called from the FE when press on Delete video"
-			upload = VimeoUpload.find_by_lecture_id(params['id'])
-			vid_vimeo_id = upload.vimeo_url.split('https://vimeo.com/')[1]
-			#reset lecture
-			@lecture.update(url:"none")
-			@lecture.update(duration:0)
-		elsif params['vimeo_vid_id']	#delete called from the FE , to cancel transcoding
-			puts "===================delete called from the FE , to cancel transcoding"
+		if params['vimeo_vid_id']!=10	&& params['vimeo_vid_id']#delete called from the FE , to cancel transcoding		
+		  puts "<<<---------delete called from the FE , to cancel transcoding		"
 			vid_vimeo_id = params['vimeo_vid_id'] 
 			@lecture.update(name:"New Lecture") 
-		else 	#delete internally called at BE
-			puts "===================delete internally called at BE"
+		else 	#delete internally called at BE or from the FE, Delete video 
 			vid_vimeo_id=@lecture.url.split('https://vimeo.com/')[1]
+			puts "<<<---------delete internally called at BE"
+			puts vid_vimeo_id
+			puts "------------------------------"
+			if params['vimeo_vid_id']==10 && params['vimeo_vid_id']#delete called from the FE, Delete video 
+
+				#reset lecture
+				puts "<<<--------- Delete video 	"
+				@lecture.update(url:"none")
+				@lecture.update(duration:0)
+			end	
 		end	
-		#clean up SL vimeo account
-		ENV["VIMEO_DELETION_TOKEN"]="f1288e94e5a779f5f4e9cd3934c119b1"
-	  begin
+
+		ENV["VIMEO_DELETION_TOKEN"]="e6783970f529d6099598c4a7357a9aae"
+		begin
+			#clean up SL vimeo account
 			vimeo_video = VimeoMe2::Video.new(ENV["VIMEO_DELETION_TOKEN"],vid_vimeo_id)	
 			vimeo_video.destroy	
-		rescue =>ex
-			puts ex		
+			puts " >>>>>>>>>>vimeo_video is destroyed<<<<<<<<<<<"
+
+			#clean up VimeoUpload table
+			vimeo_upload_record = VimeoUpload.find_by_vimeo_url("https://vimeo.com/"+vid_vimeo_id.to_s)
+			vimeo_upload_record.destroy if vimeo_upload_record
+			puts " >>>>>>>>>>vimeo_upload_record is destroyed<<<<<<<<<<<"
+			render json: { video_deletion:vimeo_video, :notice => ["video uploaded to vimeo is deleted successfully"]}
+		rescue => ex
+			 puts ex	
+			 render json: { :errors => response['uploaded to vimeo is not deleted']}, status:400			
 		end	
-		#clean up VimeoUpload table
-		vimeo_upload_record = VimeoUpload.find_by_vimeo_url("https://vimeo.com/"+vid_vimeo_id.to_s)
-		vimeo_upload_record.destroy if vimeo_upload_record		
 	end	
+
 	def update_vimeo_video_data
 		ENV['vimeo_token']='e6783970f529d6099598c4a7357a9aae'
 		video_edit_url = 'https://api.vimeo.com/videos/'+params[:video_id]
 		authorization = {"Authorization"=>"bearer "+ENV['vimeo_token']}
 		body = {name:params[:name],description:params[:description]}
-		puts "==============video_edit_url==============="
-		puts video_edit_url
-		puts "==============authorization========="
-		puts authorization
-		puts "==================body=============="
-		puts body
-		puts "================================="
-		HTTParty.patch(video_edit_url,headers:authorization,body:body)
+		response=HTTParty.patch(video_edit_url,headers:authorization,body:body)
+		if response.code == 200	
+			render json: { video_update:response, :notice => ["update video name on vimeo is done successfully"]}
+		else 
+			render json: {:errors => response['video name on vimeo is not updated']}, status:400
+		end		
+		
 	end	
+
 private
 	def lecture_params
 		params.require(:lecture).permit(:course_id, :description, :name, :url, :group_id, :appearance_time, :due_date, :duration,
