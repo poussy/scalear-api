@@ -270,7 +270,7 @@ Rails.application.routes.draw do
         post 'update_vimeo_table'
         get 'get_uploading_status'
         get 'get_vimeo_video_id'
-        post 'delete_vimeo_video'
+        delete 'delete_vimeo_video_angular'
         get 'get_vimeo_upload_details'
         delete 'delete_complete_link'
         post 'update_vimeo_video_data'
