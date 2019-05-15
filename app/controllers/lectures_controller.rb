@@ -1097,104 +1097,11 @@ class LecturesController < ApplicationController
 		end
 	end	
 	
-	# def extract_upload_details(response)
-	# 	video_info_access_token="b97fb8ab110c5aa54f73267911fc5051"#<<<<<<<<<----------env var
-	# 	parsed_response = JSON.parse(response)
-	# 	vimeo_video_id = parsed_response['uri'].split('videos/')[1]
-	# 	upload_link = parsed_response['upload']['upload_link']
-	# 	ticket_id = upload_link.match(/\?ticket_id=[0-9]*/)[0].split('=')[1]
-	# 	video_file_id = upload_link.match(/\&video_file_id=[0-9]*/)[0].split('=')[1]
-	# 	signature = upload_link.match(/\&signature=([0-9]*[a-zA-Z]*)*/)[0].split('=')[1]
-	# 	complete_url ='https://api.vimeo.com/users/96206044/uploads/'+ticket_id+'?video_file_id='+video_file_id+'&upgrade=true&signature='+signature
-	# 	details = {'complete_url':complete_url,'ticket_id':ticket_id,'upload_link_secure':upload_link,'video_id':vimeo_video_id,'video_info_access_token':video_info_access_token}
-	# 	return details
-	# end	
-
-	# def get_vimeo_upload_details
-	# 	retries = 3 
-	# 	delay = 1 
-	# 	begin
-	# 		response = HTTParty.post('https://api.vimeo.com/me/videos',headers:{"Authorization"=>"bearer e6783970f529d6099598c4a7357a9aae","Content-Type"=>"application/json","Accept"=>"application/vnd.vimeo.*+json;version=3.4"})	
-	# 	rescue Rack::Timeout::RequestTimeoutException
-	# 		fail "All retries are exhausted" if retries == 0
-	# 		puts "get_vimeo_upload_details Request failed. Retries left: #{retries -= 1}"
-	# 		sleep delay
-	# 		retry
-	# 	end	
-	# 	details = extract_upload_details(response)
-	# 	if response.code == 201 
-	# 		render json: {details:details, :notice => ["upload details is retreived successfully"]}
-	# 	else
-	# 		render json: {:errors => response['developer_message']}, status: 400
-	# 	end
-	# end	
-
-	# def delete_complete_link
-	# 	ENV['vimeo_token']='e6783970f529d6099598c4a7357a9aae'
-	# 	retries = 3 
-	# 	delay = 1 
-	# 	begin
-	# 	response = HTTParty.delete(params[:link],headers:{"Authorization"=>"bearer "+ENV['vimeo_token']})
-	# 	rescue 
-	# 		fail "All retries are exhausted" if retries == 0
-	# 		puts "delete_complete_link Request failed. Retries left: #{retries -= 1}"
-	# 		sleep delay
-	# 		retry
-	# 	end	
-	# 	if response.code == 201
-	# 		puts ">>>>>>>>>>>>>>>>>delete comeplete link is done <<<<<<<<<<<<<<<<<"
-	# 		render json:{deletion:response, :notice => ["complete link deletion is done successfully"]}
-	# 	else 
-	# 		render json: {:errors => resposne['the completion link is not deleted']}, status:400
-	# 	end		
-	# end	
-
 	def delete_vimeo_video
 		vid_vimeo_id = @lecture.url.split('https://vimeo.com/')[1]
 		delete_video_from_vimeo_account(vid_vimeo_id)
 		delete_video_upload_record(vid_vimeo_id) 
 	end	
-
-	# def delete_vimeo_video_angular		
-	# 	puts "----------------------"
-	# 	puts  params['vimeo_vid_id']
-	# 	puts "----------------------"		
-	# 	vid_vimeo_id = params['vimeo_vid_id']
-	# 	state = delete_video_from_vimeo_account(vid_vimeo_id)
-	# 	delete_video_upload_record(vid_vimeo_id) 
-	# 	@lecture.update(url:"none")
-	# 	@lecture.update(duration:0)
-	# 	if state == true 
-	# 		render json:{ deletion:state ,:notice => ["video deletion is done successfully"]}		
-	# 	else 	 
-	# 		render json:{ :notice => ["video is not delete"]}	
-	# 	end	
-	# end	
-
-	# def update_vimeo_video_data
-	# 	retries = 3 
-	# 	delay = 1 
-		
-	# 	ENV['vimeo_token']='e6783970f529d6099598c4a7357a9aae'
-	# 	video_edit_url = 'https://api.vimeo.com/videos/'+params[:video_id]
-	# 	authorization = {"Authorization"=>"bearer "+ENV['vimeo_token']}
-	# 	body = {name:params[:name],description:params[:description]}
-	# 	begin 
-	# 	 response=HTTParty.patch(video_edit_url,headers:authorization,body:body)
-	# 	rescue Rack::Timeout::RequestTimeoutException
-	# 		fail "All retries are exhausted" if retries == 0
-	# 		puts "update_vimeo_video_data failed. Retries left: #{retries -= 1}"
-	# 		sleep delay
-	# 		retry
-	# 	end	
-	# 	if response.code == 200	
-	# 		puts ">>>>>>>>>video data updated<<<<<"
-	# 		render json: { video_update:response, :notice => ["update video name on vimeo is done successfully"]}
-	# 	else 
-	# 		render json: {:errors => response['video name on vimeo is not updated']}, status:400
-	# 	end		
-		
-	# end	
 
 private
 	def lecture_params

@@ -1,47 +1,61 @@
 class VimeoUploadsController < ApplicationController 
 
-    def delete_vimeo_video_angular
-        @lecture = Lecture.find(params["lecture_id"])		
-		vid_vimeo_id = params['vimeo_vid_id']
-		state = delete_video_from_vimeo_account(vid_vimeo_id)
-		delete_video_upload_record(vid_vimeo_id) 
-		@lecture.update(url:"none")
-		@lecture.update(duration:0)
-		if state == true 
-			render json:{ deletion:state ,:notice => ["video deletion is done successfully"]}		
-		else 	 
-			render json:{ :notice => ["video is not delete"]}	
-		end	
-    end	
+    def get_vimeo_video_id
+		current_upload = VimeoUpload.find_by_lecture_id(params["id"].to_i)
+		@vimeo_video_id = current_upload.vimeo_url.split('https://vimeo.com/')[1] if current_upload
+		if current_upload==nil
+			render json:{ vimeo_video_id: 	"none", :notice => ["lectures.no_video_upload"]}
+	    elsif @vimeo_video_id
+			render json:{ vimeo_video_id: 	@vimeo_video_id, :notice => ["lectures.vimeo_video_id_is_returned"]}
+		else
+			render json:{ :errors => "error"}, status: 400
+		end
+    end
     
-	def delete_video_from_vimeo_account(vid_vimeo_id)
-		#clean up SL vimeo account
-		retries = 3
+    def get_uploading_status
+		current_upload = VimeoUpload.find_by_lecture_id(params["id"].to_i)
+		@progress = current_upload.status if current_upload
+		if current_upload==nil
+			render json:{status: 	"none", :notice => ["lectures.no_video_upload"]}
+	  elsif 	@progress
+			render json:{status: 	@progress, :notice => ["lectures.video_is_transcoding"]}
+		else
+			render json: {:errors => "error"}, status: 400
+		end
+	end	
+	
+	def get_vimeo_upload_details
+		retries = 3 
 		delay = 1 
-		ENV["VIMEO_DELETION_TOKEN"]="e6783970f529d6099598c4a7357a9aae"
-		begin			
-			vimeo_video = VimeoMe2::Video.new(ENV["VIMEO_DELETION_TOKEN"],vid_vimeo_id)	
-			vimeo_video.destroy	
-			state = true
-		rescue 	VimeoMe2::RequestFailed
-			puts "video already deleted form the SL vimeo account"
-			state = false
+		begin
+			response = HTTParty.post('https://api.vimeo.com/me/videos',headers:{"Authorization"=>"bearer e6783970f529d6099598c4a7357a9aae","Content-Type"=>"application/json","Accept"=>"application/vnd.vimeo.*+json;version=3.4"})	
 		rescue Rack::Timeout::RequestTimeoutException
 			fail "All retries are exhausted" if retries == 0
-			puts "Video deletion Request failed. Retries left: #{retries -= 1}"
+			puts "get_vimeo_upload_details Request failed. Retries left: #{retries -= 1}"
 			sleep delay
 			retry
-			state = false
 		end	
-		return state
-	end	
-
-	def delete_video_upload_record(vid_vimeo_id)
-		#clean up VimeoUpload table
-		vimeo_upload_record = VimeoUpload.find_by_vimeo_url("https://vimeo.com/"+vid_vimeo_id.to_s)
-		vimeo_upload_record.destroy if vimeo_upload_record	
+		details = extract_upload_details(response)
+		if response.code == 201 
+			render json: {details:details, :notice => ["upload details is retreived successfully"]}
+		else
+			render json: {:errors => response['developer_message']}, status: 400
+		end
     end	
     
+    def extract_upload_details(response)
+		video_info_access_token="b97fb8ab110c5aa54f73267911fc5051"#<<<<<<<<<----------env var
+		parsed_response = JSON.parse(response)
+		vimeo_video_id = parsed_response['uri'].split('videos/')[1]
+		upload_link = parsed_response['upload']['upload_link']
+		ticket_id = upload_link.match(/\?ticket_id=[0-9]*/)[0].split('=')[1]
+		video_file_id = upload_link.match(/\&video_file_id=[0-9]*/)[0].split('=')[1]
+		signature = upload_link.match(/\&signature=([0-9]*[a-zA-Z]*)*/)[0].split('=')[1]
+		complete_url ='https://api.vimeo.com/users/96206044/uploads/'+ticket_id+'?video_file_id='+video_file_id+'&upgrade=true&signature='+signature
+		details = {'complete_url':complete_url,'ticket_id':ticket_id,'upload_link_secure':upload_link,'video_id':vimeo_video_id,'video_info_access_token':video_info_access_token}
+		return details
+	end	
+
     def delete_complete_link
 		ENV['vimeo_token']='e6783970f529d6099598c4a7357a9aae'
 		retries = 3 
@@ -55,7 +69,6 @@ class VimeoUploadsController < ApplicationController
 			retry
 		end	
 		if response.code == 201
-			puts ">>>>>>>>>>>>>>>>>delete comeplete link is done <<<<<<<<<<<<<<<<<"
 			render json:{deletion:response, :notice => ["complete link deletion is done successfully"]}
 		else 
 			render json: {:errors => response['the completion link is not deleted']}, status:400
@@ -96,78 +109,53 @@ class VimeoUploadsController < ApplicationController
 			retry
 		end	
 		if response.code == 200	
-			puts ">>>>>>>>>video data updated<<<<<"
 			render json: { video_update:response, :notice => ["update video name on vimeo is done successfully"]}
 		else 
 			render json: {:errors => response['video name on vimeo is not updated']}, status:400
 		end		
 		
-    end	
-
-    def get_vimeo_video_id
-		current_upload = VimeoUpload.find_by_lecture_id(params["id"].to_i)
-		@vimeo_video_id = current_upload.vimeo_url.split('https://vimeo.com/')[1] if current_upload
-		puts "------------------------------------------------------"
-		puts "---------------------get_vimeo_video_id---------------------------------"
-		puts @vimeo_video_id
-		puts "------------------------------------------------------"
-		if current_upload==nil
-			render json:{ vimeo_video_id: 	"none", :notice => ["lectures.no_video_upload"]}
-	    elsif @vimeo_video_id
-			render json:{ vimeo_video_id: 	@vimeo_video_id, :notice => ["lectures.vimeo_video_id_is_returned"]}
-		else
-			render json:{ :errors => "error"}, status: 400
-		end
-    end
-    
-    def get_uploading_status
-		current_upload = VimeoUpload.find_by_lecture_id(params["id"].to_i)
-		@progress = current_upload.status if current_upload
-		puts "------------------------------------------------------"
-		puts "---------------------get_uploading_status---------------------------------"
-		puts @progress
-		puts "------------------------------------------------------"
-		if current_upload==nil
-			render json:{status: 	"none", :notice => ["lectures.no_video_upload"]}
-	  elsif 	@progress
-			render json:{status: 	@progress, :notice => ["lectures.video_is_transcoding"]}
-		else
-			render json: {:errors => "error"}, status: 400
-		end
+	end	
+	
+    def delete_vimeo_video_angular
+        @lecture = Lecture.find(params["lecture_id"])		
+		vid_vimeo_id = params['vimeo_vid_id']
+		state = delete_video_from_vimeo_account(vid_vimeo_id)
+		delete_video_upload_record(vid_vimeo_id) 
+		@lecture.update(url:"none")
+		@lecture.update(duration:0)
+		if state == true 
+			render json:{ deletion:state ,:notice => ["video deletion is done successfully"]}		
+		else 	 
+			render json:{ :notice => ["video is not delete"]}	
+		end	
     end	
     
-    
-	def get_vimeo_upload_details
-		retries = 3 
+	def delete_video_from_vimeo_account(vid_vimeo_id)
+		#clean up SL vimeo account
+		retries = 3
 		delay = 1 
-		begin
-			response = HTTParty.post('https://api.vimeo.com/me/videos',headers:{"Authorization"=>"bearer e6783970f529d6099598c4a7357a9aae","Content-Type"=>"application/json","Accept"=>"application/vnd.vimeo.*+json;version=3.4"})	
+		ENV["VIMEO_DELETION_TOKEN"]="e6783970f529d6099598c4a7357a9aae"
+		begin			
+			vimeo_video = VimeoMe2::Video.new(ENV["VIMEO_DELETION_TOKEN"],vid_vimeo_id)	
+			vimeo_video.destroy	
+			state = true
+		rescue 	VimeoMe2::RequestFailed
+			state = false
 		rescue Rack::Timeout::RequestTimeoutException
 			fail "All retries are exhausted" if retries == 0
-			puts "get_vimeo_upload_details Request failed. Retries left: #{retries -= 1}"
+			puts "Video deletion Request failed. Retries left: #{retries -= 1}"
 			sleep delay
 			retry
+			state = false
 		end	
-		details = extract_upload_details(response)
-		if response.code == 201 
-			render json: {details:details, :notice => ["upload details is retreived successfully"]}
-		else
-			render json: {:errors => response['developer_message']}, status: 400
-		end
-    end	
-    
-    def extract_upload_details(response)
-		video_info_access_token="b97fb8ab110c5aa54f73267911fc5051"#<<<<<<<<<----------env var
-		parsed_response = JSON.parse(response)
-		vimeo_video_id = parsed_response['uri'].split('videos/')[1]
-		upload_link = parsed_response['upload']['upload_link']
-		ticket_id = upload_link.match(/\?ticket_id=[0-9]*/)[0].split('=')[1]
-		video_file_id = upload_link.match(/\&video_file_id=[0-9]*/)[0].split('=')[1]
-		signature = upload_link.match(/\&signature=([0-9]*[a-zA-Z]*)*/)[0].split('=')[1]
-		complete_url ='https://api.vimeo.com/users/96206044/uploads/'+ticket_id+'?video_file_id='+video_file_id+'&upgrade=true&signature='+signature
-		details = {'complete_url':complete_url,'ticket_id':ticket_id,'upload_link_secure':upload_link,'video_id':vimeo_video_id,'video_info_access_token':video_info_access_token}
-		return details
+		return state
 	end	
+
+	def delete_video_upload_record(vid_vimeo_id)
+		#clean up VimeoUpload table
+		vimeo_upload_record = VimeoUpload.find_by_vimeo_url("https://vimeo.com/"+vid_vimeo_id.to_s)
+		vimeo_upload_record.destroy if vimeo_upload_record	
+    end	
 
 end
 
