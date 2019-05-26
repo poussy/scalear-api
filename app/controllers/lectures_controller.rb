@@ -1,5 +1,5 @@
 class LecturesController < ApplicationController 
-
+	include VimeoUtils
 	load_and_authorize_resource
 		# @lecture is already loaded
 
@@ -48,8 +48,6 @@ class LecturesController < ApplicationController
 		end 
 
 		did_he_change_lecture_type = @lecture.inclass != params[:lecture][:inclass]
-	  puts "lecture params ==========>"
-		puts lecture_params
 		if @lecture.update_attributes(lecture_params)
 			##### remove all onlinequiz.inclass_session and check added it if type isdistance peer
 			@lecture.events.where(:quiz_id => nil, :group_id => @lecture.group.id).destroy_all
@@ -90,52 +88,7 @@ class LecturesController < ApplicationController
 		end
 
 	end
-	# def get_uploading_status
-	# 	current_upload = VimeoUpload.find_by_lecture_id(params["id"].to_i)
-	# 	@progress = current_upload.status if current_upload
-	# 	puts "------------------------------------------------------"
-	# 	puts "---------------------get_uploading_status---------------------------------"
-	# 	puts @progress
-	# 	puts "------------------------------------------------------"
-	# 	if current_upload==nil
-	# 		render json:{status: 	"none", :notice => ["lectures.no_video_upload"]}
-	#   elsif 	@progress
-	# 		render json:{status: 	@progress, :notice => ["lectures.video_is_transcoding"]}
-	# 	else
-	# 		render json: {:errors => "error"}, status: 400
-	# 	end
-	# end	
 
-	# def update_vimeo_table
-	# 	if params["status"] == "complete" && params["status"]
-	# 		@new_vimeo_upload=VimeoUpload.find_by_vimeo_url(params["url"])
-	# 		@new_vimeo_upload.status="complete"
-	# 		@lecture.update(name:params["title"]) if @lecture.name == "New Lecture"
-	# 	else
-	# 		@new_vimeo_upload = VimeoUpload.new(:vimeo_url=>params["url"],:user_id=>current_user.id,:status=>'transcoding',:lecture_id=>params["id"])
-	# 	end
-
-	# 	if @new_vimeo_upload.save
-	# 		render json:{new_vimeo_upload: @new_vimeo_upload, :notice => ["lectures.video_successfully_uploaded"]}
-	# 	else
-	# 		render json: {:errors => @new_vimeo_upload.errors}, status: 400
-	# 	end
-	# end	
-	# def get_vimeo_video_id
-	# 	current_upload = VimeoUpload.find_by_lecture_id(params["id"].to_i)
-	# 	@vimeo_video_id = current_upload.vimeo_url.split('https://vimeo.com/')[1] if current_upload
-	# 	puts "------------------------------------------------------"
-	# 	puts "---------------------get_vimeo_video_id---------------------------------"
-	# 	puts @vimeo_video_id
-	# 	puts "------------------------------------------------------"
-	# 	if current_upload==nil
-	# 		render json:{ vimeo_video_id: 	"none", :notice => ["lectures.no_video_upload"]}
-	#   elsif 	@vimeo_video_id
-	# 		render json:{ vimeo_video_id: 	@vimeo_video_id, :notice => ["lectures.vimeo_video_id_is_returned"]}
-	# 	else
-	# 		render json:{ :errors => "error"}, status: 400
-	# 	end
-	# end
   def update_percent_view
     lecture = Lecture.find(params[:id])
     end_offset_percent = ( (lecture.duration - 5) * 100 ) / lecture.duration rescue 0
@@ -579,23 +532,26 @@ class LecturesController < ApplicationController
 
 	def destroy
 		@lecture = Lecture.find(params[:id])
+		@lecture_url = @lecture.url
 		@course= params[:course_id]
 		lec_destory = false
-	  lecture_url_not_used_elsewhere = Lecture.where(:url=>@lecture.url).count==1
+	
 		ActiveRecord::Base.transaction do
 			lec_destory = @lecture.destroy
-			if (lecture_url_not_used_elsewhere && is_vimeo(@lecture))
-				delete_vimeo_video
-			end	
+			if lec_destory		
+				## delete vimeo video
+				if is_vimeo
+					delete_vimeo_video
+				end	
+				## waitin for shared item table
+				SharedItem.delete_dependent("lecture",params[:id].to_i, current_user.id)
+				Forum::Post.delete("destroy_all_by_lecture", {:lecture_id => params[:id]})
+				render json: {:notice => [I18n.t("controller_msg.lecture_successfully_deleted")]}
+			else
+				render json: {:errors => [I18n.t("lectures.could_not_delete_lecture")]}, :status => 400
+			end
 		end
-		if lec_destory
-			## waitin for shared item table
-			SharedItem.delete_dependent("lecture",params[:id].to_i, current_user.id)
-			Forum::Post.delete("destroy_all_by_lecture", {:lecture_id => params[:id]})
-			render json: {:notice => [I18n.t("controller_msg.lecture_successfully_deleted")]}
-		else
-			render json: {:errors => [I18n.t("lectures.could_not_delete_lecture")]}, :status => 400
-		end
+	
   end
 
 	def sort #called from module_editor to sort the lectures (by dragging)
@@ -1089,8 +1045,8 @@ class LecturesController < ApplicationController
 			end
 	end
 
-	def is_vimeo(lecture)
-		if lecture.url.include?('vimeo.com/')
+	def is_vimeo
+		if 	@lecture_url.include?('vimeo.com/')
 			return true 
 		else	
 			return false
@@ -1098,9 +1054,12 @@ class LecturesController < ApplicationController
 	end	
 	
 	def delete_vimeo_video
-		vid_vimeo_id = @lecture.url.split('https://vimeo.com/')[1]
-		delete_video_from_vimeo_account(vid_vimeo_id)
-		delete_video_upload_record(vid_vimeo_id) 
+		lecture_url_not_used_elsewhere = Lecture.where(:url=>	@lecture_url).count==0
+		if lecture_url_not_used_elsewhere
+			vid_vimeo_id = 	@lecture_url.split('https://vimeo.com/')[1]
+			delete_video_from_vimeo_account(vid_vimeo_id)
+			delete_video_upload_record(vid_vimeo_id) 
+		end	
 	end	
 
 private
@@ -1110,39 +1069,4 @@ private
 			:position, :required, :inordered, :start_time, :end_time, :type, :graded, :graded_module, :inclass, :distance_peer,
 			:skip_ahead,:skip_ahead_module)
 	end
-
-	def delete_video_from_vimeo_account(vid_vimeo_id)
-		#clean up SL vimeo account
-		retries = 3
-		delay = 1 
-		ENV["VIMEO_DELETION_TOKEN"]="e6783970f529d6099598c4a7357a9aae"
-		begin			
-			vimeo_video = VimeoMe2::Video.new(ENV["VIMEO_DELETION_TOKEN"],vid_vimeo_id)	
-			vimeo_video.destroy	
-			state = true
-		rescue Net::OpenTimeout
-			puts 'vimeo is busy'
-			state = false
-		rescue SocketError
-			puts 'vimeo socket is closed'
-			state = false		
-		rescue 	VimeoMe2::RequestFailed
-			puts "video already deleted form the SL vimeo account"
-			state = false
-		rescue Rack::Timeout::RequestTimeoutException
-			fail "All retries are exhausted" if retries == 0
-			puts "Video deletion Request failed. Retries left: #{retries -= 1}"
-			sleep delay
-			retry
-			state = false
-		end	
-		return state
-	end	
-
-	def delete_video_upload_record(vid_vimeo_id)
-		#clean up VimeoUpload table
-		vimeo_upload_record = VimeoUpload.find_by_vimeo_url("https://vimeo.com/"+vid_vimeo_id.to_s)
-		vimeo_upload_record.destroy if vimeo_upload_record	
-	end	
-
 end
