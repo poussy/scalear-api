@@ -106,8 +106,14 @@ class VimeoUploadsControllerTest < ActionDispatch::IntegrationTest
         headers = {'Content-Type' => 'application/offset+octet-stream'}
         headers['Upload-Offset'] = '0'
         video_content = fixture_file_upload('files/test_video.mov','video/quicktime').read(469000).to_s
-        HTTParty.put(details[:upload_link_secure], body: video_content, headers: headers)
-
+        begin
+            HTTParty.put(details[:upload_link_secure], body: video_content, headers: headers)
+        rescue Rack::Timeout::RequestTimeoutException, Net::OpenTimeout
+			fail "All retries are exhausted" if retries == 0
+			puts "uploading video failed. Retries left: #{retries -= 1}"
+			sleep delay
+			retry
+		end	
         #delete the complete_url
         delete '/vimeo_uploads/delete_complete_link',
         params:{
@@ -167,30 +173,31 @@ class VimeoUploadsControllerTest < ActionDispatch::IntegrationTest
         assert_equal last_upload_record.lecture_id,3
         
     end  
-
     test 'vimeo table should be updated with complete and lecture title is set' do
         @user = users(:user4)
         @headers2 =  @user.create_new_auth_token
     	@headers2['content-type']="application/json"
-
-        VimeoUpload.create(:vimeo_url=>"https://vimeo.com/567" ,:user_id => @user.id ,:status => 'transcoding', :lecture_id => 5)
+        l4 = Lecture.find(4)
+        l4.update(:url=>"https://vimeo.com/567",:name=>'New Lecture')
+        
+        VimeoUpload.create(:vimeo_url=>"https://vimeo.com/567" ,:user_id => @user.id ,:status => 'transcoding', :lecture_id => 4)
        
         post '/vimeo_uploads/update_vimeo_table',
         params:{
-            lecture_id:5,
+            lecture_id: 4,
             url:"https://vimeo.com/567",
             status:'complete',
             title:'My Video'
         }, 
         headers: @headers2 , as: :json
 
-        updated_lecture =  Lecture.find(5)
+        updated_lecture =  Lecture.find(4)
         updated_record = VimeoUpload.find_by_vimeo_url('https://vimeo.com/567')
 
         assert_equal updated_record.user_id, 4
         assert_equal updated_record.vimeo_url, "https://vimeo.com/567"
         assert_equal updated_record.status, 'complete'
-        assert_equal updated_record.lecture_id, 5
+        assert_equal updated_record.lecture_id, 4
         assert_equal updated_lecture.name, 'My Video'
     end  
 
@@ -255,12 +262,12 @@ class VimeoUploadsControllerTest < ActionDispatch::IntegrationTest
         list =  vimeo_client.get_video_list
         videoToBeDeleted = list['data'][0]
         vimeo_vid_id = videoToBeDeleted['uri'].split('/')[2]
-        Lecture.find(5).update(url:videoToBeDeleted['uri'])
+        Lecture.find(4).update(url:videoToBeDeleted['uri'])
 
         #delete it with tested function
         delete '/vimeo_uploads/delete_vimeo_video_angular',
         params:{
-            lecture_id:5,
+            lecture_id:4,
             vimeo_vid_id:vimeo_vid_id
         }
 
@@ -283,7 +290,7 @@ class VimeoUploadsControllerTest < ActionDispatch::IntegrationTest
         assert_equal number_results_search_query,0
 
         #check lecture details are reset
-        updatedLecture = Lecture.find(5)
+        updatedLecture = Lecture.find(4)
         assert_equal updatedLecture.url,"none"
         assert_equal updatedLecture.duration,0
 

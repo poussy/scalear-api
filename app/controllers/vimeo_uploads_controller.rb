@@ -29,7 +29,7 @@ class VimeoUploadsController < ApplicationController
 		delay = 1 
 		begin
 			response = HTTParty.post('https://api.vimeo.com/me/videos',headers:{"Authorization"=>"bearer e6783970f529d6099598c4a7357a9aae","Content-Type"=>"application/json","Accept"=>"application/vnd.vimeo.*+json;version=3.4"})	
-		rescue Rack::Timeout::RequestTimeoutException,  Net::OpenTimeout
+		rescue Rack::Timeout::RequestTimeoutException,  Net::OpenTimeout, SocketError
 			fail "All retries are exhausted" if retries == 0
 			puts "get_vimeo_upload_details Request failed. Retries left: #{retries -= 1}"
 			sleep delay
