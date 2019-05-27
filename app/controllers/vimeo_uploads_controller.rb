@@ -44,7 +44,6 @@ class VimeoUploadsController < ApplicationController
     end	
     
     def extract_upload_details(response)
-		video_info_access_token="b97fb8ab110c5aa54f73267911fc5051"#<<<<<<<<<----------env var
 		parsed_response = JSON.parse(response)
 		vimeo_video_id = parsed_response['uri'].split('videos/')[1]
 		upload_link = parsed_response['upload']['upload_link']
@@ -52,12 +51,11 @@ class VimeoUploadsController < ApplicationController
 		video_file_id = upload_link.match(/\&video_file_id=[0-9]*/)[0].split('=')[1]
 		signature = upload_link.match(/\&signature=([0-9]*[a-zA-Z]*)*/)[0].split('=')[1]
 		complete_url ='https://api.vimeo.com/users/96206044/uploads/'+ticket_id+'?video_file_id='+video_file_id+'&upgrade=true&signature='+signature
-		details = {'complete_url':complete_url,'ticket_id':ticket_id,'upload_link_secure':upload_link,'video_id':vimeo_video_id,'video_info_access_token':video_info_access_token}
+		details = {'complete_url':complete_url,'ticket_id':ticket_id,'upload_link_secure':upload_link,'video_id':vimeo_video_id,'video_info_access_token':ENV['vimeo_video_info_access_token']}
 		return details
 	end	
 
   def delete_complete_link
-		ENV['vimeo_token']='e6783970f529d6099598c4a7357a9aae'
 		retries = 3 
 		delay = 1 
 		begin
@@ -97,7 +95,6 @@ class VimeoUploadsController < ApplicationController
   def update_vimeo_video_data
 		retries = 3 
 		delay = 1 
-		ENV['vimeo_token']='e6783970f529d6099598c4a7357a9aae'
 		video_edit_url = 'https://api.vimeo.com/videos/'+params[:video_id]
 		authorization = {"Authorization"=>"bearer "+ENV['vimeo_token']}
 		body = {name:params[:name],description:params[:description]}
