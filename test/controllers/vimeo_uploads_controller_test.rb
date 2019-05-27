@@ -67,7 +67,7 @@ class VimeoUploadsControllerTest < ActionDispatch::IntegrationTest
         retries = 3 
 		delay = 1 
 		begin
-            response = HTTParty.post('https://api.vimeo.com/me/videos',headers:{"Authorization"=>"bearer e6783970f529d6099598c4a7357a9aae","Content-Type"=>"application/json","Accept"=>"application/vnd.vimeo.*+json;version=3.4"})
+            response = HTTParty.post('https://api.vimeo.com/me/videos',headers:{"Authorization"=>"bearer "+ENV['vimeo_token'],"Content-Type"=>"application/json","Accept"=>"application/vnd.vimeo.*+json;version=3.4"})
         rescue Rack::Timeout::RequestTimeoutException,  Net::OpenTimeout
 			fail "All retries are exhausted" if retries == 0
 			puts "get_vimeo_upload_details Request failed. Retries left: #{retries -= 1}"
@@ -92,7 +92,7 @@ class VimeoUploadsControllerTest < ActionDispatch::IntegrationTest
         retries = 3 
         delay = 1 
         begin
-            response = HTTParty.post('https://api.vimeo.com/me/videos',headers:{"Authorization"=>"bearer e6783970f529d6099598c4a7357a9aae","Content-Type"=>"application/json","Accept"=>"application/vnd.vimeo.*+json;version=3.4"})	
+            response = HTTParty.post('https://api.vimeo.com/me/videos',headers:{"Authorization"=>"bearer "+ENV['vimeo_token'],"Content-Type"=>"application/json","Accept"=>"application/vnd.vimeo.*+json;version=3.4"})	
         rescue Rack::Timeout::RequestTimeoutException, Net::OpenTimeout
 			fail "All retries are exhausted" if retries == 0
 			puts "retreiving testing upload details failed. Retries left: #{retries -= 1}"
@@ -121,8 +121,7 @@ class VimeoUploadsControllerTest < ActionDispatch::IntegrationTest
         }
 
         #if the complete url is deleted the status of the video transcode will be transcoding
-        query_url =	'https://api.vimeo.com/videos/337081017?fields=name'
-        ENV['vimeo_token']='e6783970f529d6099598c4a7357a9aae'
+        # ENV['vimeo_token']='e6783970f529d6099598c4a7357a9aae'
         authorization = {"Authorization"=>"bearer "+ENV['vimeo_token']}
         query_url = "https://api.vimeo.com/videos/" + details[:video_id] + "?fields=transcode.status"
         retries = 3
@@ -203,13 +202,14 @@ class VimeoUploadsControllerTest < ActionDispatch::IntegrationTest
 
     test 'video name should be updated on vimeo' do
         #get the actual name of the video on vimeo
-        query_url =	'https://api.vimeo.com/videos/337745363?fields=name'
-        ENV['vimeo_token']='e6783970f529d6099598c4a7357a9aae'
+        testing_video_id = '338647269'
+        query_url =	'https://api.vimeo.com/videos/'+testing_video_id+'?fields=name'
+        # ENV['vimeo_token']='e6783970f529d6099598c4a7357a9aae'
         authorization = {"Authorization"=>"bearer "+ENV['vimeo_token']}
         retries = 3 
 		delay = 1 
 		begin
-            vimeo_video = VimeoMe2::Video.new(ENV['vimeo_token'],'337745363')
+            vimeo_video = VimeoMe2::Video.new(ENV['vimeo_token'],testing_video_id)
         rescue Rack::Timeout::RequestTimeoutException, Net::OpenTimeout
             fail "All retries are exhausted" if retries == 0
             puts "retreiving video name on vimeo failed. Retries left: #{retries -= 1}"
@@ -229,7 +229,7 @@ class VimeoUploadsControllerTest < ActionDispatch::IntegrationTest
         post '/vimeo_uploads/update_vimeo_video_data',
         params:{
             name:new_name,
-            video_id:"337745363"
+            video_id:testing_video_id
         }
 
         #check the name is properly updated
@@ -242,7 +242,7 @@ class VimeoUploadsControllerTest < ActionDispatch::IntegrationTest
 
     test 'video should be deleleted from Vimeo account and its record deleted from VimeoUpload table' do
         #upload a test video to vimeo using vimeome2  
-        ENV['vimeo_token']='e6783970f529d6099598c4a7357a9aae'
+        # ENV['vimeo_token']='e6783970f529d6099598c4a7357a9aae'
         #video/quicktime
         video = fixture_file_upload('files/test_video.mov','video/quicktime')   
         retries = 3
