@@ -70,6 +70,26 @@ Rails.application.routes.draw do
     get  'saml/metadata' => 'saml#metadata'
     post 'saml/consume' => 'saml#consume'
     
+    resources :vimeo_uploads do
+      member do
+        delete 'delete_vimeo_video_angular'
+        delete 'delete_complete_link'
+        post 'update_vimeo_table'
+        post 'update_vimeo_video_data'
+        get 'get_vimeo_video_id'
+        get 'get_uploading_status'
+        get 'get_vimeo_upload_details'
+      end
+      collection do
+        delete 'delete_vimeo_video_angular'
+        delete 'delete_complete_link'
+        post 'update_vimeo_table'
+        post 'update_vimeo_video_data'
+        get 'get_vimeo_video_id'
+        get 'get_uploading_status'
+        get 'get_vimeo_upload_details'
+      end  
+    end    
     resources :courses do
       member do
         post 'remove_student'
