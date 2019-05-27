@@ -550,7 +550,7 @@ class User < ActiveRecord::Base
 
     self.name =crypt.decrypt_and_verify(self.encrypted_data['name'])
     self.last_name = crypt.decrypt_and_verify(self.encrypted_data['last_name'])
-    self.screen_name =crypt.decrypt_and_verify(self.encrypted_data['screen_name'])
+    self.screen_name = retreive_screen_name(crypt.decrypt_and_verify(self.encrypted_data['screen_name']))
     self.university =crypt.decrypt_and_verify(self.encrypted_data['university'])
     self.encrypted_email = nil
     self.encrypted_data = nil
@@ -558,6 +558,11 @@ class User < ActiveRecord::Base
     self.skip_reconfirmation!
     self
   end
+
+  def retreive_screen_name screen_name
+    screen_name +='.' if User.find_by_screen_name(screen_name)
+    return screen_name
+  end  
 
   def self.get_anonymised_user email
     encrypted_email = Digest::SHA256.hexdigest (email) rescue ""

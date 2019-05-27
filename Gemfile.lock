@@ -7,6 +7,13 @@ GIT
       canonix (~> 0.1)
       uuid (~> 2.3)
 
+GIT
+  remote: https://github.com/bo-oz/vimeo_me2.git
+  revision: ad5801d7bcf5fd2e73f57315548a11e7b38a1d2f
+  specs:
+    vimeo_me2 (1.2.0)
+      httparty (~> 0.14.0)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -91,6 +98,8 @@ GEM
     globalid (0.4.0)
       activesupport (>= 4.2.0)
     hodel_3000_compliant_logger (0.1.1)
+    httparty (0.14.0)
+      multi_xml (>= 0.5.2)
     i18n (0.9.0)
       concurrent-ruby (~> 1.0)
     ims-lti (2.2.3)
@@ -131,6 +140,7 @@ GEM
     mini_portile2 (2.3.0)
     minitest (5.10.3)
     multi_json (1.12.1)
+    multi_xml (0.6.0)
     multipart-post (2.0.0)
     newrelic_rpm (4.7.1.340)
     nio4r (2.1.0)
@@ -258,6 +268,7 @@ DEPENDENCIES
   spring-watcher-listen (~> 2.0.0)
   tzinfo-data
   validates_timeliness (~> 4.0)
+  vimeo_me2!
   zip-zip
 
 RUBY VERSION
