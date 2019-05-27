@@ -7,16 +7,18 @@ class VimeoUploadsControllerTest < ActionDispatch::IntegrationTest
         vimeo_upload_1=VimeoUpload.new(user_id:1,vimeo_url:'https://vimeo.com/123',status:'transcoding',lecture_id:1)
         #lecture 2 complete
         vimeo_upload_2=VimeoUpload.new(user_id:1,vimeo_url:'https://vimeo.com/246',status:'complete',lecture_id:2)
-
+       
         vimeo_upload_1.save
         vimeo_upload_2.save
+
+        @authorization = 'bearer '+ENV['vimeo_token']
     end    
 
     #vimeo video properly uploaded
     test 'vimeo video id should be returned' do 
       get "/vimeo_uploads/get_vimeo_video_id",
       params:{'id':1}
-
+   
       assert_equal decode_json_response_body['vimeo_video_id'],'123'
     end 
 
@@ -67,7 +69,7 @@ class VimeoUploadsControllerTest < ActionDispatch::IntegrationTest
         retries = 3 
 		delay = 1 
 		begin
-            response = HTTParty.post('https://api.vimeo.com/me/videos',headers:{"Authorization"=>"bearer "+ENV['vimeo_token'],"Content-Type"=>"application/json","Accept"=>"application/vnd.vimeo.*+json;version=3.4"})
+            response = HTTParty.post('https://api.vimeo.com/me/videos',headers:{"Authorization"=>@authorization,"Content-Type"=>"application/json","Accept"=>"application/vnd.vimeo.*+json;version=3.4"})
         rescue Rack::Timeout::RequestTimeoutException,  Net::OpenTimeout
 			fail "All retries are exhausted" if retries == 0
 			puts "get_vimeo_upload_details Request failed. Retries left: #{retries -= 1}"
@@ -92,7 +94,7 @@ class VimeoUploadsControllerTest < ActionDispatch::IntegrationTest
         retries = 3 
         delay = 1 
         begin
-            response = HTTParty.post('https://api.vimeo.com/me/videos',headers:{"Authorization"=>"bearer "+ENV['vimeo_token'],"Content-Type"=>"application/json","Accept"=>"application/vnd.vimeo.*+json;version=3.4"})	
+            response = HTTParty.post('https://api.vimeo.com/me/videos',headers:{"Authorization"=>@authorization,"Content-Type"=>"application/json","Accept"=>"application/vnd.vimeo.*+json;version=3.4"})	
         rescue Rack::Timeout::RequestTimeoutException, Net::OpenTimeout
 			fail "All retries are exhausted" if retries == 0
 			puts "retreiving testing upload details failed. Retries left: #{retries -= 1}"
@@ -121,8 +123,7 @@ class VimeoUploadsControllerTest < ActionDispatch::IntegrationTest
         }
 
         #if the complete url is deleted the status of the video transcode will be transcoding
-        # ENV['vimeo_token']='e6783970f529d6099598c4a7357a9aae'
-        authorization = {"Authorization"=>"bearer "+ENV['vimeo_token']}
+        authorization = {"Authorization"=>@authorization}
         query_url = "https://api.vimeo.com/videos/" + details[:video_id] + "?fields=transcode.status"
         retries = 3
         delay = 1 
@@ -204,8 +205,7 @@ class VimeoUploadsControllerTest < ActionDispatch::IntegrationTest
         #get the actual name of the video on vimeo
         testing_video_id = '338647269'
         query_url =	'https://api.vimeo.com/videos/'+testing_video_id+'?fields=name'
-        # ENV['vimeo_token']='e6783970f529d6099598c4a7357a9aae'
-        authorization = {"Authorization"=>"bearer "+ENV['vimeo_token']}
+        authorization = {"Authorization"=>@authorization}
         retries = 3 
 		delay = 1 
 		begin
@@ -242,7 +242,6 @@ class VimeoUploadsControllerTest < ActionDispatch::IntegrationTest
 
     test 'video should be deleleted from Vimeo account and its record deleted from VimeoUpload table' do
         #upload a test video to vimeo using vimeome2  
-        # ENV['vimeo_token']='e6783970f529d6099598c4a7357a9aae'
         #video/quicktime
         video = fixture_file_upload('files/test_video.mov','video/quicktime')   
         retries = 3
@@ -273,7 +272,7 @@ class VimeoUploadsControllerTest < ActionDispatch::IntegrationTest
 
         #search for this uploaded video id at SL Vimeo account 
         query_url = 'https://api.vimeo.com/videos?query='+vimeo_vid_id.to_s
-        authorization = {"Authorization"=>"bearer "+ENV['vimeo_token']}
+        authorization = {"Authorization"=>@authorization}
         retries = 3 
 		delay = 1 
 		begin
