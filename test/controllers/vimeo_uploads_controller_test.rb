@@ -295,7 +295,7 @@ class VimeoUploadsControllerTest < ActionDispatch::IntegrationTest
         assert_equal updatedLecture.duration,0
 
         #check this video upload record is removed
-        assert_nil VimeoUpload.find_by_lecture_id(5) 
+        assert_nil VimeoUpload.find_by_lecture_id(4) 
     end  
 
 end
