@@ -10,7 +10,7 @@ class VimeoUploadsControllerTest < ActionDispatch::IntegrationTest
        
         vimeo_upload_1.save
         vimeo_upload_2.save
-
+      
         @authorization = 'bearer '+ENV['vimeo_token']
     end    
 
@@ -18,7 +18,7 @@ class VimeoUploadsControllerTest < ActionDispatch::IntegrationTest
     test 'vimeo video id should be returned' do 
       get "/vimeo_uploads/get_vimeo_video_id",
       params:{'id':1}
-   
+      
       assert_equal decode_json_response_body['vimeo_video_id'],'123'
     end 
 
