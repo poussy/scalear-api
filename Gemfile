@@ -66,3 +66,4 @@ gem "rack-block"
 gem "oink"
 gem 'memory_profiler'
 gem 'vimeo_me2', :git => "https://github.com/bo-oz/vimeo_me2.git"
+gem "retries"

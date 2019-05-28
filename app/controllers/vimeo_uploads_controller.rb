@@ -1,5 +1,7 @@
+require "retries"
 class VimeoUploadsController < ApplicationController 
-	include VimeoUtils
+  include VimeoUtils
+
   def get_vimeo_video_id
 		current_upload = VimeoUpload.find_by_lecture_id(params["id"].to_i)
 		@vimeo_video_id = current_upload.vimeo_url.split('https://vimeo.com/')[1] if current_upload
@@ -25,17 +27,24 @@ class VimeoUploadsController < ApplicationController
 	end	
 	
 	def get_vimeo_upload_details
-		retries = 3 
-		delay = 1 
-		begin
-			response = HTTParty.post('https://api.vimeo.com/me/videos',headers:{"Authorization"=>"bearer "+ ENV['vimeo_token'],"Content-Type"=>"application/json","Accept"=>"application/vnd.vimeo.*+json;version=3.4"})	
-		rescue Timeout::Error, SocketError
-			fail "All retries are exhausted" if retries == 0
-			puts "get_vimeo_upload_details Request failed. Retries left: #{retries -= 1}"
-			sleep delay
-			retry
-		end	
+
+		response = ""
+        query_url = "https://api.vimeo.com/me/videos"
+		headers = { 
+			"Authorization"=>"bearer "+ ENV['vimeo_token'],
+			"Content-Type"=>"application/json",
+			"Accept"=>"application/vnd.vimeo.*+json;version=3.4"
+		}
+
+        handler = Proc.new do |exception, attempt_number, total_delay|
+            puts "get_vimeo_upload_details Request failed. saw a #{exception.class}; retry attempt #{attempt_number}; #{total_delay} seconds have passed."     
+		end
+		with_retries(:max_tries => 3, :base_sleep_seconds => 0.5, :max_sleep_seconds => 1.0, :handler => handler, :rescue => [Timeout::Error, SocketError]) do |attempt_number|       
+			response = HTTParty.post( query_url, headers:headers)	
+		end
+
 		details = extract_upload_details(response)
+		
 		if response.code == 201 
 			render json: { details:details, :notice => ["upload details is retreived successfully"]}
 		else
@@ -43,7 +52,7 @@ class VimeoUploadsController < ApplicationController
 		end
     end	
     
-    def extract_upload_details(response)
+	def extract_upload_details(response)
 		parsed_response = JSON.parse(response)
 		vimeo_video_id = parsed_response['uri'].split('videos/')[1]
 		upload_link = parsed_response['upload']['upload_link']
@@ -64,16 +73,14 @@ class VimeoUploadsController < ApplicationController
 	end	
 
   def delete_complete_link
-		retries = 3 
-		delay = 1 
-		begin
+		response = ""
+        handler = Proc.new do |exception, attempt_number, total_delay|
+            puts "delete_complete_link Request failed. saw a #{exception.class}; retry attempt #{attempt_number}; #{total_delay} seconds have passed."     
+		end
+		with_retries(:max_tries => 3, :base_sleep_seconds => 0.5, :max_sleep_seconds => 1.0, :handler => handler, :rescue => [Timeout::Error, SocketError]) do |attempt_number|       
 			response = HTTParty.delete(params[:link],headers:{"Authorization"=>"bearer "+ENV['vimeo_token']})
-		rescue Timeout::Error, SocketError
-			fail "All retries are exhausted" if retries == 0
-			puts "delete_complete_link Request failed. Retries left: #{retries -= 1}"
-			sleep delay
-			retry
-		end	
+		end
+		
 		if response.code == 201
 			render json:{deletion:response, :notice => ["complete link deletion is done successfully"]}
 		else 
@@ -101,19 +108,19 @@ class VimeoUploadsController < ApplicationController
 	end	
 
   def update_vimeo_video_data
-		retries = 3 
-		delay = 1 
+		
 		video_edit_url = 'https://api.vimeo.com/videos/'+params[:video_id]
 		authorization = {"Authorization"=>"bearer "+ENV['vimeo_token']}
 		body = {name:params[:name],description:params[:description]}
-		begin 
-		 response=HTTParty.patch(video_edit_url,headers:authorization,body:body)
-		rescue Timeout::Error, SocketError
-			fail "All retries are exhausted" if retries == 0
-			puts "update_vimeo_video_data failed. Retries left: #{retries -= 1}"
-			sleep delay
-			retry
+
+		response = ""
+        handler = Proc.new do |exception, attempt_number, total_delay|
+            puts "update_vimeo_video_data Request failed. saw a #{exception.class}; retry attempt #{attempt_number}; #{total_delay} seconds have passed."     
+		end
+		with_retries(:max_tries => 3, :base_sleep_seconds => 0.5, :max_sleep_seconds => 1.0, :handler => handler, :rescue => [Timeout::Error, SocketError]) do |attempt_number|       
+			response = HTTParty.patch(video_edit_url,headers:authorization,body:body)
 		end	
+
 		if response.code == 200	
 			render json: { video_update:response, :notice => ["update video name on vimeo is done successfully"]}
 		else 
