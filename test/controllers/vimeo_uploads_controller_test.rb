@@ -201,7 +201,7 @@ class VimeoUploadsControllerTest < ActionDispatch::IntegrationTest
     end  
 
     #vimeo server response for upload details querry,is broken into fields
-    test 'uploading fields should be extracted' do
+    test 'uploading fields should be extracted' do 
         #ask vimeo server for uploading details , which create a temp empty video on SL account 
         raw_details = get_vimeo_upload_raw_details
 
