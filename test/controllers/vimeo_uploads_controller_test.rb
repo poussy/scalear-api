@@ -1,5 +1,5 @@
 require 'test_helper'
- 
+
 class VimeoUploadsControllerTest < ActionDispatch::IntegrationTest
     include VimeoUtils
     def setup
