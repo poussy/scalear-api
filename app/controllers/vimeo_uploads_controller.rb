@@ -29,7 +29,7 @@ class VimeoUploadsController < ApplicationController
 		delay = 1 
 		begin
 			response = HTTParty.post('https://api.vimeo.com/me/videos',headers:{"Authorization"=>"bearer "+ ENV['vimeo_token'],"Content-Type"=>"application/json","Accept"=>"application/vnd.vimeo.*+json;version=3.4"})	
-		rescue Rack::Timeout::RequestTimeoutException, Net::OpenTimeout, SocketError
+		rescue Timeout::Error, SocketError
 			fail "All retries are exhausted" if retries == 0
 			puts "get_vimeo_upload_details Request failed. Retries left: #{retries -= 1}"
 			sleep delay
@@ -44,7 +44,6 @@ class VimeoUploadsController < ApplicationController
     end	
     
     def extract_upload_details(response)
-	    token =  ENV['vimeo_video_info_access_token']	   
 		parsed_response = JSON.parse(response)
 		vimeo_video_id = parsed_response['uri'].split('videos/')[1]
 		upload_link = parsed_response['upload']['upload_link']
@@ -52,7 +51,15 @@ class VimeoUploadsController < ApplicationController
 		video_file_id = upload_link.match(/\&video_file_id=[0-9]*/)[0].split('=')[1]
 		signature = upload_link.match(/\&signature=([0-9]*[a-zA-Z]*)*/)[0].split('=')[1]
 		complete_url ='https://api.vimeo.com/users/96206044/uploads/'+ticket_id+'?video_file_id='+video_file_id+'&upgrade=true&signature='+signature
-		details = {'complete_url':complete_url,'ticket_id':ticket_id,'upload_link_secure':upload_link,'video_id':vimeo_video_id,'video_info_access_token': token}
+		
+		details = {
+			'complete_url':complete_url,
+			'ticket_id':ticket_id,
+			'upload_link_secure':upload_link,
+			'video_id':vimeo_video_id,
+			'video_info_access_token': ENV['vimeo_video_info_access_token']	
+		}
+
 		return details
 	end	
 
@@ -61,7 +68,7 @@ class VimeoUploadsController < ApplicationController
 		delay = 1 
 		begin
 			response = HTTParty.delete(params[:link],headers:{"Authorization"=>"bearer "+ENV['vimeo_token']})
-		rescue Rack::Timeout::RequestTimeoutException, Net::OpenTimeout
+		rescue Timeout::Error, SocketError
 			fail "All retries are exhausted" if retries == 0
 			puts "delete_complete_link Request failed. Retries left: #{retries -= 1}"
 			sleep delay
@@ -83,13 +90,13 @@ class VimeoUploadsController < ApplicationController
 				@lecture.update(name:params["title"])
 			end  
 		else
-				@new_vimeo_upload = VimeoUpload.new(:vimeo_url=>params["url"] ,:user_id => current_user.id ,:status => 'transcoding', :lecture_id => params['lecture_id'])
+			@new_vimeo_upload = VimeoUpload.new(:vimeo_url=>params["url"] ,:user_id => current_user.id ,:status => 'transcoding', :lecture_id => params['lecture_id'])
 		end
 
 		if @new_vimeo_upload.save
-				render json: {new_vimeo_upload: @new_vimeo_upload, :notice => ["lectures.video_successfully_uploaded"]}
+			render json: {new_vimeo_upload: @new_vimeo_upload, :notice => ["lectures.video_successfully_uploaded"]}
 		else
-				render json: {:errors => @new_vimeo_upload.errors}, status: 400
+			render json: {:errors => @new_vimeo_upload.errors}, status: 400
 		end
 	end	
 
@@ -101,7 +108,7 @@ class VimeoUploadsController < ApplicationController
 		body = {name:params[:name],description:params[:description]}
 		begin 
 		 response=HTTParty.patch(video_edit_url,headers:authorization,body:body)
-		rescue Rack::Timeout::RequestTimeoutException ,Net::OpenTimeout
+		rescue Timeout::Error, SocketError
 			fail "All retries are exhausted" if retries == 0
 			puts "update_vimeo_video_data failed. Retries left: #{retries -= 1}"
 			sleep delay
