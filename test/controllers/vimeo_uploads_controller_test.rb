@@ -13,7 +13,15 @@ class VimeoUploadsControllerTest < ActionDispatch::IntegrationTest
       
         @authorization = 'bearer '+ENV['vimeo_token']
     end    
-
+    #reset lecture4 as in lectures.yml
+    def teardown
+    l4 = Lecture.find(4)
+    l4.update(
+        name:'lecture4',
+        url: "http://www.youtube.com/watch?v=xGcGdfrty",
+        duration: 150
+    )
+    end    
     #vimeo video properly uploaded
     test 'vimeo video id should be returned' do 
       get "/vimeo_uploads/get_vimeo_video_id",

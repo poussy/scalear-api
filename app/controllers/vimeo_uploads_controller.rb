@@ -39,7 +39,7 @@ class VimeoUploadsController < ApplicationController
         handler = Proc.new do |exception, attempt_number, total_delay|
             puts "get_vimeo_upload_details Request failed. saw a #{exception.class}; retry attempt #{attempt_number}; #{total_delay} seconds have passed."     
 		end
-		with_retries(:max_tries => 3, :base_sleep_seconds => 0.5, :max_sleep_seconds => 1.0, :handler => handler, :rescue => [Timeout::Error, SocketError]) do |attempt_number|       
+		with_retries(:max_tries => 3, :base_sleep_seconds => 0.5, :max_sleep_seconds => 1.0, :handler => handler, :rescue => [Rack::Timeout::RequestTimeoutException, Timeout::Error, SocketError]) do |attempt_number|       
 			response = HTTParty.post( query_url, headers:headers)	
 		end
 
@@ -77,7 +77,7 @@ class VimeoUploadsController < ApplicationController
         handler = Proc.new do |exception, attempt_number, total_delay|
             puts "delete_complete_link Request failed. saw a #{exception.class}; retry attempt #{attempt_number}; #{total_delay} seconds have passed."     
 		end
-		with_retries(:max_tries => 3, :base_sleep_seconds => 0.5, :max_sleep_seconds => 1.0, :handler => handler, :rescue => [Timeout::Error, SocketError]) do |attempt_number|       
+		with_retries(:max_tries => 3, :base_sleep_seconds => 0.5, :max_sleep_seconds => 1.0, :handler => handler, :rescue => [Rack::Timeout::RequestTimeoutException, Timeout::Error, SocketError]) do |attempt_number|       
 			response = HTTParty.delete(params[:link],headers:{"Authorization"=>"bearer "+ENV['vimeo_token']})
 		end
 		
@@ -117,7 +117,7 @@ class VimeoUploadsController < ApplicationController
         handler = Proc.new do |exception, attempt_number, total_delay|
             puts "update_vimeo_video_data Request failed. saw a #{exception.class}; retry attempt #{attempt_number}; #{total_delay} seconds have passed."     
 		end
-		with_retries(:max_tries => 3, :base_sleep_seconds => 0.5, :max_sleep_seconds => 1.0, :handler => handler, :rescue => [Timeout::Error, SocketError]) do |attempt_number|       
+		with_retries(:max_tries => 3, :base_sleep_seconds => 0.5, :max_sleep_seconds => 1.0, :handler => handler, :rescue => [Rack::Timeout::RequestTimeoutException, Timeout::Error, SocketError]) do |attempt_number|       
 			response = HTTParty.patch(video_edit_url,headers:authorization,body:body)
 		end	
 

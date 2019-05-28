@@ -9,7 +9,7 @@ module VimeoUtils
             puts "Video deletion Request failed. saw a #{exception.class}; retry attempt #{attempt_number}; #{total_delay} seconds have passed."     
         end
 
-        with_retries(:max_tries => 3, :base_sleep_seconds => 0.5, :max_sleep_seconds => 1.0, :handler => handler, :rescue => [Timeout::Error, SocketError]) do |attempt_number|
+        with_retries(:max_tries => 3, :base_sleep_seconds => 0.5, :max_sleep_seconds => 1.0, :handler => handler, :rescue => [Rack::Timeout::RequestTimeoutException, Timeout::Error, SocketError]) do |attempt_number|
             begin
               vimeo_video = VimeoMe2::Video.new(ENV["vimeo_token"],vid_vimeo_id)	
             rescue VimeoMe2::RequestFailed
@@ -34,7 +34,7 @@ module VimeoUtils
         handler = Proc.new do |exception, attempt_number, total_delay|
             puts "retreiving video name on vimeo failed. saw a #{exception.class}; retry attempt #{attempt_number}; #{total_delay} seconds have passed."     
         end
-        with_retries(:max_tries => 3, :base_sleep_seconds => 0.5, :max_sleep_seconds => 1.0, :handler => handler, :rescue => [Timeout::Error, SocketError]) do |attempt_number|
+        with_retries(:max_tries => 3, :base_sleep_seconds => 0.5, :max_sleep_seconds => 1.0, :handler => handler, :rescue => [Rack::Timeout::RequestTimeoutException, Timeout::Error, SocketError]) do |attempt_number|
             response = HTTParty.get(query_url,headers:authorization)
         end	    
         updated_name = JSON.parse(response)['name']
@@ -50,7 +50,7 @@ module VimeoUtils
         handler = Proc.new do |exception, attempt_number, total_delay|
             puts "uploading video failed. saw a #{exception.class}; retry attempt #{attempt_number}; #{total_delay} seconds have passed."     
         end
-        with_retries(:max_tries => 3, :base_sleep_seconds => 0.5, :max_sleep_seconds => 1.0, :handler => handler, :rescue => [Timeout::Error, SocketError]) do |attempt_number|     
+        with_retries(:max_tries => 3, :base_sleep_seconds => 0.5, :max_sleep_seconds => 1.0, :handler => handler, :rescue => [Rack::Timeout::RequestTimeoutException, Timeout::Error, SocketError]) do |attempt_number|     
             HTTParty.put(upload_link, body: video_content, headers: headers)
             uploaded = true
         end	
@@ -69,7 +69,7 @@ module VimeoUtils
         handler = Proc.new do |exception, attempt_number, total_delay|
             puts "retreiving testing upload details failed. saw a #{exception.class}; retry attempt #{attempt_number}; #{total_delay} seconds have passed."     
         end
-        with_retries(:max_tries => 3, :base_sleep_seconds => 0.5, :max_sleep_seconds => 1.0, :handler => handler, :rescue => [Timeout::Error, SocketError]) do |attempt_number|     
+        with_retries(:max_tries => 3, :base_sleep_seconds => 0.5, :max_sleep_seconds => 1.0, :handler => handler, :rescue => [Rack::Timeout::RequestTimeoutException, Timeout::Error, SocketError]) do |attempt_number|     
             response = HTTParty.post(query_url, headers:headers)	      
         end	
         return response
@@ -82,7 +82,7 @@ module VimeoUtils
         handler = Proc.new do |exception, attempt_number, total_delay|
             puts "getting transcoding status failed. saw a #{exception.class}; retry attempt #{attempt_number}; #{total_delay} seconds have passed."     
         end
-        with_retries(:max_tries => 3, :base_sleep_seconds => 0.5, :max_sleep_seconds => 1.0, :handler => handler, :rescue => [Timeout::Error, SocketError]) do |attempt_number|     
+        with_retries(:max_tries => 3, :base_sleep_seconds => 0.5, :max_sleep_seconds => 1.0, :handler => handler, :rescue => [Rack::Timeout::RequestTimeoutException, Timeout::Error, SocketError]) do |attempt_number|     
             response = HTTParty.get(query_url,headers:authorization)
 		end	    
         video_status = JSON.parse(response)['transcode']['status']
@@ -94,7 +94,7 @@ module VimeoUtils
         handler = Proc.new do |exception, attempt_number, total_delay|
             puts "Video lookup failed. saw a #{exception.class}; retry attempt #{attempt_number}; #{total_delay} seconds have passed."     
         end
-        with_retries(:max_tries => 3, :base_sleep_seconds => 0.5, :max_sleep_seconds => 1.0, :handler => handler, :rescue => [Timeout::Error, SocketError]) do |attempt_number|
+        with_retries(:max_tries => 3, :base_sleep_seconds => 0.5, :max_sleep_seconds => 1.0, :handler => handler, :rescue => [Rack::Timeout::RequestTimeoutException, Timeout::Error, SocketError]) do |attempt_number|
             begin
               vimeo_video = VimeoMe2::Video.new(ENV["vimeo_token"],video_id)	
             rescue VimeoMe2::RequestFailed
