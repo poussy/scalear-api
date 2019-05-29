@@ -11,11 +11,11 @@ module VimeoUtils
 
         with_retries(:max_tries => 3, :base_sleep_seconds => 0.5, :max_sleep_seconds => 1.0, :handler => handler, :rescue => [Rack::Timeout::RequestTimeoutException, Timeout::Error, SocketError]) do |attempt_number|
             begin
-              vimeo_video = VimeoMe2::Video.new(ENV["vimeo_token"],vid_vimeo_id)	
-            rescue VimeoMe2::RequestFailed
+              vimeo_video = VimeoMe2::Video.new(ENV["vimeo_token"],vid_vimeo_id)
+              vimeo_video.destroy		
+            rescue VimeoMe2::RequestFailed #this means the video doesn't exists or SL is not its owner
                 return state
             end      
-            vimeo_video.destroy	
             state = true
         end      
         return state
