@@ -1,6 +1,7 @@
 require "retries"
 class VimeoUploadsController < ApplicationController 
   include VimeoUtils
+  include HelperUtils
 
   def get_vimeo_video_id
 		current_upload = VimeoUpload.find_by_lecture_id(params["id"].to_i)
@@ -111,7 +112,11 @@ class VimeoUploadsController < ApplicationController
 		
 		video_edit_url = 'https://api.vimeo.com/videos/'+params[:video_id]
 		authorization = {"Authorization"=>"bearer "+ENV['vimeo_token']}
-		body = {name:params[:name],description:params[:description]}
+	
+		body = {
+			name: params[:name],
+			description: params[:description]
+		}
 
 		response = ""
         handler = Proc.new do |exception, attempt_number, total_delay|
