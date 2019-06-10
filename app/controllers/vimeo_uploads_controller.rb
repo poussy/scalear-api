@@ -127,7 +127,7 @@ class VimeoUploadsController < ApplicationController
 		end	
 
 		if response.code == 200	
-			render json: { video_update:response, :notice => ["update video name on vimeo is done successfully"]}
+			render json: { :notice => ["update video name on vimeo is done successfully"]}
 		else 
 			render json: {:errors => response['video name on vimeo is not updated']}, status:400
 		end		
