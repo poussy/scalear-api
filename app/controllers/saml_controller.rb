@@ -39,7 +39,7 @@ class SamlController < ApplicationController
     begin 
       nordu_domains = JSON.load(open("https://md.nordu.net/swamid.json?role=idp"))
       update_saml_domains(nordu_domains) if is_nordu_domains_valid(nordu_domains)
-    rescue
+    rescue StandardError, Rack::Timeout::RequestTimeoutException => e
       nordu_domains = SamlDomain.all
     end     
     render json: {domains:nordu_domains }
