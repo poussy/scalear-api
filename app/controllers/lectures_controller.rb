@@ -1,4 +1,5 @@
-class LecturesController < ApplicationController
+class LecturesController < ApplicationController 
+	include VimeoUtils
 	load_and_authorize_resource
 		# @lecture is already loaded
 
@@ -47,7 +48,6 @@ class LecturesController < ApplicationController
 		end 
 
 		did_he_change_lecture_type = @lecture.inclass != params[:lecture][:inclass]
-
 		if @lecture.update_attributes(lecture_params)
 			##### remove all onlinequiz.inclass_session and check added it if type isdistance peer
 			@lecture.events.where(:quiz_id => nil, :group_id => @lecture.group.id).destroy_all
@@ -532,20 +532,27 @@ class LecturesController < ApplicationController
 
 	def destroy
 		@lecture = Lecture.find(params[:id])
+		@lecture_url = @lecture.url
 		@course= params[:course_id]
 		lec_destory = false
+	
 		ActiveRecord::Base.transaction do
 			lec_destory = @lecture.destroy
+			if lec_destory		
+				## delete vimeo video
+				if is_vimeo
+					delete_vimeo_video
+				end	
+				## waitin for shared item table
+				SharedItem.delete_dependent("lecture",params[:id].to_i, current_user.id)
+				Forum::Post.delete("destroy_all_by_lecture", {:lecture_id => params[:id]})
+				render json: {:notice => [I18n.t("controller_msg.lecture_successfully_deleted")]}
+			else
+				render json: {:errors => [I18n.t("lectures.could_not_delete_lecture")]}, :status => 400
+			end
 		end
-		if lec_destory
-			## waitin for shared item table
-			SharedItem.delete_dependent("lecture",params[:id].to_i, current_user.id)
-			Forum::Post.delete("destroy_all_by_lecture", {:lecture_id => params[:id]})
-			render json: {:notice => [I18n.t("controller_msg.lecture_successfully_deleted")]}
-		else
-			render json: {:errors => [I18n.t("lectures.could_not_delete_lecture")]}, :status => 400
-		end
-  	end
+	
+  end
 
 	def sort #called from module_editor to sort the lectures (by dragging)
 		group = Group.find(params[:group])
@@ -1038,8 +1045,22 @@ class LecturesController < ApplicationController
 			end
 	end
 
-	# # def end_distance_peer_session
-	# # end
+	def is_vimeo
+		if 	@lecture_url.include?('vimeo.com/')
+			return true 
+		else	
+			return false
+		end
+	end	
+	
+	def delete_vimeo_video
+		lecture_url_not_used_elsewhere = Lecture.where(:url=>	@lecture_url).count==0
+		if lecture_url_not_used_elsewhere
+			vid_vimeo_id = 	@lecture_url.split('https://vimeo.com/')[1]
+			delete_video_from_vimeo_account(vid_vimeo_id)
+			delete_video_upload_record(vid_vimeo_id) 
+		end	
+	end	
 
 private
 	def lecture_params
