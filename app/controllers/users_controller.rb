@@ -72,7 +72,7 @@ class UsersController < ApplicationController
     domain = "empty_domain"
     if !current_user.is_administrator?
       user_role = UsersRole.where(:user_id => current_user.id, :role_id => 9)[0]
-      domain = user_role.organization.domain
+      domain = user_role.admin_school_domain
       if  domain == "all"
         email = user_role.organization.domain
         subdomains = current_user.get_subdomains(email)
