@@ -46,12 +46,17 @@ class SamlController < ApplicationController
   end
 
   def consume
+   
     @response = Onelogin::Saml::Response.new(params[:SAMLResponse])
     @response.settings = $settings
 
     connect_to = $connect_to.to_s
-    @response.decrypt(Rails.application.config.saml[:keys][:private])
-
+    begin
+      @response.decrypt(Rails.application.config.saml[:keys][:private])
+    rescue REXML::ParseException => ex
+      puts “Failed: #{ex.message[/^.*$/]} (#{ex.message[/Line:\s\d+/]})”
+      @response =  @response.force_encoding('UTF-8')
+    end 
     redirect_url = validate_and_sign_in_user(@response.attributes)
     redirect_to redirect_url
    
