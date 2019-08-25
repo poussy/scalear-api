@@ -78,6 +78,7 @@ class UsersController < ApplicationController
         subdomains = current_user.get_subdomains(email)
         subdomains = subdomains.select {|domain| !domain.include?("stud") }
       else
+        domain = user_role.organization.domain
         subdomains.append(domain)
       end
     end
