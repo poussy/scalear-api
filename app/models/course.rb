@@ -565,8 +565,7 @@ class Course < ApplicationRecord
                      :disposition => 'attachment',
                      :filename => file_name
 
-	t.close
-	t.unlink
+    t.close
   end
 
 	def export_modules_progress(current_user)
