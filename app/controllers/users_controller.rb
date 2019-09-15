@@ -121,9 +121,9 @@ class UsersController < ApplicationController
       render json: user.errors
     end
   end
-  def generate_user_activity_file
-
-    user = User.find_by_email(params["email"])
+  def create_user_activity_file(email)
+    
+    user = User.find_by_email(email)
     csv_files={}
 
     csv_files[:user_data]= CSV.generate do |csv_user_data|
@@ -265,9 +265,17 @@ class UsersController < ApplicationController
       end
       
       t.close
-      send_file(t.path,:filename=>file_name)
-  end  
 
+      return {:path=>t.path,:file_name=>file_name}
+  end  
+  def generate_user_activity_file
+      file_info =create_user_activity_file(params["email"])
+      send_file(file_info[:path],:file_name=>file_info[:file_name])
+  end  
+  def send_user_activity_file
+     file_info = create_user_activity_file(params["student_email"])
+     UserMailer.attachment_email(User.find_by_email(params['admin_email']), Course.last, file_info[:file_name], file_info[:path], I18n.locale).deliver
+  end  
   def validate_user
     #skip password confirmation in case of saml
     if params['user']['password'].blank? && params['is_saml']
