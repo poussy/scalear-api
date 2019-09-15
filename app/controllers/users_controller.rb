@@ -284,7 +284,7 @@ class UsersController < ApplicationController
 
   def send_user_activity_file
      
-     students_emails = params["student_email"].split(',')
+     students_emails = params["student_email"].delete(' ').split(',')
      admin_user = User.find_by_email(params['admin_email'])
      students_zipped_data = []
      not_found_students = []
