@@ -1,6 +1,6 @@
 require 'tempfile'
-class UsersController < ApplicationController
 
+class UsersController < ApplicationController
   # def already_signed_in
   #   if current_user
   #     redirect_to root_url, :alert => I18n.t('controller_msg.you_are_signed_in')
@@ -269,14 +269,44 @@ class UsersController < ApplicationController
       return {:path=>t.path,:file_name=>file_name}
   end  
   def generate_user_activity_file
-      file_info =create_user_activity_file(params["email"])
+      file_info = create_user_activity_file(params["email"])
       send_file(file_info[:path],:file_name=>file_info[:file_name])
   end  
+  def filter_unfound_users(emails_array)
+    not_found = []
+    emails_array.each do |e|
+       if !User.find_by_email(e)
+        not_found.push(e)
+       end
+    end    
+    return not_found  
+  end
+
   def send_user_activity_file
-     file_info = create_user_activity_file(params["student_email"])
-     UserMailer.attachment_email(User.find_by_email(params['admin_email']), Course.last, file_info[:file_name], file_info[:path], I18n.locale).deliver
-  end  
-  def validate_user
+     
+     students_emails = params["student_email"].split(',')
+     admin_user = User.find_by_email(params['admin_email'])
+     students_zipped_data = []
+     not_found_students = []
+
+     if students_emails.length > 1 # many student comma spearated mails inserted
+      not_found_students = filter_unfound_users(students_emails)
+      found_students = students_emails - not_found_students
+      students_zipped_data = found_students.map{|student_email| create_user_activity_file(student_email)}
+     else # one student inserted
+      not_found_students = filter_unfound_users([params["student_email"]])
+      students_zipped_data = [create_user_activity_file(params["student_email"])] if !not_found_students
+     end  
+
+     UserMailer.many_attachment_email(admin_user, Course.last, students_zipped_data, I18n.locale).deliver if students_zipped_data.length > 0
+     
+     if not_found_students.length > 0 
+      render json: {not_found_students: not_found_students, notice:"listed students accounts does't exist"}
+     else 
+      render json: { notice:"All listed students accounts exists"}
+     end
+  end
+    def validate_user
     #skip password confirmation in case of saml
     if params['user']['password'].blank? && params['is_saml']
       params['password'] = Devise.friendly_token[0,20]
