@@ -273,40 +273,41 @@ class UsersController < ApplicationController
       send_file(file_info[:path],:file_name=>file_info[:file_name])
   end  
   def filter_unfound_users(emails_array)
-    not_found = []
-    emails_array.each do |e|
-       if !User.find_by_email(e)
-        not_found.push(e)
-       end
-    end    
-    return not_found  
+    found = emails_array.map{|e| e if User.find_by_email(e)}.compact
+    return found
   end
-
+  def filter_out_of_domain_users(students_emails,admin_user)
+      subdomains = admin_user.get_subdomains(admin_user.email)
+      in_domain_students_email = students_emails.map{|email| email if subdomains.include?email.split('@')[1]}.compact
+      out_of_domain_students_email = students_emails - in_domain_students_email
+      return  [in_domain_students_email , out_of_domain_students_email]
+  end  
   def send_user_activity_file
      
      students_emails = params["student_email"].delete(' ').split(',')
      admin_user = User.find_by_email(params['admin_email'])
      students_zipped_data = []
      not_found_students = []
+     out_domain_students =[]
+     in_domain_students = []
+     
+     found_students = filter_unfound_users(students_emails)
+     not_found_students = students_emails - found_students
 
-     if students_emails.length > 1 # many student comma spearated mails inserted
-      not_found_students = filter_unfound_users(students_emails)
-      found_students = students_emails - not_found_students
-      students_zipped_data = found_students.map{|student_email| create_user_activity_file(student_email)}
-     else # one student inserted
-      not_found_students = filter_unfound_users([params["student_email"]])
-      students_zipped_data = [create_user_activity_file(params["student_email"])] if !not_found_students
-     end  
+     in_domain_students,out_domain_students = filter_out_of_domain_users(found_students,admin_user)
+     students_zipped_data = in_domain_students.map{|student_email| create_user_activity_file(student_email)} if in_domain_students.length >0
 
      UserMailer.many_attachment_email(admin_user, Course.last, students_zipped_data, I18n.locale).deliver if students_zipped_data.length > 0
      
-     if not_found_students.length > 0 
-      render json: {not_found_students: not_found_students, notice:"listed students accounts does't exist"}
-     else 
+     if not_found_students.length > 0 || out_domain_students.length>0 && students_zipped_data.length == 0
+      render json: { unprocessable_students: not_found_students+out_domain_students,notice:"listed students accounts don't exist or out of school domain"}
+     elsif not_found_students.length == 0 && out_domain_students.length == 0
       render json: { notice:"All listed students accounts exists"}
+     else
+      render json: { processable_students: in_domain_students , unprocessable_students: not_found_students+out_domain_students,notice:"some of the listed students don't exist or out of school domain "}
      end
   end
-    def validate_user
+  def validate_user
     #skip password confirmation in case of saml
     if params['user']['password'].blank? && params['is_saml']
       params['password'] = Devise.friendly_token[0,20]
