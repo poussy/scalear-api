@@ -299,9 +299,9 @@ class UsersController < ApplicationController
 
      UserMailer.many_attachment_email(admin_user, Course.last, students_zipped_data, I18n.locale).deliver if students_zipped_data.length > 0
      
-     if not_found_students.length > 0 || out_domain_students.length>0 && students_zipped_data.length == 0
+     if ((not_found_students.length > 0 || out_domain_students.length>0) && students_zipped_data.length == 0 )#all accounts unprocessable
       render json: { unprocessable_students: not_found_students+out_domain_students,notice:"listed students accounts don't exist or out of school domain"}
-     elsif not_found_students.length == 0 && out_domain_students.length == 0
+     elsif not_found_students.length == 0 && out_domain_students.length == 0 #all accounts processable
       render json: { notice:"All listed students accounts exists"}
      else
       render json: { processable_students: in_domain_students , unprocessable_students: not_found_students+out_domain_students,notice:"some of the listed students don't exist or out of school domain "}
