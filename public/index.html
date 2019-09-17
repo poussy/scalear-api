@@ -234,7 +234,7 @@ td, th {
 </script>
 
 <script type="text/ng-template" id="/views/statistics/school_gdpr_download.html">
-<link rel="stylesheet" href="styles/teacher/statistics.css"/><div class="admin-dates"> <span translate>Students email:</span> <span><input name="emails" type="text" ng-model="student_email" ng-required="true" ng-class="{error: errors.start_date}" style="display: inline;width: 25%;"/> <button id='send_gdpr' ng-click="sendStudentsGdpr()" class="button medium dark-green"><span translate>send</span></button></span><span ng-show='email_sent'><div>These accounts don't exist: {{unfound_accounts}}</div></span></div>
+<link rel="stylesheet" href="styles/teacher/statistics.css"/><div class="admin-dates"><div>To download the information as an administrator, enter the email addresses of the users (students or teachers) here. An email with the archived user information will then be sent to the email account associated with your administrator account.</div></br> <span translate>Emails (comma separated):</span> <span><input name="emails" type="text" ng-model="student_email" ng-required="true" ng-class="{error: errors.start_date}" style="display: inline;width: 25%;"/> <button id='send_gdpr' ng-click="sendStudentsGdpr()" class="button medium dark-green"><span translate>send</span></button></span><span><div id='unprocessable_students' ng-show="unprocessable_students">These accounts don't exist or out of your domain: {{unprocessable_students}}</div></span></div>
 </script>
 
 <script type="text/ng-template" id="/views/statistics/school_statistics.html">
@@ -1025,7 +1025,7 @@ table.table_matrix_height tbody{
        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
        })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-    </script><script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script src="scripts/cbeea7a0.externals.js"></script><script src="scripts/ee690179.scripts.js"></script></body><script type="text/javascript">
+    </script><script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script src="scripts/cbeea7a0.externals.js"></script><script src="scripts/3b949a3b.scripts.js"></script></body><script type="text/javascript">
         var ie11 = /rv:11.0/i.test(navigator.userAgent);
         if (navigator.appName == 'Microsoft Internet Explorer' || ie11){
            if(self.location.href.split('/')[self.location.href.split('/').length-1].split('?')[0] == "confirmation"){
