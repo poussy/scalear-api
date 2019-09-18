@@ -535,9 +535,9 @@ class LecturesController < ApplicationController
 		@lecture_url = @lecture.url
 		@course= params[:course_id]
 		lec_destory = false
-	
+	    
 		ActiveRecord::Base.transaction do
-			lec_destory = @lecture.destroy
+			lec_destory = @lecture.async_destroy
 			if lec_destory		
 				## delete vimeo video
 				if is_vimeo
@@ -552,7 +552,7 @@ class LecturesController < ApplicationController
 			end
 		end
 	
-  end
+    end
 
 	def sort #called from module_editor to sort the lectures (by dragging)
 		group = Group.find(params[:group])

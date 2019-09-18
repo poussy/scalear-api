@@ -60,6 +60,10 @@ class Lecture < ApplicationRecord
 
 	# def titled_markers
 	# end
+	def async_destroy
+		self.destroy
+	end	
+	handle_asynchronously :async_destroy #, :run_at => Proc.new { 1.seconds.from_now }
 
 	def remove_null_virtual_attributes
 		lecture = self.as_json({})
