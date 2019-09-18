@@ -113,7 +113,7 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 	end
 
 	test "should be able to delete lecture" do
-		Delayed::Worker.delayed_jobs = false
+		Delayed::Worker.delay_jobs = false
 		assert @course3.lectures.where(id: 3).present?
 
 			delete '/en/courses/3/lectures/3', headers: @user3.create_new_auth_token
