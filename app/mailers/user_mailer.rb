@@ -146,11 +146,7 @@ class UserMailer < ApplicationMailer
 		@user_name= user.name
 		@user_email= user.email
 		@course = course
-		files.each do |file| 
-			# puts "========================================================"
-			# puts file[:file_name]
-			# puts file[:path]
-			# puts "========================================================"
+		files.each do |file|
 			attachments[file[:file_name]]= File.read(file[:path])
 		end	
 		
