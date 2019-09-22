@@ -71,27 +71,35 @@ Rails.application.routes.draw do
     get  'saml/get_domain' => 'saml#get_domain'
     get  'saml/metadata' => 'saml#metadata'
     post 'saml/consume' => 'saml#consume'
-    
+
     resources :vimeo_uploads do
+        member do
+          delete 'delete_vimeo_video_angular'
+          delete 'delete_complete_link'
+          post 'update_vimeo_table'
+          post 'update_vimeo_video_data'
+          get 'get_vimeo_video_id'
+          get 'get_uploading_status'
+          get 'get_vimeo_upload_details'
+        end
+        collection do
+          delete 'delete_vimeo_video_angular'
+          delete 'delete_complete_link'
+          post 'update_vimeo_table'
+          post 'update_vimeo_video_data'
+          get 'get_vimeo_video_id'
+          get 'get_uploading_status'
+          get 'get_vimeo_upload_details'
+        end  
+      end    
+    resources :yt_data_api_req_logs do
       member do
-        delete 'delete_vimeo_video_angular'
-        delete 'delete_complete_link'
-        post 'update_vimeo_table'
-        post 'update_vimeo_video_data'
-        get 'get_vimeo_video_id'
-        get 'get_uploading_status'
-        get 'get_vimeo_upload_details'
+       post 'register_YT_api_request_angular'
       end
-      collection do
-        delete 'delete_vimeo_video_angular'
-        delete 'delete_complete_link'
-        post 'update_vimeo_table'
-        post 'update_vimeo_video_data'
-        get 'get_vimeo_video_id'
-        get 'get_uploading_status'
-        get 'get_vimeo_upload_details'
+      collection do 
+        post 'register_YT_api_request_angular'
       end  
-    end    
+    end        
     resources :courses do
       member do
         post 'remove_student'
