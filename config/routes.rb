@@ -59,6 +59,8 @@ Rails.application.routes.draw do
         post "saml_signup"
         get "user_exist"
         post "validate_user"
+        get "generate_user_activity_file"
+        get "send_user_activity_file"
         
       end
     end
