@@ -38,6 +38,7 @@ class SamlController < ApplicationController
   def get_domain
     begin 
       nordu_domains = JSON.load(open("https://md.nordu.net/swamid.json?role=idp"))
+      nordu_domains.delete_if{|h|  h['scope'] == 'ri.se'} #remove rise
       update_saml_domains(nordu_domains) if is_nordu_domains_valid(nordu_domains)
     rescue StandardError, Rack::Timeout::RequestTimeoutException => e
       nordu_domains = SamlDomain.all
