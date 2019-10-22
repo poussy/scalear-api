@@ -40,6 +40,7 @@ class QuizzesController < ApplicationController
   end
 
   def get_questions_angular
+    MemoryProfiler.start
     quiz= Quiz.find(params[:id])
     questions= quiz.questions
 
@@ -152,7 +153,9 @@ class QuizzesController < ApplicationController
     end
     quiz[:requirements] = requirements
 
-
+    report = MemoryProfiler.stop
+    puts "memory report get_questions_angular:"+quiz.id.to_s+",current user id:"+quiz.current_user.id.to_s
+    report.pretty_print
     render :json => {:quiz =>quiz,:next_item => next_item,  :questions => questions, :answers => answers,
       :quiz_grades => s_grades, :status => status, :correct => correct,
       :explanation => explanation , :alert_messages=>@alert_messages}
