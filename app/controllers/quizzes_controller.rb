@@ -385,7 +385,7 @@ class QuizzesController < ApplicationController
   def update_questions_angular
 
     @questions = params[:questions]
-
+    MemoryProfiler.start
     Quiz.transaction do
       #want to update existing records. (for questions and answers)
       # want to create new ones //
@@ -452,6 +452,8 @@ class QuizzesController < ApplicationController
       to_delete.each do |d|
         Question.find(d).destroy
       end
+      report = MemoryProfiler.stop
+      report.pretty_print 
       render :json => {:message => "success", :notice => [I18n.t("controller_msg.#{@quiz.quiz_type}_successfully_saved")]} and return
     end
     render :json => {:errors => [I18n.t("controller_msg.transaction_rolled_back")]}, :status => 400
