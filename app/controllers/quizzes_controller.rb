@@ -154,8 +154,8 @@ class QuizzesController < ApplicationController
     quiz[:requirements] = requirements
 
     report = MemoryProfiler.stop
-    puts "memory report get_questions_angular:"+quiz.id.to_s+",current user id:"+quiz.current_user.id.to_s
-    report.pretty_print
+    logger.debug("memory report get_questions_angular:"+quiz.id.to_s+",current user id:"+quiz.current_user.id.to_s)
+    report.pretty_print(detailed_report:false,color_output:true,scale_bytes:true) 
     render :json => {:quiz =>quiz,:next_item => next_item,  :questions => questions, :answers => answers,
       :quiz_grades => s_grades, :status => status, :correct => correct,
       :explanation => explanation , :alert_messages=>@alert_messages}
@@ -456,7 +456,8 @@ class QuizzesController < ApplicationController
         Question.find(d).destroy
       end
       report = MemoryProfiler.stop
-      report.pretty_print 
+      logger.debug('memory report update_questions_angular quiz:'+@quiz.id.to_s)
+      report.pretty_print(:detailed_report=>'false') 
       render :json => {:message => "success", :notice => [I18n.t("controller_msg.#{@quiz.quiz_type}_successfully_saved")]} and return
     end
     render :json => {:errors => [I18n.t("controller_msg.transaction_rolled_back")]}, :status => 400
