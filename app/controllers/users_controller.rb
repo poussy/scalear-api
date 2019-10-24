@@ -122,10 +122,10 @@ class UsersController < ApplicationController
     end
   end
   def create_user_activity_file(email)
-    
+
     user = User.find_by_email(email)
     csv_files={}
-
+    
     csv_files[:user_data]= CSV.generate do |csv_user_data|
     csv_files[:roles]= CSV.generate do |csv_roles|
     csv_files[:student_courses]= CSV.generate do |csv_student_courses|

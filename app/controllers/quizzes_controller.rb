@@ -151,8 +151,6 @@ class QuizzesController < ApplicationController
       end
     end
     quiz[:requirements] = requirements
-
-
     render :json => {:quiz =>quiz,:next_item => next_item,  :questions => questions, :answers => answers,
       :quiz_grades => s_grades, :status => status, :correct => correct,
       :explanation => explanation , :alert_messages=>@alert_messages}
@@ -385,7 +383,6 @@ class QuizzesController < ApplicationController
   def update_questions_angular
 
     @questions = params[:questions]
-
     Quiz.transaction do
       #want to update existing records. (for questions and answers)
       # want to create new ones //
