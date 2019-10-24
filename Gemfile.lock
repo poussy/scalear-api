@@ -66,6 +66,7 @@ GEM
       public_suffix (>= 2.0.2, < 4.0)
     aescrypt (1.0.0)
     arel (8.0.0)
+    ast (2.4.0)
     bcrypt (3.1.11)
     bindata (2.4.2)
     builder (3.2.3)
@@ -150,6 +151,8 @@ GEM
       activerecord
       hodel_3000_compliant_logger
     orm_adapter (0.5.0)
+    parser (2.6.5.0)
+      ast (~> 2.4.0)
     pg (0.21.0)
     public_suffix (3.0.1)
     puma (3.10.0)
@@ -197,6 +200,8 @@ GEM
       rails (>= 4.2)
     ruby_dep (1.5.0)
     rubyzip (1.2.1)
+    scout_apm (2.6.2)
+      parser
     securecompare (1.0.0)
     settingslogic (2.0.9)
     simple_oauth (0.3.1)
@@ -264,6 +269,7 @@ DEPENDENCIES
   roboto
   ruby-saml!
   rubyzip (>= 1.0.0)
+  scout_apm
   settingslogic
   simplecov
   spring
