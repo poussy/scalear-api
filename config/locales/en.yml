@@ -264,7 +264,7 @@ en:
     and_answered: "and answered"
     with: "with"
     teacher_responded: "The teacher has responded to your feedback"
-    surveys_anonymous: "Please note that all surveys are anonymous, so if you would like to follow up with your teacher, you will need to contact him or her directly."
+    surveys_anonymous: "Please note that all surveys are anonymous. If you would like to follow up with your teacher, you can reply to this email or contact him or her directly, but your response will no longer be anonymous."
     added_you_as: "%{name} has added you as a %{role} to the %{course} course."
     you_been_invited: "You have been invited to join the course %{course} as a %{role} by %{name}"
     sign_up_or_sign_in: "Please sign in at %{url2} to accept the invitation."

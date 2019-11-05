@@ -126,7 +126,8 @@ class UserMailer < ApplicationMailer
 		@response=response
 		@survey=survey
 		@course=course
-		mail(:to => @user_email , :subject => "(#{@course.short_name}) Response to your survey", :from => @from)
+		@reply_to=course.user.email
+		mail(:to => @user_email , :subject => "(#{@course.short_name}) Response to your survey", :from => @from, :reply_to=> @reply_to)
 	end
 
 	def attachment_email(user, course, file_name, file_path, locale)
