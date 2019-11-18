@@ -143,7 +143,7 @@ class SamlController < ApplicationController
       settings.description["sv"]="Plattform för stöd av \"flipped classroom\" utbildning."
       settings.information_url="https://#{request.host}/home/about"
       settings.privacy_url="https://#{request.host}/home/privacy"
-      settings.logo="https://#{request.host}/assets/logo-a66e557f3f93b4d5195033ba1a1527a3.png"
+      settings.logo="https://#{request.host}/assets/images/logo.png"
       settings.sp_cert = Rails.application.config.saml[:keys][:public]
       settings.org_name="Scalable Learning"
       settings.org_display_name="Scalable Learning"
