@@ -245,7 +245,7 @@ sv:
     and_answered: "och svarade"
     with: "med"
     teacher_responded: "Läraren har svarat på din feedback"
-    surveys_anonymous: "Observera att alla enkäter är anonyma, så om du vill följa upp kontakta din lärare direkt."
+    surveys_anonymous: "Observera att alla undersökningar är anonyma. Om du vill följa upp din lärare kan du svara på det här e-postmeddelandet eller kontakta honom eller henne direkt, men ditt svar kommer inte längre att vara anonymt."
     added_you_as: "%{name} har lagt till dig som %{role} till kursen %{course}."
     you_been_invited: "Du har blivit inbjuden att delta i kursen %{course} som %{role} av %{name}"
     sign_up_or_sign_in: "Vänligen logga in på %{url2} för att acceptera inbjudan."

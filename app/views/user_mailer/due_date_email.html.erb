@@ -1,5 +1,5 @@
 <p><%= t('user_mailer.due_in_one_day', {item_type: @item_type, item_name: @item.name , course_name: @course.name})%></p>
-<p><%= t('user_mailer.see_due_dates')%> <%= link_to "dashboard", $frontend_host+@url_dashboard, :target => '_blank' %>
+<p><%= t('user_mailer.see_due_dates')%> <%= link_to "dashboard.", $frontend_host+@url_dashboard, :target => '_blank' %>
   
 <%= render partial: 'thank_you_footer' %>
 <%= render partial: 'footer', locals: {role:"student"} %>
