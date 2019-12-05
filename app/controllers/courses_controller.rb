@@ -570,7 +570,7 @@ class CoursesController < ApplicationController
 			groups =initalGroups.select{|g|
 				filteredItems[g.id] = {
 					:lectures => g.lectures.select{|l| l.appearance_time<=today || l.inclass = true},
-					:quizzes => g.quizzes.select{ |q| q.appearance_time<=today},
+					:quizzes => g.quizzes, #.select{ |q| q.appearance_time<=today},
 					:custom_links => g.custom_links
 				};
 				g.appearance_time <= today &&
