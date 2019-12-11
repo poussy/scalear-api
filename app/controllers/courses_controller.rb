@@ -220,8 +220,10 @@ class CoursesController < ApplicationController
 				else
 					domains = domains + current_user.get_subdomains(t.email.match(/(\w+\.\w+$)/)[1])
 				end
-				domains = domains.uniq
+			else 	
+				domains.push('scalable-learning.com')
 			end	
+			domains = domains.uniq
 		end
 		render json: {:subdomains => domains , :selected_domain => selected_domain}		
 	end  
