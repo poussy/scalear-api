@@ -213,12 +213,16 @@ class CoursesController < ApplicationController
 		end
 		course_domain.each{|d| selected_domain[d] =true }
 		@course.teachers.each do |t|
-			teacher_domain = current_user.get_subdomains(t.email.match(/(\w+\.\w+$)/)[1])
-			if teacher_domain.count == 0
-				domains.push(t.email.match(/(\w+\.\w+$)/)[1])
-			else
-				domains = domains + current_user.get_subdomains(t.email.match(/(\w+\.\w+$)/)[1])
-			end
+			if !t.email.include?'archived_user'
+				teacher_domain = current_user.get_subdomains(t.email.match(/(\w+\.\w+$)/)[1])
+				if teacher_domain.count == 0
+					domains.push(t.email.match(/(\w+\.\w+$)/)[1])
+				else
+					domains = domains + current_user.get_subdomains(t.email.match(/(\w+\.\w+$)/)[1])
+				end
+			else 	
+				domains.push('scalable-learning.com')
+			end	
 			domains = domains.uniq
 		end
 		render json: {:subdomains => domains , :selected_domain => selected_domain}		
