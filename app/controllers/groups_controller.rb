@@ -739,7 +739,7 @@ class GroupsController < ApplicationController
 			data = group.get_module_summary_student(current_user)
 		else
 			group = Group.includes([:course, :lectures,{:online_quizzes => :online_answers}, {:quizzes => [:quiz_grades, :free_answers]}, :online_quiz_grades, :free_online_quiz_grades, :lecture_views ]).find(params[:id])
-			data = group.get_module_summary_teacher
+			data = group.get_module_summary_teacher(params[:offset],params[:limit])
 		end
 		render :json => {:module =>data }
 	end
