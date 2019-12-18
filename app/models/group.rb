@@ -148,14 +148,14 @@ class Group < ApplicationRecord
 	# def get_stats
 	# end
 
-	def get_stats_summary#[not_watched, watched_less_than_50, watched_more_than_50, watched_more_than_80, completed_on_time, completed_late]
+	def get_stats_summary(offset,limit)#[not_watched, watched_less_than_50, watched_more_than_50, watched_more_than_80, completed_on_time, completed_late]
 		not_watched=0
 		watched_less_than_50=0
 		watched_more_than_50=0
 		watched_more_than_80 = 0
 		completed_on_time=0
 		completed_late=0
-		self.course.users.each do |u|
+		self.course.users[offset.to_i..limit.to_i].each do |u|
 			# x=u.grades_module_before_due_date(self)
 			x=u.finished_group_percent(self)
 			if x==0
@@ -382,7 +382,7 @@ class Group < ApplicationRecord
 		self.inclass_sessions.order("updated_at DESC").first
 	end
 
-def get_module_summary_teacher
+def get_module_summary_teacher(offset,limit)
 	course = self.course
 	data = {}
 
@@ -396,7 +396,7 @@ def get_module_summary_teacher
 	data['due_date_string'] = self.due_date
 	data['type'] = "teacher"
 	data['students_count'] = course.users.size
-	module_stats = self.get_stats_summary #[not_watched, watched_less_than_50, watched_more_than_50, watched_more_than_80,completed_on_time, completed_late]
+	module_stats = self.get_stats_summary(offset,limit) #[not_watched, watched_less_than_50, watched_more_than_50, watched_more_than_80,completed_on_time, completed_late]
 	data['students_completion'] = {}
 	data['students_completion']['incomplete'] = 0 
 	data['students_completion']['between_50_80'] = 0 
