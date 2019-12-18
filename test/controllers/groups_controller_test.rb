@@ -917,7 +917,7 @@ class GroupsControllerTest < ActionDispatch::IntegrationTest
 	end
 	
 	test "should get_module_summary for teacher 3" do
-		get '/en/courses/3/groups/3/get_module_summary', params:{:offset=>0,:limit=>100},headers: @user3.create_new_auth_token
+		get '/en/courses/3/groups/3/get_module_summary', params:{},headers: @user3.create_new_auth_token
 		resp =  JSON.parse response.body
 		assert_response :success
 		assert_equal resp['module']['duration'] , 390

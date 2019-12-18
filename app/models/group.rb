@@ -155,7 +155,13 @@ class Group < ApplicationRecord
 		watched_more_than_80 = 0
 		completed_on_time=0
 		completed_late=0
-		self.course.users[offset.to_i..limit.to_i].each do |u|
+		from = offset.to_i
+		to = limit.to_i
+		if to == 0 
+			from = 0
+			to = self.course.users.length-1
+		end
+		self.course.users[from..to].each do |u|
 			# x=u.grades_module_before_due_date(self)
 			x=u.finished_group_percent(self)
 			if x==0
