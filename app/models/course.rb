@@ -615,7 +615,7 @@ class Course < ApplicationRecord
 		UserMailer.progress_days_late(current_user, file_name, t.path, I18n.locale,self).deliver
 		t.close
 	end
-	# handle_asynchronously :export_modules_progress, :run_at => Proc.new { 5.seconds.from_now }
+	handle_asynchronously :export_modules_progress, :run_at => Proc.new { 1.seconds.from_now }
 
 	def self.school_admin_statistics_course_ids(raw_start_date, raw_end_date, current_user, course_ids)
 
