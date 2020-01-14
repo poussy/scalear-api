@@ -431,7 +431,7 @@ class CoursesController < ApplicationController
 			elsif(list_type == 2)
 					users = User.where( id: Enrollment.all.map(&:user_id).uniq ).map{|u| u.email}
 			elsif(list_type == 3)
-					users = User.select(:email).all.map{|u| u.email}
+					users = User.select(:email).where('email not like ?','%archived_user%@scalable-learning.com').all.map{|u| u.email}
 			else
 					users = params[:emails]
 			end
