@@ -1,4 +1,5 @@
 class CoursesController < ApplicationController
+	include CcUtils
 	load_and_authorize_resource
 				#  @course is aready loaded  
 
@@ -658,7 +659,13 @@ class CoursesController < ApplicationController
 		@course.export_modules_progress(current_user)
 		render :json => {:notice => ['Course progress wil be exported to CSV and sent to your Email']}
 	end  
-
+			
+  def send_course_to_mail
+	  course = Course.find(params[:id])
+	  packaged_course = cc_course(course)
+	  UserMailer.delay.attachment_email(current_user, course, course.name , packaged_course, I18n.locale)
+	  render :json => {:notice => ['Course wil be exported to canvas common cartridge and sent to your Email']}
+  end	
 	private
 		def course_params
 			params.require(:course).permit(:description, :end_date, :name, :prerequisites, :short_name, :start_date, :user_ids, :user_id, :time_zone, :discussion_link, :importing,
