@@ -231,6 +231,8 @@ module CcUtils
         when "MCQ" 
             tranformed_question_type="multiple_answers_question"
         when "Free Text Question"
+            puts "=============================quiz==========================="
+            puts quiz.as_json
             tranformed_question_type= defined?(quiz.answers[0]) && quiz.answers[0].content==""? "essay_question" : "fill_in_multiple_blanks_question"
         else 
             tranformed_question_type="essay_question"
