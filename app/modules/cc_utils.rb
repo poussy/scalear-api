@@ -175,7 +175,7 @@ module CcUtils
         transformed_link.url = link.url
         transformed_link.content_type = "ExternalUrl"
         puts ">>>>>>>>>>>>>transformed_link>>>>>>>>>>>"
-        puts transformed_link
+        puts transformed_link.as_json
         return transformed_link
     end    
     def create_transformed_assessment(quiz_type) #quiz_src could be lecture or stand-alone quiz
@@ -228,7 +228,7 @@ module CcUtils
     end   
     def format_timed_lecture_url(in_video_quiz,lecture_url)
         tmp = lecture_url.remove('watch?v=')
-        tmp = tmp.gsub(/http/,'https')
+        tmp = tmp.gsub(/http/,'https')  if !tmp.include?('https')
         tmp = tmp.gsub(/.com\//,".com\/embed\/")
         start_time = in_video_quiz.start_time.floor()
         end_time   = in_video_quiz.start_time.floor()+1
