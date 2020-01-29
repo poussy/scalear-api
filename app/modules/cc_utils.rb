@@ -232,6 +232,8 @@ module CcUtils
             tranformed_question_type="multiple_answers_question"
         when "Free Text Question"
             tranformed_question_type= defined?(quiz.answers[0]) && quiz.answers[0].content==""? "essay_question" : "fill_in_multiple_blanks_question"
+        else 
+            tranformed_question_type="essay_question"
         end
         return tranformed_question_type
     end
