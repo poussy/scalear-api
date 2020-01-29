@@ -17,6 +17,10 @@ module CcUtils
             item = group_items[i]
             case item.class.name
             when "Lecture"
+                puts "-----------item.name---------"
+                puts group.name
+                puts item.name
+                puts "-----------------------------"
                 attach_lecture(item,transformed_group,transformed_course)
             when "Quiz"
                 attach_quiz(item,transformed_group,transformed_course)
@@ -71,8 +75,9 @@ module CcUtils
         return transformed_answer
     end  
     def cc_custom_link(link)
-        transformed_lecture = create_transformed_link(link)
-        return transformed_lecture
+        puts ">>>>>>>>>>>>>>>>>>>>>.in cc_custom_link >>>>>>>>>>>>>>>>>>>>>>>"
+        transformed_link = create_transformed_link(link)
+        return transformed_link
     end   
     def cc_video_quiz(lecture,lecture_quizzes,transformed_group,transformed_course)
         transformed_video_quiz = create_video_transformed_assessment('invideo',lecture.name)
@@ -90,8 +95,11 @@ module CcUtils
     end  
 
     def attach_custom_link(link,transformed_group,transformed_course)
+        puts ">>>>>>>>>>>>>>>>>>>>>.in attach custom link >>>>>>>>>>>>>>>>>>>>>>>"
         transformed_link = cc_custom_link(link)
         transformed_group.module_items << transformed_link
+        puts ">>>>>>>>>>>>>>>>> transformed_group.module_items >>>>>>>>>>>>>>>"
+        puts  transformed_group.module_items
     end           
     def attach_lecture(lecture,transformed_group,transformed_course)
         transformed_lecture = cc_lecture_items(lecture)
@@ -166,6 +174,8 @@ module CcUtils
         transformed_link.title = link.name
         transformed_link.url = link.url
         transformed_link.content_type = "ExternalUrl"
+        puts ">>>>>>>>>>>>>transformed_link>>>>>>>>>>>"
+        puts transformed_link
         return transformed_link
     end    
     def create_transformed_assessment(quiz_type) #quiz_src could be lecture or stand-alone quiz
@@ -218,6 +228,7 @@ module CcUtils
     end   
     def format_timed_lecture_url(in_video_quiz,lecture_url)
         tmp = lecture_url.remove('watch?v=')
+        tmp = tmp.gsub(/http/,'https')
         tmp = tmp.gsub(/.com\//,".com\/embed\/")
         start_time = in_video_quiz.start_time.floor()
         end_time   = in_video_quiz.start_time.floor()+1
@@ -231,9 +242,15 @@ module CcUtils
         when "MCQ" 
             tranformed_question_type="multiple_answers_question"
         when "Free Text Question"
-            puts "=============================quiz==========================="
-            puts quiz.as_json
-            tranformed_question_type= defined?(quiz.answers[0]) && quiz.answers[0].content==""? "essay_question" : "fill_in_multiple_blanks_question"
+            # tranformed_question_type= (defined?(quiz.answers[0]) && quiz.answers[0].content=="")? "essay_question" : "fill_in_multiple_blanks_question"
+            tranformed_question_type= "fill_in_multiple_blanks_question"
+            if defined?(quiz.answers)
+                if quiz.answers[0]
+                    if  quiz.answers[0].content==""
+                        tranformed_question_type= "essay_question"
+                    end
+                end    
+            end        
         else 
             tranformed_question_type="essay_question"
         end
