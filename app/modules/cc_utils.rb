@@ -17,10 +17,6 @@ module CcUtils
             item = group_items[i]
             case item.class.name
             when "Lecture"
-                puts "-----------item.name---------"
-                puts group.name
-                puts item.name
-                puts "-----------------------------"
                 attach_lecture(item,transformed_group,transformed_course)
             when "Quiz"
                 attach_quiz(item,transformed_group,transformed_course)
@@ -44,7 +40,7 @@ module CcUtils
         return transformed_quiz
     end
     def cc_question(quiz,quizLocation)
-        transformed_question_type = map_SL_quiz_type_to_CC_question_type(quiz.question_type,quiz) 
+        transformed_question_type = map_SL_quiz_type_to_CC_question_type(quiz.question_type,quiz,quizLocation) 
         transformed_question = create_transformed_question(transformed_question_type)
         transformed_question.material = quizLocation=="stand_alone_quiz"? extract_inner_html_text(quiz.content): format_in_video_quiz_body(quiz,quiz.lecture.url)
         if transformed_question_type != "essay_question" && quizLocation=="stand_alone_quiz"
@@ -75,7 +71,6 @@ module CcUtils
         return transformed_answer
     end  
     def cc_custom_link(link)
-        puts ">>>>>>>>>>>>>>>>>>>>>.in cc_custom_link >>>>>>>>>>>>>>>>>>>>>>>"
         transformed_link = create_transformed_link(link)
         return transformed_link
     end   
@@ -95,11 +90,8 @@ module CcUtils
     end  
 
     def attach_custom_link(link,transformed_group,transformed_course)
-        puts ">>>>>>>>>>>>>>>>>>>>>.in attach custom link >>>>>>>>>>>>>>>>>>>>>>>"
         transformed_link = cc_custom_link(link)
         transformed_group.module_items << transformed_link
-        puts ">>>>>>>>>>>>>>>>> transformed_group.module_items >>>>>>>>>>>>>>>"
-        puts  transformed_group.module_items
     end           
     def attach_lecture(lecture,transformed_group,transformed_course)
         transformed_lecture = cc_lecture_items(lecture)
@@ -172,10 +164,9 @@ module CcUtils
         transformed_link=CanvasCc::CanvasCC::Models::ModuleItem.new
         transformed_link.identifier = CanvasCc::CC::CCHelper.create_key(transformed_link)
         transformed_link.title = link.name
-        transformed_link.url = link.url
+        link_url = link.url.gsub(/http/,'https')  if !link.url.include?('https')
+        transformed_link.url = link_url
         transformed_link.content_type = "ExternalUrl"
-        puts ">>>>>>>>>>>>>transformed_link>>>>>>>>>>>"
-        puts transformed_link.as_json
         return transformed_link
     end    
     def create_transformed_assessment(quiz_type) #quiz_src could be lecture or stand-alone quiz
@@ -235,22 +226,19 @@ module CcUtils
         tmp +="?start=#{start_time}&end=#{end_time}&autoplay=0mute=0&enablejsapi=0 "
         return tmp
     end      
-    def map_SL_quiz_type_to_CC_question_type(type,quiz)       
+    def map_SL_quiz_type_to_CC_question_type(type,question,quizLocation)       
         case type
         when "OCQ"
             tranformed_question_type="multiple_choice_question"
         when "MCQ" 
             tranformed_question_type="multiple_answers_question"
         when "Free Text Question"
-            # tranformed_question_type= (defined?(quiz.answers[0]) && quiz.answers[0].content=="")? "essay_question" : "fill_in_multiple_blanks_question"
+            # free questiton on video or standalone with match
             tranformed_question_type= "fill_in_multiple_blanks_question"
-            if defined?(quiz.answers)
-                if quiz.answers[0]
-                    if  quiz.answers[0].content==""
-                        tranformed_question_type= "essay_question"
-                    end
-                end    
-            end        
+            # free question wo match standalone || # free question wo match on video 
+            if ((quizLocation=="stand_alone_quiz")&&(question.answers[0].content=="")) || ((quizLocation=="on_video")&&(question.online_answers[0].answer==""))
+                tranformed_question_type= "essay_question"  
+            end 
         else 
             tranformed_question_type="essay_question"
         end
@@ -273,22 +261,22 @@ end
 
 
 # # # //////////////////////////////////
-# transformed_course = CanvasCc::CanvasCC::Models::Course.new
-# course = Course.last
-# transformed_course.title = 'course 125'
-# transformed_course.grading_standards = []
-# transformed_course.identifier = CanvasCc::CC::CCHelper.create_key(transformed_course)
+transformed_course = CanvasCc::CanvasCC::Models::Course.new
+course = Course.last
+transformed_course.title = 'course 125'
+transformed_course.grading_standards = []
+transformed_course.identifier = CanvasCc::CC::CCHelper.create_key(transformed_course)
 
 
 # myModule = CanvasCc::CanvasCC::Models::CanvasModule.new
 # myModule.title = 'first module 125'
 # myModule.identifier = CanvasCc::CC::CCHelper.create_key(myModule)
 
-# assessment = CanvasCc::CanvasCC::Models::Assessment.new
-# assessment.quiz_type ='practice_quiz'
-# assessment.items=[]
-# assessment.title = 'my assessmemnt 125'
-# assessment.identifier = CanvasCc::CC::CCHelper.create_key(assessment)
+assessment = CanvasCc::CanvasCC::Models::Assessment.new
+assessment.quiz_type ='practice_quiz'
+assessment.items=[]
+assessment.title = 'my assessmemnt 125'
+assessment.identifier = CanvasCc::CC::CCHelper.create_key(assessment)
 
 # module_item=CanvasCc::CanvasCC::Models::ModuleItem.new
 # module_item.title = 'my assessment 125b'
@@ -297,10 +285,10 @@ end
 # module_item.identifier = CanvasCc::CC::CCHelper.create_key(module_item)
 
 
-# question = CanvasCc::CanvasCC::Models::Question.create('text_only_question')
-# question.identifier='456'
-# question.title='is this a title?'
-# question.material = '<p><iframe src="//www.youtube.com/embed/91a3JA6Fan0?start=6&amp;end=10" width="560" height="314" allowfullscreen="allowfullscreen"></iframe>why</p>'
+question = CanvasCc::CanvasCC::Models::Question.create('essay_question')
+question.identifier='456'
+question.title='is this a title?'
+question.material = '<p><iframe src="//www.youtube.com/embed/91a3JA6Fan0?start=6&amp;end=10" width="560" height="314" allowfullscreen="allowfullscreen"></iframe>why</p>'
 
 # answer = CanvasCc::CanvasCC::Models::Answer.new()
 # answer.id='123'
@@ -313,9 +301,9 @@ end
 # page.workflow_state="active"
 # page.title = 'page title'
 # question.answers << answer
-# assessment.items << question
+assessment.items << question
 # module_item.identifierref = assessment.identifier.to_i
 # myModule.module_items << module_item
 # transformed_course.canvas_modules << myModule
-# transformed_course.assessments<<assessment
+transformed_course.assessments<<assessment
 # transformed_course.pages << page
