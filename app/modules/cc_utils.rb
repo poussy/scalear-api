@@ -236,6 +236,9 @@ module CcUtils
             # free questiton on video or standalone with match
             tranformed_question_type= "fill_in_multiple_blanks_question"
             # free question wo match standalone || # free question wo match on video 
+            puts "==============================="
+            puts question.as_json
+            puts "========================"
             if ((quizLocation=="stand_alone_quiz")&&(question.answers[0].content=="")) || ((quizLocation=="on_video")&&(question.online_answers[0].answer==""))
                 tranformed_question_type= "essay_question"  
             end 
@@ -261,22 +264,22 @@ end
 
 
 # # # //////////////////////////////////
-transformed_course = CanvasCc::CanvasCC::Models::Course.new
-course = Course.last
-transformed_course.title = 'course 125'
-transformed_course.grading_standards = []
-transformed_course.identifier = CanvasCc::CC::CCHelper.create_key(transformed_course)
+# transformed_course = CanvasCc::CanvasCC::Models::Course.new
+# course = Course.last
+# transformed_course.title = 'course 125'
+# transformed_course.grading_standards = []
+# transformed_course.identifier = CanvasCc::CC::CCHelper.create_key(transformed_course)
 
 
 # myModule = CanvasCc::CanvasCC::Models::CanvasModule.new
 # myModule.title = 'first module 125'
 # myModule.identifier = CanvasCc::CC::CCHelper.create_key(myModule)
 
-assessment = CanvasCc::CanvasCC::Models::Assessment.new
-assessment.quiz_type ='practice_quiz'
-assessment.items=[]
-assessment.title = 'my assessmemnt 125'
-assessment.identifier = CanvasCc::CC::CCHelper.create_key(assessment)
+# assessment = CanvasCc::CanvasCC::Models::Assessment.new
+# assessment.quiz_type ='practice_quiz'
+# assessment.items=[]
+# assessment.title = 'my assessmemnt 125'
+# assessment.identifier = CanvasCc::CC::CCHelper.create_key(assessment)
 
 # module_item=CanvasCc::CanvasCC::Models::ModuleItem.new
 # module_item.title = 'my assessment 125b'
@@ -285,10 +288,10 @@ assessment.identifier = CanvasCc::CC::CCHelper.create_key(assessment)
 # module_item.identifier = CanvasCc::CC::CCHelper.create_key(module_item)
 
 
-question = CanvasCc::CanvasCC::Models::Question.create('essay_question')
-question.identifier='456'
-question.title='is this a title?'
-question.material = '<p><iframe src="//www.youtube.com/embed/91a3JA6Fan0?start=6&amp;end=10" width="560" height="314" allowfullscreen="allowfullscreen"></iframe>why</p>'
+# question = CanvasCc::CanvasCC::Models::Question.create('essay_question')
+# question.identifier='456'
+# question.title='is this a title?'
+# question.material = '<p><iframe src="//www.youtube.com/embed/91a3JA6Fan0?start=6&amp;end=10" width="560" height="314" allowfullscreen="allowfullscreen"></iframe>why</p>'
 
 # answer = CanvasCc::CanvasCC::Models::Answer.new()
 # answer.id='123'
@@ -301,9 +304,9 @@ question.material = '<p><iframe src="//www.youtube.com/embed/91a3JA6Fan0?start=6
 # page.workflow_state="active"
 # page.title = 'page title'
 # question.answers << answer
-assessment.items << question
+# assessment.items << question
 # module_item.identifierref = assessment.identifier.to_i
 # myModule.module_items << module_item
 # transformed_course.canvas_modules << myModule
-transformed_course.assessments<<assessment
+# transformed_course.assessments<<assessment
 # transformed_course.pages << page
