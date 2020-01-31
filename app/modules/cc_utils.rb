@@ -162,8 +162,8 @@ module CcUtils
     def create_transformed_link(link)
         transformed_link=CanvasCc::CanvasCC::Models::ModuleItem.new
         transformed_link.identifier = CanvasCc::CC::CCHelper.create_key(transformed_link)
-        transformed_link.title = link.name
-        link_url = link.url.gsub(/http/,'https')  if !link.url.include?('https')
+        transformed_link.title = link.name 
+        link_url = !link.url.include?('https') ? link.url.gsub(/http/,'https') : link.url 
         transformed_link.url = link_url
         transformed_link.content_type = "ExternalUrl"
         return transformed_link
