@@ -13,8 +13,7 @@ module CcUtils
     def cc_groups(group,transformed_course)
         transformed_group = create_transformed_group(group)
         group_items = get_sorted_group_items(group)
-        (1..group_items.length).each do |i|
-            item = group_items[i]
+        group_items.each do |item|
             case item.class.name
             when "Lecture"
                 attach_lecture(item,transformed_group,transformed_course)
@@ -167,11 +166,6 @@ module CcUtils
         link_url = link.url.gsub(/http/,'https')  if !link.url.include?('https')
         transformed_link.url = link_url
         transformed_link.content_type = "ExternalUrl"
-        puts "__________________________create_transformed_link__________________________"
-        puts link.as_json
-        puts "//////////////////////////"
-        puts transformed_link.as_json
-        puts "___________________________________________________________________________"
         return transformed_link
     end    
     def create_transformed_assessment(quiz_type) #quiz_src could be lecture or stand-alone quiz
@@ -255,12 +249,9 @@ module CcUtils
     end 
     def get_sorted_group_items(group)
         group_items = group.lectures + group.custom_links + group.quizzes
-        sorted_items = {} 
-        group_items.each do |item|
-            sorted_items[item.position] = item
-        end    
+        sorted_items = group_items.sort_by{|obj| obj.position}
         return sorted_items
-    end        
+    end          
 end
 
 
