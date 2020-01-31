@@ -167,6 +167,11 @@ module CcUtils
         link_url = link.url.gsub(/http/,'https')  if !link.url.include?('https')
         transformed_link.url = link_url
         transformed_link.content_type = "ExternalUrl"
+        puts "__________________________create_transformed_link__________________________"
+        puts link.as_json
+        puts "//////////////////////////"
+        puts transformed_link.as_json
+        puts "___________________________________________________________________________"
         return transformed_link
     end    
     def create_transformed_assessment(quiz_type) #quiz_src could be lecture or stand-alone quiz
@@ -236,12 +241,7 @@ module CcUtils
             # free questiton on video or standalone with match
             tranformed_question_type= "fill_in_multiple_blanks_question"
             # free question wo match standalone || # free question wo match on video 
-            puts "==============================="
-            puts question.as_json
-            puts "----------------------"
-            puts question.answers
-            puts "========================"
-            if ((quizLocation=="stand_alone_quiz")&&(question.answers!=nil)&&(question.answers[0].content=="")) || ((quizLocation=="on_video")&&(question.online_answers[0].answer==""))
+            if ((quizLocation=="stand_alone_quiz")&&(question.answers.length==0||question.answers[0].content=="")) || ((quizLocation=="on_video")&&(question.online_answers[0].answer==""))
                 tranformed_question_type= "essay_question"  
             end 
         else 
