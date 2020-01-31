@@ -238,8 +238,10 @@ module CcUtils
             # free question wo match standalone || # free question wo match on video 
             puts "==============================="
             puts question.as_json
+            puts "----------------------"
+            puts question.answers
             puts "========================"
-            if ((quizLocation=="stand_alone_quiz")&&(question.answers[0].content=="")) || ((quizLocation=="on_video")&&(question.online_answers[0].answer==""))
+            if ((quizLocation=="stand_alone_quiz")&&(question.answers!=nil)&&(question.answers[0].content=="")) || ((quizLocation=="on_video")&&(question.online_answers[0].answer==""))
                 tranformed_question_type= "essay_question"  
             end 
         else 
