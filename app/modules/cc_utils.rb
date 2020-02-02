@@ -1,8 +1,9 @@
 module CcUtils
     def cc_course(course)
         transformed_course = create_transformed_course(course)
-        course.groups.each do |group|
+        course.groups.each_with_index do |group|
             transformed_group = cc_groups(group,transformed_course)
+            create_module_prerequisite(transformed_group,transformed_course.canvas_modules.last.identifier) if transformed_course.canvas_modules.length>0
             transformed_course.canvas_modules << transformed_group
         end 
         dir = Dir.mktmpdir
@@ -10,6 +11,7 @@ module CcUtils
         path = carttridge.create(dir)
         return path   
     end
+
     def cc_groups(group,transformed_course)
         transformed_group = create_transformed_group(group)
         group_items = get_sorted_group_items(group)
@@ -33,6 +35,7 @@ module CcUtils
         quiz_type = quiz.quiz_type =="survey"? "survey": "practice_quiz"
         transformed_quiz = create_transformed_assessment(quiz_type)
         transformed_quiz.title = quiz.name
+        transformed_quiz.unlock_at = quiz.appearance_time
         transformed_quiz.due_at = quiz.due_date
         transformed_quiz.allowed_attempts = quiz.retries
         attach_questions(quiz,transformed_quiz)
@@ -87,6 +90,10 @@ module CcUtils
         end
         attach_transformed_video_quiz(transformed_video_survey,transformed_group,transformed_course)
     end  
+    def cc_module_completion_requirements(indentifier,completion_type,transformed_group)
+        completion_requirement = create_module_completion_requirements(indentifier,completion_type)
+        transformed_group.completion_requirements << completion_requirement
+    end    
 
     def attach_custom_link(link,transformed_group,transformed_course)
         transformed_link = cc_custom_link(link)
@@ -96,6 +103,7 @@ module CcUtils
         transformed_lecture = cc_lecture_items(lecture)
         transformed_group.module_items << transformed_lecture
         attach_video_quizzes(lecture,transformed_group,transformed_course)
+        cc_module_completion_requirements(transformed_lecture.identifier,'must_view',transformed_group) if lecture.required 
     end    
     def attach_video_quizzes(lecture,transformed_group,transformed_course)         
         lecture_surveys = lecture.online_quizzes.where(:quiz_type=>"survey")
@@ -112,6 +120,7 @@ module CcUtils
         quiz_module_item = create_module_item('Quizzes::Quiz' ,transformed_quiz.identifier)
         transformed_group.module_items << quiz_module_item
         transformed_course.assessments << transformed_quiz
+        cc_module_completion_requirements(quiz_module_item.identifier,'must_submit',transformed_group) if quiz.required 
     end   
     def attach_video_question(video_quiz,transformed_video_quiz)
         in_video_question = cc_question(video_quiz,'on_video')
@@ -129,23 +138,41 @@ module CcUtils
         transformed_course.assessments<<transformed_video_quiz 
     end    
 
+    def create_module_prerequisite(transformed_group,prev_module_identifier)
+        module_pre_requisite = CanvasCc::CanvasCC::Models::ModulePrerequisite.new
+        module_pre_requisite.identifierref = prev_module_identifier
+        module_pre_requisite.title = 'in order'
+        module_pre_requisite.type ='context_module'
+        transformed_group.prerequisites << module_pre_requisite
+    end    
+    def create_module_completion_requirements(identifierref,type)
+        completion_requirement = CanvasCc::CanvasCC::Models::ModuleCompletionRequirement.new
+        completion_requirement.identifierref=identifierref
+        completion_requirement.type=type
+        return completion_requirement
+    end    
     def create_transformed_course(course)
         transformed_course = CanvasCc::CanvasCC::Models::Course.new
         transformed_course.title = course.name
         transformed_course.grading_standards = []
         transformed_course.identifier = course.id.to_s
         transformed_course.grading_standards=[]
+        transformed_course.start_at = course.start_date
+        transformed_course.conclude_at = course.end_date
+        transformed_course.is_public = Course.last.course_domains.length == 0? true:false 
+        transformed_course.hide_final_grade = true
         return transformed_course
     end   
     def create_transformed_group(group)
         transformed_group = CanvasCc::CanvasCC::Models::CanvasModule.new
         transformed_group.title = group.name
         transformed_group.identifier = CanvasCc::CC::CCHelper.create_key(transformed_group)
+        transformed_group.unlock_at = group.appearance_time
         return transformed_group
     end   
     def create_module_item(content_type,identifier_to_refer_to)
         module_item = CanvasCc::CanvasCC::Models::ModuleItem.new
-        module_item.content_type=content_type
+        module_item.content_type = content_type
         module_item.title = 'in_video_module_item'      
         module_item.identifier = CanvasCc::CC::CCHelper.create_key(module_item)   
         module_item.identifierref = identifier_to_refer_to
