@@ -78,6 +78,7 @@ module CcUtils
     end   
     def cc_video_quiz(lecture,lecture_quizzes,transformed_group,transformed_course)
         transformed_video_quiz = create_video_transformed_assessment('invideo',lecture.name)
+        transformed_video_quiz.due_at =  lecture.due_date
         lecture_quizzes.each do |on_video_quiz|
             attach_video_question(on_video_quiz,transformed_video_quiz)
         end  
@@ -85,6 +86,7 @@ module CcUtils
     end
     def cc_video_survey(lecture,lecture_surveys,transformed_group,transformed_course)
         transformed_video_survey = create_video_transformed_assessment('survey',lecture.name)
+        transformed_video_survey.due_at =  lecture.due_date
         lecture_surveys.each do |on_video_survey|
             attach_video_question(on_video_survey,transformed_video_survey)
         end
