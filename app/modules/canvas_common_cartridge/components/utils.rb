@@ -1,0 +1,44 @@
+module CanvasCommonCartridge::Components::Utils
+    def format_in_video_quiz_body(in_video_quiz,lecture_url)
+        timed_url = format_timed_lecture_url(in_video_quiz,lecture_url)        
+        question = in_video_quiz.question
+        tmp_question_body = "<p><iframe src='#{timed_url}' width='560' height='314' allowfullscreen='allowfullscreen'></iframe>#{question}</p>"
+        return tmp_question_body
+    end   
+    def format_timed_lecture_url(in_video_quiz,lecture_url)
+        tmp = lecture_url.remove('watch?v=')
+        tmp = tmp.gsub(/http/,'https')  if !tmp.include?('https')
+        tmp = tmp.gsub(/.com\//,".com\/embed\/")
+        start_time = in_video_quiz.start_time.floor()
+        end_time   = in_video_quiz.start_time.floor()+1
+        tmp +="?start=#{start_time}&end=#{end_time}&autoplay=0mute=0&enablejsapi=0 "
+        return tmp
+    end      
+    def map_SL_quiz_type_to_CC_question_type(type,question,quizLocation)       
+        case type
+        when "OCQ"
+            tranformed_question_type="multiple_choice_question"
+        when "MCQ" 
+            tranformed_question_type="multiple_answers_question"
+        when "Free Text Question"
+            # free questiton on video or standalone with match
+            tranformed_question_type= "fill_in_multiple_blanks_question"
+            # free question wo match standalone || # free question wo match on video 
+            if ((quizLocation=="stand_alone_quiz")&&(question.answers.length==0||question.answers[0].content=="")) || ((quizLocation=="on_video")&&(question.online_answers[0].answer==""))
+                tranformed_question_type= "essay_question"  
+            end 
+        else 
+            tranformed_question_type="essay_question"
+        end
+        return tranformed_question_type
+    end
+    def extract_inner_html_text(html)
+        innerText =  ActionController::Base.helpers.strip_tags(html)
+        return innerText
+    end 
+    def order_group_items(group)
+        group_items = group.lectures + group.custom_links + group.quizzes
+        sorted_items = group_items.sort_by{|obj| obj.position}
+        return sorted_items
+    end    
+end
