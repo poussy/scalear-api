@@ -1,4 +1,4 @@
-module CanvasCommonCartridge::CcExporter
+module CanvasCommonCartridge::Converter
     include CanvasCommonCartridge::Components::Creator 
     include CanvasCommonCartridge::Components::Attacher
     include CanvasCommonCartridge::Components::Utils
