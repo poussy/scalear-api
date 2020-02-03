@@ -7,7 +7,7 @@ module CanvasCommonCartridge::Components::Attacher
         converted_lecture = convert_lecture_items(lecture)
         converted_group.module_items << converted_lecture
         attach_video_quizzes(lecture,converted_group,converted_course)
-        convert_module_completion_requirements(converted_lecture.identifier,'must_view',converted_group) if lecture.required 
+        convert_module_completion_requirements(converted_lecture.identifier,'must_view',converted_group) if lecture.required || lecture.required_module
     end    
     def attach_video_quizzes(lecture,converted_group,converted_course)         
         lecture_surveys = lecture.online_quizzes.where(:quiz_type=>"survey")
@@ -24,7 +24,7 @@ module CanvasCommonCartridge::Components::Attacher
         quiz_module_item = create_module_item('Quizzes::Quiz' ,converted_quiz.identifier)
         converted_group.module_items << quiz_module_item
         converted_course.assessments << converted_quiz
-        convert_module_completion_requirements(quiz_module_item.identifier,'must_submit',converted_group) if quiz.required 
+        convert_module_completion_requirements(quiz_module_item.identifier,'must_submit',converted_group) if quiz.required || quiz.required_module
     end   
     def attach_video_question(video_quiz,converted_video_quiz)
         in_video_question = convert_question(video_quiz,'on_video')

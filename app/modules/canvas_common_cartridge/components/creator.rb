@@ -43,7 +43,7 @@ module CanvasCommonCartridge::Components::Creator
         converted_lecture=CanvasCc::CanvasCC::Models::ModuleItem.new
         converted_lecture.identifier = CanvasCc::CC::CCHelper.create_key(converted_lecture)
         converted_lecture.title = lecture.name
-        converted_lecture.url = lecture.url
+        converted_lecture.url = secure_url(lecture.url)
         converted_lecture.content_type = "ExternalUrl"
         return converted_lecture
     end   
@@ -51,8 +51,7 @@ module CanvasCommonCartridge::Components::Creator
         converted_link=CanvasCc::CanvasCC::Models::ModuleItem.new
         converted_link.identifier = CanvasCc::CC::CCHelper.create_key(converted_link)
         converted_link.title = link.name 
-        link_url = !link.url.include?('https') ? link.url.gsub(/http/,'https') : link.url 
-        converted_link.url = link_url
+        converted_link.url = secure_url(link.url)
         converted_link.content_type = "ExternalUrl"
         return converted_link
     end    
