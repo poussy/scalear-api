@@ -48,7 +48,8 @@ module CanvasCommonCartridge::Converter
     def convert_question(quiz,quizLocation)
         converted_question_type = map_SL_quiz_type_to_CC_question_type(quiz.question_type,quiz,quizLocation) 
         converted_question = create_converted_question(converted_question_type)
-        converted_question.material = quizLocation=="stand_alone_quiz"? extract_inner_html_text(quiz.content): format_in_video_quiz_body(quiz,quiz.lecture.url)
+        converted_question.title = extract_inner_html_text(quizLocation=="stand_alone_quiz"? quiz.content:quiz.question)
+        converted_question.material = quizLocation=="stand_alone_quiz"? "": format_in_video_quiz_body(quiz,quiz.lecture.url,start_time,end_time)
         if converted_question_type != "essay_question" && quizLocation=="stand_alone_quiz"
             quiz.answers.each do |answer| 
                 converted_answer = convert_quiz_answer(answer,converted_question)
@@ -80,13 +81,15 @@ module CanvasCommonCartridge::Converter
         converted_link = create_converted_link(link)
         return converted_link
     end   
-    def convert_video_quiz(lecture,lecture_quizzes,converted_group,converted_course)
-        converted_video_quiz = create_video_converted_assessment('invideo',lecture.name)
+    def convert_video_quiz(lecture,lecture_quizzes,converted_group,converted_course) 
         converted_video_quiz.due_at =  lecture.due_date
-        lecture_quizzes.each do |on_video_quiz|
-            attach_video_question(on_video_quiz,converted_video_quiz)
+        lecture_quizzes.each_with_index do |on_video_quiz,i|
+            converted_video_quiz = create_video_converted_assessment('invideo',lecture.name)
+            lecture_start_time = i==0? 0:lecture_quizzes[i-1].start_time  
+            lecture_end_time = lecture_quizzes[i].start_time
+            attach_video_question(on_video_quiz,converted_video_quiz,lecture_start_time,lecture_end_time)
+            attach_converted_video_quiz(converted_video_quiz,converted_group,converted_course)
         end  
-        attach_converted_video_quiz(converted_video_quiz,converted_group,converted_course)
     end
     def convert_video_survey(lecture,lecture_surveys,converted_group,converted_course)
         converted_video_survey = create_video_converted_assessment('survey',lecture.name)

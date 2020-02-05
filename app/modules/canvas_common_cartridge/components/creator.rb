@@ -60,6 +60,7 @@ module CanvasCommonCartridge::Components::Creator
         assessment.quiz_type = quiz_type
         assessment.items = []
         assessment.identifier = CanvasCc::CC::CCHelper.create_key(assessment)
+        assessment.workflow_state = 'active'
         return assessment 
     end
     def create_video_converted_assessment(quiz_type,lecture_name)

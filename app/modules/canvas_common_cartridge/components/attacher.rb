@@ -4,10 +4,14 @@ module CanvasCommonCartridge::Components::Attacher
         converted_group.module_items << converted_link
     end           
     def attach_lecture(lecture,converted_group,converted_course)
-        converted_lecture = convert_lecture_items(lecture)
-        converted_group.module_items << converted_lecture
-        attach_video_quizzes(lecture,converted_group,converted_course)
-        convert_module_completion_requirements(converted_lecture.identifier,'must_view',converted_group) if lecture.required || lecture.required_module
+        if lecture.online_quizzes.length == 0 
+            converted_lecture = convert_lecture_items(lecture)
+            converted_group.module_items << converted_lecture
+            convert_module_completion_requirements(converted_lecture.identifier,'must_view',converted_group) if lecture.required || lecture.required_module
+        else
+            attach_video_quizzes(lecture,converted_group,converted_course) 
+        end    
+       
     end    
     def attach_video_quizzes(lecture,converted_group,converted_course)         
         lecture_surveys = lecture.online_quizzes.where(:quiz_type=>"survey")
@@ -27,7 +31,7 @@ module CanvasCommonCartridge::Components::Attacher
         convert_module_completion_requirements(quiz_module_item.identifier,'must_submit',converted_group) if quiz.required || quiz.required_module
     end   
     def attach_video_question(video_quiz,converted_video_quiz)
-        in_video_question = convert_question(video_quiz,'on_video')
+        in_video_question = convert_question(video_quiz,'on_video',start_time,end_time)
         converted_video_quiz.items << in_video_question
     end    
     def attach_questions(quiz,converted_quiz)

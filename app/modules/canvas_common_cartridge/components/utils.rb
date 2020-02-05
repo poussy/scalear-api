@@ -1,16 +1,16 @@
 module CanvasCommonCartridge::Components::Utils
     def format_in_video_quiz_body(in_video_quiz,lecture_url)
-        timed_url = format_timed_lecture_url(in_video_quiz.start_time,lecture_url)        
+        timed_url = format_timed_lecture_url(in_video_quiz.start_time,lecture_url,start_time,end_time)        
         question = in_video_quiz.question
         tmp_question_body = "<p><iframe src='#{timed_url}' width='560' height='314' allowfullscreen='allowfullscreen'></iframe>#{question}</p>"
         return tmp_question_body
     end   
-    def format_timed_lecture_url(in_video_quiz_start_time,lecture_url)
+    def format_timed_lecture_url(in_video_quiz_start_time,lecture_url,start_time,end_time)
         tmp = lecture_url.remove('watch?v=')
         tmp = tmp.gsub(/http/,'https')  if !tmp.include?('https')
         tmp = tmp.gsub(/.com\//,".com\/embed\/")
-        start_time = in_video_quiz_start_time.floor()
-        end_time   = in_video_quiz_start_time.floor()+1
+        # start_time = in_video_quiz_start_time.floor()
+        # end_time   = in_video_quiz_start_time.floor()+1
         tmp +="?start=#{start_time}&end=#{end_time}&autoplay=0mute=0&enablejsapi=0 "
         return tmp
     end      
