@@ -17,7 +17,6 @@ module CanvasCommonCartridge::Components::Creator
         converted_course.title = course.name
         converted_course.grading_standards = []
         converted_course.identifier = course.id.to_s
-        converted_course.grading_standards=[]
         converted_course.start_at = course.start_date
         converted_course.conclude_at = course.end_date
         converted_course.is_public = Course.last.course_domains.length == 0? true:false 
@@ -37,6 +36,7 @@ module CanvasCommonCartridge::Components::Creator
         module_item.title = 'in_video_module_item'      
         module_item.identifier = CanvasCc::CC::CCHelper.create_key(module_item)   
         module_item.identifierref = identifier_to_refer_to
+        module_item.workflow_state = 'active'
         return module_item
     end   
     def create_converted_lecture(lecture)
@@ -63,17 +63,18 @@ module CanvasCommonCartridge::Components::Creator
         assessment.workflow_state = 'active'
         return assessment 
     end
-    def create_video_converted_assessment(quiz_type,lecture_name)
+    def create_video_converted_assessment(quiz_type,title,due_at)
         case quiz_type
         when "invideo","html"
         assessment_type = "practice_quiz"
-        title= " video quizzes"          
+        # title= "#"        
         when "survey"    
         assessment_type = "survey"
-        title=" surveys"
+        # title=" surveys"
         end
         converted_video_quiz= create_converted_assessment(assessment_type)
-        converted_video_quiz.title= lecture_name+title
+        converted_video_quiz.title= title
+        converted_video_quiz.due_at = due_at
         return converted_video_quiz      
     end   
     def create_converted_question(converted_question_type)
@@ -98,3 +99,4 @@ module CanvasCommonCartridge::Components::Creator
         return converted_answer
     end  
 end
+

@@ -30,18 +30,23 @@ module CanvasCommonCartridge::Components::Attacher
         converted_course.assessments << converted_quiz
         convert_module_completion_requirements(quiz_module_item.identifier,'must_submit',converted_group) if quiz.required || quiz.required_module
     end   
-    def attach_video_question(video_quiz,converted_video_quiz)
+    def attach_video_question(video_quiz,converted_video_quiz,start_time,end_time)
         in_video_question = convert_question(video_quiz,'on_video',start_time,end_time)
+        in_video_question.title = extract_inner_html_text(video_quiz.question)
+        in_video_question.material = format_in_video_quiz_body(video_quiz,video_quiz.lecture.url,start_time,end_time) 
         converted_video_quiz.items << in_video_question
     end    
     def attach_questions(quiz,converted_quiz)
         quiz.questions.each do |q|
-            converted_question = convert_question(q,'stand_alone_quiz')
+            converted_question = convert_question(q,'stand_alone_quiz',0,0)
+            converted_question.title = extract_inner_html_text(q.content)
+            converted_question.material = extract_inner_html_text(q.content)
             converted_quiz.items << converted_question
         end     
     end    
     def attach_converted_video_quiz(converted_video_quiz,converted_group,converted_course)
         in_video_module_item = create_module_item("Quizzes::Quiz",converted_video_quiz.identifier) 
+        in_video_module_item.workflow_state = 'active'
         converted_group.module_items << in_video_module_item
         converted_course.assessments<<converted_video_quiz 
     end
