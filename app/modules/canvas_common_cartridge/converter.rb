@@ -41,6 +41,7 @@ module CanvasCommonCartridge::Converter
         quiz_type = quiz.quiz_type =="survey"? "survey": "practice_quiz"
         converted_quiz = create_converted_assessment(quiz_type)
         converted_quiz.title = quiz.name
+        converted_quiz.title +="[MISSING DRAG AND DROP]" if quiz.questions.pluck(:question_type).include?"drag"
         converted_quiz.unlock_at = quiz.appearance_time
         converted_quiz.due_at = quiz.due_date
         converted_quiz.allowed_attempts = quiz.retries
@@ -89,7 +90,7 @@ module CanvasCommonCartridge::Converter
         attach_interquizzes_video(lecture,lecture.name+"-part 1",0,lecture_quizzes.first.start_time-1,converted_group)
         ctr = 2
         lecture_quizzes.each_with_index do |on_video_quiz,i|
-            converted_video_quiz = create_video_converted_assessment('invideo',set_video_converted_assessment_title(lecture.name,ctr,on_video_quiz.question_type),lecture.due_date)
+            converted_video_quiz = create_video_converted_assessment('invideo',set_video_converted_assessment_title(lecture.name,ctr,on_video_quiz.question_type,on_video_quiz.quiz_type),lecture.due_date)
             start_time = on_video_quiz.start_time-5
             end_time = on_video_quiz.start_time+3
             attach_video_question(on_video_quiz,converted_video_quiz,start_time,end_time)
@@ -117,7 +118,9 @@ module CanvasCommonCartridge::Converter
         convert_module_completion_requirements(converted_video_post_quiz.identifier,'must_view',converted_group) if lecture.required || lecture.required_module
     end    
     def convert_video_survey(lecture,lecture_surveys,converted_group,converted_course)
-        converted_video_survey = create_video_converted_assessment('survey',lecture.name+' survey',lecture.due_date)
+        converted_video_survey_title = lecture.name+' survey'
+        converted_video_survey_title +='[MISSING ANSWERS]'  if lecture_surveys.pluck(:quiz_type).include?"survey"
+        converted_video_survey = create_video_converted_assessment('survey',converted_video_survey_title,lecture.due_date)
         lecture_surveys.each do |on_video_survey|
             attach_video_question(on_video_survey,converted_video_survey,0,0)
         end

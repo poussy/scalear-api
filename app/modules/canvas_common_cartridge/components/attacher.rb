@@ -14,7 +14,7 @@ module CanvasCommonCartridge::Components::Attacher
        
     end    
     def attach_video_quizzes(lecture,converted_group,converted_course)         
-        lecture_surveys = lecture.online_quizzes.where(:quiz_type=>"survey")
+        lecture_surveys = lecture.online_quizzes.where(:quiz_type=>["survey","html_survey"])
         lecture_quizzes = lecture.online_quizzes.where(:quiz_type=>["invideo","html"])
         if lecture_quizzes.length>0
             convert_video_quiz(lecture,lecture_quizzes,converted_group,converted_course)

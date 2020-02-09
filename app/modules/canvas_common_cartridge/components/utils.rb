@@ -59,9 +59,10 @@ module CanvasCommonCartridge::Components::Utils
         has_missing_text = group_online_quizzes_types.length>0 &&  group_online_quizzes_types.include?("OCQ"||"MCQ")? true:false
         return 
     end    
-    def set_video_converted_assessment_title(lecture_name,ctr,question_type)            
+    def set_video_converted_assessment_title(lecture_name,ctr,question_type,quiz_type)            
         video_converted_assessment_title = lecture_name+'-part '+(ctr).to_s
-        video_converted_assessment_title += "[MISSING ANSWERS]" if question_type=="OCQ" || question_type=="MCQ"
+        video_converted_assessment_title += "[MISSING ANSWERS]" if (quiz_type=="invideo") && (question_type=="OCQ" || question_type=="MCQ")
+        video_converted_assessment_title +="[MISSING DRAG-AND-DROP]"if question_type=="drag"
         return video_converted_assessment_title
     end       
 end
