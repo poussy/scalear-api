@@ -9,6 +9,7 @@ module CanvasCommonCartridge::Converter
             converted_group = convert_groups(group,converted_course)
             create_module_prerequisite(converted_group,converted_course.canvas_modules.last.identifier) if converted_course.canvas_modules.length>0
             converted_group.workflow_state = 'active'
+            converted_group.title +="[MISSING ANSWERS]" if has_missing_answers_text_at_group(group.id)
             converted_course.canvas_modules << converted_group
         end 
         dir = Dir.mktmpdir
@@ -82,12 +83,13 @@ module CanvasCommonCartridge::Converter
         converted_link = create_converted_link(link)
         return converted_link
     end   
+   
     def convert_video_quiz(lecture,lecture_quizzes,converted_group,converted_course) 
         #prior quizzes video
         attach_interquizzes_video(lecture,lecture.name+"-part 1",0,lecture_quizzes.first.start_time-1,converted_group)
         ctr = 2
         lecture_quizzes.each_with_index do |on_video_quiz,i|
-            converted_video_quiz = create_video_converted_assessment('invideo',lecture.name+'-part '+(ctr).to_s,lecture.due_date)
+            converted_video_quiz = create_video_converted_assessment('invideo',set_video_converted_assessment_title(lecture.name,ctr,on_video_quiz.question_type),lecture.due_date)
             start_time = on_video_quiz.start_time-5
             end_time = on_video_quiz.start_time+3
             attach_video_question(on_video_quiz,converted_video_quiz,start_time,end_time)

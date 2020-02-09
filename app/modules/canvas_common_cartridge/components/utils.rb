@@ -49,5 +49,19 @@ module CanvasCommonCartridge::Components::Utils
     def secure_url(url)
         secure_url = !url.include?('https') ? url.gsub(/http/,'https') : url 
         return secure_url
-    end     
+    end  
+    def has_missing_answers_text_at_group(group_id)
+        # OCQ and MCQ of on video quizzes has no text answers
+        group_online_quizzes_types = []
+        Group.find(group_id).lectures.each do |l|
+            group_online_quizzes_types=l.online_quizzes.pluck(:question_type) if l.online_quizzes.length>0
+        end    
+        has_missing_text = group_online_quizzes_types.length>0 &&  group_online_quizzes_types.include?("OCQ"||"MCQ")? true:false
+        return 
+    end    
+    def set_video_converted_assessment_title(lecture_name,ctr,question_type)            
+        video_converted_assessment_title = lecture_name+'-part '+(ctr).to_s
+        video_converted_assessment_title += "[MISSING ANSWERS]" if question_type=="OCQ" || question_type=="MCQ"
+        return video_converted_assessment_title
+    end       
 end
