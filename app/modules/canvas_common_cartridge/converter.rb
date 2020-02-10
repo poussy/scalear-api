@@ -10,6 +10,9 @@ module CanvasCommonCartridge::Converter
             create_module_prerequisite(converted_group,converted_course.canvas_modules.last.identifier) if converted_course.canvas_modules.length>0
             converted_group.workflow_state = 'active'
             converted_group.title +="[MISSING ANSWERS]" if has_missing_answers_text_at_group(group.id)
+            puts "========================"
+            puts  converted_group.title
+            puts "========================"
             converted_course.canvas_modules << converted_group
         end 
         dir = Dir.mktmpdir

@@ -56,8 +56,8 @@ module CanvasCommonCartridge::Components::Utils
         Group.find(group_id).lectures.each do |l|
             group_online_quizzes_types=l.online_quizzes.pluck(:question_type) if l.online_quizzes.length>0
         end    
-        has_missing_text = group_online_quizzes_types.length>0 &&  group_online_quizzes_types.include?("OCQ"||"MCQ")? true:false
-        return 
+        has_missing_text = group_online_quizzes_types.include?("OCQ"||"MCQ")? true:false
+        return has_missing_text
     end    
     def set_video_converted_assessment_title(lecture_name,ctr,question_type,quiz_type)            
         video_converted_assessment_title = lecture_name+'-part '+(ctr).to_s
