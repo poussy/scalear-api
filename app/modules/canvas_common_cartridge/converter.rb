@@ -10,9 +10,6 @@ module CanvasCommonCartridge::Converter
             create_module_prerequisite(converted_group,converted_course.canvas_modules.last.identifier) if converted_course.canvas_modules.length>0
             converted_group.workflow_state = 'active'
             converted_group.title +="[MISSING ANSWERS]" if has_missing_answers_text_at_group(group.id)
-            puts "========================"
-            puts  converted_group.title
-            puts "========================"
             converted_course.canvas_modules << converted_group
         end 
         dir = Dir.mktmpdir
@@ -78,7 +75,7 @@ module CanvasCommonCartridge::Converter
             converted_answer.fraction=0.0
         end         
         if converted_question.question_type === 'fill_in_multiple_blanks_question'
-            converted_answer.resp_ident = 'answer'+converted_answer.id.to_s
+            converted_answer.resp_ident = 'answer_'+converted_answer.id.to_s
             converted_question.material += " [#{converted_answer.resp_ident}]"
         end    
         return converted_answer

@@ -664,7 +664,7 @@ class CoursesController < ApplicationController
 	  course = Course.find(params[:id])
 	  packaged_course = pack_to_ccc(course)
 	  package_name = course.name+".imscc"
-	#   UserMailer.attachment_email(current_user, course, package_name , packaged_course, I18n.locale).deliver
+	  UserMailer.attachment_email(current_user, course, package_name , packaged_course, I18n.locale).deliver
 	  render :json => {:notice => ['Course wil be exported to canvas common cartridge and sent to your Email']}
   end	
 	private

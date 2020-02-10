@@ -40,7 +40,6 @@ module CanvasCommonCartridge::Components::Attacher
         quiz.questions.each do |q|
             converted_question = convert_question(q,'stand_alone_quiz',0,0)
             converted_question.title = extract_inner_html_text(q.content)
-            converted_question.material = extract_inner_html_text(q.content)
             converted_quiz.items << converted_question
         end     
     end    
