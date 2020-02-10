@@ -92,7 +92,7 @@ module CanvasCommonCartridge::Converter
         lecture_quizzes.each_with_index do |on_video_quiz,i|
             converted_video_quiz = create_video_converted_assessment('invideo',set_video_converted_assessment_title(lecture.name,ctr,on_video_quiz),lecture.due_date)
             start_time = on_video_quiz.start_time-5
-            end_time = on_video_quiz.start_time+3
+            end_time = on_video_quiz.start_time+1
             attach_video_question(on_video_quiz,converted_video_quiz,start_time,end_time)
             convert_module_completion_requirements(converted_video_quiz.identifier,'must_view',converted_group) if lecture.required || lecture.required_module
             attach_converted_video_quiz(converted_video_quiz,converted_group,converted_course)
