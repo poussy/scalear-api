@@ -119,7 +119,7 @@ module CanvasCommonCartridge::Converter
     end    
     def convert_video_survey(lecture,lecture_surveys,converted_group,converted_course)
         converted_video_survey_title = lecture.name+' survey'
-        converted_video_survey_title +='[MISSING ANSWERS]'  if has_missing_answer_text_at_lecture_surveys(lecture_surveys)
+        converted_video_survey_title +='[MISSING ANSWERS]' if has_missing_answer_text_at_lecture_surveys(lecture_surveys)
         converted_video_survey = create_video_converted_assessment('survey',converted_video_survey_title,lecture.due_date)
         lecture_surveys.each do |on_video_survey|
             attach_video_question(on_video_survey,converted_video_survey,0,0)

@@ -70,7 +70,9 @@ module CanvasCommonCartridge::Components::Utils
         return video_converted_assessment_title
     end       
     def has_missing_answer_text_at_lecture_surveys(lecture_surveys)
-        lecture_surveys.map{|lecture_survey| lecture_survey.online_answers.pluck(:answer).include?("Answer 1"||"Answer 2"||"Answer 3")}
+       lectures_surveys_answer_if_has_default_value_array =  lecture_surveys.map{|lecture_survey| lecture_survey.online_answers.pluck(:answer).include?("Answer 1"||"Answer 2"||"Answer 3")}
+       has_missing_answer_text_at_lecture_surveys = lectures_surveys_answer_if_has_default_value_array.reduce(:&)
+       return has_missing_answer_text_at_lecture_surveys
     end    
 end
 
