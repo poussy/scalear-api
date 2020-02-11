@@ -51,13 +51,17 @@ module CanvasCommonCartridge::Components::Utils
         return secure_url
     end  
     def has_missing_answers_text_at_group(group_id)
+        # online answers of quizzes of this group have answer = "Answer 1"
+        group_online_quizzes_ids = OnlineQuiz.where(:group_id=>group_id).pluck(:id)
+        group_online_answers_text = OnlineAnswer.where(:online_quiz_id=>group_online_quizzes_ids).pluck(:answer)
+        has_missing_text = group_online_answers_text.uniq.include?("Answer 1"||"Answer 2"||"Answer 3")
         # OCQ and MCQ of on video quizzes has no text answers
         group_online_quizzes_types = []
         Group.find(group_id).lectures.each do |l|
-            group_online_quizzes_types=l.online_quizzes.pluck(:question_type) if l.online_quizzes.length>0
+            group_online_quizzes_types+=l.online_quizzes.pluck(:question_type) if l.online_quizzes.length>0
         end    
-        has_missing_text = group_online_quizzes_types.include?("OCQ"||"MCQ")? true:false
-        return has_missing_text
+        has_ocq_or_mcq = group_online_quizzes_types.uniq.include?("OCQ"||"MCQ")? true:false
+        return has_missing_text && has_ocq_or_mcq
     end    
     def set_video_converted_assessment_title(lecture_name,ctr,on_video_quiz)            
         video_converted_assessment_title = lecture_name+'-part '+(ctr).to_s
@@ -65,6 +69,9 @@ module CanvasCommonCartridge::Components::Utils
         video_converted_assessment_title +="[MISSING DRAG-AND-DROP]"if on_video_quiz.question_type=="drag"
         return video_converted_assessment_title
     end       
+    def has_missing_answer_text_at_lecture_surveys(lecture_surveys)
+        lecture_surveys.map{|lecture_survey| lecture_survey.online_answers.pluck(:answer).include?("Answer 1"||"Answer 2"||"Answer 3")}
+    end    
 end
 
 
