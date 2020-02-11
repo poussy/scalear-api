@@ -14,7 +14,7 @@ module CanvasCommonCartridge::Components::Utils
             end_time   = in_video_quiz_start_time.floor()+14
         else     
             start_time = start_time.floor()
-            end_time   = end_time.floor()+10
+            end_time   = end_time.floor()
         end    
         tmp +="?start=#{start_time}&end=#{end_time}&autoplay=0mute=0&enablejsapi=0 "
         return tmp
