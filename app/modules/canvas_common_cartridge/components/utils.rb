@@ -65,7 +65,7 @@ module CanvasCommonCartridge::Components::Utils
     end    
     def set_video_converted_assessment_title(lecture_name,ctr,on_video_quiz)            
         video_converted_assessment_title = lecture_name+'-part '+(ctr).to_s
-        video_converted_assessment_title += "[MISSING ANSWERS]" if (on_video_quiz.quiz_type=="invideo") && (on_video_quiz.question_type=="OCQ" || on_video_quiz.question_type=="MCQ") && (on_video_quiz.online_answers.first.answer=="Answer 1")
+        video_converted_assessment_title += "[MISSING ANSWERS]" if has_missing_answer_at_video_quiz(on_video_quiz)#(on_video_quiz.quiz_type=="invideo") && (on_video_quiz.question_type=="OCQ" || on_video_quiz.question_type=="MCQ") && (on_video_quiz.online_answers.first.answer=="Answer 1")
         video_converted_assessment_title +="[MISSING DRAG-AND-DROP]"if on_video_quiz.question_type=="drag"
         return video_converted_assessment_title
     end       
@@ -73,6 +73,13 @@ module CanvasCommonCartridge::Components::Utils
        lectures_surveys_answer_if_has_default_value_array =  lecture_surveys.map{|lecture_survey| lecture_survey.online_answers.pluck(:answer).include?("Answer 1"||"Answer 2"||"Answer 3")}
        has_missing_answer_text_at_lecture_surveys = lectures_surveys_answer_if_has_default_value_array.reduce(:&)
        return has_missing_answer_text_at_lecture_surveys
+    end    
+    def has_missing_answer_at_video_quiz(on_video_quiz)
+        if (on_video_quiz.quiz_type=="invideo") && (on_video_quiz.question_type=="OCQ" || on_video_quiz.question_type=="MCQ") &&  on_video_quiz.online_answers.length >0
+          return on_video_quiz.online_answers.pluck(:answer).include?("Answer 1"||"Answer 2"||"Answer 3")
+        else
+          return false
+        end     
     end    
 end
 
