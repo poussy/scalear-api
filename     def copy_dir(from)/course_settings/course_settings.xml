@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<course xmlns="http://canvas.instructure.com/xsd/cccv1p0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" identifier="58_settings" xsi:schemaLocation="http://canvas.instructure.com/xsd/cccv1p0 http://canvas.instructure.com/xsd/cccv1p0.xsd">
+  <title>hierarchy</title>
+  <start_at>2020-02-12</start_at>
+  <conclude_at>2020-04-22</conclude_at>
+  <is_public>true</is_public>
+  <hide_final_grade>true</hide_final_grade>
+</course>
