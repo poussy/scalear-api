@@ -16,7 +16,7 @@ module CanvasCommonCartridge::Components::Utils
             start_time = start_time.floor()
             end_time   = end_time.floor()
         end    
-        tmp +="?start=#{start_time}&end=#{end_time}&autoplay=0mute=0&enablejsapi=0 "
+        tmp +="?start=#{start_time}&end=#{end_time}&autoplay=0mute=0&enablejsapi=0&rel=0"
         return tmp
     end      
     def map_SL_quiz_type_to_CC_question_type(type,question,quizLocation)       
