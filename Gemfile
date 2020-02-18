@@ -69,3 +69,4 @@ gem 'vimeo_me2', :git => "https://github.com/bo-oz/vimeo_me2.git"
 gem "retries"
 gem 'scout_apm'
 gem 'canvas_cc'
+gem 'streamio-ffmpeg', '1.0.0'
