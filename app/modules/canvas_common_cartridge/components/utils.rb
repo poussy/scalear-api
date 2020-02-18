@@ -83,4 +83,3 @@ module CanvasCommonCartridge::Components::Utils
     end    
 end
 
-

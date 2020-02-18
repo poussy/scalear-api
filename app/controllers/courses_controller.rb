@@ -1,9 +1,6 @@
 class CoursesController < ApplicationController
-	include CccToImscc::Utils  
-
 	include CanvasCommonCartridge::Converter
-	
-	load_and_authorize_resource
+		load_and_authorize_resource
 				#  @course is aready loaded  
 
 	# # # before_filter :correct_user, :except => [:index, :new, :create, :enroll_to_course, :course_copy_angular, :get_all_teachers, :current_courses, :send_system_announcement]
@@ -668,6 +665,7 @@ class CoursesController < ApplicationController
 	  packaged_course = pack_to_ccc(course)
 	  package_name = course.name+".imscc"
 	  UserMailer.attachment_email(current_user, course, package_name , packaged_course, I18n.locale).deliver
+	  #delete tmp images
 	  render :json => {:notice => ['Course wil be exported to canvas common cartridge and sent to your Email']}
   end	
 	private
