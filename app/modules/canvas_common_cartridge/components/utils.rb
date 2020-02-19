@@ -1,5 +1,4 @@
-require 'youtube-dl.rb'
-require 'streamio-ffmpeg'
+
 module CanvasCommonCartridge::Components::Utils
     def format_in_video_quiz_body(in_video_quiz,quiz_slide)
         question = in_video_quiz.question
