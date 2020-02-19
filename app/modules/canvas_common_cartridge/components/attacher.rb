@@ -30,15 +30,15 @@ module CanvasCommonCartridge::Components::Attacher
         converted_course.assessments << converted_quiz
         convert_module_completion_requirements(quiz_module_item.identifier,'must_submit',converted_group) if quiz.required || quiz.required_module
     end   
-    def attach_video_question(video_quiz,converted_video_quiz,start_time,end_time)
-        in_video_question = convert_question(video_quiz,'on_video',start_time,end_time)
+    def attach_video_question(video_quiz,converted_video_quiz,quiz_slide)
+        in_video_question = convert_question(video_quiz,'on_video',quiz_slide)
         in_video_question.title = extract_inner_html_text(video_quiz.question)
-        in_video_question.material = format_in_video_quiz_body(video_quiz,video_quiz.lecture.url,start_time,end_time) 
+        in_video_question.material = format_in_video_quiz_body(video_quiz,quiz_slide) 
         converted_video_quiz.items << in_video_question
     end    
     def attach_questions(quiz,converted_quiz)
         quiz.questions.each do |q|
-            converted_question = convert_question(q,'stand_alone_quiz',0,0)
+            converted_question = convert_question(q,'stand_alone_quiz',"")
             converted_question.title = extract_inner_html_text(q.content)
             converted_quiz.items << converted_question
         end     
@@ -49,4 +49,14 @@ module CanvasCommonCartridge::Components::Attacher
         converted_group.module_items << in_video_module_item
         converted_course.assessments<<converted_video_quiz 
     end
+    def attach_file(slide,converted_course)
+        # ./tmp/cache/slide_208.178966789668.jpg
+        file = CanvasCc::CanvasCC::Models::CanvasFile.new
+        file.file_path = '/files/'+slide[:name]
+        file.file_location = slide[:path]
+        file.hidden = 'false'
+        file.usage_rights = 'own_copyright'
+        file.identifier =  CanvasCc::CC::CCHelper.create_key(file)
+        converted_course.files << file
+    end    
 end      

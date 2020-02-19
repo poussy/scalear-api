@@ -70,3 +70,4 @@ gem "retries"
 gem 'scout_apm'
 gem 'canvas_cc'
 gem 'streamio-ffmpeg', '1.0.0'
+gem 'youtube-dl.rb'

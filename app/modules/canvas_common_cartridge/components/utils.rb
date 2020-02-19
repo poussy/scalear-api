@@ -1,8 +1,9 @@
+require 'youtube-dl.rb'
 module CanvasCommonCartridge::Components::Utils
-    def format_in_video_quiz_body(in_video_quiz,lecture_url,start_time,end_time)
-        timed_url = format_timed_lecture_url(in_video_quiz.start_time,lecture_url,start_time,end_time)        
+    def format_in_video_quiz_body(in_video_quiz,quiz_slide)
         question = in_video_quiz.question
-        tmp_question_body = "<p><iframe src='#{timed_url}' width='560' height='314' allowfullscreen='allowfullscreen'></iframe>#{question}</p>"
+        # '<div><img src="$IMS_CC_FILEBASE$/files/screenshot.png"/><p>why?</p></div>'
+        tmp_question_body = "<div><img src=$IMS_CC_FILEBASE$/files/#{quiz_slide[:name]}></img>#{question}</div>"  
         return tmp_question_body
     end   
     def format_timed_lecture_url(in_video_quiz_start_time,lecture_url,start_time,end_time)
@@ -81,5 +82,20 @@ module CanvasCommonCartridge::Components::Utils
           return false
         end     
     end    
+    def download_lecture(video_url)
+        download_path = './tmp/cache/%(title)s.%(ext)s'
+        downloaded_video = YoutubeDL.download video_url, {format:"bestvideo[height>=480]",output:download_path}
+        return downloaded_video
+    end    
+    def extract_img(downloaded_video,seek_time) 
+        lecture_slide = {} 
+        lecture_slide[:name] = "slide_#{seek_time.floor()}.jpg"
+        lecture_slide[:path] =  "./tmp/cache/"+lecture_slide[:name]
+        extractable_video = FFMPEG::Movie.new(downloaded_video._filename)
+        #extract images
+        extractable_video.screenshot(lecture_slide[:path] , seek_time: seek_time,quality:3)
+        return lecture_slide
+    end   
+    
 end
 

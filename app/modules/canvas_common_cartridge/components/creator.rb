@@ -1,4 +1,5 @@
 module CanvasCommonCartridge::Components::Creator
+    
     def create_module_prerequisite(converted_group,prev_module_identifier)
         module_pre_requisite = CanvasCc::CanvasCC::Models::ModulePrerequisite.new
         module_pre_requisite.identifierref = prev_module_identifier

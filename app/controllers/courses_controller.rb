@@ -662,12 +662,13 @@ class CoursesController < ApplicationController
 			
   def send_course_to_mail
 	  course = Course.find(params[:id])
-	  packaged_course = pack_to_ccc(course)
-	  package_name = course.name+".imscc"
-	  UserMailer.attachment_email(current_user, course, package_name , packaged_course, I18n.locale).deliver
+	  tmp = Packager.new
+	  tmp.pack_to_ccc(course,current_user)
+	
 	  #delete tmp images
 	  render :json => {:notice => ['Course wil be exported to canvas common cartridge and sent to your Email']}
   end	
+ 
 	private
 		def course_params
 			params.require(:course).permit(:description, :end_date, :name, :prerequisites, :short_name, :start_date, :user_ids, :user_id, :time_zone, :discussion_link, :importing,
