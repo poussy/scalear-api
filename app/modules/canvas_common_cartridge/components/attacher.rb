@@ -50,7 +50,6 @@ module CanvasCommonCartridge::Components::Attacher
         converted_course.assessments<<converted_video_quiz 
     end
     def attach_file(slide,converted_course)
-        # ./tmp/cache/slide_208.178966789668.jpg
         file = CanvasCc::CanvasCC::Models::CanvasFile.new
         file.file_path = '/files/'+slide[:name]
         file.file_location = slide[:path]

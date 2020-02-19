@@ -83,14 +83,14 @@ module CanvasCommonCartridge::Components::Utils
         end     
     end    
     def download_lecture(video_url)
-        download_path = './tmp/cache/%(title)s.%(ext)s'
+        download_path = './tmp/video_processing/cache/%(title)s.%(ext)s'
         downloaded_video = YoutubeDL.download video_url, {format:"bestvideo[height>=480]",output:download_path}
         return downloaded_video
     end    
     def extract_img(downloaded_video,seek_time) 
         lecture_slide = {} 
         lecture_slide[:name] = "slide_#{seek_time.floor()}.jpg"
-        lecture_slide[:path] =  "./tmp/cache/"+lecture_slide[:name]
+        lecture_slide[:path] =  "./tmp/video_processing/cache/"+lecture_slide[:name]
         extractable_video = FFMPEG::Movie.new(downloaded_video._filename)
         #extract images
         extractable_video.screenshot(lecture_slide[:path] , seek_time: seek_time,quality:3)
