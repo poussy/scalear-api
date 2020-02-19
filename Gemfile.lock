@@ -295,6 +295,7 @@ DEPENDENCIES
   spring
   spring-watcher-listen (~> 2.0.0)
   streamio-ffmpeg (= 1.0.0)
+  terrapin (~> 0.6.0)
   tzinfo-data
   validates_timeliness (~> 4.0)
   vimeo_me2!
