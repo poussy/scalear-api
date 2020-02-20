@@ -79,8 +79,8 @@ module CanvasCommonCartridge::Converter
         ctr = 2
         lecture_quizzes.each_with_index do |on_video_quiz,i|
             converted_video_quiz = create_video_converted_assessment('invideo',set_video_converted_assessment_title(lecture.name,ctr,on_video_quiz),lecture.due_date)
-            # start_time = on_video_quiz.start_time-5
-            # end_time = on_video_quiz.start_time+1
+            start_time = on_video_quiz.start_time-5
+            end_time = on_video_quiz.start_time+1
             quiz_slide = extract_img(downloaded_lecture,on_video_quiz.start_time) 
             attach_file(quiz_slide,converted_course)
             # attach_video_question(on_video_quiz,converted_video_quiz,start_time,end_time)
