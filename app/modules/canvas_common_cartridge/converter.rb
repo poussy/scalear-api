@@ -109,11 +109,18 @@ module CanvasCommonCartridge::Converter
         convert_module_completion_requirements(converted_video_post_quiz.identifier,'must_view',converted_group) if lecture.required || lecture.required_module
     end    
     def convert_video_survey(lecture,lecture_surveys,converted_group,converted_course)
+        #initialization of video survey
         converted_video_survey_title = lecture.name+' survey'
         converted_video_survey_title +='[MISSING ANSWERS]' if has_missing_answer_text_at_lecture_surveys(lecture_surveys)
         converted_video_survey = create_video_converted_assessment('survey',converted_video_survey_title,lecture.due_date)
+       
+        #setting the video survey body
+        downloaded_lecture = download_lecture(lecture.url)
+    
         lecture_surveys.each do |on_video_survey|
-            attach_video_question(on_video_survey,converted_video_survey,0,0)
+            survey_slide = extract_img(downloaded_lecture,on_video_survey.start_time) 
+            attach_video_question(on_video_survey,converted_video_survey,survey_slide)
+            # attach_video_question(on_video_survey,converted_video_survey,0,0)
         end
         attach_converted_video_quiz(converted_video_survey,converted_group,converted_course)
     end  
