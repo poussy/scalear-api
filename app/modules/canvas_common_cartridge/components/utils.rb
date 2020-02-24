@@ -88,6 +88,8 @@ module CanvasCommonCartridge::Components::Utils
         download_path = './tmp/video_processing/video/quiz_id_'+quiz_id.to_s+'%(title)s.%(ext)s'
         # "-ss 00:00:01.00 -t 00:00:35.00"
         args = "-ss "+format_time(video_portion_start).to_s+" -t  00:00:10.00"
+        puts "=================args================"
+        puts args
         downloaded_video = YoutubeDL.download video_url, {
             format:"bestvideo[height>=480]",
             output:download_path,
