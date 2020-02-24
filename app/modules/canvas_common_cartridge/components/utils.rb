@@ -88,8 +88,6 @@ module CanvasCommonCartridge::Components::Utils
         download_path = './tmp/video_processing/video/quiz_id_'+quiz_id.to_s+'%(title)s.%(ext)s'
         # "-ss 00:00:01.00 -t 00:00:35.00"
         args = "-ss "+format_time(video_portion_start).to_s+" -t  00:00:05.00"
-        puts "=================args================"
-        puts args
         downloaded_video = YoutubeDL.download video_url, {
             # format:"bestvideo",
             output:download_path,
@@ -106,7 +104,7 @@ module CanvasCommonCartridge::Components::Utils
         lecture_slide[:path] =  "./tmp/video_processing/images/"+lecture_slide[:name]
         # extractable_video = FFMPEG::Movie.new(set_extensions_to_mp4(downloaded_video._filename))
         extractable_video = FFMPEG::Movie.new(downloaded_video._filename)
-        extractable_video.screenshot(lecture_slide[:path] , seek_time:3,quality:3)
+        extractable_video.screenshot(lecture_slide[:path] , seek_time:1,quality:3)
         return lecture_slide
     end   
     def clear_tmp_video_processing(type)
@@ -118,8 +116,8 @@ module CanvasCommonCartridge::Components::Utils
     def format_time(t)
         return  Time.at(t).utc.strftime "%H:%M:%S.%m"
     end    
-    def set_extensions_to_mp4(file_name)
-        return file_name.remove(file_name.split('.').last).concat('mp4')
-    end    
+    # def set_extensions_to_mp4(file_name)
+    #     return file_name.remove(file_name.split('.').last).concat('mp4')
+    # end    
 end
 
