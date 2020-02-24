@@ -117,8 +117,8 @@ module CanvasCommonCartridge::Components::Utils
     def format_time(t)
         return  Time.at(t).utc.strftime "%H:%M:%S.%m"
     end    
-    # def set_extensions_to_mp4(file_name)
-    #     return file_name.remove(file_name.split('.').last).concat('mp4')
-    # end    
+    def set_extensions_to_mp4(file_name)
+        return file_name.remove(file_name.split('.').last).concat('mp4')
+    end    
 end
 
