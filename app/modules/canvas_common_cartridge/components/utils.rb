@@ -87,6 +87,7 @@ module CanvasCommonCartridge::Components::Utils
     def download_lecture(video_url,video_portion_start,quiz_id)
         download_path = './tmp/video_processing/video/quiz_id_'+quiz_id.to_s+'%(title)s.%(ext)s'
         # "-ss 00:00:01.00 -t 00:00:35.00"
+        puts "video download started"
         args = "-ss "+format_time(video_portion_start).to_s+" -t  00:00:05.00"
         downloaded_video = YoutubeDL.download video_url, {
             # format:"bestvideo",
@@ -94,7 +95,7 @@ module CanvasCommonCartridge::Components::Utils
             "recode-video":"mp4",
             "postprocessor-args":args
         }
-       
+        puts "video download completed"
         return downloaded_video
     end    
     def extract_img(downloaded_video,quiz_id) 
