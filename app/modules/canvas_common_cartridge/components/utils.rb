@@ -84,7 +84,7 @@ module CanvasCommonCartridge::Components::Utils
           return false
         end     
     end    
-    def download_lecture(video_url,video_portion_start,video_portion_end,quiz_id)
+    def download_lecture(video_url,video_portion_start,quiz_id)
         download_path = './tmp/video_processing/video/quiz_id_'+quiz_id.to_s+'%(title)s.%(ext)s'
         # "-ss 00:00:01.00 -t 00:00:05.00"
         args = "-ss "+format_time(video_portion_start).to_s+" -t  00:00:05.00"
@@ -97,13 +97,12 @@ module CanvasCommonCartridge::Components::Utils
        
         return downloaded_video
     end    
-    def extract_img(downloaded_video,seek_time,quiz_id) 
+    def extract_img(downloaded_video,quiz_id) 
         lecture_slide = {} 
-        seek_time =1 if seek_time == 0
-        lecture_slide[:name] = "slide_quiz_#{quiz_id}_.jpg"
+        lecture_slide[:name] = "slide_quiz_#{quiz_id}.jpg"
         lecture_slide[:path] =  "./tmp/video_processing/images/"+lecture_slide[:name]
         extractable_video = FFMPEG::Movie.new(set_extensions_to_mp4(downloaded_video._filename))
-        extractable_video.screenshot(lecture_slide[:path] , seek_time: seek_time,quality:3)
+        extractable_video.screenshot(lecture_slide[:path] , seek_time: 5,quality:3)
         return lecture_slide
     end   
     def clear_tmp_video_processing(type)

@@ -82,8 +82,8 @@ module CanvasCommonCartridge::Converter
             end_time = on_video_quiz.start_time+1
             if on_video_quiz.quiz_type!='html'
                  #download lecture video to extract in video quiz slide
-                downloaded_lecture = download_lecture(lecture.url,on_video_quiz.start_time,on_video_quiz.start_time,on_video_quiz.id)
-                quiz_slide = extract_img(downloaded_lecture,on_video_quiz.start_time-lecture_quizzes.first.start_time,on_video_quiz.id) 
+                downloaded_lecture = download_lecture(lecture.url,on_video_quiz.start_time,on_video_quiz.id)
+                quiz_slide = extract_img(downloaded_lecture,on_video_quiz.id) 
                 attach_file(quiz_slide,converted_course)
                 # attach_video_question(on_video_quiz,converted_video_quiz,start_time,end_time)
             end
@@ -122,8 +122,8 @@ module CanvasCommonCartridge::Converter
 
         lecture_surveys.each do |on_video_survey|
             if on_video_survey.quiz_type != 'html_survey'
-                downloaded_lecture = download_lecture(lecture.url,on_video_survey.start_time,on_video_survey.start_time,on_video_survey.id)
-                survey_slide = extract_img(downloaded_lecture,on_video_survey.start_time-lecture_surveys.first.start_time,on_video_survey.id) 
+                downloaded_lecture = download_lecture(lecture.url,on_video_survey.start_time,on_video_survey.id)
+                survey_slide = extract_img(downloaded_lecture,on_video_survey.id) 
                 attach_file(survey_slide,converted_course)
             end    
             attach_video_question(on_video_survey,converted_video_survey,survey_slide)
