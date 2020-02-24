@@ -123,8 +123,9 @@ module CanvasCommonCartridge::Components::Utils
         if  downloaded_video_extension != 'mp4'
             downloaded_video_new_name = downloaded_video._filename.remove(downloaded_video_extension).concat('mp4')
             extractable_video.transcode(downloaded_video_new_name,{},{})
+            extractable_video = FFMPEG::Movie.new(downloaded_video_new_name)
         end 
-        return downloaded_video_new_name
+        return extractable_video
     end 
 end
 
