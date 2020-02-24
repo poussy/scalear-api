@@ -102,7 +102,7 @@ module CanvasCommonCartridge::Components::Utils
         lecture_slide[:name] = "slide_quiz_#{quiz_id}.jpg"
         lecture_slide[:path] =  "./tmp/video_processing/images/"+lecture_slide[:name]
         extractable_video = FFMPEG::Movie.new(set_extensions_to_mp4(downloaded_video._filename))
-        extractable_video.screenshot(lecture_slide[:path] , seek_time: 5,quality:3)
+        extractable_video.screenshot(lecture_slide[:path] , seek_time:3,quality:3)
         return lecture_slide
     end   
     def clear_tmp_video_processing(type)
