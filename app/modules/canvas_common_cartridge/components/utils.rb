@@ -4,7 +4,8 @@ module CanvasCommonCartridge::Components::Utils
     def format_in_video_quiz_body(in_video_quiz,quiz_slide)
         question = in_video_quiz.question
         # '<div><img src="$IMS_CC_FILEBASE$/files/screenshot.png"/><p>why?</p></div>'
-        tmp_question_body = "<div><img src=$IMS_CC_FILEBASE$/files/#{quiz_slide[:name]}></img>#{question}</div>"  
+        tmp_question_body = "<div><p>#{question}</p></div>"
+        tmp_question_body.insert(5,"<img src=$IMS_CC_FILEBASE$/files/#{quiz_slide[:name]}></img>")  if quiz_slide        
         return tmp_question_body
     end   
     def format_timed_lecture_url(in_video_quiz_start_time,lecture_url,start_time,end_time)
@@ -83,21 +84,39 @@ module CanvasCommonCartridge::Components::Utils
           return false
         end     
     end    
-    def download_lecture(video_url)
-        puts 'here'
-        download_path = './tmp/video_processing/cache/%(title)s.%(ext)s'
-        downloaded_video = YoutubeDL.download video_url, {format:"bestvideo[height>=480]",output:download_path}
+    def download_lecture(video_url,video_portion_start,video_portion_end,quiz_id)
+        download_path = './tmp/video_processing/video/quiz_id_'+quiz_id.to_s+'%(title)s.%(ext)s'
+        # "-ss 00:00:01.00 -t 00:00:05.00"
+        args = "-ss "+format_time(video_portion_start).to_s+" -t  00:00:05.00"
+        downloaded_video = YoutubeDL.download video_url, {
+            format:"bestvideo[height>=480]",
+            output:download_path,
+            "recode-video":"mp4",
+            "postprocessor-args":args
+        }
+       
         return downloaded_video
     end    
-    def extract_img(downloaded_video,seek_time) 
+    def extract_img(downloaded_video,seek_time,quiz_id) 
         lecture_slide = {} 
-        lecture_slide[:name] = "slide_#{seek_time.floor()}.jpg"
-        lecture_slide[:path] =  "./tmp/video_processing/cache/"+lecture_slide[:name]
-        extractable_video = FFMPEG::Movie.new(downloaded_video._filename)
-        #extract images
+        seek_time =1 if seek_time == 0
+        lecture_slide[:name] = "slide_quiz_#{quiz_id}_.jpg"
+        lecture_slide[:path] =  "./tmp/video_processing/images/"+lecture_slide[:name]
+        extractable_video = FFMPEG::Movie.new(set_extensions_to_mp4(downloaded_video._filename))
         extractable_video.screenshot(lecture_slide[:path] , seek_time: seek_time,quality:3)
         return lecture_slide
     end   
-    
+    def clear_tmp_video_processing(type)
+        FileUtils.rm_rf(Dir['./tmp/video_processing/video/*'])
+        if type==1
+            FileUtils.rm_rf(Dir['./tmp/video_processing/images/*'])
+        end    
+    end    
+    def format_time(t)
+        return  Time.at(t).utc.strftime "%H:%M:%S.%m"
+    end    
+    def set_extensions_to_mp4(file_name)
+        return file_name.remove(file_name.split('.').last).concat('mp4')
+    end    
 end
 

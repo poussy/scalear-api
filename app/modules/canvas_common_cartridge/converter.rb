@@ -72,8 +72,7 @@ module CanvasCommonCartridge::Converter
     end   
 
     def convert_video_quiz(lecture,lecture_quizzes,converted_group,converted_course) 
-        #download lecture video to extract in video quiz slide
-        downloaded_lecture = download_lecture(lecture.url)
+       
         #prior quizzes video
         attach_interquizzes_video(lecture,lecture.name+"-part 1",0,lecture_quizzes.first.start_time-1,converted_group)
         ctr = 2
@@ -81,9 +80,13 @@ module CanvasCommonCartridge::Converter
             converted_video_quiz = create_video_converted_assessment('invideo',set_video_converted_assessment_title(lecture.name,ctr,on_video_quiz),lecture.due_date)
             start_time = on_video_quiz.start_time-5
             end_time = on_video_quiz.start_time+1
-            quiz_slide = extract_img(downloaded_lecture,on_video_quiz.start_time) 
-            attach_file(quiz_slide,converted_course)
-            # attach_video_question(on_video_quiz,converted_video_quiz,start_time,end_time)
+            if on_video_quiz.quiz_type!='html'
+                 #download lecture video to extract in video quiz slide
+                downloaded_lecture = download_lecture(lecture.url,on_video_quiz.start_time,on_video_quiz.start_time,on_video_quiz.id)
+                quiz_slide = extract_img(downloaded_lecture,on_video_quiz.start_time-lecture_quizzes.first.start_time,on_video_quiz.id) 
+                attach_file(quiz_slide,converted_course)
+                # attach_video_question(on_video_quiz,converted_video_quiz,start_time,end_time)
+            end
             attach_video_question(on_video_quiz,converted_video_quiz,quiz_slide)
             convert_module_completion_requirements(converted_video_quiz.identifier,'must_view',converted_group) if lecture.required || lecture.required_module
             attach_converted_video_quiz(converted_video_quiz,converted_group,converted_course)
@@ -96,6 +99,7 @@ module CanvasCommonCartridge::Converter
             end   
             ctr+=2
         end  
+        # clear_tmp_video_processing(0)
     end
     def attach_interquizzes_video(lecture,title,start_time,end_time,converted_group)
         converted_video_post_quiz = create_converted_lecture(lecture)
@@ -115,13 +119,17 @@ module CanvasCommonCartridge::Converter
         converted_video_survey = create_video_converted_assessment('survey',converted_video_survey_title,lecture.due_date)
        
         #setting the video survey body
-        downloaded_lecture = download_lecture(lecture.url)
-    
+
         lecture_surveys.each do |on_video_survey|
-            survey_slide = extract_img(downloaded_lecture,on_video_survey.start_time) 
+            if on_video_survey.quiz_type != 'html_survey'
+                downloaded_lecture = download_lecture(lecture.url,on_video_survey.start_time,on_video_survey.start_time,on_video_survey.id)
+                survey_slide = extract_img(downloaded_lecture,on_video_survey.start_time-lecture_surveys.first.start_time,on_video_survey.id) 
+                attach_file(survey_slide,converted_course)
+            end    
             attach_video_question(on_video_survey,converted_video_survey,survey_slide)
             # attach_video_question(on_video_survey,converted_video_survey,0,0)
         end
+        # clear_tmp_video_processing(0)
         attach_converted_video_quiz(converted_video_survey,converted_group,converted_course)
     end  
     def convert_module_completion_requirements(indentifier,completion_type,converted_group)
@@ -144,8 +152,8 @@ module CanvasCommonCartridge::Converter
             carttridge = CanvasCc::CanvasCC::CartridgeCreator.new(converted_course)
             packaged_course = carttridge.create(dir)
             package_name = course.name+".imscc"
+            # clear_tmp_video_processing(1)
             UserMailer.attachment_email(current_user, course, package_name , packaged_course, I18n.locale).deliver;
-            FileUtils.rm_rf(Dir['./tmp/video_processing/*'])
         end
         handle_asynchronously :pack_to_ccc, :run_at => Proc.new { 1.seconds.from_now }
     end    
