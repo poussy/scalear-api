@@ -102,8 +102,8 @@ module CanvasCommonCartridge::Components::Utils
         Dir.mkdir('./tmp/video_processing/images/') unless Dir.exist?('./tmp/video_processing/images/')
         lecture_slide[:name] = "slide_quiz_#{quiz_id}.jpg"
         lecture_slide[:path] =  "./tmp/video_processing/images/"+lecture_slide[:name]
-        # extractable_video = FFMPEG::Movie.new(set_extensions_to_mp4(downloaded_video._filename))
-        extractable_video = FFMPEG::Movie.new(downloaded_video._filename)
+        extractable_video = FFMPEG::Movie.new(set_extensions_to_mp4(downloaded_video._filename))
+        # extractable_video = FFMPEG::Movie.new(downloaded_video._filename)
         extractable_video.screenshot(lecture_slide[:path] , seek_time:1,quality:3)
         return lecture_slide
     end   
