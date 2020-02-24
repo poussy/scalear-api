@@ -90,7 +90,7 @@ module CanvasCommonCartridge::Components::Utils
         puts "video download started"
         args = "-ss "+format_time(video_portion_start).to_s+" -t  00:00:05.00"
         downloaded_video = YoutubeDL.download video_url, {
-            # format:"bestvideo",
+            format:"bestvideo",
             output:download_path,
             "recode-video":"mp4",
             "postprocessor-args":args
