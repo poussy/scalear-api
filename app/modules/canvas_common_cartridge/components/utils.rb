@@ -103,16 +103,16 @@ module CanvasCommonCartridge::Components::Utils
         downloaded_video_extension = downloaded_video._filename.split('.').last
         downloaded_video_path = Dir[downloaded_video._filename.remove(downloaded_video_extension)+'*'].first
       
-        # if is_mp4(downloaded_video._filename)
-        extractable_video = FFMPEG::Movie.new(downloaded_video_path)   
-        # else 
-        #     extractable_video = transcode_to_mp4(downloaded_video_path) 
-        # end    
+        extractable_video = FFMPEG::Movie.new(downloaded_video_path)    
         begin 
           extractable_video.screenshot(lecture_slide[:path] , seek_time:seek_time,quality:3)
         rescue   
-            extractable_video = transcode_to_mp4(downloaded_video_path) rescue 0
-            extractable_video.screenshot(lecture_slide[:path] , seek_time:1,quality:seek_time) rescue 0
+            begin
+                extractable_video = transcode_to_mp4(downloaded_video_path) 
+                extractable_video.screenshot(lecture_slide[:path] , seek_time:seek_time,quality:seek_time) 
+            rescue
+                lecture_slide[:path] = './public/assets/images/question.jpg'
+            end        
         end    
         return lecture_slide
     end   
