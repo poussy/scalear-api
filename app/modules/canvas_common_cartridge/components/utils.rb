@@ -85,27 +85,35 @@ module CanvasCommonCartridge::Components::Utils
         end     
     end    
     def download_lecture(video_url,video_portion_start,quiz_id)
-        download_path = './tmp/video_processing/video/quiz_id_'+quiz_id.to_s+'%(title)s.%(ext)s'
-        # "-ss 00:00:01.00 -t 00:00:35.00"
-        puts "video download started"
-        args = "-ss "+format_time(video_portion_start).to_s+" -t  00:00:05.00"
+        download_path = './tmp/video_processing/video/quiz_id_'+quiz_id.to_s+' %(title)s.%(ext)s'
+        puts args
         downloaded_video = YoutubeDL.download video_url, {
-            # format:"bestvideo",
+            format:"bestvideo",
             output:download_path,
-            # "recode-video":"mp4",
-            "postprocessor-args":args
         }
         puts "video download completed"
         return downloaded_video
     end    
-    def extract_img(downloaded_video,quiz_id) 
+    def extract_img(downloaded_video,quiz_id,seek_time) 
         lecture_slide = {} 
         Dir.mkdir('./tmp/video_processing/images/') unless Dir.exist?('./tmp/video_processing/images/')
         lecture_slide[:name] = "slide_quiz_#{quiz_id}.jpg"
         lecture_slide[:path] =  "./tmp/video_processing/images/"+lecture_slide[:name]
-        extractable_video = transcode_to_mp4(downloaded_video)
-        # extractable_video = FFMPEG::Movie.new(downloaded_video._filename)
-        extractable_video.screenshot(lecture_slide[:path] , seek_time:1,quality:3)
+       
+        downloaded_video_extension = downloaded_video._filename.split('.').last
+        downloaded_video_path = Dir[downloaded_video._filename.remove(downloaded_video_extension)+'*'].first
+      
+        # if is_mp4(downloaded_video._filename)
+        extractable_video = FFMPEG::Movie.new(downloaded_video_path)   
+        # else 
+        #     extractable_video = transcode_to_mp4(downloaded_video_path) 
+        # end    
+        begin 
+          extractable_video.screenshot(lecture_slide[:path] , seek_time:seek_time,quality:3)
+        rescue   
+            extractable_video = transcode_to_mp4(downloaded_video_path) rescue 0
+            extractable_video.screenshot(lecture_slide[:path] , seek_time:1,quality:seek_time) rescue 0
+        end    
         return lecture_slide
     end   
     def clear_tmp_video_processing(type)
@@ -117,15 +125,16 @@ module CanvasCommonCartridge::Components::Utils
     def format_time(t)
         return  Time.at(t).utc.strftime "%H:%M:%S.%m"
     end    
-    def transcode_to_mp4(downloaded_video)
-        extractable_video = FFMPEG::Movie.new(downloaded_video._filename)
-        downloaded_video_extension = downloaded_video._filename.split('.').last
-        if  downloaded_video_extension != 'mp4'
-            downloaded_video_new_name = downloaded_video._filename.remove(downloaded_video_extension).concat('mp4')
-            extractable_video.transcode(downloaded_video_new_name,{},{})
-            extractable_video = FFMPEG::Movie.new(downloaded_video_new_name)
-        end 
+    def transcode_to_mp4(downloaded_video_path)
+        downloaded_video_extension = downloaded_video_path.split('.').last
+        downloaded_video_new_name = downloaded_video_path.remove(downloaded_video_extension).concat('mp4')
+        extractable_video = FFMPEG::Movie.new(downloaded_video_path)
+        extractable_video.transcode(downloaded_video_new_name,{},{'max_muxing_queue_size': 512, 'video_codec': "libx264"})
         return extractable_video
     end 
+    def is_mp4(downloaded_video_file_name)
+        downloaded_video_extension = downloaded_video_file_name.split('.').last
+        return downloaded_video_extension == 'mp4'
+    end     
 end
 

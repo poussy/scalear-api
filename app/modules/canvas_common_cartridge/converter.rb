@@ -72,7 +72,9 @@ module CanvasCommonCartridge::Converter
     end   
 
     def convert_video_quiz(lecture,lecture_quizzes,converted_group,converted_course) 
-       
+         #download lecture video to extract in video quiz slide
+         downloaded_lecture = download_lecture(lecture.url,0,lecture.id) if lecture_quizzes.pluck(:quiz_type).include?'invideo'
+                
         #prior quizzes video
         attach_interquizzes_video(lecture,lecture.name+"-part 1",0,lecture_quizzes.first.start_time-1,converted_group)
         ctr = 2
@@ -80,10 +82,8 @@ module CanvasCommonCartridge::Converter
             converted_video_quiz = create_video_converted_assessment('invideo',set_video_converted_assessment_title(lecture.name,ctr,on_video_quiz),lecture.due_date)
             start_time = on_video_quiz.start_time-5
             end_time = on_video_quiz.start_time+1
-            if on_video_quiz.quiz_type!='html'
-                 #download lecture video to extract in video quiz slide
-                downloaded_lecture = download_lecture(lecture.url,on_video_quiz.start_time,on_video_quiz.id)
-                quiz_slide = extract_img(downloaded_lecture,on_video_quiz.id) 
+            if on_video_quiz.quiz_type=='invideo'
+               quiz_slide = extract_img(downloaded_lecture,on_video_quiz.id,on_video_quiz.start_time) 
                 attach_file(quiz_slide,converted_course)
                 # attach_video_question(on_video_quiz,converted_video_quiz,start_time,end_time)
             end
@@ -117,13 +117,13 @@ module CanvasCommonCartridge::Converter
         converted_video_survey_title = lecture.name+' survey'
         converted_video_survey_title +='[MISSING ANSWERS]' if has_missing_answer_text_at_lecture_surveys(lecture_surveys)
         converted_video_survey = create_video_converted_assessment('survey',converted_video_survey_title,lecture.due_date)
-       
+        
+        downloaded_lecture = download_lecture(lecture.url,0,'_s_'+lecture.id.to_s) if lecture_surveys.pluck(:quiz_type).include?('survey')
+               
         #setting the video survey body
-
         lecture_surveys.each do |on_video_survey|
-            if on_video_survey.quiz_type != 'html_survey'
-                downloaded_lecture = download_lecture(lecture.url,on_video_survey.start_time,on_video_survey.id)
-                survey_slide = extract_img(downloaded_lecture,on_video_survey.id) 
+            if on_video_survey.quiz_type == 'survey'
+                survey_slide = extract_img(downloaded_lecture,on_video_survey.id,on_video_survey.start_time) 
                 attach_file(survey_slide,converted_course)
             end    
             attach_video_question(on_video_survey,converted_video_survey,survey_slide)
