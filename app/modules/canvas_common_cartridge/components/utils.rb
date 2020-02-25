@@ -86,7 +86,7 @@ module CanvasCommonCartridge::Components::Utils
     end    
     def download_lecture(video_url,video_portion_start,quiz_id)
         download_path = './tmp/video_processing/video/quiz_id_'+quiz_id.to_s+' %(title)s.%(ext)s'
-        puts args
+        puts 'download started'  
         downloaded_video = YoutubeDL.download video_url, {
             format:"bestvideo",
             output:download_path,
