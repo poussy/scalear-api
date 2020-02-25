@@ -82,8 +82,14 @@ module CanvasCommonCartridge::Converter
             start_time = on_video_quiz.start_time-5
             end_time = on_video_quiz.start_time+1
             if on_video_quiz.quiz_type=='invideo'
-                downloaded_lecture = download_lecture(lecture.url,on_video_quiz.start_time,lecture.id) if lecture_quizzes.pluck(:quiz_type).include?'invideo'
-               quiz_slide = extract_img(downloaded_lecture,on_video_quiz.id,on_video_quiz.start_time) 
+                begin 
+                    downloaded_lecture = download_lecture(lecture.url,on_video_quiz.start_time,lecture.id) if lecture_quizzes.pluck(:quiz_type).include?'invideo'
+                    quiz_slide = extract_img(downloaded_lecture,on_video_quiz.id,on_video_quiz.start_time) 
+                rescue
+                    quiz_slide={}
+                    quiz_slide[:name] = "slide_quiz_#{on_video_quiz.id}.jpg"
+                    quiz_slide[:path] =  "./public/asset/images/question.jpg"
+                end    
                 attach_file(quiz_slide,converted_course)
                 # attach_video_question(on_video_quiz,converted_video_quiz,start_time,end_time)
             end
@@ -99,7 +105,7 @@ module CanvasCommonCartridge::Converter
             end   
             ctr+=2
         end  
-        # clear_tmp_video_processing(0)
+        clear_tmp_video_processing(0)
     end
     def attach_interquizzes_video(lecture,title,start_time,end_time,converted_group)
         converted_video_post_quiz = create_converted_lecture(lecture)
@@ -117,19 +123,24 @@ module CanvasCommonCartridge::Converter
         converted_video_survey_title = lecture.name+' survey'
         converted_video_survey_title +='[MISSING ANSWERS]' if has_missing_answer_text_at_lecture_surveys(lecture_surveys)
         converted_video_survey = create_video_converted_assessment('survey',converted_video_survey_title,lecture.due_date)
-        
-      
+           
         #setting the video survey body
         lecture_surveys.each do |on_video_survey|
             if on_video_survey.quiz_type == 'survey'
-                downloaded_lecture = download_lecture(lecture.url,on_video_survey.start_time,'_s_'+lecture.id.to_s) if lecture_surveys.pluck(:quiz_type).include?('survey')
-                survey_slide = extract_img(downloaded_lecture,on_video_survey.id,on_video_survey.start_time) 
-                attach_file(survey_slide,converted_course)
+                begin 
+                    downloaded_lecture = download_lecture(lecture.url,on_video_survey.start_time,'_s_'+lecture.id.to_s) if lecture_surveys.pluck(:quiz_type).include?('survey')
+                    survey_slide = extract_img(downloaded_lecture,on_video_survey.id,on_video_survey.start_time)                   
+                rescue
+                    survey_slide = {}
+                    survey_slide[:name] = "slide_quiz_#{on_video_survey.id}.jpg"
+                    survey_slide[:path] =  "./public/asset/images/question.jpg"
+                end     
+                attach_file(survey_slide,converted_course)   
             end    
             attach_video_question(on_video_survey,converted_video_survey,survey_slide)
             # attach_video_question(on_video_survey,converted_video_survey,0,0)
         end
-        # clear_tmp_video_processing(0)
+        clear_tmp_video_processing(0)
         attach_converted_video_quiz(converted_video_survey,converted_group,converted_course)
     end  
     def convert_module_completion_requirements(indentifier,completion_type,converted_group)
@@ -152,8 +163,8 @@ module CanvasCommonCartridge::Converter
             carttridge = CanvasCc::CanvasCC::CartridgeCreator.new(converted_course)
             packaged_course = carttridge.create(dir)
             package_name = course.name+".imscc"
-            # clear_tmp_video_processing(1)
             UserMailer.attachment_email(current_user, course, package_name , packaged_course, I18n.locale).deliver;
+            clear_tmp_video_processing(1)
         end
         handle_asynchronously :pack_to_ccc, :run_at => Proc.new { 1.seconds.from_now }
     end    
