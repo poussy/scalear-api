@@ -165,7 +165,7 @@ module CanvasCommonCartridge::Converter
                 imscc_file={}
                 packaged_module = carttridge.create(dir)
                 imscc_file[:path] = packaged_module
-                imscc_file[:file_name] = group.name+"_#{i}.imscc"
+                imscc_file[:file_name] = group.name+"_#{i+1}.imscc"
                 course_packaged_modules.push(imscc_file)
             end            
             UserMailer.many_attachment_email(current_user, course, course_packaged_modules,I18n.locale).deliver
