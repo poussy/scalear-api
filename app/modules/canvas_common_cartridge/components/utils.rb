@@ -101,7 +101,6 @@ module CanvasCommonCartridge::Components::Utils
         Dir.mkdir('./tmp/video_processing/images/') unless Dir.exist?('./tmp/video_processing/images/')
         lecture_slide[:name] = "slide_quiz_#{quiz_id}.jpg"
         lecture_slide[:path] =  "./tmp/video_processing/images/"+lecture_slide[:name]
-       
         downloaded_video_extension = downloaded_video._filename.split('.').last
         downloaded_video_path = Dir[downloaded_video._filename.remove(downloaded_video_extension)+'*'].first
       

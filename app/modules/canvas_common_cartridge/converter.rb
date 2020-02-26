@@ -83,7 +83,7 @@ module CanvasCommonCartridge::Converter
             end_time = on_video_quiz.start_time+1
             if on_video_quiz.quiz_type=='invideo'
                 begin 
-                    downloaded_lecture = download_lecture(lecture.url,on_video_quiz.start_time,lecture.id) if lecture_quizzes.pluck(:quiz_type).include?'invideo'
+                    downloaded_lecture = download_lecture(lecture.url,on_video_quiz.start_time,on_video_quiz.id)
                     quiz_slide = extract_img(downloaded_lecture,on_video_quiz.id,on_video_quiz.start_time) 
                 rescue
                     quiz_slide={}
@@ -128,7 +128,7 @@ module CanvasCommonCartridge::Converter
         lecture_surveys.each do |on_video_survey|
             if on_video_survey.quiz_type == 'survey'
                 begin 
-                    downloaded_lecture = download_lecture(lecture.url,on_video_survey.start_time,'_s_'+lecture.id.to_s) if lecture_surveys.pluck(:quiz_type).include?('survey')
+                    downloaded_lecture = download_lecture(lecture.url,on_video_survey.start_time,'_s_'+on_video_survey.to_s) 
                     survey_slide = extract_img(downloaded_lecture,on_video_survey.id,on_video_survey.start_time)                   
                 rescue
                     survey_slide = {}
@@ -154,7 +154,7 @@ module CanvasCommonCartridge::Converter
             p = CanvasCommonCartridge::Converter::Packager.new
             course_packaged_modules = []
             converted_course = p.create_converted_course(course)
-            course.groups.each_with_index do |group|
+            course.groups.each_with_index do |group,i|
                 converted_group = p.convert_groups(group,converted_course)
                 p.create_module_prerequisite(converted_group,converted_course.canvas_modules.last.identifier) if converted_course.canvas_modules.length>0
                 converted_group.workflow_state = 'active'
@@ -165,11 +165,9 @@ module CanvasCommonCartridge::Converter
                 imscc_file={}
                 packaged_module = carttridge.create(dir)
                 imscc_file[:path] = packaged_module
-                imscc_file[:file_name] = group.name+".imscc"
+                imscc_file[:file_name] = group.name+"_#{i}.imscc"
                 course_packaged_modules.push(imscc_file)
-            end 
-
-            # UserMailer.attachment_email(current_user, course, package_name , packaged_course, I18n.locale).deliver;
+            end            
             UserMailer.many_attachment_email(current_user, course, course_packaged_modules,I18n.locale).deliver
             clear_tmp_video_processing(1)
         end
