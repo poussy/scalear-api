@@ -149,9 +149,10 @@ module CanvasCommonCartridge::Converter
     end    
     class CanvasCommonCartridge::Converter::Packager 
         include CanvasCommonCartridge::Converter
-        course_packaged_modules = []
+      
         def pack_to_ccc(course,current_user)
             p = CanvasCommonCartridge::Converter::Packager.new
+            course_packaged_modules = []
             converted_course = p.create_converted_course(course)
             course.groups.each_with_index do |group|
                 converted_group = p.convert_groups(group,converted_course)
@@ -161,9 +162,11 @@ module CanvasCommonCartridge::Converter
                 converted_course.canvas_modules << converted_group
                 dir = Dir.mktmpdir
                 carttridge = CanvasCc::CanvasCC::CartridgeCreator.new(converted_course)
-                packaged_course = carttridge.create(dir)
-                package_name = course.name+".imscc"
-                course_packaged_modules.push(packaged_course)
+                imscc_file={}
+                packaged_module = carttridge.create(dir)
+                imscc_file[:path] = packaged_module
+                imscc_file[:file_name] = group.name+".imscc"
+                course_packaged_modules.push(imscc_file)
             end 
 
             # UserMailer.attachment_email(current_user, course, package_name , packaged_course, I18n.locale).deliver;
