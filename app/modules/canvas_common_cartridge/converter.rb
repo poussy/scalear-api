@@ -168,7 +168,7 @@ module CanvasCommonCartridge::Converter
                 imscc_file[:file_name] = group.name+" # #{i+1}.imscc"
                 course_packaged_modules.push(imscc_file)
             end            
-            UserMailer.many_attachment_email(current_user, course, course_packaged_modules,I18n.locale).deliver
+            UserMailer.many_imscc_attachment_email(current_user, course, course_packaged_modules,I18n.locale).deliver
             clear_tmp_video_processing(1)
         end
         handle_asynchronously :pack_to_ccc, :run_at => Proc.new { 1.seconds.from_now }

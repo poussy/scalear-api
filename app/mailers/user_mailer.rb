@@ -154,6 +154,19 @@ class UserMailer < ApplicationMailer
 		mail(:to => @user_email , :subject => "Exported File", :from => @from)	
 	end	
 
+	def many_imscc_attachment_email (user, course, files , locale)
+		I18n.locale=locale
+		@from =  "\"Scalable Learning\" <no-reply@scalable-learning.com>"
+		@user_name= user.name
+		@user_email= user.email
+		@course = course
+		files.each do |file|
+			attachments[file[:file_name]]= File.read(file[:path])
+		end	
+		
+		mail(:to => @user_email , :subject => "Exported File", :from => @from)	
+	end	
+
 	def progress_days_late(user, file_name, file_path, locale,course)
 		I18n.locale=locale
 		@from =  "\"Scalable Learning\" <no-reply@scalable-learning.com>"
