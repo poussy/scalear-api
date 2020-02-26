@@ -149,6 +149,7 @@ module CanvasCommonCartridge::Converter
     end    
     class CanvasCommonCartridge::Converter::Packager 
         include CanvasCommonCartridge::Converter
+        course_packaged_modules = []
         def pack_to_ccc(course,current_user)
             p = CanvasCommonCartridge::Converter::Packager.new
             converted_course = p.create_converted_course(course)
@@ -158,12 +159,15 @@ module CanvasCommonCartridge::Converter
                 converted_group.workflow_state = 'active'
                 converted_group.title +="[MISSING ANSWERS]" if p.has_missing_answers_text_at_group(group.id)
                 converted_course.canvas_modules << converted_group
+                dir = Dir.mktmpdir
+                carttridge = CanvasCc::CanvasCC::CartridgeCreator.new(converted_course)
+                packaged_course = carttridge.create(dir)
+                package_name = course.name+".imscc"
+                course_packaged_modules.push(packaged_course)
             end 
-            dir = Dir.mktmpdir
-            carttridge = CanvasCc::CanvasCC::CartridgeCreator.new(converted_course)
-            packaged_course = carttridge.create(dir)
-            package_name = course.name+".imscc"
-            UserMailer.attachment_email(current_user, course, package_name , packaged_course, I18n.locale).deliver;
+
+            # UserMailer.attachment_email(current_user, course, package_name , packaged_course, I18n.locale).deliver;
+            UserMailer.many_attachment_email (current_user, course, course_packaged_modules , I18n.locale).deliver
             clear_tmp_video_processing(1)
         end
         handle_asynchronously :pack_to_ccc, :run_at => Proc.new { 1.seconds.from_now }
