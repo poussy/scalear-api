@@ -1061,7 +1061,8 @@ class LecturesController < ApplicationController
 			delete_video_upload_record(vid_vimeo_id) 
 		end	
 	end	
-
+	def get_fbf_access_token
+    end 		
 private
 	def lecture_params
 		params.require(:lecture).permit(:course_id, :description, :name, :url, :group_id, :appearance_time, :due_date, :duration,
