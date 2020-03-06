@@ -88,15 +88,16 @@ module CanvasCommonCartridge::Components::Utils
         download_path = './tmp/video_processing/video/quiz_id_'+quiz_id.to_s+' %(title)s.%(ext)s'
         puts 'download started'  
         args = "-ss #{format_time(video_portion_start-2)} -t 00:00:10.00"
-        status = Timeout::timeout(300) {
-            downloaded_video = YoutubeDL.download video_url, {
-                # format:"bestvideo",
-                output:download_path,
-                'postprocessor-args':args
-            }
-            puts "video download completed"
+
+        downloaded_video = YoutubeDL.download video_url, {
+            # format:"bestvideo",
+            output:download_path,
+            'postprocessor-args':args,
+            'socket-timeout': 300
         }
+        puts "video download completed"
         return downloaded_video
+
     end    
     def extract_img(downloaded_video,quiz_id,seek_time) 
         lecture_slide = {} 
