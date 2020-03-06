@@ -1,5 +1,6 @@
 class LecturesController < ApplicationController 
 	include VimeoUtils
+	include FeedbackfruitUtils
 	load_and_authorize_resource
 		# @lecture is already loaded
 
@@ -1061,7 +1062,8 @@ class LecturesController < ApplicationController
 			delete_video_upload_record(vid_vimeo_id) 
 		end	
 	end	
-	def get_fbf_access_token
+	def get_feedbackFruit_access_token
+		return get_fbf_access_token
     end 		
 private
 	def lecture_params

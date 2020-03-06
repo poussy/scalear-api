@@ -311,6 +311,7 @@ Rails.application.routes.draw do
         get 'change_status_distance_peer'
         get 'check_if_distance_peer_status_is_sync'
         get 'check_if_distance_peer_is_alive'
+        get 'get_feedbackFruit_access_token'
       end
       collection do
         post 'sort'
