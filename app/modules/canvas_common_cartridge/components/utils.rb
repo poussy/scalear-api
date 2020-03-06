@@ -88,12 +88,14 @@ module CanvasCommonCartridge::Components::Utils
         download_path = './tmp/video_processing/video/quiz_id_'+quiz_id.to_s+' %(title)s.%(ext)s'
         puts 'download started'  
         args = "-ss #{format_time(video_portion_start-2)} -t 00:00:10.00"
-        downloaded_video = YoutubeDL.download video_url, {
-            # format:"bestvideo",
-            output:download_path,
-            'postprocessor-args':args
+        status = Timeout::timeout(300) {
+            downloaded_video = YoutubeDL.download video_url, {
+                # format:"bestvideo",
+                output:download_path,
+                'postprocessor-args':args
+            }
+            puts "video download completed"
         }
-        puts "video download completed"
         return downloaded_video
     end    
     def extract_img(downloaded_video,quiz_id,seek_time) 
@@ -112,7 +114,7 @@ module CanvasCommonCartridge::Components::Utils
                 extractable_video = transcode_to_mp4(downloaded_video_path) 
                 extractable_video.screenshot(lecture_slide[:path] , seek_time:1,quality:3) 
             rescue
-                lecture_slide[:path] = './public/assets/images/question.jpg'
+                lecture_slide[:path] = "./public/assets/images/question.jpg"
             end        
         end    
         return lecture_slide

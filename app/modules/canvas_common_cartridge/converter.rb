@@ -88,7 +88,7 @@ module CanvasCommonCartridge::Converter
                 rescue
                     quiz_slide={}
                     quiz_slide[:name] = "slide_quiz_#{on_video_quiz.id}.jpg"
-                    quiz_slide[:path] =  "./public/asset/images/question.jpg"
+                    quiz_slide[:path] =  "./public/assets/images/question.jpg"
                 end    
                 attach_file(quiz_slide,converted_course)
                 # attach_video_question(on_video_quiz,converted_video_quiz,start_time,end_time)
@@ -133,7 +133,7 @@ module CanvasCommonCartridge::Converter
                 rescue
                     survey_slide = {}
                     survey_slide[:name] = "slide_quiz_#{on_video_survey.id}.jpg"
-                    survey_slide[:path] =  "./public/asset/images/question.jpg"
+                    survey_slide[:path] =  "./public/assets/images/question.jpg"
                 end     
                 attach_file(survey_slide,converted_course)   
             end    
