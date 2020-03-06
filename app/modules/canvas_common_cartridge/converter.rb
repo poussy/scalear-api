@@ -152,7 +152,7 @@ module CanvasCommonCartridge::Converter
       
         def pack_to_ccc(course,current_user)
             p = CanvasCommonCartridge::Converter::Packager.new
-            course_packaged_modules = []
+            # course_packaged_modules = []
             converted_course = p.create_converted_course(course)
             course.groups.each_with_index do |group,i|
                 converted_group = p.convert_groups(group,converted_course)
@@ -160,15 +160,17 @@ module CanvasCommonCartridge::Converter
                 converted_group.workflow_state = 'active'
                 converted_group.title +="[MISSING ANSWERS]" if p.has_missing_answers_text_at_group(group.id)
                 converted_course.canvas_modules << converted_group
-                dir = Dir.mktmpdir
-                carttridge = CanvasCc::CanvasCC::CartridgeCreator.new(converted_course)
-                imscc_file={}
-                packaged_module = carttridge.create(dir)
-                imscc_file[:path] = packaged_module
-                imscc_file[:file_name] = group.name+" # #{i+1}.imscc"
-                course_packaged_modules.push(imscc_file)
-            end            
-            UserMailer.many_imscc_attachment_email(current_user, course, course_packaged_modules,I18n.locale).deliver
+
+            end  
+            dir = Dir.mktmpdir
+            carttridge = CanvasCc::CanvasCC::CartridgeCreator.new(converted_course)
+            # imscc_file={}
+            packaged_course = carttridge.create(dir)
+            # imscc_file[:path] = packaged_module
+            # imscc_file[:file_name] = group.name+" # #{i+1}.imscc"
+            # course_packaged_modules.push(imscc_file)    
+                                          
+            UserMailer.attachment_email(current_user, course, course.name+".imscc",packaged_course,I18n.locale).deliver
             clear_tmp_video_processing(1)
         end
         handle_asynchronously :pack_to_ccc, :run_at => Proc.new { 1.seconds.from_now }
