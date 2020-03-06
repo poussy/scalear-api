@@ -122,8 +122,10 @@ module CanvasCommonCartridge::Components::Utils
     end   
     def clear_tmp_video_processing(type)
         FileUtils.rm_rf(Dir['./tmp/video_processing/video/*'])
+        puts 'videos removed'
         if type==1
             FileUtils.rm_rf(Dir['./tmp/video_processing/images/*'])
+            puts 'images removed'
         end    
     end    
     def format_time(t)
