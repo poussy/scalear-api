@@ -816,7 +816,17 @@ class LecturesController < ApplicationController
 
 	# def load_note
 	# end
-
+	def export_lecture_to_feedbackfruit
+		lec_url = @lecture.url
+		teacher_email = @lecture.course.user.email
+		lec_name = @lecture.name
+		export_accomplished = export_to_fbf(lec_url, teacher_email, lec_name) if is_youtube(lec_url)||is_vimeo(lec_url)
+		if export_accomplished
+			render json: {:notice => "Export lecture to feedbackFruit accomplished"}
+		else 
+			render json: {:errors => "Export lecture to feedbackFruit failed"}
+		end
+    end 
 	def lecture_copy
 		id = params[:id] || params[:lecture_id]
 		old_lecture = Lecture.find(id)
@@ -1055,16 +1065,14 @@ class LecturesController < ApplicationController
 	end	
 	
 	def delete_vimeo_video
-		lecture_url_not_used_elsewhere = Lecture.where(:url=>	@lecture_url).count==0
+		lecture_url_not_used_elsewhere = Lecture.where(:url=>@lecture_url).count==0
 		if lecture_url_not_used_elsewhere
 			vid_vimeo_id = 	@lecture_url.split('https://vimeo.com/')[1]
 			delete_video_from_vimeo_account(vid_vimeo_id)
 			delete_video_upload_record(vid_vimeo_id) 
 		end	
 	end	
-	def get_feedbackFruit_access_token
-		return get_fbf_access_token
-    end 		
+		
 private
 	def lecture_params
 		params.require(:lecture).permit(:course_id, :description, :name, :url, :group_id, :appearance_time, :due_date, :duration,
