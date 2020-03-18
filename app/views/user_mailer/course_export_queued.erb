@@ -1,0 +1,7 @@
+<div>
+  <p><%= t('user_mailer.your_course_export_queued', {course_name: @course.name})%></p>
+
+  <%= render partial: 'thank_you_footer' %>
+  <%= render partial: 'footer', locals: {role:"teacher"} %>
+    
+</div>

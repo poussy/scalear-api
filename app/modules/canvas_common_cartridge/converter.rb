@@ -75,7 +75,7 @@ module CanvasCommonCartridge::Converter
          #download lecture video to extract in video quiz slide
             
         #prior quizzes video
-        attach_interquizzes_video(lecture,lecture.name+"(part 1)",0,lecture_quizzes.first.start_time-1,converted_group)
+        attach_interquizzes_video(lecture,lecture.name+"(part 1)",0,lecture_quizzes.first.start_time-1,converted_group) if lecture_quizzes.first.start_time>2
         ctr = 2
         lecture_quizzes.each_with_index do |on_video_quiz,i|
             converted_video_quiz = create_video_converted_assessment('invideo',set_video_converted_assessment_title(lecture.name,ctr,on_video_quiz),lecture.due_date)
@@ -152,8 +152,8 @@ module CanvasCommonCartridge::Converter
         include CanvasCommonCartridge::Converter
       
         def pack_to_ccc(course,current_user)
+            UserMailer.course_export_start(current_user, course, I18n.locale).deliver
             p = CanvasCommonCartridge::Converter::Packager.new
-            # course_packaged_modules = []
             converted_course = p.create_converted_course(course)
             course.groups.each_with_index do |group,i|
                 converted_group = p.convert_groups(group,converted_course)
@@ -165,11 +165,7 @@ module CanvasCommonCartridge::Converter
             end  
             dir = Dir.mktmpdir
             carttridge = CanvasCc::CanvasCC::CartridgeCreator.new(converted_course)
-            # imscc_file={}
-            packaged_course = carttridge.create(dir)
-            # imscc_file[:path] = packaged_module
-            # imscc_file[:file_name] = group.name+" # #{i+1}.imscc"
-            # course_packaged_modules.push(imscc_file)               
+            packaged_course = carttridge.create(dir)        
             UserMailer.attachment_email(current_user, course, course.name+".imscc",packaged_course,I18n.locale).deliver
             clear_tmp_video_processing(1)
         end

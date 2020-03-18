@@ -166,7 +166,24 @@ class UserMailer < ApplicationMailer
 		
 		mail(:to => @user_email , :subject => "Exported File", :from => @from)	
 	end	
+	def course_export_start(user, course, locale)
+		I18n.locale=locale
+		@from =  "\"Scalable Learning\" <no-reply@scalable-learning.com>"
+		@user_name= user.name
+		@user_email= user.email
+		@course = course
 
+		mail(:to => @user_email , :subject => "Course export started", :from => @from)
+	end 	
+	def course_export_queued(user, course, locale)
+		I18n.locale=locale
+		@from =  "\"Scalable Learning\" <no-reply@scalable-learning.com>"
+		@user_name= user.name
+		@user_email= user.email
+		@course = course
+
+		mail(:to => @user_email , :subject => "Course export received", :from => @from)
+	end 	
 	def progress_days_late(user, file_name, file_path, locale,course)
 		I18n.locale=locale
 		@from =  "\"Scalable Learning\" <no-reply@scalable-learning.com>"
