@@ -111,12 +111,12 @@ module CanvasCommonCartridge::Components::Utils
         begin 
           extractable_video.screenshot(lecture_slide[:path] , seek_time:1,quality:3)
         rescue   
-            begin
+            # begin
                 extractable_video = transcode_to_mp4(downloaded_video_path) 
                 extractable_video.screenshot(lecture_slide[:path] , seek_time:1,quality:3) 
-            rescue
-                lecture_slide[:path] = "./public/assets/images/question.jpg"
-            end        
+            # rescue
+            #     lecture_slide[:path] = "./public/assets/images/question.jpg"
+            # end        
         end    
         return lecture_slide
     end   

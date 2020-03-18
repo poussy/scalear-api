@@ -90,6 +90,9 @@ module CanvasCommonCartridge::Converter
                     quiz_slide[:name] = "slide_quiz_#{on_video_quiz.id}.jpg"
                     quiz_slide[:path] =  "./public/assets/images/question.jpg"
                     converted_video_quiz.title += "[IMAGE FAILED]" 
+                    puts "----------------------------------"
+                    puts converted_video_quiz.as_json
+                    puts "---------------------------------"
                 end    
                 attach_file(quiz_slide,converted_course)
                 # attach_video_question(on_video_quiz,converted_video_quiz,start_time,end_time)
@@ -170,9 +173,9 @@ module CanvasCommonCartridge::Converter
             # imscc_file[:path] = packaged_module
             # imscc_file[:file_name] = group.name+" # #{i+1}.imscc"
             # course_packaged_modules.push(imscc_file)    
-                                          
-            UserMailer.attachment_email(current_user, course, course.name+".imscc",packaged_course,I18n.locale).deliver
-            clear_tmp_video_processing(1)
+            puts converted_course.as_json                
+            # UserMailer.attachment_email(current_user, course, course.name+".imscc",packaged_course,I18n.locale).deliver
+            # clear_tmp_video_processing(1)
         end
         handle_asynchronously :pack_to_ccc, :run_at => Proc.new { 1.seconds.from_now }
     end    
