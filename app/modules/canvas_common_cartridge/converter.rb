@@ -102,7 +102,7 @@ module CanvasCommonCartridge::Converter
                 attach_interquizzes_video(lecture,lecture.name+'(part '+(ctr+1).to_s+")",end_time,lecture_quizzes[i+1].start_time,converted_group) 
             else    
                 #post quizzes video
-                attach_interquizzes_video(lecture,lecture.name+'(part '+(ctr+1).to_s+")",lecture_quizzes.last.end_time,lecture.end_time-10,converted_group) 
+                attach_interquizzes_video(lecture,lecture.name+'(part '+(ctr+1).to_s+")",lecture_quizzes.last.end_time,lecture.end_time,converted_group) 
             end   
             ctr+=2
         end  
