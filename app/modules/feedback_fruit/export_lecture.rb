@@ -1,5 +1,6 @@
-module FeedbackfruitUtils
-    def export_to_fbf(url,teacher_email,title)
+module Feedbackfruit::ExportLecture
+    include  FeedbackFruit::ExportQuestion
+    def export_to_fbf(url, teacher_email, title, lecture)
         teacher_email = 'poussy.amr.nileu@gmail.com'
         #get access token
         access_token = get_fbf_access_token
@@ -13,6 +14,7 @@ module FeedbackfruitUtils
         attachment_accomplished = attach_video_activity_to_group(group_id,activity_video_id,access_token)
         #register teacher email
         if attachment_accomplished
+            export_video_quizzes(lecture.online_quizzes,activity_video_id, group_id)
             email_id = register_teacher_email_on_fbf(teacher_email,access_token)
             #send teacher invitation
             invitation_accomplished = send_teacher_invitation_on_fbf_video(email_id,group_id,access_token)
@@ -160,5 +162,6 @@ module FeedbackfruitUtils
     end
     def is_youtube(url)
        return  url.include?('www.youtube.com')
-    end        
+    end 
+
   end
