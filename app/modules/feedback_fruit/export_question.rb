@@ -1,10 +1,10 @@
 module FeedbackFruit::ExportQuestion
-    def export_video_quizzes(quizzes, activity_video_id, group_id)
+    def export_video_quizzes(quizzes,access_token, activity_video_id, group_id)
         quizzes.each do |quiz|
-            export_video_quiz(activity_video_id, group_id, quiz)
+            export_video_quiz(access_token,activity_video_id, group_id, quiz)
         end   
     end
-    def export_video_quiz(activity_video_id, group_id, quiz)
+    def export_video_quiz(access_token,activity_video_id, group_id, quiz)
         export_question(access_token, activity_video_id, group_id, quiz)
         export_answers(quiz)
     end
@@ -14,13 +14,13 @@ module FeedbackFruit::ExportQuestion
         #attach a new annotation 
         annotation_id = get_annotation_id(access_token, fragment_id, group_id)
         #attach question to the moment --- get question_id
-        question_id = get_question_id((access_token, quiz, annotation_id, group_id, activity_video_id)
+        question_id = get_question_id(access_token, quiz, annotation_id, group_id, activity_video_id)
         #attach pic --- get media_id
     end
     def get_fragment_id(access_token, activity_video_id, quiz)
         query_url =	'https://staging-api.feedbackfruits.com/v1/fragments'
         response = ""
-        
+
         handler = Proc.new do |exception, attempt_number, total_delay|
             puts "retreiving acess token from feedback fruit failed. saw a #{exception.class}; retry attempt #{attempt_number}; #{total_delay} seconds have passed."     
         end
@@ -28,13 +28,14 @@ module FeedbackFruit::ExportQuestion
         with_retries(:max_tries => 3, :base_sleep_seconds => 0.5, :max_sleep_seconds => 1.0, :handler => handler, :rescue => [Rack::Timeout::RequestTimeoutException, Timeout::Error, SocketError]) do |attempt_number|
             response = HTTParty.post(query_url,
                 :headers => { 'Content-Type' => 'application/vnd.api+json','Authorization'=>'Bearer '+access_token } ,
-                :body=>'{"data":{"attributes":{"time-min":'+quiz.start_time-2+',"time-max":'+quiz.start_time+2+'},"relationships":{"activity":{"data":{"type":"videos","id":'+activity_video_id+'}}},"type":"video-fragments"}}'
+                # :body=>'{"data":{"attributes":{"time-min":'+(quiz.start_time-2).to_s+',"time-max":'+(quiz.start_time+2).to_s+'},"relationships":{"activity":{"data":{"type":"videos","id":'+activity_video_id+'}}},"type":"video-fragments"}}'
+                :body=>'{"data":{"attributes":{"time-min":3.7,"time-max":5.7},"relationships":{"activity":{"data":{"type":"videos","id":'+activity_video_id+'}}},"type":"video-fragments"}}'
             )
         end	    
         fragment_id=response.parsed_response['data']['id']
        return fragment_id
     end 
-    def get_annotatoin_id(access_token, fragment_id, group_id)
+    def get_annotation_id(access_token, fragment_id, group_id)
         query_url =	'https://staging-api.feedbackfruits.com/v1/annotations'
         response = ""
         
@@ -53,11 +54,12 @@ module FeedbackFruit::ExportQuestion
     end
     def get_question_id(access_token, quiz, annotation_id, group_id, activity_video_id)
         case quiz.question_type
-            while "OCQ" || "MCQ"
-                get_question_cq_id(access_token, quiz, annotation_id, group_id, activity_video_id)
-            while "Free Text Question"
-                get_free_text_question_id(access_token, quiz, annotation_id, group_id, activity_video_id)
-            end    
+        when "OCQ" || "MCQ"
+            question_id = get_question_cq_id(access_token, quiz, annotation_id, group_id, activity_video_id)
+        when "Free Text Question"
+            question_id = get_free_text_question_id(access_token, quiz, annotation_id, group_id, activity_video_id)
+        end    
+        return question_id
     end 
     def get_cq_question_id(access_token, quiz, annotation_id, group_id, activity_video_id)
         query_url =	'https://staging-api.feedbackfruits.com/v1/engines/questions/questions'
@@ -95,12 +97,13 @@ module FeedbackFruit::ExportQuestion
     end   
     def set_max_choices(quiz)
         case quiz.question_type
-            while "OCQ"
-                max_choices = 1
-            while "MCQ"
-                max_choices = quiz.online_answers.count
-            else #free text or drag and drop
-                max_choices = 1
+        when "OCQ"
+            max_choices = 1
+        when "MCQ"
+            max_choices = quiz.online_answers.count
+        #free text or drag and drop    
+        else 
+            max_choices = 1
         end 
         return max_choices
     end 
@@ -135,4 +138,4 @@ module FeedbackFruit::ExportQuestion
         return answer_created_successfuly
     end 
 
-  end
+end

@@ -1,6 +1,6 @@
 class LecturesController < ApplicationController 
 	include VimeoUtils
-	include FeedbackfruitUtils
+	include FeedbackFruit::ExportLecture
 	load_and_authorize_resource
 		# @lecture is already loaded
 
