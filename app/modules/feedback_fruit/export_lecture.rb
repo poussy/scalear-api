@@ -14,10 +14,11 @@ module FeedbackFruit::ExportLecture
         attachment_accomplished = attach_video_activity_to_group(group_id,activity_video_id,access_token)
         #register teacher email
         if attachment_accomplished
-            export_video_quizzes(lecture.online_quizzes, access_token,activity_video_id, group_id)
             email_id = register_teacher_email_on_fbf(teacher_email,access_token)
             #send teacher invitation
             invitation_accomplished = send_teacher_invitation_on_fbf_video(email_id,group_id,access_token)
+            puts '<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<invitation sent>>>>>>>>>>>>>>>>>>>>>'
+            export_video_quizzes(lecture.online_quizzes, access_token,activity_video_id, group_id)
             return true
         end    
         return false
@@ -50,7 +51,7 @@ module FeedbackFruit::ExportLecture
     def get_group_id(access_token)
         query_url =	'https://staging-api.feedbackfruits.com/v1/activity_groups'
         response = ""
-        
+
         handler = Proc.new do |exception, attempt_number, total_delay|
             puts "retreiving acess token from feedback fruit failed. saw a #{exception.class}; retry attempt #{attempt_number}; #{total_delay} seconds have passed."     
         end
@@ -127,6 +128,7 @@ module FeedbackFruit::ExportLecture
        return attach_successful
     end
     def register_teacher_email_on_fbf(teacher_email,access_token)
+        #retreive teacher email_id if it's already registered
         query_url =	'https://staging-api.feedbackfruits.com/v1/emails'
         response = ""
         
