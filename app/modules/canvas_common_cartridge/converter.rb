@@ -75,7 +75,7 @@ module CanvasCommonCartridge::Converter
          #download lecture video to extract in video quiz slide
             
         #prior quizzes video
-        attach_interquizzes_video(lecture,lecture.name+"(part 1)",0,lecture_quizzes.first.start_time-1,converted_group) if lecture_quizzes.first.start_time>2
+        attach_interquizzes_video(lecture,lecture.name+" (part 1)",0,lecture_quizzes.first.start_time,converted_group) if lecture_quizzes.first.start_time>2
         ctr = 2
         lecture_quizzes.each_with_index do |on_video_quiz,i|
             converted_video_quiz = create_video_converted_assessment('invideo',set_video_converted_assessment_title(lecture.name,ctr,on_video_quiz),lecture.due_date)
@@ -99,10 +99,10 @@ module CanvasCommonCartridge::Converter
             attach_converted_video_quiz(converted_video_quiz,converted_group,converted_course)
             if on_video_quiz != lecture_quizzes.last
                 #inter quizzes video
-                attach_interquizzes_video(lecture,lecture.name+'(part '+(ctr+1).to_s+")",end_time,lecture_quizzes[i+1].start_time,converted_group) 
+                attach_interquizzes_video(lecture,lecture.name+' (part '+(ctr+1).to_s+")",end_time,lecture_quizzes[i+1].start_time,converted_group) 
             else    
                 #post quizzes video
-                attach_interquizzes_video(lecture,lecture.name+'(part '+(ctr+1).to_s+")",lecture_quizzes.last.end_time,lecture.end_time,converted_group) 
+                attach_interquizzes_video(lecture,lecture.name+' (part '+(ctr+1).to_s+")",lecture_quizzes.last.end_time,lecture.end_time,converted_group) 
             end   
             ctr+=2
         end  
