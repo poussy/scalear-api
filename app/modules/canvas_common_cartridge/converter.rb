@@ -92,7 +92,6 @@ module CanvasCommonCartridge::Converter
                     converted_video_quiz.title += "[IMAGE FAILED]" 
                 end    
                 attach_file(quiz_slide,converted_course)
-                # attach_video_question(on_video_quiz,converted_video_quiz,start_time,end_time)
             end
             attach_video_question(on_video_quiz,converted_video_quiz,quiz_slide)
             convert_module_completion_requirements(converted_video_quiz.identifier,'must_view',converted_group) if lecture.required || lecture.required_module
