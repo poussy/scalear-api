@@ -553,6 +553,7 @@ class CoursesController < ApplicationController
 	end  
 
 	def courseware_angular
+
 		course=Course.find(params[:id])
 		course[:duration] = course.duration
 		is_preview_user = current_user.is_preview?
@@ -596,7 +597,14 @@ class CoursesController < ApplicationController
 		last_viewed_lecture = current_user.lecture_views.where(:lecture_id => current_lecture_ids).order(:updated_at).last
 		last_viewed_group_id = last_viewed_lecture.group_id if !last_viewed_lecture.nil?
 
-		groups.each do |g|
+		if params[:first_half] == "true"
+			from = 0
+			to = groups.length/2
+		else 
+			from = (groups.length/2)+1
+			to = groups.length-1
+		end
+		groups[from..to].each do |g|
 			g.current_user= current_user
 			g[:has_inclass] = false
 			g[:has_distance_peer] = false
@@ -623,18 +631,20 @@ class CoursesController < ApplicationController
 			g[:total_time] = g.total_time
 		end
 		next_item={}
-		if !next_i.nil?
-			next_item[:module]= next_i.group_id
-			next_item[:item] = {:id => next_i.id, :class_name => next_i.class.name.downcase}
-		elsif groups.size > 0 && groups[0].items.size > 0 && groups[0].items[0][:class_name]!="customlink"
-			next_item[:module] = groups[0].id
-			next_item[:item] = {:id => groups[0].items[0].id, :class_name => groups[0].items[0][:class_name]}
-		else
-			next_item[:module] = -1
-			next_item[:item] = -1
+		if params[:first_half] == "true"
+			
+			if !next_i.nil?
+				next_item[:module]= next_i.group_id
+				next_item[:item] = {:id => next_i.id, :class_name => next_i.class.name.downcase}
+			elsif groups.size > 0 && groups[0].items.size > 0 && groups[0].items[0][:class_name]!="customlink"
+				next_item[:module] = groups[0].id
+				next_item[:item] = {:id => groups[0].items[0].id, :class_name => groups[0].items[0][:class_name]}
+			else
+				next_item[:module] = -1
+				next_item[:item] = -1
+			end
 		end
-
-		render json: {:course => course,  :groups => groups, :next_item => next_item}
+		render json: {:course => course,  :groups => groups[from..to], :next_item => next_item}
 	  end
 
 	def export_csv

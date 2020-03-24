@@ -141,6 +141,7 @@ Rails.application.routes.draw do
         get 'module_progress_angular'
         get 'get_total_chart_angular'
         get 'courseware_angular'
+        get 'get_current_student_groups'
         get 'export_csv'
         get 'export_student_csv'
         post 'new_link_angular'
