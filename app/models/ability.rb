@@ -16,7 +16,7 @@ class Ability
                 course.correct_teacher(user)
         end
         # ## Student Abilities for Course table
-        can [ :getCourse, :show, :courseware_angular, :get_current_student_groups, :courseware, :unenroll,:update_student_duedate_email , :get_student_duedate_email, :get_role], Course do |course|
+        can [ :getCourse, :show, :courseware_angular, :courseware, :unenroll,:update_student_duedate_email , :get_student_duedate_email, :get_role], Course do |course|
             course.correct_student(user)
         end
 
