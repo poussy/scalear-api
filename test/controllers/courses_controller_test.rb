@@ -853,7 +853,7 @@ class CoursesControllerTest <  ActionDispatch::IntegrationTest
 	test "courseware_angular response" do
 		user = users(:student_in_course3)
 
-		get '/en/courses/3/courseware_angular', headers: user.create_new_auth_token
+		get '/en/courses/3/courseware_angular?first_half=true', headers: user.create_new_auth_token
 
 		assert_equal decode_json_response_body['course']['name'], "course3"
 
@@ -873,7 +873,7 @@ class CoursesControllerTest <  ActionDispatch::IntegrationTest
 	test "courseware_angular response should have last viewed item" do
 		user = users(:student_in_course3)
 
-		get '/en/courses/3/courseware_angular', headers: user.create_new_auth_token
+		get '/en/courses/3/courseware_angular?first_half=true', headers: user.create_new_auth_token
 
 		assert_equal decode_json_response_body['next_item']['module'], 3
 		assert_equal decode_json_response_body['next_item']['item'], {"id"=>3, "class_name"=>"lecture"}
