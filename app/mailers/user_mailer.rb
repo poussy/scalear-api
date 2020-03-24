@@ -154,7 +154,7 @@ class UserMailer < ApplicationMailer
 		mail(:to => @user_email , :subject => "Exported File", :from => @from)	
 	end	
 
-	def imscc_attachment_email(user, course, files , locale)
+	def imscc_attachment_email(user, course, file_name, file_path, locale)
 		I18n.locale=locale
 		@from =  "\"Scalable Learning\" <no-reply@scalable-learning.com>"
 		@user_name= user.name

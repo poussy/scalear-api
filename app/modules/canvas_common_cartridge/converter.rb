@@ -164,7 +164,7 @@ module CanvasCommonCartridge::Converter
             end  
             dir = Dir.mktmpdir
             carttridge = CanvasCc::CanvasCC::CartridgeCreator.new(converted_course)
-            packaged_course = carttridge.create(dir)        
+            packaged_course = carttridge.create(dir)       
             UserMailer.imscc_attachment_email(current_user, course, course.name+".imscc",packaged_course,I18n.locale).deliver
             clear_tmp_video_processing(1)
         end
