@@ -40,7 +40,7 @@ module FeedbackFruit::ExportLecture
                     :grant_type=>'password',
                     :username=>"poussy@novelari.com",
                     :password=>"poussy123",
-                    :scope=>"api.users.read,api.activity_groups.write,api.activity_groups.read,api.emails.write,api.emails.read,api.invitations.write,api.invitations.read,api.videos.write,api.videos.read,api.video_fragments.write,api.video_fragments.read,api.open_questions.write,api.open_questions.read,api.multiple_choice_questions.write,api.multiple_choice_questions.read,api.annotations.write,api.annotations.read"
+                    :scope=>"api.users.read,api.activity_groups.write,api.activity_groups.read,api.emails.write,api.emails.read,api.invitations.write,api.invitations.read,api.videos.write,api.videos.read,api.video_fragments.write,api.video_fragments.read,api.open_questions.write,api.open_questions.read,api.multiple_choice_questions.write,api.multiple_choice_questions.read,api.annotations.write,api.annotations.read,api.questions.choices.write,api.questions.choices.read"
                 }              
             )
         end	    
