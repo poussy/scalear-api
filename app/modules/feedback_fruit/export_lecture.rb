@@ -14,11 +14,11 @@ module FeedbackFruit::ExportLecture
         attachment_accomplished = attach_video_activity_to_group(group_id,activity_video_id,access_token)
         #register teacher email
         if attachment_accomplished
-            email_id = register_teacher_email_on_fbf(teacher_email,access_token)
             #send teacher invitation
-            invitation_accomplished = send_teacher_invitation_on_fbf_video(email_id,group_id,access_token)
-            puts '<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<invitation sent>>>>>>>>>>>>>>>>>>>>>'
             export_video_quizzes(lecture.online_quizzes, access_token,activity_video_id, group_id)
+            email_id = register_teacher_email_on_fbf(teacher_email,access_token)
+            puts '<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<invitation sent>>>>>>>>>>>>>>>>>>>>>'
+            invitation_accomplished = send_teacher_invitation_on_fbf_video(email_id,group_id,access_token)  
             return true
         end    
         return false
@@ -53,7 +53,7 @@ module FeedbackFruit::ExportLecture
         response = ""
 
         handler = Proc.new do |exception, attempt_number, total_delay|
-            puts "retreiving acess token from feedback fruit failed. saw a #{exception.class}; retry attempt #{attempt_number}; #{total_delay} seconds have passed."     
+            puts "retreiving group_id from feedback fruit failed. saw a #{exception.class}; retry attempt #{attempt_number}; #{total_delay} seconds have passed."     
         end
 
         with_retries(:max_tries => 3, :base_sleep_seconds => 0.5, :max_sleep_seconds => 1.0, :handler => handler, :rescue => [Rack::Timeout::RequestTimeoutException, Timeout::Error, SocketError]) do |attempt_number|
@@ -71,7 +71,7 @@ module FeedbackFruit::ExportLecture
         pp "<<<<<<<<<<<<<<<<<<<<< getting media id >>>>>>>>>>>>>>>>>>>>."
         pp Time.now.strftime("%d/%m/%Y %H:%M")
         handler = Proc.new do |exception, attempt_number, total_delay|
-            puts "retreiving acess token from feedback fruit failed. saw a #{exception.class}; retry attempt #{attempt_number}; #{total_delay} seconds have passed."     
+            puts "retreiving media_id from feedback fruit failed. saw a #{exception.class}; retry attempt #{attempt_number}; #{total_delay} seconds have passed."     
         end
 
         with_retries(:max_tries => 3, :base_sleep_seconds => 0.5, :max_sleep_seconds => 1.0, :handler => handler, :rescue => [Rack::Timeout::RequestTimeoutException, Timeout::Error, SocketError]) do |attempt_number|
@@ -92,7 +92,7 @@ module FeedbackFruit::ExportLecture
         response = ""
         
         handler = Proc.new do |exception, attempt_number, total_delay|
-            puts "retreiving acess token from feedback fruit failed. saw a #{exception.class}; retry attempt #{attempt_number}; #{total_delay} seconds have passed."     
+            puts "retreiving activity_video_id from feedback fruit failed. saw a #{exception.class}; retry attempt #{attempt_number}; #{total_delay} seconds have passed."     
         end
 
         with_retries(:max_tries => 3, :base_sleep_seconds => 0.5, :max_sleep_seconds => 1.0, :handler => handler, :rescue => [Rack::Timeout::RequestTimeoutException, Timeout::Error, SocketError]) do |attempt_number|
@@ -112,7 +112,7 @@ module FeedbackFruit::ExportLecture
         response = ""
         
         handler = Proc.new do |exception, attempt_number, total_delay|
-            puts "retreiving acess token from feedback fruit failed. saw a #{exception.class}; retry attempt #{attempt_number}; #{total_delay} seconds have passed."     
+            puts "attach_video_activity_to_group on feedback fruit failed. saw a #{exception.class}; retry attempt #{attempt_number}; #{total_delay} seconds have passed."     
         end
 
         with_retries(:max_tries => 3, :base_sleep_seconds => 0.5, :max_sleep_seconds => 1.0, :handler => handler, :rescue => [Rack::Timeout::RequestTimeoutException, Timeout::Error, SocketError]) do |attempt_number|
@@ -133,7 +133,7 @@ module FeedbackFruit::ExportLecture
         response = ""
         
         handler = Proc.new do |exception, attempt_number, total_delay|
-            puts "retreiving acess token from feedback fruit failed. saw a #{exception.class}; retry attempt #{attempt_number}; #{total_delay} seconds have passed."     
+            puts "register_teacher_email_on_fbf on feedback fruit failed. saw a #{exception.class}; retry attempt #{attempt_number}; #{total_delay} seconds have passed."     
         end
 
         with_retries(:max_tries => 3, :base_sleep_seconds => 0.5, :max_sleep_seconds => 1.0, :handler => handler, :rescue => [Rack::Timeout::RequestTimeoutException, Timeout::Error, SocketError]) do |attempt_number|
@@ -150,7 +150,7 @@ module FeedbackFruit::ExportLecture
         response = ""
         
         handler = Proc.new do |exception, attempt_number, total_delay|
-            puts "retreiving acess token from feedback fruit failed. saw a #{exception.class}; retry attempt #{attempt_number}; #{total_delay} seconds have passed."     
+            puts "send_teacher_invitation_on_fbf_video on feedback fruit failed. saw a #{exception.class}; retry attempt #{attempt_number}; #{total_delay} seconds have passed."     
         end
 
         with_retries(:max_tries => 3, :base_sleep_seconds => 0.5, :max_sleep_seconds => 1.0, :handler => handler, :rescue => [Rack::Timeout::RequestTimeoutException, Timeout::Error, SocketError]) do |attempt_number|
