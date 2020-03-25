@@ -93,7 +93,7 @@ module FeedbackFruit::ExportQuestion
         with_retries(:max_tries => 3, :base_sleep_seconds => 0.5, :max_sleep_seconds => 1.0, :handler => handler, :rescue => [Rack::Timeout::RequestTimeoutException, Timeout::Error, SocketError]) do |attempt_number|
             response = HTTParty.post(query_url,
                 :headers => { 'Content-Type' => 'application/vnd.api+json','Authorization'=>'Bearer '+access_token } ,
-                :body => '{"data":{"attributes":{"solution":"CORRECT ANSWER, OPTIONAL","body":"'+question_text+'","show-peers-answers":false},"relationships":{"annotation":{"data":{"type":"annotations","id":"'+annotation_id+'"}},"group":{"data":{"type":"activity-groups","id":"'+group_id+'"}},"parent":{"data":{"type":"videos","id":"'+activity_video_id+'"}}},"type":"open-questions"}}'
+                :body => '{"data":{"attributes":{"solution":"'+quiz.online_answers[0].answer+'","body":"'+question_text+'","show-peers-answers":false},"relationships":{"annotation":{"data":{"type":"annotations","id":"'+annotation_id+'"}},"group":{"data":{"type":"activity-groups","id":"'+group_id+'"}},"parent":{"data":{"type":"videos","id":"'+activity_video_id+'"}}},"type":"open-questions"}}'
             )
         end	    
         question_id = response.parsed_response['data']['id']
