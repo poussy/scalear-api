@@ -1,7 +1,7 @@
 module FeedbackFruit::ExportLecture
     include  FeedbackFruit::ExportQuestion
     def export_to_fbf(url, teacher_email, title, lecture)
-        teacher_email = 'poussy.amr.nileu@gmail.com'
+        # teacher_email = 'poussy.amr.nileu@gmail.com'
         #get access token
         access_token = get_fbf_access_token
         #get acvitivty group id
