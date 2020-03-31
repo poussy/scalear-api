@@ -597,39 +597,44 @@ class CoursesController < ApplicationController
 		last_viewed_lecture = current_user.lecture_views.where(:lecture_id => current_lecture_ids).order(:updated_at).last
 		last_viewed_group_id = last_viewed_lecture.group_id if !last_viewed_lecture.nil?
 
-		if params[:first_half] == "true"
-			from = 0
-			to = groups.length/2
-		else 
-			from = (groups.length/2)+1
-			to = groups.length-1
-		end
-		groups[from..to].each do |g|
-			g.current_user= current_user
-			g[:has_inclass] = false
-			g[:has_distance_peer] = false
-			all = (filteredItems[g.id][:lectures] + filteredItems[g.id][:quizzes] + filteredItems[g.id][:custom_links]).sort{|a,b| a.position <=> b.position}
-			all.each do |q|
-				q[:class_name]= q.class.name.downcase
-				if q[:class_name] != 'customlink'
-					q.current_user=current_user
-					q[:done] = q.is_done
-					if last_viewed_group_id == g.id && last_viewed_lecture.lecture_id == q.id  && !q[:done] && should_enter
-						next_i = q
-						should_enter = false
-					end
-					if q[:class_name] == 'lecture' && !g[:has_inclass]
-						g[:has_inclass] = q.inclass
-					end
-					if q[:class_name] == 'lecture' && !g[:has_distance_peer]
-						g[:has_distance_peer] = q.distance_peer
+
+		if groups.length>0
+			if params[:first_half] == "true"
+				from = 0
+				to = groups.length/2
+			else 
+				from = (groups.length/2)+1
+				to = groups.length-1
+			end
+			groups[from..to].each do |g|
+				g.current_user= current_user
+				g[:has_inclass] = false
+				g[:has_distance_peer] = false
+				all = (filteredItems[g.id][:lectures] + filteredItems[g.id][:quizzes] + filteredItems[g.id][:custom_links]).sort{|a,b| a.position <=> b.position}
+				all.each do |q|
+					q[:class_name]= q.class.name.downcase
+					if q[:class_name] != 'customlink'
+						q.current_user=current_user
+						q[:done] = q.is_done
+						if last_viewed_group_id == g.id && last_viewed_lecture.lecture_id == q.id  && !q[:done] && should_enter
+							next_i = q
+							should_enter = false
+						end
+						if q[:class_name] == 'lecture' && !g[:has_inclass]
+							g[:has_inclass] = q.inclass
+						end
+						if q[:class_name] == 'lecture' && !g[:has_distance_peer]
+							g[:has_distance_peer] = q.distance_peer
+						end
 					end
 				end
+				g[:items] = all
+				g[:sub_items_size] = filteredItems[g.id][:lectures].size + filteredItems[g.id][:quizzes].size
+				g[:total_time] = g.total_time
 			end
-			g[:items] = all
-			g[:sub_items_size] = filteredItems[g.id][:lectures].size + filteredItems[g.id][:quizzes].size
-			g[:total_time] = g.total_time
-		end
+		else  
+			from = to = 0	
+		end	
 		next_item={}
 		if params[:first_half] == "true"
 			
@@ -644,6 +649,7 @@ class CoursesController < ApplicationController
 				next_item[:item] = -1
 			end
 		end
+	
 		render json: {:course => course,  :groups => groups[from..to], :next_item => next_item}
 	  end
 
