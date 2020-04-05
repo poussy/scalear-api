@@ -75,8 +75,12 @@ module CanvasCommonCartridge::Converter
          #download lecture video to extract in video quiz slide
             
         #prior quizzes video
-        attach_interquizzes_video(lecture,lecture.name+" (part 1)",0,lecture_quizzes.first.start_time,converted_group) if lecture_quizzes.first.start_time>2
-        ctr = 2
+        if lecture_quizzes.first.start_time>2
+            attach_interquizzes_video(lecture,lecture.name+" (part 1)",0,lecture_quizzes.first.start_time,converted_group) 
+            ctr = 2
+        else 
+            ctr = 1
+        end     
         lecture_quizzes.each_with_index do |on_video_quiz,i|
             converted_video_quiz = create_video_converted_assessment('invideo',set_video_converted_assessment_title(lecture.name,ctr,on_video_quiz),lecture.due_date)
             start_time = on_video_quiz.start_time-5
@@ -168,7 +172,7 @@ module CanvasCommonCartridge::Converter
             UserMailer.imscc_attachment_email(current_user, course, course.name+".imscc",packaged_course,I18n.locale).deliver
             clear_tmp_video_processing(1)
         end
-        handle_asynchronously :pack_to_ccc, :run_at => Proc.new { 1.seconds.from_now }
+        # handle_asynchronously :pack_to_ccc, :run_at => Proc.new { 1.seconds.from_now }
     end    
 end
 

@@ -87,7 +87,13 @@ module CanvasCommonCartridge::Components::Utils
     def download_lecture(video_url,video_portion_start,quiz_id)
         download_path = './tmp/video_processing/video/quiz_id_'+quiz_id.to_s+' %(title)s.%(ext)s'
         puts 'download started'  
-        args = "-ss #{format_time(video_portion_start-4)} -t 00:00:10.00"
+
+        #on-video quiz after the first 5 sec of the video
+        if video_portion_start>4
+             args = "-ss #{format_time(video_portion_start-4)} -t 00:00:10.00"
+        else 
+             args = "-ss #{format_time(video_portion_start)} -t 00:00:10.00"
+        end 
 
         downloaded_video = YoutubeDL.download video_url, {
             # format:"bestvideo",
@@ -109,24 +115,25 @@ module CanvasCommonCartridge::Components::Utils
       
         extractable_video = FFMPEG::Movie.new(downloaded_video_path)    
         begin 
-          extractable_video.screenshot(lecture_slide[:path] , seek_time:1,quality:3)
+          #on-video quiz after the first 5 sec of the video 
+          if  seek_time > 4 
+            extractable_video.screenshot(lecture_slide[:path] , seek_time:1 ,quality:3)
+          else 
+            extractable_video.screenshot(lecture_slide[:path] , seek_time:-4 ,quality:3)
+          end   
         rescue   
-            # begin
-                extractable_video = transcode_to_mp4(downloaded_video_path) 
-                extractable_video.screenshot(lecture_slide[:path] , seek_time:1,quality:3) 
-            # rescue
-            #     lecture_slide[:path] = "./public/assets/images/question.jpg"
-            # end        
+          extractable_video = transcode_to_mp4(downloaded_video_path) 
+          extractable_video.screenshot(lecture_slide[:path] , seek_time:1,quality:3)      
         end    
         return lecture_slide
     end   
     def clear_tmp_video_processing(type)
-        FileUtils.rm_rf(Dir['./tmp/video_processing/video/*'])
-        puts 'videos removed'
-        if type==1
-            FileUtils.rm_rf(Dir['./tmp/video_processing/images/*'])
-            puts 'images removed'
-        end    
+        # FileUtils.rm_rf(Dir['./tmp/video_processing/video/*'])
+        # puts 'videos removed'
+        # if type==1
+        #     FileUtils.rm_rf(Dir['./tmp/video_processing/images/*'])
+        #     puts 'images removed'
+        # end    
     end    
     def format_time(t)
         return  Time.at(t).utc.strftime "%H:%M:%S.%m"
