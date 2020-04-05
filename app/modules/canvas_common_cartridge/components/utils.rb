@@ -89,11 +89,8 @@ module CanvasCommonCartridge::Components::Utils
         puts 'download started'  
 
         #on-video quiz after the first 5 sec of the video
-        if video_portion_start>4
-             args = "-ss #{format_time(video_portion_start-4)} -t 00:00:10.00"
-        else 
-             args = "-ss #{format_time(video_portion_start)} -t 00:00:10.00"
-        end 
+ 
+        args = "-ss #{format_time(video_portion_start>4? video_portion_start-4: video_portion_start)} -t 00:00:10.00"
 
         downloaded_video = YoutubeDL.download video_url, {
             # format:"bestvideo",
@@ -116,24 +113,20 @@ module CanvasCommonCartridge::Components::Utils
         extractable_video = FFMPEG::Movie.new(downloaded_video_path)    
         begin 
           #on-video quiz after the first 5 sec of the video 
-          if  seek_time > 4 
-            extractable_video.screenshot(lecture_slide[:path] , seek_time:1 ,quality:3)
-          else 
-            extractable_video.screenshot(lecture_slide[:path] , seek_time:-4 ,quality:3)
-          end   
+          extractable_video.screenshot(lecture_slide[:path] , seek_time: seek_time > 4? 1:-4,quality:3)
         rescue   
           extractable_video = transcode_to_mp4(downloaded_video_path) 
-          extractable_video.screenshot(lecture_slide[:path] , seek_time:1,quality:3)      
+          extractable_video.screenshot(lecture_slide[:path] , seek_time: seek_time > 4? 1:-4,quality:3)      
         end    
         return lecture_slide
     end   
     def clear_tmp_video_processing(type)
-        # FileUtils.rm_rf(Dir['./tmp/video_processing/video/*'])
-        # puts 'videos removed'
-        # if type==1
-        #     FileUtils.rm_rf(Dir['./tmp/video_processing/images/*'])
-        #     puts 'images removed'
-        # end    
+        FileUtils.rm_rf(Dir['./tmp/video_processing/video/*'])
+        puts 'videos removed'
+        if type==1
+            FileUtils.rm_rf(Dir['./tmp/video_processing/images/*'])
+            puts 'images removed'
+        end    
     end    
     def format_time(t)
         return  Time.at(t).utc.strftime "%H:%M:%S.%m"

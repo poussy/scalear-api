@@ -172,7 +172,7 @@ module CanvasCommonCartridge::Converter
             UserMailer.imscc_attachment_email(current_user, course, course.name+".imscc",packaged_course,I18n.locale).deliver
             clear_tmp_video_processing(1)
         end
-        # handle_asynchronously :pack_to_ccc, :run_at => Proc.new { 1.seconds.from_now }
+        handle_asynchronously :pack_to_ccc, :run_at => Proc.new { 1.seconds.from_now }
     end    
 end
 
