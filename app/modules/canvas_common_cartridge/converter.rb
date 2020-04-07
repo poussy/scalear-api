@@ -155,7 +155,7 @@ module CanvasCommonCartridge::Converter
         include CanvasCommonCartridge::Converter
       
         def pack_to_ccc(course,current_user)
-            # UserMailer.course_export_start(current_user, course, I18n.locale).deliver
+            UserMailer.course_export_start(current_user, course, I18n.locale).deliver
             p = CanvasCommonCartridge::Converter::Packager.new
             converted_course = p.create_converted_course(course)
             course.groups.each_with_index do |group,i|
@@ -169,7 +169,7 @@ module CanvasCommonCartridge::Converter
             dir = Dir.mktmpdir
             carttridge = CanvasCc::CanvasCC::CartridgeCreator.new(converted_course)
             packaged_course = carttridge.create(dir)       
-            # UserMailer.imscc_attachment_email(current_user, course, course.name+".imscc",packaged_course,I18n.locale).deliver
+            UserMailer.imscc_attachment_email(current_user, course, course.name+".imscc",packaged_course,I18n.locale).deliver
             clear_tmp_video_processing(1)
         end
         handle_asynchronously :pack_to_ccc, :run_at => Proc.new { 1.seconds.from_now }
