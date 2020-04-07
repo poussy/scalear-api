@@ -89,7 +89,6 @@ module CanvasCommonCartridge::Components::Utils
         puts 'download started'  
 
         #on-video quiz after the first 5 sec of the video
- 
         args = "-ss #{format_time(video_portion_start>4? video_portion_start-4: video_portion_start)} -t 00:00:10.00"
 
         downloaded_video = YoutubeDL.download video_url, {
@@ -107,16 +106,21 @@ module CanvasCommonCartridge::Components::Utils
         Dir.mkdir('./tmp/video_processing/images/') unless Dir.exist?('./tmp/video_processing/images/')
         lecture_slide[:name] = "slide_quiz_#{quiz_id}.jpg"
         lecture_slide[:path] =  "./tmp/video_processing/images/"+lecture_slide[:name]
+         
         downloaded_video_extension = downloaded_video._filename.split('.').last
         downloaded_video_path = Dir[downloaded_video._filename.remove(downloaded_video_extension)+'*'].first
-      
+       
         extractable_video = FFMPEG::Movie.new(downloaded_video_path)    
-        begin 
+         begin 
           #on-video quiz after the first 5 sec of the video 
-          extractable_video.screenshot(lecture_slide[:path] , seek_time: seek_time > 4? 1:-4,quality:3)
+          extractable_video.screenshot(lecture_slide[:path] , seek_time: seek_time > 4? 5:1,quality:3) 
+         
+          puts "regular image extraction"
         rescue   
-          extractable_video = transcode_to_mp4(downloaded_video_path) 
-          extractable_video.screenshot(lecture_slide[:path] , seek_time: seek_time > 4? 1:-4,quality:3)      
+          extractable_video_mp4 = transcode_to_mp4(downloaded_video_path) 
+          extractable_video.screenshot(lecture_slide[:path] , seek_time: seek_time > 4? 5:1,quality:3) 
+
+          puts 'irregular image extraction'
         end    
         return lecture_slide
     end   
