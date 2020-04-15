@@ -1,18 +1,18 @@
 GIT
-  remote: git://github.com/karimAlaa/ruby-saml.git
+  remote: https://github.com/bo-oz/vimeo_me2.git
+  revision: ad5801d7bcf5fd2e73f57315548a11e7b38a1d2f
+  specs:
+    vimeo_me2 (1.2.0)
+      httparty (~> 0.14.0)
+
+GIT
+  remote: https://github.com/karimAlaa/ruby-saml.git
   revision: 85e1ac74d4a57a68b7db1ebd2acd96781f327ced
   specs:
     ruby-saml (0.4.7)
       addressable
       canonix (~> 0.1)
       uuid (~> 2.3)
-
-GIT
-  remote: https://github.com/bo-oz/vimeo_me2.git
-  revision: ad5801d7bcf5fd2e73f57315548a11e7b38a1d2f
-  specs:
-    vimeo_me2 (1.2.0)
-      httparty (~> 0.14.0)
 
 GEM
   remote: https://rubygems.org/
@@ -142,8 +142,8 @@ GEM
     loofah (2.1.1)
       crass (~> 1.0.2)
       nokogiri (>= 1.5.9)
-    macaddr (1.7.1)
-      systemu (~> 2.6.2)
+    macaddr (1.7.2)
+      systemu (~> 2.6.5)
     mail (2.6.6)
       mime-types (>= 1.16, < 4)
     memory_profiler (0.9.10)
@@ -246,7 +246,7 @@ GEM
     tzinfo (1.2.3)
       thread_safe (~> 0.1)
     url_safe_base64 (0.2.2)
-    uuid (2.3.8)
+    uuid (2.3.9)
       macaddr (~> 1.0)
     validates_timeliness (4.0.2)
       timeliness (~> 0.3.7)
