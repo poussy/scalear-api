@@ -54,7 +54,7 @@ gem 'zip-zip' # will load compatibility for old rubyzip API.
 gem 'settingslogic'
 gem 'activeresource'
 gem 'aescrypt'
-gem 'ruby-saml', :git => "git://github.com/karimAlaa/ruby-saml.git"
+gem 'ruby-saml', :git =>  "https://github.com/karimAlaa/ruby-saml.git"
 gem 'ims-lti', '~>2.2.3'
 gem 'roboto'
 gem 'newrelic_rpm'
@@ -68,7 +68,7 @@ gem 'memory_profiler'
 gem 'vimeo_me2', :git => "https://github.com/bo-oz/vimeo_me2.git"
 gem "retries"
 gem 'scout_apm'
-gem 'canvas_cc' 
+gem 'canvas_cc'
 gem 'streamio-ffmpeg', '1.0.0'
 gem 'youtube-dl.rb'
 gem 'terrapin', '~> 0.6.0' 
