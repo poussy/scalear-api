@@ -151,7 +151,7 @@ class VimeoUploadsControllerTest < ActionDispatch::IntegrationTest
 
     test 'video name should be updated on vimeo' do
         #get the actual name of the video on vimeo
-        testing_video_id = '338886505'
+        testing_video_id = '339833074'
    
         #generate random number 
         num = rand(1..1000)
