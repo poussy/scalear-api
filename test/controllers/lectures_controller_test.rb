@@ -23,7 +23,7 @@ class LecturesControllerTest < ActionDispatch::IntegrationTest
 
 		@student = users(:student_in_course3)
 		@headers2 = @student.create_new_auth_token
-		@headers2['content-type']="application/json"
+		# @headers2['content-type']="application/json"
 
 		## necessary to send as json, so true and false wouldn't convert to strings
 		@headers = @user3.create_new_auth_token
