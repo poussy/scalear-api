@@ -392,6 +392,7 @@ class CoursesControllerTest <  ActionDispatch::IntegrationTest
 	test 'validate delete_teacher method not owner delete himself' do
 		@course1.add_professor(@user2 , false)
 		url = '/en/courses/'+ @course1.id.to_s+'/delete_teacher/'
+		@user2.create_new_auth_token
 		delete url ,params: {email: @user2.email},headers: @user2.create_new_auth_token
 		resp =  JSON.parse response.body
 		assert_equal resp['notice'][0] , "Teacher successfully removed from course"
@@ -572,7 +573,8 @@ class CoursesControllerTest <  ActionDispatch::IntegrationTest
 
 	test 'validate enrolled_students method for empty course ' do
 		url = '/en/courses/'+ @course2.id.to_s+'/enrolled_students/'
-		get url ,headers: @user2.create_new_auth_token
+		@user2.create_new_auth_token
+		get(url,headers: @user2.create_new_auth_token)
 		resp =  JSON.parse response.body
 		assert_equal resp.count , 0
 	end
@@ -581,6 +583,7 @@ class CoursesControllerTest <  ActionDispatch::IntegrationTest
 		# url = '/en/courses/enroll_to_course/'
 		# post url ,params: {unique_identifier: @course1.unique_identifier, course:{unique_identifier:@course1.unique_identifier}},headers: @user4.create_new_auth_token
 		url = '/en/courses/'+ @course1.id.to_s+'/enrolled_students/'
+		@user1.create_new_auth_token
 		get url ,headers: @user1.create_new_auth_token
 		resp =  JSON.parse response.body
 		assert_equal resp.count , 1
@@ -941,6 +944,7 @@ class CoursesControllerTest <  ActionDispatch::IntegrationTest
 		remaing_enrollments = Enrollment.count - @course3.enrollments.count
 		remaing_lectures = Lecture.count - @course3.lectures.count
 		url = '/en/courses/3'
+		@admin_user.create_new_auth_token
 		delete url ,params: {}, headers: @admin_user.create_new_auth_token
 		resp =  JSON.parse response.body
 		assert_equal resp['notice'][0] , "Course was successfully deleted."
