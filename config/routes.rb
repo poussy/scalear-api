@@ -312,12 +312,14 @@ Rails.application.routes.draw do
         get 'change_status_distance_peer'
         get 'check_if_distance_peer_status_is_sync'
         get 'check_if_distance_peer_is_alive'
+        post 'export_lecture_to_feedbackfruit'
       end
       collection do
         post 'sort'
         get 'new_or_edit'
         get 'new_lecture_angular'
         post 'lecture_copy'
+        post 'export_lecture_to_feedbackfruit'
       end
     end
 
