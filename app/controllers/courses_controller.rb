@@ -434,7 +434,7 @@ class CoursesController < ApplicationController
 			elsif(list_type == 3)
 					users = User.select(:email).where('email not like ?','%archived_user%@scalable-learning.com').all.map{|u| u.email}
 			elsif(list_type == 5)
-				    utrecht_users = User.where('email not like ?','%archived_user%@scalable-learning.com').where('email like ?','%@%uu%.nl%').pluck(:email) 
+				    utrecht_users = User.where('email not like ?','%archived_user%@scalable-learning.com').where('email like ?','%@%uu.nl%').pluck(:email) 
 					all_users = User.select(:email).where('email not like ?','%archived_user%@scalable-learning.com').all.map{|u| u.email}
 					users = all_users - utrecht_users
 			else
