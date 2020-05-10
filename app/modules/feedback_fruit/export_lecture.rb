@@ -59,7 +59,7 @@ module FeedbackFruit::ExportLecture
         with_retries(:max_tries => 3, :base_sleep_seconds => 0.5, :max_sleep_seconds => 1.0, :handler => handler, :rescue => [Rack::Timeout::RequestTimeoutException, Timeout::Error, SocketError]) do |attempt_number|
             response = HTTParty.post(query_url,
                 :headers => { 'Content-Type' => 'application/vnd.api+json','Authorization'=>'Bearer '+access_token } ,
-                :body=>'{"data":{"attributes":{"enrollability":"restricted"},"relationships":{"extension":{"data":{"type":"extensions","id":"video"}}},"type":"activity-groups"}}'         
+                :body=>'{"data":{"attributes":{"enrollability":"open"},"relationships":{"extension":{"data":{"type":"extensions","id":"video"}}},"type":"activity-groups"}}'         
             )
         end	    
         group_id=response.parsed_response['data']['id']
