@@ -24,7 +24,7 @@ module FeedbackFruit::ExportLecture
         return false
     end     
     def get_fbf_access_token
-        query_url =	'https://staging-accounts.feedbackfruits.com/auth/token'
+        query_url =	'https://accounts.feedbackfruits.com/auth/token'
         response = ""
         
         handler = Proc.new do |exception, attempt_number, total_delay|
@@ -49,7 +49,7 @@ module FeedbackFruit::ExportLecture
         return access_token
     end
     def get_group_id(access_token)
-        query_url =	'https://staging-api.feedbackfruits.com/v1/activity_groups'
+        query_url =	'https://api.feedbackfruits.com/v1/activity_groups'
         response = ""
 
         handler = Proc.new do |exception, attempt_number, total_delay|
@@ -59,14 +59,14 @@ module FeedbackFruit::ExportLecture
         with_retries(:max_tries => 3, :base_sleep_seconds => 0.5, :max_sleep_seconds => 1.0, :handler => handler, :rescue => [Rack::Timeout::RequestTimeoutException, Timeout::Error, SocketError]) do |attempt_number|
             response = HTTParty.post(query_url,
                 :headers => { 'Content-Type' => 'application/vnd.api+json','Authorization'=>'Bearer '+access_token } ,
-                :body=>'{"data":{"attributes":{"enrollability":"restricted"},"relationships":{"extension":{"data":{"type":"extensions","id":"video"}}},"type":"activity-groups"}}'         
+                :body=>'{"data":{"attributes":{"enrollability":"open"},"relationships":{"extension":{"data":{"type":"extensions","id":"video"}}},"type":"activity-groups"}}'         
             )
         end	    
         group_id=response.parsed_response['data']['id']
        return group_id
     end    
     def get_media_id(url,access_token)
-        query_url =	'https://staging-media.feedbackfruits.com'
+        query_url =	'https://media.feedbackfruits.com'
         response = ""
         pp "<<<<<<<<<<<<<<<<<<<<< getting media id >>>>>>>>>>>>>>>>>>>>."
         pp Time.now.strftime("%d/%m/%Y %H:%M")
@@ -88,7 +88,7 @@ module FeedbackFruit::ExportLecture
         return media_id
     end
     def get_activity_video_id(media_id,title,group_id,access_token)
-        query_url =	'https://staging-api.feedbackfruits.com/v1/engines/multimedia/videos'
+        query_url =	'https://api.feedbackfruits.com/v1/engines/multimedia/videos'
         response = ""
         
         handler = Proc.new do |exception, attempt_number, total_delay|
@@ -108,7 +108,7 @@ module FeedbackFruit::ExportLecture
        return  activity_video_id
     end
     def attach_video_activity_to_group(group_id,activity_video_id,access_token)
-        query_url =	'https://staging-api.feedbackfruits.com/v1/activity_groups/' + group_id
+        query_url =	'https://api.feedbackfruits.com/v1/activity_groups/' + group_id
         response = ""
         
         handler = Proc.new do |exception, attempt_number, total_delay|
@@ -129,7 +129,7 @@ module FeedbackFruit::ExportLecture
     end
     def register_teacher_email_on_fbf(teacher_email,access_token)
         #retreive teacher email_id if it's already registered
-        query_url =	'https://staging-api.feedbackfruits.com/v1/emails'
+        query_url =	'https://api.feedbackfruits.com/v1/emails'
         response = ""
         
         handler = Proc.new do |exception, attempt_number, total_delay|
@@ -146,7 +146,7 @@ module FeedbackFruit::ExportLecture
        return email_id
     end
     def send_teacher_invitation_on_fbf_video(email_id,group_id,access_token)
-        query_url =	'https://staging-api.feedbackfruits.com/v1/invitations'
+        query_url =	'https://api.feedbackfruits.com/v1/invitations'
         response = ""
         
         handler = Proc.new do |exception, attempt_number, total_delay|
