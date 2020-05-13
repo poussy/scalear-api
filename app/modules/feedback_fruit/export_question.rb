@@ -16,7 +16,7 @@ module FeedbackFruit::ExportQuestion
         #attach question to the moment --- get question_id
         question_id = get_question_id(access_token, quiz, annotation_id, group_id, activity_video_id)
         #attach pic --- get media_id
-        puts "FBF question id:"+question_id
+        puts "FBF question id:"+question_id if question_id
         return question_id
     end
     def get_fragment_id(access_token, activity_video_id, quiz)
