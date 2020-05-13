@@ -20,7 +20,7 @@ module FeedbackFruit::ExportQuestion
         return question_id
     end
     def get_fragment_id(access_token, activity_video_id, quiz)
-        query_url =	'https://staging-api.feedbackfruits.com/v1/fragments'
+        query_url =	'https://api.feedbackfruits.com/v1/fragments'
         response = ""
 
         handler = Proc.new do |exception, attempt_number, total_delay|
@@ -37,7 +37,7 @@ module FeedbackFruit::ExportQuestion
        return fragment_id
     end 
     def get_annotation_id(access_token, fragment_id, group_id)
-        query_url =	'https://staging-api.feedbackfruits.com/v1/annotations'
+        query_url =	'https://api.feedbackfruits.com/v1/annotations'
         response = ""
         
         handler = Proc.new do |exception, attempt_number, total_delay|
@@ -63,7 +63,7 @@ module FeedbackFruit::ExportQuestion
         return question_id
     end 
     def get_cq_question_id(access_token, quiz, annotation_id, group_id, activity_video_id)
-        query_url =	'https://staging-api.feedbackfruits.com/v1/engines/questions/questions'
+        query_url =	'https://api.feedbackfruits.com/v1/engines/questions/questions'
         response = ""
         
         question_text = Nokogiri::HTML.fragment(quiz.question).text
@@ -83,7 +83,7 @@ module FeedbackFruit::ExportQuestion
     end   
 
     def get_free_text_question_id(access_token, quiz, annotation_id, group_id, activity_video_id)
-        query_url =	'https://staging-api.feedbackfruits.com/v1/engines/questions/questions'
+        query_url =	'https://api.feedbackfruits.com/v1/engines/questions/questions'
         response = ""
         question_text = Nokogiri::HTML.fragment(quiz.question).text
         handler = Proc.new do |exception, attempt_number, total_delay|
@@ -126,7 +126,7 @@ module FeedbackFruit::ExportQuestion
         end 
     end 
     def export_cq_answer(access_token, answer, question_id,quiz)
-        query_url =	'https://staging-api.feedbackfruits.com/v1/engines/questions/choices'
+        query_url =	'https://api.feedbackfruits.com/v1/engines/questions/choices'
         response = ""
         answer_text = (quiz.quiz_type=="html"||quiz.quiz_type=="html_survey")? Nokogiri::HTML.fragment(answer.answer).text : answer.answer
 
