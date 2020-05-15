@@ -4,13 +4,13 @@ module CanvasCommonCartridge::Converter
     include CanvasCommonCartridge::Components::Creator 
     include CanvasCommonCartridge::Components::Attacher 
 
-    def convert_groups(group,converted_course)
+    def convert_groups(group,converted_course,with_export_fbf)
         converted_group = create_converted_group(group)
         group_items = order_group_items(group)
         group_items.each do |item|
             case item.class.name
             when "Lecture"
-                attach_lecture(item,converted_group,converted_course)
+                attach_lecture(item,converted_group,converted_course,with_export_fbf)
             when "Quiz"
                 attach_quiz(item,converted_group,converted_course)
             when "CustomLink"
@@ -154,17 +154,16 @@ module CanvasCommonCartridge::Converter
     class CanvasCommonCartridge::Converter::Packager 
         include CanvasCommonCartridge::Converter
       
-        def pack_to_ccc(course,current_user)
+        def pack_to_ccc(course,current_user,with_export_fbf)
             UserMailer.course_export_start(current_user, course, I18n.locale).deliver
             p = CanvasCommonCartridge::Converter::Packager.new
             converted_course = p.create_converted_course(course)
             course.groups.each_with_index do |group,i|
-                converted_group = p.convert_groups(group,converted_course)
+                converted_group = p.convert_groups(group,converted_course,with_export_fbf)
                 p.create_module_prerequisite(converted_group,converted_course.canvas_modules.last.identifier) if converted_course.canvas_modules.length>0
                 converted_group.workflow_state = 'active'
                 converted_group.title +="[MISSING ANSWERS]" if p.has_missing_answers_text_at_group(group.id)
                 converted_course.canvas_modules << converted_group
-
             end  
             dir = Dir.mktmpdir
             carttridge = CanvasCc::CanvasCC::CartridgeCreator.new(converted_course)
@@ -177,4 +176,68 @@ module CanvasCommonCartridge::Converter
 end
 
 
+# course = CanvasCc::CanvasCC::Models::Course.new
+# course.grading_standards = []
+# course.title = 'mycourse_1'
+# course.identifier = '123abc'
 
+# modulee = CanvasCc::CanvasCC::Models::CanvasModule.new
+# modulee.title = 'my mod'
+
+# module_item = CanvasCc::CanvasCC::Models::ModuleItem.new
+# module_item.content_type = 'Assignment'
+# module_item.title ='hello'
+# module_item.identifier = CanvasCc::CC::CCHelper.create_key(module_item)
+
+# assignment = CanvasCc::CanvasCC::Models::Assignment.new
+# assignment.title = 'byebye'
+# # assignment.submission_types ='external_tool'
+# # assignment.external_tool_url='https://api.feedbackfruits.com/v1/lti/launch/video?copyable_id=32d38363e3c74fdc9d6444867fc827f1&type=assignment'
+# assignment.identifier=CanvasCc::CC::CCHelper.create_key(assignment)
+
+# module_item.identifierref = assignment.identifier
+# modulee.module_items << module_item
+# course.canvas_modules << modulee
+
+# dir = Dir.mktmpdir
+# output_dir = CanvasCc::CanvasCC::CartridgeCreator.new(course).create(dir)
+# # /////////////////////////////////////////////
+# converted_course = CanvasCc::CanvasCC::Models::Course.new
+# converted_course.title = '74593875693845'
+# converted_course.grading_standards = []
+# converted_course.identifier = '123'
+# converted_course.workflow_state = 'active'
+
+# assessment=CanvasCc::CanvasCC::Models::Assignment.new
+# assessment.submission_types << 'external_tool'
+# assessment.external_tool_url = 'https://api.feedbackfruits.com/v1/lti/launch/video?copyable_id=32d38363e3c74fdc9d6444867fc827f1&type=assignment'
+# assessment.items = []
+# assessment.identifier = CanvasCc::CC::CCHelper.create_key(assessment) 
+# assessment.title = 'test quiz 1'
+
+# question = CanvasCc::CanvasCC::Models::Question.create('text_only_question')
+# question.identifier = '34587893'
+# question.title = 'abc'
+# question.material = 'hello hello'
+
+# assessment.items << question
+
+# converted_group = CanvasCc::CanvasCC::Models::CanvasModule.new
+# converted_group.title = 'my group A'
+# converted_group.identifier = CanvasCc::CC::CCHelper.create_key(converted_group)
+
+# module_item = CanvasCc::CanvasCC::Models::ModuleItem.new
+# module_item.content_type = "Assignment"
+# module_item.title = 'in_video_module_item'      
+# module_item.identifier = CanvasCc::CC::CCHelper.create_key(module_item)   
+# module_item.identifierref = assessment.identifier
+
+# converted_group.module_items << module_item
+
+# converted_course.canvas_modules << converted_group
+# converted_course.assignments << assessment 
+
+# dir = Dir.mktmpdir
+# carttridge = CanvasCc::CanvasCC::CartridgeCreator.new(converted_course)
+# path = carttridge.create(dir)
+# return path

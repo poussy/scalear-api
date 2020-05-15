@@ -68,7 +68,7 @@ gem 'memory_profiler'
 gem 'vimeo_me2', :git => "https://github.com/bo-oz/vimeo_me2.git"
 gem "retries"
 gem 'scout_apm'
-gem 'canvas_cc'
+gem 'canvas_cc', :git => "https://github.com/panOpen-team/canvas_cc.git"
 gem 'streamio-ffmpeg', '1.0.0'
 gem 'youtube-dl.rb'
 gem 'terrapin', '~> 0.6.0' 

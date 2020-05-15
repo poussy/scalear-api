@@ -19,7 +19,7 @@ module FeedbackFruit::ExportLecture
             email_id = register_teacher_email_on_fbf(teacher_email,access_token)
             puts '<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<invitation sent>>>>>>>>>>>>>>>>>>>>>'
             invitation_accomplished = send_teacher_invitation_on_fbf_video(email_id,group_id,access_token)  
-            return true
+            return activity_video_id
         end    
         return false
     end     
