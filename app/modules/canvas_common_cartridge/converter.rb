@@ -168,7 +168,7 @@ module CanvasCommonCartridge::Converter
             dir = Dir.mktmpdir
             carttridge = CanvasCc::CanvasCC::CartridgeCreator.new(converted_course)
             packaged_course = carttridge.create(dir)       
-            UserMailer.imscc_attachment_email(current_user, course, course.name+".imscc",packaged_course,I18n.locale).deliver
+            UserMailer.imscc_attachment_email(current_user, course, course.name+".imscc",packaged_course,I18n.locale,with_export_fbf).deliver
             clear_tmp_video_processing(1)
         end
         handle_asynchronously :pack_to_ccc, :run_at => Proc.new { 1.seconds.from_now }
