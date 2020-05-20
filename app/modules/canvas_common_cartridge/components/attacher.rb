@@ -5,6 +5,10 @@ module CanvasCommonCartridge::Components::Attacher
         converted_group.module_items << converted_link
     end           
     def attach_lecture(lecture,converted_group,converted_course,with_export_fbf)
+        if lecture.url == "none"
+            puts "here==========>"
+            return 
+        end 
         if(with_export_fbf)
             #if the export is with FBF 
             #1- Export lecture to feedbackFruit, get the media id 

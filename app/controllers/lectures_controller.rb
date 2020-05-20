@@ -820,7 +820,7 @@ class LecturesController < ApplicationController
 		lec_url = @lecture.url
 		teacher_email = @lecture.course.user.email
 		lec_name = @lecture.name
-		export_accomplished = export_to_fbf(lec_url, teacher_email, lec_name, @lecture) if is_youtube(lec_url)||is_vimeo(lec_url)
+		export_accomplished = export_to_fbf(lec_url, teacher_email, lec_name, @lecture) if (is_youtube(lec_url)||is_vimeo(lec_url)) 
 		if export_accomplished
 			render json: {:notice => "Export lecture to feedbackFruit accomplished"}
 		else 
