@@ -66,7 +66,10 @@ module FeedbackFruit::ExportQuestion
         query_url =	'https://api.feedbackfruits.com/v1/engines/questions/questions'
         response = ""
         
-        question_text = Nokogiri::HTML.fragment(quiz.question).text.gsub(/"/,"\"").gsub(/'/,"\'")
+        question_text = Nokogiri::HTML.fragment(quiz.question).text.gsub(/"/," ").gsub(/'/," ")
+        puts "==============question_text================"
+        puts question_text
+        puts "========================================"
         handler = Proc.new do |exception, attempt_number, total_delay|
             puts "retreiving cq_question_id from feedback fruit failed. saw a #{exception.class}; retry attempt #{attempt_number}; #{total_delay} seconds have passed."     
         end
@@ -85,7 +88,7 @@ module FeedbackFruit::ExportQuestion
     def get_free_text_question_id(access_token, quiz, annotation_id, group_id, activity_video_id)
         query_url =	'https://api.feedbackfruits.com/v1/engines/questions/questions'
         response = ""
-        question_text = Nokogiri::HTML.fragment(quiz.question).text.gsub(/"/,"\"").gsub(/'/,"\'")
+        question_text = Nokogiri::HTML.fragment(quiz.question).text.gsub(/"/," ").gsub(/'/," ")
         handler = Proc.new do |exception, attempt_number, total_delay|
             puts "retreiving free_text_question_id from feedback fruit failed. saw a #{exception.class}; retry attempt #{attempt_number}; #{total_delay} seconds have passed."     
         end
