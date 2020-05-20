@@ -68,12 +68,12 @@ module FeedbackFruit::ExportQuestion
         
         question_text = Nokogiri::HTML.fragment(quiz.question).text.gsub(/"/," ").gsub(/'/," ")
         puts "==============question_text================"
-        puts question_text,annotation_id, group_id, activity_video_id
+        puts question_text,annotation_id, group_id, activity_video_id,set_max_choices(quiz)
         puts "========================================"
         handler = Proc.new do |exception, attempt_number, total_delay|
             puts "retreiving cq_question_id from feedback fruit failed. saw a #{exception.class}; retry attempt #{attempt_number}; #{total_delay} seconds have passed."     
         end
-
+        puts '{"data":{"attributes":{"min-choices":null,"max-choices":'+set_max_choices(quiz)+',"body":"'+question_text+'","show-peers-answers":true},"relationships":{"annotation":{"data":{"type":"annotations","id":"'+annotation_id+'"}},"group":{"data":{"type":"activity-groups","id":"'+group_id+'"}},"parent":{"data":{"type":"videos","id":"'+activity_video_id+'"}}},"type":"multiple-choice-questions"}}'
         with_retries(:max_tries => 3, :base_sleep_seconds => 0.5, :max_sleep_seconds => 1.0, :handler => handler, :rescue => [Rack::Timeout::RequestTimeoutException, Timeout::Error, SocketError]) do |attempt_number|
             response = HTTParty.post(query_url,
                 :headers => { 'Content-Type' => 'application/vnd.api+json','Authorization'=>'Bearer '+access_token } ,
