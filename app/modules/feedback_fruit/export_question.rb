@@ -68,7 +68,7 @@ module FeedbackFruit::ExportQuestion
         puts "----------------quiz.question--------------before nokogiri"
         puts quiz.question
         puts "-------------------------------------"
-        question_text = ActionController::Base.helpers.strip_tags(quiz.question).gsub(/"/," ").gsub(/'/," ").gsub("?"," ?")
+        question_text = ActionController::Base.helpers.strip_tags(quiz.question).gsub(/"/," ").gsub(/'/," ").gsub("?"," ?").gusb('\n','')
         puts "==============question_text================"
         puts question_text,annotation_id, group_id, activity_video_id,set_max_choices(quiz)
         puts "========================================"
