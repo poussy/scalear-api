@@ -65,7 +65,9 @@ module FeedbackFruit::ExportQuestion
     def get_cq_question_id(access_token, quiz, annotation_id, group_id, activity_video_id)
         query_url =	'https://api.feedbackfruits.com/v1/engines/questions/questions'
         response = ""
-        
+        puts "----------------question_text--------------before nokogiri"
+        puts question_text
+        puts "-------------------------------------"
         question_text = Nokogiri::HTML.fragment(quiz.question).text.gsub(/"/," ").gsub(/'/," ").gsub("?"," ?")
         puts "==============question_text================"
         puts question_text,annotation_id, group_id, activity_video_id,set_max_choices(quiz)
