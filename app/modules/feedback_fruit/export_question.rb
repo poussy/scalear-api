@@ -68,7 +68,7 @@ module FeedbackFruit::ExportQuestion
         
         question_text = Nokogiri::HTML.fragment(quiz.question).text.gsub(/"/," ").gsub(/'/," ")
         puts "==============question_text================"
-        puts question_text
+        puts question_text,annotation_id, group_id, activity_video_id
         puts "========================================"
         handler = Proc.new do |exception, attempt_number, total_delay|
             puts "retreiving cq_question_id from feedback fruit failed. saw a #{exception.class}; retry attempt #{attempt_number}; #{total_delay} seconds have passed."     
