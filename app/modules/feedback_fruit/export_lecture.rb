@@ -16,9 +16,9 @@ module FeedbackFruit::ExportLecture
         if attachment_accomplished
             #send teacher invitation
             export_video_quizzes(lecture.online_quizzes, access_token,activity_video_id, group_id)
-            email_id = register_teacher_email_on_fbf(teacher_email,access_token)
-            puts '<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<invitation sent>>>>>>>>>>>>>>>>>>>>>'
-            invitation_accomplished = send_teacher_invitation_on_fbf_video(email_id,group_id,access_token)  
+            # email_id = register_teacher_email_on_fbf(teacher_email,access_token)
+            # puts '<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<invitation sent>>>>>>>>>>>>>>>>>>>>>'
+            # invitation_accomplished = send_teacher_invitation_on_fbf_video(email_id,group_id,access_token)  
             return activity_video_id
         end    
         return false

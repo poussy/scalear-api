@@ -166,6 +166,7 @@ module CanvasCommonCartridge::Converter
                 converted_course.canvas_modules << converted_group
             end  
             dir = Dir.mktmpdir
+            puts "dir",dir
             carttridge = CanvasCc::CanvasCC::CartridgeCreator.new(converted_course)
             packaged_course = carttridge.create(dir)       
             UserMailer.imscc_attachment_email(current_user, course, course.name+".imscc",packaged_course,I18n.locale,with_export_fbf).deliver
