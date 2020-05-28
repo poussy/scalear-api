@@ -155,8 +155,6 @@ module FeedbackFruit::ExportQuestion
         puts access_token, question_id,quiz
         answer = quiz.online_answers.first
         answer_text = (quiz.quiz_type=="html"||quiz.quiz_type=="html_survey")? Nokogiri::HTML.fragment(answer.answer).text : answer.answer
-        puts "answer_text",answer_text
-        puts "==========================="
         handler = Proc.new do |exception, attempt_number, total_delay|
             puts "retreiving free text answer from feedback fruit failed. saw a #{exception.class}; retry attempt #{attempt_number}; #{total_delay} seconds have passed."     
         end
@@ -171,7 +169,6 @@ module FeedbackFruit::ExportQuestion
                 :body => '{"data":{"attributes":{"correct":'+answer.correct.to_s+',"body":"'+answer_text+'"},"relationships":{"question":{"data":{"type":"multiple-choice-questions","id":"'+question_id+'"}}},"type":"questions/choices"}}'
             )
         end	    
-        puts "FBF exported answer:"+answer_text
         answer_created_successfuly = response.code==200
         return answer_created_successfuly
     end 
