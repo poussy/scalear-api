@@ -37,8 +37,8 @@ module HelperExportCourseAsText
             course_file.puts  quiz_string
             quiz.online_answers.each do |a|
                 explanation_text = get_explanation(a.explanation)
-                answer = get_answer(quiz,a)
-                answer = answer+" ("+explanation_text+")" if explanation_text !=""
+                answer_tmp = get_answer(quiz,a)
+                answer = answer_tmp+" ("+explanation_text+")" if explanation_text !=""
                 answer+= " \u2713".encode('utf-8') if a.correct
                 course_file.puts "      "+answer
             end 
@@ -48,7 +48,7 @@ module HelperExportCourseAsText
         if (quiz.question_type== "drag" && quiz.quiz_type== "html")
             answer = ActionController::Base.helpers.strip_tags(a.answer.join(" "))
         else 
-            answer = quiz.quiz_type=='html' || quiz.quiz_type=="html_survey" ? ActionController::Base.helpers.strip_tags(a.answer): a.answer   
+            answer = ActionController::Base.helpers.strip_tags(a.answer)
         end 
         return answer
     end 
