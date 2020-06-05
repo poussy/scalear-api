@@ -38,7 +38,7 @@ module HelperExportCourseAsText
             quiz.online_answers.each do |a|
                 explanation_text = get_explanation(a.explanation)
                 answer_tmp = get_answer(quiz,a)
-                answer = answer_tmp+" ("+explanation_text+")" if explanation_text !=""
+                answer =  explanation_text !=""? answer_tmp+" ("+explanation_text+")" : answer_tmp
                 answer+= " \u2713".encode('utf-8') if a.correct
                 course_file.puts "      "+answer
             end 
