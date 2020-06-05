@@ -147,6 +147,7 @@ Rails.application.routes.draw do
         post 'sort_course_links'
         get 'export_for_transfer'
         get 'send_course_to_mail'
+        get 'send_course_txt_to_mail'
         get 'export_modules_progress'
         get 'get_role'
         get 'edit'

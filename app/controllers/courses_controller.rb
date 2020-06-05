@@ -1,6 +1,7 @@
 class CoursesController < ApplicationController
 	include CanvasCommonCartridge::Converter
 	include CanvasCommonCartridge::Components::Utils 
+	include HelperExportCourseAsText
 	load_and_authorize_resource
 				#  @course is aready loaded  
 
@@ -691,10 +692,11 @@ class CoursesController < ApplicationController
   def send_course_txt_to_mail
 	course = Course.find(params[:id])
 	course_file = write_course(course)
+	UserMailer.attachment_email(course.user, course, course.name+'.txt', course_file, I18n.locale).deliver
   end 
-	private
-		def course_params
-			params.require(:course).permit(:description, :end_date, :name, :prerequisites, :short_name, :start_date, :user_ids, :user_id, :time_zone, :discussion_link, :importing,
-					 :image_url ,:disable_registration )
-		end
+  private
+	def course_params
+		params.require(:course).permit(:description, :end_date, :name, :prerequisites, :short_name, :start_date, :user_ids, :user_id, :time_zone, :discussion_link, :importing,
+					:image_url ,:disable_registration )
+	end
 end
