@@ -1,6 +1,7 @@
 class CoursesController < ApplicationController
 	include CanvasCommonCartridge::Converter
-		load_and_authorize_resource
+	include CanvasCommonCartridge::Components::Utils 
+	load_and_authorize_resource
 				#  @course is aready loaded  
 
 	# # # before_filter :correct_user, :except => [:index, :new, :create, :enroll_to_course, :course_copy_angular, :get_all_teachers, :current_courses, :send_system_announcement]
@@ -687,7 +688,10 @@ class CoursesController < ApplicationController
 	  UserMailer.course_export_queued(current_user, course, I18n.locale).deliver
 	  render :json => {:notice => ['Course wil be exported to canvas common cartridge and sent to your Email']}
   end	
- 
+  def send_course_txt_to_mail
+	course = Course.find(params[:id])
+	course_file = write_course(course)
+  end 
 	private
 		def course_params
 			params.require(:course).permit(:description, :end_date, :name, :prerequisites, :short_name, :start_date, :user_ids, :user_id, :time_zone, :discussion_link, :importing,
