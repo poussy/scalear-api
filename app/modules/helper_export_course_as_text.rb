@@ -2,6 +2,8 @@
 include CanvasCommonCartridge::Components::Utils 
 module HelperExportCourseAsText
     def write_course(course)  
+        directory_name = "tmp/course"
+        Dir.mkdir(directory_name) unless File.exists?(directory_name)
         course_file = File.open("tmp/course/course_file.txt", "w")
         # write course content to file along the time
         course_file.puts course.name
