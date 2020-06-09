@@ -5,11 +5,12 @@ module HelperExportCourseAsText
         directory_name = "tmp/course"
         Dir.mkdir(directory_name) unless File.exists?(directory_name)
         course_file = File.open("tmp/course/course_file.txt", "w")
+        course_file.puts "<html><body>"
         # write course content to file along the time
-        course_file.puts "Course: "+course.name
+        course_file.puts "<h1>Course: "+course.name+"</h1>"
         course_file.puts "------------"
         course.groups.each do |group|
-            course_file.puts "Module: "+group.name
+            course_file.puts "<h3>Module: "+group.name+"</h3>"
             group_items = order_group_items(group)
             group_items.each do |item|
                 case item.class.name
@@ -23,6 +24,7 @@ module HelperExportCourseAsText
             end 
             course_file.puts "\n \n"
         end 
+        course_file.puts "</body></html>"
         course_file.close
         return course_file
     end 
@@ -32,7 +34,7 @@ module HelperExportCourseAsText
     end 
     def write_lecture_title(lecture,course_file)
         course_file.puts "----"
-        course_file.puts "Lecture: "+lecture.name
+        course_file.puts "<h3>Lecture: "+lecture.name+"</h3>"
         course_file.puts "URL: "+lecture.url
         course_file.puts "----"
     end 
@@ -118,7 +120,7 @@ module HelperExportCourseAsText
         end 
     end
     def write_custom_link(link,course_file)
-        course_file.puts "\u21b3".encode('utf-8')+" Link: "+link.name
+        course_file.puts "\u21b3".encode('utf-8')+" <h3>Link: "+link.name+"</h3>"
         course_file.puts "   URL: "+link.url
     end 
     def map_abrv_to_plain(question_type)
