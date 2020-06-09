@@ -6,10 +6,11 @@ module HelperExportCourseAsText
         Dir.mkdir(directory_name) unless File.exists?(directory_name)
         course_file = File.open("tmp/course/course_file.txt", "w")
         write_html_header(course_file)
-        write_course_syllabus(course_file)
+        
         # write course content to file along the time
         course_file.puts "<h1>Course: "+course.name+"</h1>"
         course_file.puts "------------"
+        write_course_syllabus(course_file,course)
         course.groups.each do |group|
             course_file.puts "<h3 id='module_#{group.id}' >Module: "+group.name+"</h3>"
             group_items = order_group_items(group)
@@ -29,8 +30,8 @@ module HelperExportCourseAsText
         course_file.close
         return course_file
     end 
-    def write_course_syllabus(course_file)
-        course_file.puts "Course Chapters"
+    def write_course_syllabus(course_file,course)
+        course_file.puts "Course Chapters \n"
         course.groups.each do |group|
             link = "<a href='' onclick='goTo(module_#{group.id})'>#{group.name}</a>\n" 
             course_file.puts link
