@@ -53,8 +53,8 @@ module HelperExportCourseAsText
     end 
     def write_online_quiz_answer(quiz,a,i,course_file)
         answer_tmp = get_answer(quiz,a)
-        answer = "Answer "+i+":"
-        answer+= " [CORRECT]" if a.correct
+        answer = "     Answer "+i+": "
+        answer+= "[CORRECT] " if a.correct
         answer+= answer_tmp
         course_file.puts "      "+answer
     end  
@@ -62,9 +62,9 @@ module HelperExportCourseAsText
         innerText   =  ActionController::Base.helpers.strip_tags(quiz.question)
         quiz_string = "   "+"\u2192".encode('utf-8')+" Question "+(i+1).to_s+":"+innerText
         course_file.puts  quiz_string
-        quiz_type   = "   Type: "+map_abrv_to_plain(quiz.question_type)
+        quiz_type   = "      Type: "+map_abrv_to_plain(quiz.question_type)
         course_file.puts  quiz_type
-        quiz_time   = "   Time: "+time_format(quiz.time)
+        quiz_time   = "      Time: "+time_format(quiz.time)
         course_file.puts  quiz_time 
     end 
     def get_answer(quiz,a)
