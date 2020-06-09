@@ -5,12 +5,13 @@ module HelperExportCourseAsText
         directory_name = "tmp/course"
         Dir.mkdir(directory_name) unless File.exists?(directory_name)
         course_file = File.open("tmp/course/course_file.txt", "w")
-        course_file.puts "<html><body>"
+        write_html_header(course_file)
+        write_course_syllabus(course_file)
         # write course content to file along the time
         course_file.puts "<h1>Course: "+course.name+"</h1>"
         course_file.puts "------------"
         course.groups.each do |group|
-            course_file.puts "<h3>Module: "+group.name+"</h3>"
+            course_file.puts "<h3 id='module_#{group.id}' >Module: "+group.name+"</h3>"
             group_items = order_group_items(group)
             group_items.each do |item|
                 case item.class.name
@@ -28,13 +29,35 @@ module HelperExportCourseAsText
         course_file.close
         return course_file
     end 
+    def write_course_syllabus(course_file)
+        course_file.puts "Course Chapters"
+        course.groups.each do |group|
+            link = "<a href='' onclick='goTo(module_#{group.id})'>#{group.name}</a>\n" 
+            course_file.puts link
+        end 
+    end 
+    def write_html_header(course_file)       
+        course_file.puts "<html>
+        <script>
+         function goTo(id){
+            var my_element = document.getElementById(id);
+            my_element.scrollIntoView({
+              behavior: 'smooth',
+              block: 'start',
+              inline: 'nearest'
+            });
+         }
+        </script>
+        <body>"
+    end 
+
     def write_lecture(lecture,course_file)
         write_lecture_title(lecture,course_file)
         write_lecture_on_video_quizzes(lecture,course_file)
     end 
     def write_lecture_title(lecture,course_file)
         course_file.puts "----"
-        course_file.puts "<h3>Lecture: "+lecture.name+"</h3>"
+        course_file.puts "<h5>Lecture: "+lecture.name+"</h3>"
         course_file.puts "URL: "+lecture.url
         course_file.puts "----"
     end 
@@ -86,7 +109,7 @@ module HelperExportCourseAsText
        return explanation_text
     end 
     def write_quiz(quiz,course_file)
-        course_file.puts "\u21b3".encode('utf-8')+" "+quiz.name
+        course_file.puts "\u21b3".encode('utf-8')+" <h5>"+quiz.name+"</h5>"
         quiz.questions.each do |question|
             write_quiz_question(question,course_file)
             write_quiz_question_answers_and_explanation(question,course_file)
@@ -120,7 +143,7 @@ module HelperExportCourseAsText
         end 
     end
     def write_custom_link(link,course_file)
-        course_file.puts "\u21b3".encode('utf-8')+" <h3>Link: "+link.name+"</h3>"
+        course_file.puts "\u21b3".encode('utf-8')+" <h5>Link: "+link.name+"</h5>"
         course_file.puts "   URL: "+link.url
     end 
     def map_abrv_to_plain(question_type)
