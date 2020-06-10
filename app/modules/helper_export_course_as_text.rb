@@ -136,11 +136,12 @@ module HelperExportCourseAsText
        return explanation_text
     end 
     def write_quiz(quiz,course_file)
-        course_file.puts "\u21b3".encode('utf-8')+" <h5>"+quiz.name+"</h5>"
+        course_file.puts "<div class='left_indentation'><h3>"+quiz.name+"</h3>"
         quiz.questions.each do |question|
             write_quiz_question(question,course_file)
             write_quiz_question_answers_and_explanation(question,course_file)
         end 
+        course_file.puts "</div>"
        
     end 
     def write_quiz_question(question,course_file)
