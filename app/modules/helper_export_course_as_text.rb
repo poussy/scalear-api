@@ -170,7 +170,7 @@ module HelperExportCourseAsText
         end 
     end
     def write_custom_link(link,course_file)
-        course_file.puts "\u21b3".encode('utf-8')+" <h3>Link: "+link.name+"</h3>"
+        course_file.puts " <h3>Link: "+link.name+"</h3>"
         course_file.puts "<p>   URL: "+link.url+"</p>"
     end 
     def map_abrv_to_plain(question_type)
