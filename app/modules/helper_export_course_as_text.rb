@@ -170,8 +170,8 @@ module HelperExportCourseAsText
         end 
     end
     def write_custom_link(link,course_file)
-        course_file.puts " <h3>Link: "+link.name+"</h3>"
-        course_file.puts "<p>   URL: "+link.url+"</p>"
+        course_file.puts "<div class='left_indentation'> <h3>Link: "+link.name+"</h3>"
+        course_file.puts "<p>   URL: "+link.url+"</p></div>"
     end 
     def map_abrv_to_plain(question_type)
         case question_type
