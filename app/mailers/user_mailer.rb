@@ -129,7 +129,16 @@ class UserMailer < ApplicationMailer
 		@reply_to=course.user.email
 		mail(:to => @user_email , :subject => "(#{@course.short_name}) Response to your survey", :from => @from, :reply_to=> @reply_to)
 	end
+	def course_as_text_attachment_email(user, course, file_name, file_path, locale)
+		I18n.locale=locale
+		@from =  "\"Scalable Learning\" <no-reply@scalable-learning.com>"
+		@user_name= user.name
+		@user_email= user.email
+		@course = course
+		attachments[file_name]= File.read(file_path)
 
+		mail(:to => @user_email , :subject => "Exported Course Material", :from => @from)
+	end
 	def attachment_email(user, course, file_name, file_path, locale)
 		I18n.locale=locale
 		@from =  "\"Scalable Learning\" <no-reply@scalable-learning.com>"
