@@ -1,6 +1,6 @@
 module FeedbackFruit::ExportLecture
     include  FeedbackFruit::ExportQuestion
-    def export_to_fbf(url, teacher_email, title, lecture)
+    def export_to_fbf(url, teachers_emails, title, lecture)
         # teacher_email = 'poussy.amr.nileu@gmail.com'
         #get access token
         access_token = get_fbf_access_token
@@ -14,12 +14,14 @@ module FeedbackFruit::ExportLecture
         attachment_accomplished = attach_video_activity_to_group(group_id,activity_video_id,access_token)
         #register teacher email
         if attachment_accomplished
-            #send teacher invitation
+            #send teacher invitation only if sent from by lecture export not export to canvas wz fbf
             export_video_quizzes(lecture.online_quizzes, access_token,activity_video_id, group_id)
-            email_id = register_teacher_email_on_fbf(teacher_email,access_token)
-            puts '<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<invitation sent>>>>>>>>>>>>>>>>>>>>>'
-            invitation_accomplished = send_teacher_invitation_on_fbf_video(email_id,group_id,access_token)  
-            return true
+            if teachers_emails!="none"
+                emails_ids = register_teacher_email_on_fbf(teachers_emails,access_token) 
+                puts '<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<invitation sent>>>>>>>>>>>>>>>>>>>>>'
+                emails_ids.each{|email_id| send_teacher_invitation_on_fbf_video(email_id,group_id,access_token)}  
+            end    
+            return activity_video_id
         end    
         return false
     end     
@@ -127,7 +129,7 @@ module FeedbackFruit::ExportLecture
        attach_successful = response.code==200
        return attach_successful
     end
-    def register_teacher_email_on_fbf(teacher_email,access_token)
+    def register_teacher_email_on_fbf(teachers_emails,access_token)
         #retreive teacher email_id if it's already registered
         query_url =	'https://api.feedbackfruits.com/v1/emails'
         response = ""
@@ -135,20 +137,23 @@ module FeedbackFruit::ExportLecture
         handler = Proc.new do |exception, attempt_number, total_delay|
             puts "register_teacher_email_on_fbf on feedback fruit failed. saw a #{exception.class}; retry attempt #{attempt_number}; #{total_delay} seconds have passed."     
         end
-
-        with_retries(:max_tries => 3, :base_sleep_seconds => 0.5, :max_sleep_seconds => 1.0, :handler => handler, :rescue => [Rack::Timeout::RequestTimeoutException, Timeout::Error, SocketError]) do |attempt_number|
-            response = HTTParty.post(query_url,
-                :headers => { 'Content-Type' => 'application/vnd.api+json','Authorization'=>'Bearer '+access_token } ,
-                :body=>'{"data":{"attributes":{"address":"' + teacher_email + '"},"type":"emails"}}'
-            )
-        end	    
-        email_id = response.parsed_response['data']['id']
-       return email_id
+        emails_ids=[]
+        teachers_emails.each do |teacher_email|
+            with_retries(:max_tries => 3, :base_sleep_seconds => 0.5, :max_sleep_seconds => 1.0, :handler => handler, :rescue => [Rack::Timeout::RequestTimeoutException, Timeout::Error, SocketError]) do |attempt_number|
+                response = HTTParty.post(query_url,
+                    :headers => { 'Content-Type' => 'application/vnd.api+json','Authorization'=>'Bearer '+access_token } ,
+                    :body=>'{"data":{"attributes":{"address":"' + teacher_email + '"},"type":"emails"}}'
+                )
+            end	    
+            email_id = response.parsed_response['data']['id']
+            emails_ids << email_id
+        end     
+        return emails_ids
     end
     def send_teacher_invitation_on_fbf_video(email_id,group_id,access_token)
         query_url =	'https://api.feedbackfruits.com/v1/invitations'
         response = ""
-        
+
         handler = Proc.new do |exception, attempt_number, total_delay|
             puts "send_teacher_invitation_on_fbf_video on feedback fruit failed. saw a #{exception.class}; retry attempt #{attempt_number}; #{total_delay} seconds have passed."     
         end

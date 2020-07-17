@@ -4,13 +4,13 @@ module CanvasCommonCartridge::Converter
     include CanvasCommonCartridge::Components::Creator 
     include CanvasCommonCartridge::Components::Attacher 
 
-    def convert_groups(group,converted_course)
+    def convert_groups(group,converted_course,with_export_fbf)
         converted_group = create_converted_group(group)
         group_items = order_group_items(group)
         group_items.each do |item|
             case item.class.name
             when "Lecture"
-                attach_lecture(item,converted_group,converted_course)
+                attach_lecture(item,converted_group,converted_course,with_export_fbf)
             when "Quiz"
                 attach_quiz(item,converted_group,converted_course)
             when "CustomLink"
@@ -154,27 +154,24 @@ module CanvasCommonCartridge::Converter
     class CanvasCommonCartridge::Converter::Packager 
         include CanvasCommonCartridge::Converter
       
-        def pack_to_ccc(course,current_user)
+        def pack_to_ccc(course,current_user,with_export_fbf)
             UserMailer.course_export_start(current_user, course, I18n.locale).deliver
             p = CanvasCommonCartridge::Converter::Packager.new
             converted_course = p.create_converted_course(course)
             course.groups.each_with_index do |group,i|
-                converted_group = p.convert_groups(group,converted_course)
+                converted_group = p.convert_groups(group,converted_course,with_export_fbf)
                 p.create_module_prerequisite(converted_group,converted_course.canvas_modules.last.identifier) if converted_course.canvas_modules.length>0
                 converted_group.workflow_state = 'active'
                 converted_group.title +="[MISSING ANSWERS]" if p.has_missing_answers_text_at_group(group.id)
                 converted_course.canvas_modules << converted_group
-
             end  
             dir = Dir.mktmpdir
+            puts "dir",dir
             carttridge = CanvasCc::CanvasCC::CartridgeCreator.new(converted_course)
             packaged_course = carttridge.create(dir)       
-            UserMailer.imscc_attachment_email(current_user, course, course.name+".imscc",packaged_course,I18n.locale).deliver
+            UserMailer.imscc_attachment_email(current_user, course, course.name+".imscc",packaged_course,I18n.locale,with_export_fbf).deliver
             clear_tmp_video_processing(1)
         end
         handle_asynchronously :pack_to_ccc, :run_at => Proc.new { 1.seconds.from_now }
     end    
 end
-
-
-
