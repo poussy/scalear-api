@@ -65,13 +65,10 @@ module FeedbackFruit::ExportQuestion
     def get_cq_question_id(access_token, quiz, annotation_id, group_id, activity_video_id)
         query_url =	'https://api.feedbackfruits.com/v1/engines/questions/questions'
         response = ""
-        puts "----------------quiz.question--------------before nokogiri"
-        puts quiz.question
-        puts "-------------------------------------"
+
         question_text = ActionController::Base.helpers.strip_tags(quiz.question).gsub(/"/," ").gsub(/'/," ").gsub("?"," ?").gsub("\n"," ")
-        puts "==============question_text================"
-        puts question_text,annotation_id, group_id, activity_video_id,set_max_choices(quiz)
-        puts "========================================"
+
+        # question_text = Nokogiri::HTML.fragment(quiz.question).text.gsub(/"/,"\' ").gsub(/'/,"\'")
         handler = Proc.new do |exception, attempt_number, total_delay|
             puts "retreiving cq_question_id from feedback fruit failed. saw a #{exception.class}; retry attempt #{attempt_number}; #{total_delay} seconds have passed."     
         end
@@ -121,7 +118,7 @@ module FeedbackFruit::ExportQuestion
         when "OCQ" , "MCQ"      
             export_cq_answers(quiz, access_token, question_id)
         when "Free Text Question"
-            # export_free_text_answer(ANNOTATION_ID, GROUP_ID , ACTIVITY_ID)
+            export_free_text_answer(access_token, question_id,quiz)
         end    
     end
     def export_cq_answers(quiz, access_token, question_id)
@@ -130,7 +127,7 @@ module FeedbackFruit::ExportQuestion
             export_cq_answer(access_token, answer, question_id,quiz)
         end 
     end 
-    def export_cq_answer(access_token, answer, question_id,quiz)
+    def export_cq_answer(access_token, answer, question_id, quiz)
         query_url =	'https://api.feedbackfruits.com/v1/engines/questions/choices'
         response = ""
         answer_text = (quiz.quiz_type=="html"||quiz.quiz_type=="html_survey")? Nokogiri::HTML.fragment(answer.answer).text : answer.answer
@@ -150,6 +147,30 @@ module FeedbackFruit::ExportQuestion
             )
         end	    
         puts "FBF exported answer:"+answer_text
+        answer_created_successfuly = response.code==200
+        return answer_created_successfuly
+    end 
+    def export_free_text_answer(access_token, question_id, quiz)
+        puts "<<<<<<<<<<<<<<<<<<<<<<<<<<in export_free_text_answer>>>>>>>>>>>>>"
+        query_url =	'https://api.feedbackfruits.com/v1/engines/questions/choices'
+        response = ""
+        puts access_token, question_id,quiz
+        answer = quiz.online_answers.first
+        answer_text = (quiz.quiz_type=="html"||quiz.quiz_type=="html_survey")? Nokogiri::HTML.fragment(answer.answer).text : answer.answer
+        handler = Proc.new do |exception, attempt_number, total_delay|
+            puts "retreiving free text answer from feedback fruit failed. saw a #{exception.class}; retry attempt #{attempt_number}; #{total_delay} seconds have passed."     
+        end
+        
+        with_retries(:max_tries => 3, :base_sleep_seconds => 0.5, :max_sleep_seconds => 1.0, :handler => handler, :rescue => [Rack::Timeout::RequestTimeoutException, Timeout::Error, SocketError]) do |attempt_number|
+            response = HTTParty.post(query_url,
+ 
+                :headers => {
+                    'Content-Type' => 'application/vnd.api+json',
+                    'Authorization'=>' Bearer '+access_token 
+                    } ,
+                :body => '{"data":{"attributes":{"correct":'+answer.correct.to_s+',"body":"'+answer_text+'"},"relationships":{"question":{"data":{"type":"multiple-choice-questions","id":"'+question_id+'"}}},"type":"questions/choices"}}'
+            )
+        end	    
         answer_created_successfuly = response.code==200
         return answer_created_successfuly
     end 
