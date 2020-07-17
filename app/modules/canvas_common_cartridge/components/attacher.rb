@@ -1,17 +1,40 @@
 module CanvasCommonCartridge::Components::Attacher
+    include FeedbackFruit::ExportLecture
     def attach_custom_link(link,converted_group,converted_course)
         converted_link = convert_custom_link(link)
         converted_group.module_items << converted_link
     end           
-    def attach_lecture(lecture,converted_group,converted_course)
-        if lecture.online_quizzes.length == 0 
-            converted_lecture = convert_lecture_items(lecture)
-            converted_group.module_items << converted_lecture
-            convert_module_completion_requirements(converted_lecture.identifier,'must_view',converted_group) if lecture.required || lecture.required_module
-        else
-            attach_video_quizzes(lecture,converted_group,converted_course) 
-        end    
-       
+    def attach_lecture(lecture,converted_group,converted_course,with_export_fbf)
+        puts "============with_export_fbf===============",with_export_fbf
+        if lecture.url == "none"
+            puts "here==========>"
+            return 
+        end 
+        if(with_export_fbf==true)
+            #if the export is with FBF 
+            #1- Export lecture to feedbackFruit, get the media id 
+            media_id = export_to_fbf(
+                lecture.url, 
+                # Course.where(id:lecture.course_id).first.user.email, 
+                "none",
+                lecture.name, 
+                lecture
+            )
+            #2- create lecture as assignment external tool with url lti includind media id 
+            converted_feedbackFruit_lecture_assignment = create_exported_to_feedbackFruit_lecture_as_assignment(media_id,lecture.name)
+            assignment_module_item = create_module_item('Assignment',converted_feedbackFruit_lecture_assignment.identifier)
+            converted_group.module_items << assignment_module_item
+            converted_course.assignments << converted_feedbackFruit_lecture_assignment
+            convert_module_completion_requirements(assignment_module_item.identifier,'must_view',converted_group) if lecture.required || lecture.required_module
+        else    
+            if lecture.online_quizzes.length == 0 
+                converted_lecture = convert_lecture_items(lecture)
+                converted_group.module_items << converted_lecture
+                convert_module_completion_requirements(converted_lecture.identifier,'must_view',converted_group) if lecture.required || lecture.required_module
+            else
+                attach_video_quizzes(lecture,converted_group,converted_course) 
+            end    
+        end  
     end    
     def attach_video_quizzes(lecture,converted_group,converted_course)         
         lecture_surveys = lecture.online_quizzes.where(:quiz_type=>["survey","html_survey"])

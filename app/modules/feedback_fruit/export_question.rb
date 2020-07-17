@@ -65,12 +65,14 @@ module FeedbackFruit::ExportQuestion
     def get_cq_question_id(access_token, quiz, annotation_id, group_id, activity_video_id)
         query_url =	'https://api.feedbackfruits.com/v1/engines/questions/questions'
         response = ""
-        
-        question_text = Nokogiri::HTML.fragment(quiz.question).text.gsub(/"/,"\' ").gsub(/'/,"\'")
+
+        question_text = ActionController::Base.helpers.strip_tags(quiz.question).gsub(/"/," ").gsub(/'/," ").gsub("?"," ?").gsub("\n"," ")
+
+        # question_text = Nokogiri::HTML.fragment(quiz.question).text.gsub(/"/,"\' ").gsub(/'/,"\'")
         handler = Proc.new do |exception, attempt_number, total_delay|
             puts "retreiving cq_question_id from feedback fruit failed. saw a #{exception.class}; retry attempt #{attempt_number}; #{total_delay} seconds have passed."     
         end
-
+        puts '{"data":{"attributes":{"min-choices":null,"max-choices":'+set_max_choices(quiz)+',"body":"'+question_text+'","show-peers-answers":true},"relationships":{"annotation":{"data":{"type":"annotations","id":"'+annotation_id+'"}},"group":{"data":{"type":"activity-groups","id":"'+group_id+'"}},"parent":{"data":{"type":"videos","id":"'+activity_video_id+'"}}},"type":"multiple-choice-questions"}}'
         with_retries(:max_tries => 3, :base_sleep_seconds => 0.5, :max_sleep_seconds => 1.0, :handler => handler, :rescue => [Rack::Timeout::RequestTimeoutException, Timeout::Error, SocketError]) do |attempt_number|
             response = HTTParty.post(query_url,
                 :headers => { 'Content-Type' => 'application/vnd.api+json','Authorization'=>'Bearer '+access_token } ,
@@ -85,7 +87,7 @@ module FeedbackFruit::ExportQuestion
     def get_free_text_question_id(access_token, quiz, annotation_id, group_id, activity_video_id)
         query_url =	'https://api.feedbackfruits.com/v1/engines/questions/questions'
         response = ""
-        question_text = Nokogiri::HTML.fragment(quiz.question).text
+        question_text = Nokogiri::HTML.fragment(quiz.question).text.gsub(/"/," ").gsub(/'/," ").gsub("?"," ?")
         handler = Proc.new do |exception, attempt_number, total_delay|
             puts "retreiving free_text_question_id from feedback fruit failed. saw a #{exception.class}; retry attempt #{attempt_number}; #{total_delay} seconds have passed."     
         end

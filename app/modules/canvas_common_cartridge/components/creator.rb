@@ -64,6 +64,15 @@ module CanvasCommonCartridge::Components::Creator
         assessment.workflow_state = 'active'
         return assessment 
     end
+    def create_exported_to_feedbackFruit_lecture_as_assignment(media_id,lecture_title)
+        assignment = CanvasCc::CanvasCC::Models::Assignment.new
+        assignment.submission_types << 'external_tool'
+        puts "media_id:",media_id                        
+        assignment.external_tool_url = 'https://api.feedbackfruits.com/v1/lti/launch/video?copyable_id='+media_id.gsub('-','')+'&type=assignment'
+        assignment.identifier = CanvasCc::CC::CCHelper.create_key(assignment) 
+        assignment.title = lecture_title
+        return assignment
+    end 
     def create_video_converted_assessment(quiz_type,title,due_at)
         case quiz_type
         when "invideo","html"

@@ -1,5 +1,8 @@
 <div>
   <p><%= t('user_mailer.here_is_your_imscc_course_data', {course_name: @course.name})%></p>
+  <% if @with_export_fbf==true %>
+    <p><%= t('user_mailer.your_course_import_instructions')%></p>
+  <% end %>
   <%= render partial: 'thank_you_footer' %>
   <%= render partial: 'footer', locals: {role:"administrator"} %>
 </div>
