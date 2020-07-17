@@ -16,9 +16,11 @@ module FeedbackFruit::ExportLecture
         if attachment_accomplished
             #send teacher invitation only if sent from by lecture export not export to canvas wz fbf
             export_video_quizzes(lecture.online_quizzes, access_token,activity_video_id, group_id)
-            emails_ids = register_teacher_email_on_fbf(teachers_emails,access_token) if teachers_emails.is_a?(Array)
-            # puts '<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<invitation sent>>>>>>>>>>>>>>>>>>>>>'
-            # invitation_accomplished = send_teacher_invitation_on_fbf_video(email_id,group_id,access_token)  
+            if teachers_emails!="none"
+                emails_ids = register_teacher_email_on_fbf(teachers_emails,access_token) 
+                puts '<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<invitation sent>>>>>>>>>>>>>>>>>>>>>'
+                emails_ids.each{|email_id| send_teacher_invitation_on_fbf_video(email_id,group_id,access_token)}  
+            end    
             return activity_video_id
         end    
         return false
@@ -127,7 +129,7 @@ module FeedbackFruit::ExportLecture
        attach_successful = response.code==200
        return attach_successful
     end
-    def register_teacher_email_on_fbf(teacher_email,access_token)
+    def register_teacher_email_on_fbf(teachers_emails,access_token)
         #retreive teacher email_id if it's already registered
         query_url =	'https://api.feedbackfruits.com/v1/emails'
         response = ""
@@ -146,13 +148,12 @@ module FeedbackFruit::ExportLecture
             email_id = response.parsed_response['data']['id']
             emails_ids << email_id
         end     
-      
-       return emails_ids
+        return emails_ids
     end
     def send_teacher_invitation_on_fbf_video(email_id,group_id,access_token)
         query_url =	'https://api.feedbackfruits.com/v1/invitations'
         response = ""
-        
+
         handler = Proc.new do |exception, attempt_number, total_delay|
             puts "send_teacher_invitation_on_fbf_video on feedback fruit failed. saw a #{exception.class}; retry attempt #{attempt_number}; #{total_delay} seconds have passed."     
         end
