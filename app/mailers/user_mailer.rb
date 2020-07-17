@@ -161,9 +161,6 @@ class UserMailer < ApplicationMailer
 		@user_email= user.email
 		@course = course
 		attachments[file_name]= File.read(file_path)
-		puts "------------with_export_fbf-------------"
-		puts with_export_fbf
-		puts "----------------------------------------"
 		@with_export_fbf = with_export_fbf
 
 		mail(:to => @user_email , :subject => "Exported File", :from => @from)

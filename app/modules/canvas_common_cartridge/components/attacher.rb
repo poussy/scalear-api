@@ -5,6 +5,7 @@ module CanvasCommonCartridge::Components::Attacher
         converted_group.module_items << converted_link
     end           
     def attach_lecture(lecture,converted_group,converted_course,with_export_fbf)
+        puts "============with_export_fbf===============",with_export_fbf
         if lecture.url == "none"
             puts "here==========>"
             return 
