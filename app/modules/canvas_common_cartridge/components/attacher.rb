@@ -7,7 +7,6 @@ module CanvasCommonCartridge::Components::Attacher
     def attach_lecture(lecture,converted_group,converted_course,with_export_fbf)
         puts "============with_export_fbf===============",with_export_fbf
         if lecture.url == "none"
-            puts "here==========>"
             return 
         end 
         if(with_export_fbf=="true")
