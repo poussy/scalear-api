@@ -685,6 +685,9 @@ class CoursesController < ApplicationController
   def send_course_to_mail
 	  course = Course.find(params[:id])
 	  tmp = Packager.new
+	  puts "=======params[:export_lec_2_fbf]========"
+	  puts params[:export_lec_2_fbf]
+	  puts "================="
 	  tmp.pack_to_ccc(course,current_user,params[:export_lec_2_fbf])
 	  UserMailer.course_export_queued(current_user, course, I18n.locale).deliver
 	  render :json => {:notice => ['Course wil be exported to canvas common cartridge and sent to your Email']}

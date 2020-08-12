@@ -10,7 +10,7 @@ module CanvasCommonCartridge::Components::Attacher
             puts "here==========>"
             return 
         end 
-        if(with_export_fbf==true)
+        if(with_export_fbf=="true")
             #if the export is with FBF 
             #1- Export lecture to feedbackFruit, get the media id 
             media_id = export_to_fbf(
