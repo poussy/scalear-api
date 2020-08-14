@@ -695,7 +695,7 @@ class CoursesController < ApplicationController
   def send_course_txt_to_mail
 	course = Course.find(params[:id])
 	course_file = write_course(course)
-	UserMailer.course_as_text_attachment_email(course.user, course, course.name+'.html', course_file, I18n.locale).deliver
+	UserMailer.course_as_text_attachment_email(current_user, course, course.name+'.html', course_file, I18n.locale).deliver
 	render :json => {:notice => ['Course will be exported to as text and sent to your Email']}
   end 
   private
