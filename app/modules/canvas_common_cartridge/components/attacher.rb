@@ -14,8 +14,7 @@ module CanvasCommonCartridge::Components::Attacher
             #1- Export lecture to feedbackFruit, get the media id 
             media_id = export_to_fbf(
                 lecture.url, 
-                # "none", <<<--------- put here the logged user
-                current_user,
+                [current_user.email],
                 lecture.name, 
                 lecture
             )
