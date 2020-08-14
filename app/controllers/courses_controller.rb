@@ -685,6 +685,9 @@ class CoursesController < ApplicationController
   def send_course_to_mail
 	  course = Course.find(params[:id])
 	  tmp = Packager.new
+	  puts "=======params[:export_lec_2_fbf]========"
+	  puts params[:export_lec_2_fbf]
+	  puts "================="
 	  tmp.pack_to_ccc(course,current_user,params[:export_lec_2_fbf])
 	  UserMailer.course_export_queued(current_user, course, I18n.locale).deliver
 	  render :json => {:notice => ['Course wil be exported to canvas common cartridge and sent to your Email']}
@@ -692,7 +695,7 @@ class CoursesController < ApplicationController
   def send_course_txt_to_mail
 	course = Course.find(params[:id])
 	course_file = write_course(course)
-	UserMailer.course_as_text_attachment_email(course.user, course, course.name+'.html', course_file, I18n.locale).deliver
+	UserMailer.course_as_text_attachment_email(current_user, course, course.name+'.html', course_file, I18n.locale).deliver
 	render :json => {:notice => ['Course will be exported to as text and sent to your Email']}
   end 
   private
