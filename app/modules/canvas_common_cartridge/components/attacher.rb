@@ -4,7 +4,7 @@ module CanvasCommonCartridge::Components::Attacher
         converted_link = convert_custom_link(link)
         converted_group.module_items << converted_link
     end           
-    def attach_lecture(lecture,converted_group,converted_course,with_export_fbf)
+    def attach_lecture(lecture,converted_group,converted_course,with_export_fbf,current_user)
         puts "============with_export_fbf===============",with_export_fbf
         if lecture.url == "none"
             return 
@@ -14,8 +14,8 @@ module CanvasCommonCartridge::Components::Attacher
             #1- Export lecture to feedbackFruit, get the media id 
             media_id = export_to_fbf(
                 lecture.url, 
-                # Course.where(id:lecture.course_id).first.user.email, 
-                "none",
+                # "none", <<<--------- put here the logged user
+                current_user,
                 lecture.name, 
                 lecture
             )

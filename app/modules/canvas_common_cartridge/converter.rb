@@ -4,13 +4,13 @@ module CanvasCommonCartridge::Converter
     include CanvasCommonCartridge::Components::Creator 
     include CanvasCommonCartridge::Components::Attacher 
 
-    def convert_groups(group,converted_course,with_export_fbf)
+    def convert_groups(group,converted_course,with_export_fbf,current_user)
         converted_group = create_converted_group(group)
         group_items = order_group_items(group)
         group_items.each do |item|
             case item.class.name
             when "Lecture"
-                attach_lecture(item,converted_group,converted_course,with_export_fbf)
+                attach_lecture(item,converted_group,converted_course,with_export_fbf,current_user)
             when "Quiz"
                 attach_quiz(item,converted_group,converted_course)
             when "CustomLink"
@@ -159,7 +159,7 @@ module CanvasCommonCartridge::Converter
             p = CanvasCommonCartridge::Converter::Packager.new
             converted_course = p.create_converted_course(course)
             course.groups.each_with_index do |group,i|
-                converted_group = p.convert_groups(group,converted_course,with_export_fbf)
+                converted_group = p.convert_groups(group,converted_course,with_export_fbf,current_user)
                 p.create_module_prerequisite(converted_group,converted_course.canvas_modules.last.identifier) if converted_course.canvas_modules.length>0
                 converted_group.workflow_state = 'active'
                 converted_group.title +="[MISSING ANSWERS]" if p.has_missing_answers_text_at_group(group.id)
