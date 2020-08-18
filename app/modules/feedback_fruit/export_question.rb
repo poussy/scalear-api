@@ -30,9 +30,11 @@ module FeedbackFruit::ExportQuestion
         with_retries(:max_tries => 3, :base_sleep_seconds => 0.5, :max_sleep_seconds => 1.0, :handler => handler, :rescue => [Rack::Timeout::RequestTimeoutException, Timeout::Error, SocketError]) do |attempt_number|
             response = HTTParty.post(query_url,
                 :headers => { 'Content-Type' => 'application/vnd.api+json','Authorization'=>' Bearer '+access_token } ,
-                :body=>'{"data":{"attributes":{"time-min":'+(quiz.start_time-2).to_s+',"time-max":'+(quiz.start_time+2).to_s+'},"relationships":{"activity":{"data":{"type":"videos","id":"'+activity_video_id+'"}}},"type":"video-fragments"}}'
+                :body=>'{"data":{"attributes":{"time-min":'+(quiz.start_time-2).to_s+',"time-max":'+(quiz.start_time+2).to_s+'},"relationships":{"fragmentable":{"data":{"type":"videos","id":"'+activity_video_id+'"}}},"type":"video-fragments"}}'
             )
         end	    
+        puts "----------response.parsed_response['data']----------"
+        puts response,access_token, activity_video_id, quiz
         fragment_id=response.parsed_response['data']['id']
        return fragment_id
     end 
