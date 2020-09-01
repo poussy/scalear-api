@@ -68,7 +68,7 @@ module FeedbackFruit::ExportLecture
        return group_id
     end    
     def get_media_id(url,access_token)
-        query_url =	'https://media.feedbackfruits.com'
+        query_url =	'https://eu-media.feedbackfruits.com'
         response = ""
         pp "<<<<<<<<<<<<<<<<<<<<< getting media id >>>>>>>>>>>>>>>>>>>>."
         pp Time.now.strftime("%d/%m/%Y %H:%M")
