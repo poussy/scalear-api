@@ -821,7 +821,7 @@ class LecturesController < ApplicationController
 		teachers_ids = TeacherEnrollment.where(:course_id => @lecture.course.id).pluck(:user_id)
 		teachers_emails = User.where(:id=>teachers_ids).pluck(:email)
 		lec_name = @lecture.name
-		export_accomplished = export_to_fbf(lec_url, teachers_emails, lec_name, @lecture) if (is_youtube(lec_url)||is_vimeo) 
+		export_accomplished = export_to_fbf(lec_url, teachers_emails, lec_name, @lecture) if (is_youtube(lec_url)||is_vimeo(lec_url)) 
 		if export_accomplished
 			render json: {:notice => "Export lecture to feedbackFruit accomplished"}
 		else 
@@ -1059,6 +1059,13 @@ class LecturesController < ApplicationController
 
 	def is_vimeo
 		if 	@lecture_url.include?('vimeo.com/')
+			return true 
+		else	
+			return false
+		end
+	end	
+	def is_vimeo(url)
+		if 	url.include?('vimeo.com/')
 			return true 
 		else	
 			return false
