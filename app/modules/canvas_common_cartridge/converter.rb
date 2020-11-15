@@ -171,6 +171,7 @@ module CanvasCommonCartridge::Converter
             packaged_course = carttridge.create(dir)       
             UserMailer.imscc_attachment_email(current_user, course, course.name+".imscc",packaged_course,I18n.locale,with_export_fbf).deliver
             clear_tmp_video_processing(1)
+            # if called from export all courses , update the exporting status
         end
         handle_asynchronously :pack_to_ccc, :run_at => Proc.new { 1.seconds.from_now }
     end    
