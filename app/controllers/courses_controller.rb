@@ -707,7 +707,7 @@ class CoursesController < ApplicationController
 	courses_to_export = Course.where("user_id in (?)",unarchived_teacher_ids).uniq
 	for course in courses_to_export do
 		send_course_to_teacher_mail(course,course.teachers[0])
-		sleep 108000
+		sleep 108000 # 30 minutes in seconds
 	end 
   end 
   private
