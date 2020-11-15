@@ -149,29 +149,29 @@ class VimeoUploadsControllerTest < ActionDispatch::IntegrationTest
         assert_equal updated_lecture.name, 'My Video'
     end  
 
-    test 'video name should be updated on vimeo' do
-        #get the actual name of the video on vimeo
-        testing_video_id = '339833074'
+    # test 'video name should be updated on vimeo' do
+    #     #get the actual name of the video on vimeo
+    #     testing_video_id = '339833074'
    
-        #generate random number 
-        num = rand(1..1000)
+    #     #generate random number 
+    #     num = rand(1..1000)
      
-        #stick the random number into the name 
-        new_name="unit test"+"_"+num.to_s
+    #     #stick the random number into the name 
+    #     new_name="unit test"+"_"+num.to_s
 
-        #update the video name with the new one
-        post '/vimeo_uploads/update_vimeo_video_data',
-        params:{
-            name:new_name,
-            video_id:testing_video_id
-        }
+    #     #update the video name with the new one
+    #     post '/vimeo_uploads/update_vimeo_video_data',
+    #     params:{
+    #         name:new_name,
+    #         video_id:testing_video_id
+    #     }
 
-        #check the name is properly updated
-        updated_name = get_vimeo_video_name(testing_video_id)
+    #     #check the name is properly updated
+    #     updated_name = get_vimeo_video_name(testing_video_id)
 
-        assert_equal updated_name, new_name
+    #     assert_equal updated_name, new_name
 
-    end  
+    # end  
 
     test 'video should be deleleted from Vimeo account and its record deleted from VimeoUpload table' do
         #upload a test video to vimeo 
