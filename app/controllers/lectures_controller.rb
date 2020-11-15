@@ -541,7 +541,7 @@ class LecturesController < ApplicationController
 			lec_destory = @lecture.async_destroy
 			if lec_destory		
 				## delete vimeo video
-				if is_vimeo
+				if is_vimeo(@lecture.url)
 					delete_vimeo_video
 				end	
 				## waitin for shared item table
