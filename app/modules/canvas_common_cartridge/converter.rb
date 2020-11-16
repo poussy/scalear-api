@@ -154,9 +154,10 @@ module CanvasCommonCartridge::Converter
     class CanvasCommonCartridge::Converter::Packager 
         include CanvasCommonCartridge::Converter
       
-        def pack_to_ccc(course,current_user,with_export_fbf)
+        def pack_to_ccc(course,current_user,with_export_fbf,for_all_courses)
             UserMailer.course_export_start(current_user, course, I18n.locale).deliver
             p = CanvasCommonCartridge::Converter::Packager.new
+            export_log = ExportLog.create(course_id:course.id,status:"in progress") if for_all_courses
             converted_course = p.create_converted_course(course)
             course.groups.each_with_index do |group,i|
                 converted_group = p.convert_groups(group,converted_course,with_export_fbf,current_user)
@@ -171,7 +172,11 @@ module CanvasCommonCartridge::Converter
             packaged_course = carttridge.create(dir)       
             UserMailer.imscc_attachment_email(current_user, course, course.name+".imscc",packaged_course,I18n.locale,with_export_fbf).deliver
             clear_tmp_video_processing(1)
-            # if called from export all courses , update the exporting status
+            if for_all_courses && File.size(packaged_course)>0
+                export_log.update(course_id:course.id,status:"done") 
+            else  
+                export_log.update(course_id:course.id,status:"failed") 
+            end     
         end
         handle_asynchronously :pack_to_ccc, :run_at => Proc.new { 1.seconds.from_now }
     end    

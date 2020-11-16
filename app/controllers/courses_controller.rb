@@ -698,18 +698,6 @@ class CoursesController < ApplicationController
 	UserMailer.course_as_text_attachment_email(current_user, course, course.name+'.html', course_file, I18n.locale).deliver
 	render :json => {:notice => ['Course will be exported to as text and sent to your Email']}
   end 
-  def send_course_to_teacher_mail(course,teacher)
-	tmp = Packager.new
-	tmp.pack_to_ccc(course,teacher,true)
-  end 
-  def export_all_courses
-	unarchived_teacher_ids = TeacherEnrollment.joins(:user).where("email not like ?","%archived%").uniq.pluck(:user_id)
-	courses_to_export = Course.where("user_id in (?)",unarchived_teacher_ids).uniq
-	for course in courses_to_export do
-		send_course_to_teacher_mail(course,course.teachers[0])
-		sleep 108000 # 30 minutes in seconds
-	end 
-  end 
   private
 	def course_params
 		params.require(:course).permit(:description, :end_date, :name, :prerequisites, :short_name, :start_date, :user_ids, :user_id, :time_zone, :discussion_link, :importing,
