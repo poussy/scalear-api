@@ -1,0 +1,2 @@
+class ExportLog < ApplicationRecord
+end
