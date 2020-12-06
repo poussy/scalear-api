@@ -175,7 +175,7 @@ class UserMailer < ApplicationMailer
 			@with_export_fbf = true
 		end 
 
-		mail(:to => @user_email , :subject => "Exported File as Canvas Package", :from => @from)
+		mail(:to => @user_email , :subject => "Exported Course as Canvas Package", :from => @from)
 	end	
 	def course_export_start(user, course, locale)
 		I18n.locale=locale
