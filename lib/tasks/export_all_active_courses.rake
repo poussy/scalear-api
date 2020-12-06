@@ -10,7 +10,7 @@ namespace :db do
         tmp.pack_to_ccc(course,teacher,false,true) 
     end 
     def send_course_txt_to_teacher_mail(course)
-        course = Course.find(params[:id])
+        
         course_file = write_course(course)
         # send coure to tacher mail
         UserMailer.course_as_text_attachment_email(course.user, course, course.name+'.html', course_file, I18n.locale).deliver
