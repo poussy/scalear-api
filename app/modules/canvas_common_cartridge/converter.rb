@@ -155,7 +155,7 @@ module CanvasCommonCartridge::Converter
         include CanvasCommonCartridge::Converter
       
         def pack_to_ccc(course,current_user,with_export_fbf,for_all_courses)
-            UserMailer.course_export_start(current_user, course, I18n.locale).deliver
+            # UserMailer.course_export_start(current_user, course, I18n.locale).deliver
             p = CanvasCommonCartridge::Converter::Packager.new
             export_log = ExportLog.create(course_id:course.id,status:"in progress") if for_all_courses
             converted_course = p.create_converted_course(course)
