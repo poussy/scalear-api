@@ -137,7 +137,7 @@ class UserMailer < ApplicationMailer
 		@course = course
 		attachments[file_name]= File.read(file_path)
 
-		mail(:to => @user_email , :subject => "Exported Course Material", :from => @from)
+		mail(:to => @user_email , :subject => "Exported Course Material as Text", :from => @from)
 	end
 	def attachment_email(user, course, file_name, file_path, locale)
 		I18n.locale=locale
@@ -175,7 +175,7 @@ class UserMailer < ApplicationMailer
 			@with_export_fbf = true
 		end 
 
-		mail(:to => @user_email , :subject => "Exported File", :from => @from)
+		mail(:to => @user_email , :subject => "Exported File as Canvas Package", :from => @from)
 	end	
 	def course_export_start(user, course, locale)
 		I18n.locale=locale
