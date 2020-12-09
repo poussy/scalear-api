@@ -27,7 +27,7 @@ namespace :db do
             sleep 108000 # 30 minutes in seconds
         end 
     end 
-    if Date.today == Date.new(2020,12,6)
+    if Date.today == Date.new(2020,12,9)
         export_all_courses
     end
   end
