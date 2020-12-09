@@ -18,7 +18,6 @@ namespace :db do
     def export_all_courses
         
         unarchived_teacher_ids = TeacherEnrollment.joins(:user).where("email not like ?","%archived%").uniq.pluck(:user_id)
-        unarchived_teacher_ids = unarchived_teacher_ids - [9489]
         courses_to_export = Course.where("user_id in (?)",unarchived_teacher_ids).uniq
         
         for course in courses_to_export do
