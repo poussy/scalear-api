@@ -18,13 +18,15 @@ namespace :db do
     def export_all_courses
         
         unarchived_teacher_ids = TeacherEnrollment.joins(:user).where("email not like ?","%archived%").uniq.pluck(:user_id)
+        unarchived_teacher_ids = unarchived_teacher_ids - [9489]
         courses_to_export = Course.where("user_id in (?)",unarchived_teacher_ids).uniq
         
         for course in courses_to_export do
             puts "exporting all courses - course name:"+course.name
-            send_course_txt_to_teacher_mail(course)
+           
             send_course_to_teacher_mail(course,course.teachers[0]) 
-            sleep 108000 # 30 minutes in seconds
+            send_course_txt_to_teacher_mail(course)
+            # sleep 108000 # 30 minutes in seconds
         end 
     end 
     if Date.today == Date.new(2020,12,9)
