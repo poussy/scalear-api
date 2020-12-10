@@ -25,7 +25,7 @@ namespace :db do
            
             send_course_to_teacher_mail(course,course.teachers[0]) 
             send_course_txt_to_teacher_mail(course)
-            sleep 108000 # 30 minutes in seconds
+            # sleep 108000 # 30 minutes in seconds
         end 
     end 
     if Date.today == Date.new(2020,12,10)
