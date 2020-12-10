@@ -177,6 +177,7 @@ class UserMailer < ApplicationMailer
 		end 
 		course_name =  course.name
 		start_date = course.start_date.to_s
+		
 		if course_html_file!=false
 			subject = "Exported Course ("+course_name+", "+start_date+")"
 		else
