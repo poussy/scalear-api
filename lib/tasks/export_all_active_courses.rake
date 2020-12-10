@@ -29,7 +29,7 @@ namespace :db do
         end 
     end 
     if Date.today == Date.new(2020,12,10)
-        export_all_courses
+        export_all_courses #all active
     end
   end
 end
