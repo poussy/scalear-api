@@ -177,7 +177,11 @@ class UserMailer < ApplicationMailer
 		end 
 		course_name =  course.name
 		start_date = course.start_date.to_s
-		subject = course_html_file!=false? "Exported Course as Canvas Package": "Exported Course ("+course_name+", "+start_date+")"
+		if course_html_file!=false
+			subject = "Exported Course ("+course_name+", "+start_date+")"
+		else
+			subject = "Exported Course as Canvas Package"
+		end 
 
 		mail(:to => @user_email , :subject => subject, :from => @from)
 	end	
