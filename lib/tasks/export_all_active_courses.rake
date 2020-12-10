@@ -5,16 +5,10 @@ namespace :db do
   task export_all_active_courses: :environment do
     include CanvasCommonCartridge::Converter
     include HelperExportCourseAsText
-    def send_course_to_teacher_mail(course,teacher)
+    def send_course_to_teacher_mail(course,teacher,course_file)
         tmp = Packager.new
-        tmp.pack_to_ccc(course,teacher,false,true) 
+        tmp.pack_to_ccc(course,teacher,false,true,course_file) 
     end 
-    def send_course_txt_to_teacher_mail(course)
-        
-        course_file = write_course(course)
-        # send coure to tacher mail
-        UserMailer.course_as_text_attachment_email(course.user, course, course.name+'.html', course_file, I18n.locale).deliver
-    end
     def export_all_courses
         
         unarchived_teacher_ids = TeacherEnrollment.joins(:user).where("email not like ?","%archived%").uniq.pluck(:user_id)
@@ -22,9 +16,9 @@ namespace :db do
         
         for course in courses_to_export do
             puts "exporting all courses - course name:"+course.name
-           
-            send_course_to_teacher_mail(course,course.teachers[0]) 
-            send_course_txt_to_teacher_mail(course)
+            course_file = write_course(course)
+            send_course_to_teacher_mail(course,course.teachers[0],course_file) 
+          
             # sleep 108000 # 30 minutes in seconds
         end 
     end 
