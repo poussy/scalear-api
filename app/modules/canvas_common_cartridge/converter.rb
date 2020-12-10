@@ -174,7 +174,7 @@ module CanvasCommonCartridge::Converter
             if for_all_courses
                 file_txt_path = write_course(course)
                 puts file_txt_path
-                UserMailer.imscc_txt_attachment_email(current_user, course, course.name, packaged_course, file_txt_path, I18n.locale )
+                UserMailer.imscc_txt_attachment_email(current_user, course, course.name, packaged_course, file_txt_path, I18n.locale).deliver
             else
                 UserMailer.imscc_attachment_email(current_user, course, course.name+".imscc",packaged_course,I18n.locale,with_export_fbf).deliver
             end     
