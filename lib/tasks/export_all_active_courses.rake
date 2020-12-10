@@ -11,9 +11,9 @@ namespace :db do
     end 
 
     def export_all_courses
-        # unarchived_teacher_ids = TeacherEnrollment.joins(:user).where("email not like ?","%archived%").uniq.pluck(:user_id)
-        # courses_to_export = Course.where("user_id in (?)",unarchived_teacher_ids).uniq
-        courses_to_export = Course.where(:id=>9941)
+        unarchived_teacher_ids = TeacherEnrollment.joins(:user).where("email not like ?","%archived%").uniq.pluck(:user_id)
+        courses_to_export = Course.where("user_id in (?)",unarchived_teacher_ids).uniq
+     
         for course in courses_to_export do
             puts "exporting all courses - course name:"+course.name
             send_course_to_teacher_mail(course,course.teachers[0])     
