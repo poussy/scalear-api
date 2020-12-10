@@ -3,7 +3,7 @@ module CanvasCommonCartridge::Converter
     include CanvasCommonCartridge::Components::Utils
     include CanvasCommonCartridge::Components::Creator 
     include CanvasCommonCartridge::Components::Attacher 
-
+    include HelperExportCourseAsText
     def convert_groups(group,converted_course,with_export_fbf,current_user)
         converted_group = create_converted_group(group)
         group_items = order_group_items(group)
@@ -169,8 +169,16 @@ module CanvasCommonCartridge::Converter
             dir = Dir.mktmpdir
             puts "dir",dir
             carttridge = CanvasCc::CanvasCC::CartridgeCreator.new(converted_course)
-            packaged_course = carttridge.create(dir)       
-            UserMailer.imscc_attachment_email(current_user, course, course.name+".imscc",packaged_course,I18n.locale,with_export_fbf).deliver
+            packaged_course = carttridge.create(dir)   
+            
+            if for_all_courses
+                file_txt_path = write_course(course)
+                puts file_txt_path
+                UserMailer.imscc_txt_attachment_email(current_user, course, course.name, packaged_course, file_txt_path, I18n.locale )
+            else
+                UserMailer.imscc_attachment_email(current_user, course, course.name+".imscc",packaged_course,I18n.locale,with_export_fbf).deliver
+            end     
+           
             clear_tmp_video_processing(1)
             if for_all_courses && File.size(packaged_course)>0
                 export_log.update(course_id:course.id,status:"done") 
