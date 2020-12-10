@@ -169,7 +169,7 @@ class UserMailer < ApplicationMailer
 		@course = course
 		attachments[file_name+".imscc"]= File.read(file_imscc_path)
 		attachments[file_name+".html"]= File.read(file_txt_path)
-		mail(:to => @user_email , :subject => "Exported Course:"+course.name+", "+course.start_date.to_s+" as Canvas Package", :from => @from)
+		mail(:to => @user_email , :subject => "Exported Course:"+course.name+", "+course.start_date.to_s, :from => @from)
 	end 
 
 	def imscc_attachment_email(user, course, file_name, file_path, locale, with_export_fbf)
