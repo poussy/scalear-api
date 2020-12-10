@@ -688,7 +688,7 @@ class CoursesController < ApplicationController
 	  puts "=======params[:export_lec_2_fbf]========"
 	  puts params[:export_lec_2_fbf]
 	  puts "================="
-	  tmp.pack_to_ccc(course,current_user,params[:export_lec_2_fbf],false,false)
+	  tmp.pack_to_ccc(course,current_user,params[:export_lec_2_fbf],false)
 	  UserMailer.course_export_queued(current_user, course, I18n.locale).deliver
 	  render :json => {:notice => ['Course wil be exported to canvas common cartridge and sent to your Email']}
   end	

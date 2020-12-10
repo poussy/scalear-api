@@ -154,7 +154,7 @@ module CanvasCommonCartridge::Converter
     class CanvasCommonCartridge::Converter::Packager 
         include CanvasCommonCartridge::Converter
       
-        def pack_to_ccc(course,current_user,with_export_fbf,for_all_courses,course_html_file)
+        def pack_to_ccc(course,current_user,with_export_fbf,for_all_courses)
             # UserMailer.course_export_start(current_user, course, I18n.locale).deliver
             p = CanvasCommonCartridge::Converter::Packager.new
             export_log = ExportLog.create(course_id:course.id,status:"in progress") if for_all_courses
@@ -169,11 +169,9 @@ module CanvasCommonCartridge::Converter
             dir = Dir.mktmpdir
             puts "dir",dir
             carttridge = CanvasCc::CanvasCC::CartridgeCreator.new(converted_course)
-
             packaged_course = carttridge.create(dir)       
-            UserMailer.imscc_attachment_email(current_user, course, course.name+".imscc",packaged_course,I18n.locale,with_export_fbf,course_html_file).deliver
+            UserMailer.imscc_attachment_email(current_user, course, course.name+".imscc",packaged_course,I18n.locale,with_export_fbf).deliver
             clear_tmp_video_processing(1)
-            
             if for_all_courses && File.size(packaged_course)>0
                 export_log.update(course_id:course.id,status:"done") 
             else  

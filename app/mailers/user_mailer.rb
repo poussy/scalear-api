@@ -137,7 +137,7 @@ class UserMailer < ApplicationMailer
 		@course = course
 		attachments[file_name]= File.read(file_path)
 
-		mail(:to => @user_email , :subject => "Exported Course Material as Text", :from => @from)
+		mail(:to => @user_email , :subject => "Exported Course "+course.name+","+course.start_date.to_s+" as Text", :from => @from)
 	end
 	def attachment_email(user, course, file_name, file_path, locale)
 		I18n.locale=locale
@@ -163,28 +163,19 @@ class UserMailer < ApplicationMailer
 		mail(:to => @user_email , :subject => "Exported File", :from => @from)	
 	end	
 
-	def imscc_attachment_email(user, course, file_name, file_path, locale, with_export_fbf, course_html_file)
+	def imscc_attachment_email(user, course, file_name, file_path, locale, with_export_fbf)
 		I18n.locale=locale
 		@from =  "\"Scalable Learning\" <no-reply@scalable-learning.com>"
 		@user_name= user.name
 		@user_email= user.email
 		@course = course
 		attachments[file_name]= File.read(file_path)
-		attachments[file_name+".html"] = File.read(course_html_file) if course_html_file
 		
 		if (with_export_fbf=='true')	
 			@with_export_fbf = true
 		end 
-		course_name =  course.name
-		start_date = course.start_date.to_s
-		
-		if course_html_file!=false
-			subject = "Exported Course ("+course_name+", "+start_date+")"
-		else
-			subject = "Exported Course as Canvas Package"
-		end 
 
-		mail(:to => @user_email , :subject => subject, :from => @from)
+		mail(:to => @user_email , :subject => "Exported Course:"+course.name+", "+course.start_date.to_s+" as Canvas Package", :from => @from)
 	end	
 	def course_export_start(user, course, locale)
 		I18n.locale=locale
