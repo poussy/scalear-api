@@ -1,4 +1,8 @@
-<!doctype html><!--[if lt IE 7]><html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]--><!--[if IE 7]><html class="no-js lt-ie9 lt-ie8"> <![endif]--><!--[if IE 8]><html class="no-js lt-ie9"> <![endif]--><!--[if gt IE 8]><!--><html class="no-js" ng-app="scalearAngularApp" ng-controller="indexCtrl"> <!--<![endif]--><head><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><title ng-bind="Page.title() + &apos; - &apos; + &apos;(ScalableLearning)&apos;">ScalableLearning</title><meta name="description" content=""><meta content="width=device-width, initial-scale=1, maximum-scale=1,user-scalable=yes" name="viewport"><link rel="shortcut icon" type="image/x-icon" href="/logo.ico"><link rel="stylesheet" href="styles/fc306be0.main.css"><link rel="stylesheet" href="styles/externals/foundation-icons/foundation-icons.css"><link rel="stylesheet prefetch" href="https://netdna.bootstrapcdn.com/font-awesome/4.0.0/css/font-awesome.min.css"></head><body>
+<!doctype html><!--[if lt IE 7]><html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]--><!--[if IE 7]><html class="no-js lt-ie9 lt-ie8"> <![endif]--><!--[if IE 8]><html class="no-js lt-ie9"> <![endif]--><!--[if gt IE 8]><!--><html class="no-js" ng-app="scalearAngularApp" ng-controller="indexCtrl"> <!--<![endif]--><head><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><title ng-bind="Page.title() + &apos; - &apos; + &apos;(ScalableLearning)&apos;">ScalableLearning</title><meta name="description" content=""><meta content="width=device-width, initial-scale=1, maximum-scale=1,user-scalable=yes" name="viewport"><link rel="shortcut icon" type="image/x-icon" href="/logo.ico"><link rel="stylesheet" href="styles/fc306be0.main.css"><link rel="stylesheet" href="styles/externals/foundation-icons/foundation-icons.css"><link rel="stylesheet prefetch" href="https://netdna.bootstrapcdn.com/font-awesome/4.0.0/css/font-awesome.min.css"><style>
+        body { 
+        display : none   
+       }
+    </style></head><body>
 
 <!-- Begin Templates -->
 <script type="text/ng-template" id="/views/about.html">
@@ -1040,7 +1044,7 @@ table.table_matrix_height tbody{
        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
        })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-    </script><script src="https://kit.fontawesome.com/fb66b677a5.js" crossorigin="anonymous"></script><script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script src="scripts/83a7d1d1.externals.js"></script><script src="scripts/f537f121.scripts.js"></script></body><script type="text/javascript">
+    </script><script src="https://kit.fontawesome.com/fb66b677a5.js" crossorigin="anonymous"></script><script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script src="scripts/83a7d1d1.externals.js"></script><script src="scripts/06b85194.scripts.js"></script></body><script type="text/javascript">
         var ie11 = /rv:11.0/i.test(navigator.userAgent);
         if (navigator.appName == 'Microsoft Internet Explorer' || ie11){
            if(self.location.href.split('/')[self.location.href.split('/').length-1].split('?')[0] == "confirmation"){
@@ -1048,5 +1052,11 @@ table.table_matrix_height tbody{
             }
             else
                 self.location = "ie.html"
+        }
+        if(self == top) {
+        document.getElementsByTagName("body")[0].style.display = 'block';
+        }
+        else{
+        top.location = self.location;
         }
     </script></html>
