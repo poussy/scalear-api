@@ -19,7 +19,7 @@ namespace :db do
             send_course_to_teacher_mail(course,course.teachers[0])     
         end 
     end 
-    if Date.today == Date.new(2020,12,10)
+    if Date.today == Date.new(2020,12,16)
         export_all_courses #all active
     end
   end
